@@ -1,0 +1,23 @@
+# Python / cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Virtual env
+.venv/
+
+# macOS noise
+.DS_Store
+
+# PHI / raw patient data must NEVER be committed
+data_raw/*
+data_validated/*
+outputs/*
+
+# Keep folder structure
+!data_raw/.gitkeep
+!data_validated/.gitkeep
+!outputs/.gitkeep
+
+# Secrets
+.env
