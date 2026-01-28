@@ -1,0 +1,272 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "protocol_count": 44
+  },
+  "protocols": [
+    {
+      "protocol_id": "TRAUMATIC_BRAIN_INJURY_MANAGEMENT",
+      "name": "Traumatic Brain Injury Management",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "RIB_FRACTURE_MANAGEMENT",
+      "name": "Rib Fracture Management",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "BLUNT_ABDOMINAL_TRAUMA",
+      "name": "Blunt Abdominal Trauma",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "BLUNT_CHEST_TRAUMA",
+      "name": "Blunt Chest Trauma",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "PENETRATING_ABDOMINAL_TRAUMA",
+      "name": "Penetrating Abdominal Trauma",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "PENETRATING_NECK_INJURY",
+      "name": "Penetrating Neck Injury",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "PERIPHERAL_VASCULAR_TRAUMA",
+      "name": "Peripheral Vascular Trauma",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "BLUNT_CEREBROVASCULAR_INJURY_BCVI",
+      "name": "Blunt Cerebrovascular Injury (BCVI)",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "DVT_PROPHYLAXIS_ADULT_TRAUMA_PATIENT",
+      "name": "DVT Prophylaxis \u2013 Adult Trauma Patient",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "DVT_PROPHYLAXIS_PEDIATRIC_TRAUMA_PATIENT",
+      "name": "DVT Prophylaxis \u2013 Pediatric Trauma Patient",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "GERIATRIC_TRAUMA_GUIDELINE",
+      "name": "Geriatric Trauma Guideline",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "GERIATRIC_HIP_FRACTURE_GUIDELINE",
+      "name": "Geriatric Hip Fracture Guideline",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "SCREENING_OF_THE_TRAUMA_PATIENT_FOR_ALCOHOL_ANDOR_DRUG_USE_SBIRT",
+      "name": "Screening of the Trauma Patient for Alcohol and/or Drug Use (SBIRT)",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "MENTAL_HEALTH_SCREENING_FOR_THE_TRAUMA_PATIENT",
+      "name": "Mental Health Screening for the Trauma Patient",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "EMERGENCY_RESUSCITATIVE_THORACOTOMY",
+      "name": "Emergency Resuscitative Thoracotomy",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "TRAUMATIC_ARREST",
+      "name": "Traumatic Arrest",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "DROWNING",
+      "name": "Drowning",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "MANAGEMENT_AND_TRIAGE_OF_BURNED_PATIENTS",
+      "name": "Management and Triage of Burned Patients",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "MANAGEMENT_OF_SOLID_ORGAN_INJURIES",
+      "name": "Management of Solid Organ Injuries",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "MANAGEMENT_OF_SEVERE_MUSCULOSKELETAL_INJURIES",
+      "name": "Management of Severe Musculoskeletal Injuries",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "MANAGEMENT_OF_NEUROSURGICAL_EMERGENCIES",
+      "name": "Management of Neurosurgical Emergencies",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "SPINAL_CLEARANCE_AND_SPINAL_INJURY_MANAGEMENT",
+      "name": "Spinal Clearance and Spinal Injury Management",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "MANAGEMENT_AND_STABILIZATION_OF_PELVIC_FRACTURES",
+      "name": "Management and Stabilization of Pelvic Fractures",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "MANAGEMENT_OF_THE_ORTHOPEDICNEUROLOGIC_SPLINT_ANDOR_BRACE",
+      "name": "Management of the Orthopedic/Neurologic Splint and/or Brace",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "RIB_FRACTURE_MANAGEMENT__2",
+      "name": "Rib Fracture Management",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "MONITORING_BASE_DEFICIT",
+      "name": "Monitoring Base Deficit",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "PENETRATING_CHEST_INJURY",
+      "name": "Penetrating Chest Injury",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "ROTEM_GUIDELINE",
+      "name": "ROTEM Guideline",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "VASCULAR_INTERVENTION_GUIDELINE",
+      "name": "Vascular Intervention Guideline",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "SUSPECTED_HANGING_GUIDELINE",
+      "name": "Suspected Hanging Guideline",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "BLOOD_AND_BLOOD_PRODUCT_TRANSFUSION",
+      "name": "Blood and Blood Product Transfusion",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "HYPOTHERMIA_PREVENTION_AND_TREATMENT",
+      "name": "Hypothermia \u2013 Prevention and Treatment",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "LABORATORY_STUDIES_NEEDED_IN_TRAUMA_RESUSCITATION",
+      "name": "Laboratory Studies Needed in Trauma Resuscitation",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "TRANSFER_OF_THE_TRAUMA_PATIENT_TO_DEACONESS_MIDTOWN",
+      "name": "Transfer of the Trauma Patient TO Deaconess Midtown",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "TRANSFER_OF_THE_TRAUMA_PATIENT_FROM_DEACONESS_MIDTOWN",
+      "name": "Transfer of the Trauma Patient FROM Deaconess Midtown",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "MANAGEMENT_AND_TRIAGE_OF_THE_OBSTETRICAL_TRAUMA_PATIENT",
+      "name": "Management and Triage of the Obstetrical Trauma Patient",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "AUTOPSY_IN_THE_TRAUMA_PATIENT",
+      "name": "Autopsy in the Trauma Patient",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "REHABILITATIVE_SERVICES_AND_DISCHARGE_PLANNING_FOR_THE_TRAUMA_PATIENT",
+      "name": "Rehabilitative Services and Discharge Planning for the Trauma Patient",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "TRAUMA_SURGEON_CONSULT",
+      "name": "Trauma Surgeon Consult",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "RESUSCITATION_ROLE_ASSIGNMENTS",
+      "name": "Resuscitation Role Assignments",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "SPECIAL_CONSIDERATION_FOR_THE_MANAGEMENT_OF_THE_PEDIATRIC_TRAUMA_PATIENT",
+      "name": "Special Consideration for the Management of the Pediatric Trauma Patient",
+      "class": "CLASS I",
+      "warnings_count": 1
+    },
+    {
+      "protocol_id": "NONACCIDENTAL_TRAUMA_NAT_IN_THE_PEDIATRIC_PATIENT",
+      "name": "Non-Accidental Trauma (NAT) in the Pediatric Patient",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "ROLE_OF_TRAUMA_SERVICES_IN_THE_ADMISSION_OR_CONSULTATION_OF_TRAUMA_PATIENTS",
+      "name": "Role of Trauma Services in the Admission or Consultation of Trauma Patients",
+      "class": "CLASS I",
+      "warnings_count": 0
+    },
+    {
+      "protocol_id": "MANAGEMENT_OF_TRANSMEDIASTINAL_GUNSHOT_WOUNDS",
+      "name": "Management of Transmediastinal Gunshot Wounds",
+      "class": "CLASS I",
+      "warnings_count": 0
+    }
+  ]
+}
