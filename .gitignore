@@ -21,3 +21,6 @@ outputs/*
 
 # Secrets
 .env
+# Deaconess source text (local only)
+rules/deaconess/Protocols.txt
+rules/deaconess/Protocols*.txt
