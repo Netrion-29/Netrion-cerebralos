@@ -26,4 +26,5 @@ rules/deaconess/Protocols.txt
 rules/deaconess/Protocols*.txt
 # NTDS Hospital Event PDFs are local-only sources
 rules/ntds/**/*.pdf
+git status
 

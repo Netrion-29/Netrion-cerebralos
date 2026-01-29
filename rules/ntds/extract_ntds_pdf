@@ -1,0 +1,235 @@
+#!/usr/bin/env python3
+"""
+CerebralOS — NTDS Extractor (RAW v1)
+
+Reads:
+  rules/ntds/<YEAR>/Hospital Events <YEAR>.pdf
+
+Writes:
+  rules/ntds/<YEAR>/ntds_events_raw_<YEAR>_v1.json
+  rules/ntds/<YEAR>/ntds_index_<YEAR>_v1.json
+
+Design goals:
+- RAW capture only (no interpretation)
+- Fail-closed: extraction continues even with warnings
+- Deterministic output for downstream structuring
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+from pathlib import Path
+from typing import Any, Dict, List
+
+from pypdf import PdfReader
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+# -------------------------
+# Helpers
+# -------------------------
+
+def clean(text: str) -> str:
+    return re.sub(r"[ \t]+", " ", text.replace("\r", "")).strip()
+
+
+def extract_pages(pdf_path: Path) -> List[Dict[str, Any]]:
+    """
+    Prefer PyMuPDF (fitz) because it handles many PDFs where pypdf fails.
+    Fallback to pypdf if fitz isn't available or errors.
+    """
+    # Try PyMuPDF first
+    try:
+        import fitz  # PyMuPDF
+
+        doc = fitz.open(str(pdf_path))
+        pages: List[Dict[str, Any]] = []
+        for i in range(doc.page_count):
+            page = doc.load_page(i)
+            raw = page.get_text("text") or ""
+            pages.append(
+                {
+                    "page": i + 1,
+                    "text": clean(raw),
+                }
+            )
+        return pages
+
+    except Exception as e:
+        print(f"⚠️  PyMuPDF extraction failed ({e}); falling back to pypdf...")
+
+    # Fallback: pypdf
+    reader = PdfReader(str(pdf_path))
+    pages: List[Dict[str, Any]] = []
+    for i, page in enumerate(reader.pages):
+        raw = page.extract_text() or ""
+        pages.append(
+            {
+                "page": i + 1,
+                "text": clean(raw),
+            }
+        )
+    return pages
+
+
+def split_candidate_blocks(pages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Very permissive block splitter.
+    Intentionally over-captures; canonicalization comes later.
+    """
+    blocks: List[Dict[str, Any]] = []
+    buffer: List[str] = []
+    start_page: int | None = None
+
+    heading_re = re.compile(r"^[A-Z][A-Z \-/()]{6,}$")
+
+    for p in pages:
+        for line in p["text"].splitlines():
+            line = line.strip()
+            if not line:
+                continue
+
+            if heading_re.match(line):
+                if buffer:
+                    blocks.append(
+                        {
+                            "start_page": start_page,
+                            "text": "\n".join(buffer),
+                        }
+                    )
+                    buffer = []
+                start_page = p["page"]
+                buffer.append(line)
+            else:
+                buffer.append(line)
+
+    if buffer:
+        blocks.append(
+            {
+                "start_page": start_page,
+                "text": "\n".join(buffer),
+            }
+        )
+
+    return blocks
+
+
+# -------------------------
+# Main
+# -------------------------
+
+def run(year: int) -> int:
+    pdf_path = (
+        REPO_ROOT
+        / "rules"
+        / "ntds"
+        / str(year)
+        / f"Hospital Events {year}.pdf"
+    )
+    out_raw = (
+        REPO_ROOT
+        / "rules"
+        / "ntds"
+        / str(year)
+        / f"ntds_events_raw_{year}_v1.json"
+    )
+    out_index = (
+        REPO_ROOT
+        / "rules"
+        / "ntds"
+        / str(year)
+        / f"ntds_index_{year}_v1.json"
+    )
+
+    print(f"\nCerebralOS — NTDS Extract (RAW v1) — {year}")
+    print("Reading:", pdf_path)
+
+    if not pdf_path.exists():
+        raise SystemExit(f"Missing PDF: {pdf_path}")
+
+    pages = extract_pages(pdf_path)
+    print("Pages extracted:", len(pages))
+
+    nonempty = sum(1 for p in pages if p["text"])
+    print("Pages with non-empty text:", nonempty)
+
+    blocks = split_candidate_blocks(pages)
+    print("Candidate blocks found:", len(blocks))
+
+    events: List[Dict[str, Any]] = []
+    index: List[Dict[str, Any]] = []
+
+    for i, b in enumerate(blocks, start=1):
+        warnings = []
+        if not b["text"] or len(b["text"]) < 80:
+            warnings.append("very_short_block")
+
+        events.append(
+            {
+                "event_id": f"RAW_BLOCK_{i:03d}",
+                "start_page": b["start_page"],
+                "raw_text": b["text"],
+                "extraction_warnings": warnings,
+            }
+        )
+
+        index.append(
+            {
+                "event_id": f"RAW_BLOCK_{i:03d}",
+                "start_page": b["start_page"],
+                "warnings_count": len(warnings),
+            }
+        )
+
+    payload = {
+        "meta": {
+            "system": "Netrion Systems",
+            "product": "CerebralOS",
+            "ruleset": "NTDS Hospital Events (RAW)",
+            "year": year,
+            "version": "1.0.0",
+            "source_file": str(pdf_path),
+            "event_count": len(events),
+        },
+        "events": events,
+    }
+
+    out_raw.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    out_index.write_text(
+        json.dumps(
+            {
+                "meta": {
+                    "version": "1.0.0",
+                    "event_count": len(index),
+                },
+                "events": index,
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    print(f"OK ✅ Wrote RAW:   {out_raw}")
+    print(f"OK ✅ Wrote INDEX: {out_index}")
+    print("Events extracted:", len(events))
+
+    warned = [e for e in events if e["extraction_warnings"]]
+    if warned:
+        print(f"⚠️  Events with warnings: {len(warned)} (review later; extraction still succeeded)")
+
+    return 0
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--year", type=int, required=True)
+    args = ap.parse_args()
+    return run(args.year)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+

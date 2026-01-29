@@ -1,0 +1,244 @@
+{
+  "meta": {
+    "system": "Netrion Systems",
+    "product": "CerebralOS",
+    "ruleset": "NTDS Hospital Events (STRUCTURED)",
+    "year": 2025,
+    "version": "1.0.0",
+    "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2025/ntds_events_raw_2025_v5.json",
+    "event_count": 21
+  },
+  "events": [
+    {
+      "event_id": 1,
+      "canonical_name": "Acute Kidney Injury (AKI)",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 1,
+        "end": 4
+      }
+    },
+    {
+      "event_id": 2,
+      "canonical_name": "Acute Respiratory Distress Syndrome (ARDS)",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 4,
+        "end": 7
+      }
+    },
+    {
+      "event_id": 3,
+      "canonical_name": "Alcohol Withdrawal Syndrome",
+      "warnings_count": 2,
+      "has_description": true,
+      "has_element_values": false,
+      "pdf_pages": {
+        "start": 7,
+        "end": 7
+      }
+    },
+    {
+      "event_id": 4,
+      "canonical_name": "Cardiac Arrest With CPR",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 9,
+        "end": 11
+      }
+    },
+    {
+      "event_id": 5,
+      "canonical_name": "Catheter-Associated Urinary Tract Infection (CAUTI)",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 11,
+        "end": 15
+      }
+    },
+    {
+      "event_id": 6,
+      "canonical_name": "Central Line-Associated Bloodstream Infection (CLABSI)",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 15,
+        "end": 20
+      }
+    },
+    {
+      "event_id": 7,
+      "canonical_name": "Deep Surgical Site Infection (Deep SSI)",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 20,
+        "end": 25
+      }
+    },
+    {
+      "event_id": 8,
+      "canonical_name": "Deep Vein Thrombosis (DVT)",
+      "warnings_count": 5,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 25,
+        "end": 29
+      }
+    },
+    {
+      "event_id": 9,
+      "canonical_name": "Delirium",
+      "warnings_count": 1,
+      "has_description": false,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 7,
+        "end": 9
+      }
+    },
+    {
+      "event_id": 10,
+      "canonical_name": "Myocardial Infarction (MI)",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 29,
+        "end": 31
+      }
+    },
+    {
+      "event_id": 11,
+      "canonical_name": "Organ/Space Surgical Site Infection",
+      "warnings_count": 2,
+      "has_description": true,
+      "has_element_values": false,
+      "pdf_pages": {
+        "start": 31,
+        "end": 32
+      }
+    },
+    {
+      "event_id": 12,
+      "canonical_name": "Osteomyelitis",
+      "warnings_count": 4,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 32,
+        "end": 37
+      }
+    },
+    {
+      "event_id": 13,
+      "canonical_name": "Pressure Ulcer",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 37,
+        "end": 39
+      }
+    },
+    {
+      "event_id": 14,
+      "canonical_name": "Pulmonary Embolism (PE)",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 39,
+        "end": 41
+      }
+    },
+    {
+      "event_id": 15,
+      "canonical_name": "Severe Sepsis",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 41,
+        "end": 43
+      }
+    },
+    {
+      "event_id": 16,
+      "canonical_name": "Stroke/CVA",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 43,
+        "end": 47
+      }
+    },
+    {
+      "event_id": 17,
+      "canonical_name": "Superficial Incisional Surgical Site Infection",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 47,
+        "end": 51
+      }
+    },
+    {
+      "event_id": 18,
+      "canonical_name": "Unplanned Admission to the ICU",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 51,
+        "end": 53
+      }
+    },
+    {
+      "event_id": 19,
+      "canonical_name": "Unplanned Intubation",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 53,
+        "end": 55
+      }
+    },
+    {
+      "event_id": 20,
+      "canonical_name": "Unplanned Visit to the Operating Room",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 55,
+        "end": 57
+      }
+    },
+    {
+      "event_id": 21,
+      "canonical_name": "Ventilator-Associated Pneumonia (VAP)",
+      "warnings_count": 0,
+      "has_description": true,
+      "has_element_values": true,
+      "pdf_pages": {
+        "start": 57,
+        "end": 71
+      }
+    }
+  ]
+}

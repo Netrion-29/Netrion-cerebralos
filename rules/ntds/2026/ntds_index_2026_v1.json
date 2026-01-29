@@ -1,0 +1,6773 @@
+{
+  "meta": {
+    "system": "Netrion Systems",
+    "product": "CerebralOS",
+    "ruleset": "NTDS Hospital Events (RAW)",
+    "year": 2026,
+    "version": "1.0.0",
+    "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
+    "event_count": 845
+  },
+  "events": [
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_141",
+      "event_name": "HOSPITAL EVENTS PAGE 141",
+      "pages": [
+        2
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ACUTE_KIDNEY_INJURY_AKI",
+      "event_name": "ACUTE KIDNEY INJURY (AKI)",
+      "pages": [
+        2
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "STAGE_SERUM_CREATININE_OR_URINE_OUTPUT",
+      "event_name": "STAGE SERUM CREATININE OR URINE OUTPUT",
+      "pages": [
+        2
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "OR_OR",
+      "event_name": "OR OR",
+      "pages": [
+        2
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "INCREASE_IN_SERUM_CREATININE_TO",
+      "event_name": "Increase in serum creatinine to",
+      "pages": [
+        2
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "INITIATION_OF_RENAL_REPLACEMENT",
+      "event_name": "Initiation of renal replacement",
+      "pages": [
+        2
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        2
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        2
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_142",
+      "event_name": "HOSPITAL EVENTS PAGE 142",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ACUTE_KIDNEY_INJURY_AKI__2",
+      "event_name": "Acute Kidney Injury (AKI)",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_AKI_STAGE_3_BEGIN",
+      "event_name": "Did the onset of AKI Stage 3 begin",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_AN_INCREASE",
+      "event_name": "Did the patient have an increase",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THERE_INITIATION_OF_RENAL",
+      "event_name": "Was there initiation of renal",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT",
+      "event_name": "Report",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE",
+      "event_name": "Element Value",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__2",
+      "event_name": "Report",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__2",
+      "event_name": "Element Value",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "START_IS_THERE_A_DIAGNOSIS_OF_AN_ACUTE",
+      "event_name": "START Is there a diagnosis of an acute",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_NTDS_DEFINITION_IS_CONSISTENT_WITH",
+      "event_name": "The NTDS definition is consistent with",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "PLEASE_REFER_TO_THAT_OR_THE_TPM_TMD",
+      "event_name": "Please refer to that or the TPM/TMD",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "EXCLUDE_PATIENTS_WITH_RENAL_FAILURE",
+      "event_name": "Exclude patients with renal failure",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__3",
+      "event_name": "Report",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__3",
+      "event_name": "Element Value",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_EXPERIENCE_ANURIA",
+      "event_name": "Did the patient experience anuria",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO",
+      "event_name": "YES NO",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__2",
+      "event_name": "YES NO",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__3",
+      "event_name": "YES NO",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__4",
+      "event_name": "YES NO",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__5",
+      "event_name": "YES NO",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__6",
+      "event_name": "YES NO",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__7",
+      "event_name": "YES NO",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__4",
+      "event_name": "Report",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__4",
+      "event_name": "Element Value",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__5",
+      "event_name": "Report",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__5",
+      "event_name": "Element Value",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__6",
+      "event_name": "Report",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__6",
+      "event_name": "Element Value",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__7",
+      "event_name": "Report",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__7",
+      "event_name": "Element Value",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__8",
+      "event_name": "Report",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__8",
+      "event_name": "Element Value",
+      "pages": [
+        3
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_143",
+      "event_name": "HOSPITAL EVENTS PAGE 143",
+      "pages": [
+        4
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ACUTE_RESPIRATORY_DISTRESS_SYNDROME_ARDS",
+      "event_name": "ACUTE RESPIRATORY DISTRESS SYNDROME (ARDS)",
+      "pages": [
+        4
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__2",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        4
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__2",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        4
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_144",
+      "event_name": "HOSPITAL EVENTS PAGE 144",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ACUTE_RESPIRATORY_DISTRESS_SYNDROME_ARDS__2",
+      "event_name": "Acute Respiratory Distress Syndrome (ARDS)",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN",
+      "event_name": "Did the onset of symptoms begin",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_SYMPTOMS_BEGIN_WITHIN_1_WEEK",
+      "event_name": "Did the symptoms begin within 1 week",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_CHEST_IMAGING_REVEAL_BILATERAL",
+      "event_name": "Did chest imaging reveal bilateral",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_RESPIRATORY_FAILURE_FULLY",
+      "event_name": "Was the respiratory failure fully",
+      "pages": [
+        5
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__9",
+      "event_name": "Report",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__9",
+      "event_name": "Element Value",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__10",
+      "event_name": "Report",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__10",
+      "event_name": "Element Value",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "IS_THERE_A_DIAGNOSIS_OF_AN_ACUTE",
+      "event_name": "Is there a diagnosis of an acute",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__8",
+      "event_name": "YES NO",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_NTDS_DEFINITION_OF_ARDS_IS",
+      "event_name": "The NTDS definition of ARDS is",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "EXCLUDE_IF_ARDS_WAS_PRESENT_ON",
+      "event_name": "Exclude if ARDS was present on",
+      "pages": [
+        5
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "YES_NO__9",
+      "event_name": "YES NO",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__10",
+      "event_name": "YES NO",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__11",
+      "event_name": "YES NO",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__12",
+      "event_name": "YES NO",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__11",
+      "event_name": "Report",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__11",
+      "event_name": "Element Value",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__12",
+      "event_name": "Report",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__12",
+      "event_name": "Element Value",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__13",
+      "event_name": "Report",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__13",
+      "event_name": "Element Value",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__14",
+      "event_name": "Report",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__14",
+      "event_name": "Element Value",
+      "pages": [
+        5
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_145",
+      "event_name": "HOSPITAL EVENTS PAGE 145",
+      "pages": [
+        6
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ALCOHOL_WITHDRAWAL_SYNDROME",
+      "event_name": "ALCOHOL WITHDRAWAL SYNDROME",
+      "pages": [
+        6
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__3",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        6
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__3",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        6
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_146",
+      "event_name": "HOSPITAL EVENTS PAGE 146",
+      "pages": [
+        7
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ALCOHOL_WITHDRAWAL_SYNDROME__2",
+      "event_name": "Alcohol Withdrawal Syndrome",
+      "pages": [
+        7
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN_AFTER",
+      "event_name": "Did the onset of symptoms begin after",
+      "pages": [
+        7
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__15",
+      "event_name": "Report",
+      "pages": [
+        7
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__15",
+      "event_name": "Element Value",
+      "pages": [
+        7
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__16",
+      "event_name": "Report",
+      "pages": [
+        7
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__16",
+      "event_name": "Element Value",
+      "pages": [
+        7
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "NOTE_THAT_A_DIAGNOSIS_OF_ALCOHOL",
+      "event_name": "Note that a diagnosis of alcohol",
+      "pages": [
+        7
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__17",
+      "event_name": "Report",
+      "pages": [
+        7
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__17",
+      "event_name": "Element Value",
+      "pages": [
+        7
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "IS_THERE_DOCUMENTATION_THE_PATIENT",
+      "event_name": "Is there documentation the patient",
+      "pages": [
+        7
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "YES_NO__13",
+      "event_name": "YES NO",
+      "pages": [
+        7
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__14",
+      "event_name": "YES NO",
+      "pages": [
+        7
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_147",
+      "event_name": "HOSPITAL EVENTS PAGE 147",
+      "pages": [
+        8
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CARDIAC_ARREST_WITH_CPR",
+      "event_name": "CARDIAC ARREST WITH CPR",
+      "pages": [
+        8
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__4",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        8
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__4",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        8
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_148",
+      "event_name": "HOSPITAL EVENTS PAGE 148",
+      "pages": [
+        9
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CARDIAC_ARREST_WITH_CPR__2",
+      "event_name": "Cardiac Arrest with CPR",
+      "pages": [
+        9
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "IS_THERE_DOCUMENTATION_THE_PATIENT__2",
+      "event_name": "Is there documentation the patient",
+      "pages": [
+        9
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_RECEIVE_COMPRESSIONS",
+      "event_name": "Did the patient receive compressions",
+      "pages": [
+        9
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__18",
+      "event_name": "Report",
+      "pages": [
+        9
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__18",
+      "event_name": "Element Value",
+      "pages": [
+        9
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__19",
+      "event_name": "Report",
+      "pages": [
+        9
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__19",
+      "event_name": "Element Value",
+      "pages": [
+        9
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CARDIAC_ARREST_IS_THE_SUDDEN_CESSATION",
+      "event_name": "Cardiac arrest is the sudden cessation",
+      "pages": [
+        9
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_PATIENT_BECOMES_UNRESPONSIVE",
+      "event_name": "The patient becomes unresponsive",
+      "pages": [
+        9
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "EXCLUDE_PATIENTS_WHOSE_ONLY_EPISODE",
+      "event_name": "EXCLUDE patients whose ONLY episode",
+      "pages": [
+        9
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__20",
+      "event_name": "Report",
+      "pages": [
+        9
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__20",
+      "event_name": "Element Value",
+      "pages": [
+        9
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__15",
+      "event_name": "YES NO",
+      "pages": [
+        9
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__16",
+      "event_name": "YES NO",
+      "pages": [
+        9
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_149",
+      "event_name": "HOSPITAL EVENTS PAGE 149",
+      "pages": [
+        10
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CATHETER_ASSOCIATED_URINARY_TRACT_INFECTION_CAUTI",
+      "event_name": "CATHETER-ASSOCIATED URINARY TRACT INFECTION (CAUTI)",
+      "pages": [
+        10
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_150",
+      "event_name": "HOSPITAL EVENTS PAGE 150",
+      "pages": [
+        11
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__5",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        11
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__5",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        11
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_151",
+      "event_name": "HOSPITAL EVENTS PAGE 151",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CATHETER_ASSOCIATED_URINARY_TRACT_INFECTION_CAUTI_SUTI_1A",
+      "event_name": "Catheter-Associated Urinary Tract Infection (CAUTI) SUTI 1a",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "START_IS_THERE_A_DIAGNOSIS_OF_UTI",
+      "event_name": "START Is there a diagnosis of UTI",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN__2",
+      "event_name": "Did the onset of symptoms begin",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_AN_INDWELLING",
+      "event_name": "Did the patient have an indwelling",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_INDWELLING_URINARY",
+      "event_name": "Was the indwelling urinary",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__21",
+      "event_name": "Report",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__21",
+      "event_name": "Element Value",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__17",
+      "event_name": "YES NO",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__18",
+      "event_name": "YES NO",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__19",
+      "event_name": "YES NO",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_NTDS_DEFINITION_IS_CONSISTENT_WITH__2",
+      "event_name": "The NTDS definition is consistent with",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "IF_INFORMATION_NOT_CONTAINED_IN_THE",
+      "event_name": "If information not contained in the",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "NTDS_DEFINITION_IS_NEEDED_PLEASE_REFER",
+      "event_name": "NTDS definition is needed, please refer",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_DATE_OF_EVENT_IS_THE_DATE_THE_FIRST",
+      "event_name": "The Date of Event is the date the first",
+      "pages": [
+        12
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__22",
+      "event_name": "Report",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__22",
+      "event_name": "Element Value",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__23",
+      "event_name": "Report",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__23",
+      "event_name": "Element Value",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__24",
+      "event_name": "Report",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__24",
+      "event_name": "Element Value",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__20",
+      "event_name": "YES NO",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_INDWELLING_URINARY__2",
+      "event_name": "Was the indwelling urinary",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__21",
+      "event_name": "YES NO",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CONTINUE_TO_PAGE_2",
+      "event_name": "Continue to page 2",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__25",
+      "event_name": "Report",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__25",
+      "event_name": "Element Value",
+      "pages": [
+        12
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_152",
+      "event_name": "HOSPITAL EVENTS PAGE 152",
+      "pages": [
+        13
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CATHETER_ASSOCIATED_URINARY_TRACT_INFECTION_CAUTI_SUTI_1A__2",
+      "event_name": "Catheter-Associated Urinary Tract Infection (CAUTI) SUTI 1a",
+      "pages": [
+        13
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_EXPERIENCE_ANY_OF_THE_FOLLOWING_SIGNS",
+      "event_name": "Did the patient experience any of the following signs/",
+      "pages": [
+        13
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__26",
+      "event_name": "Report",
+      "pages": [
+        13
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__26",
+      "event_name": "Element Value",
+      "pages": [
+        13
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_A_URINE_CULTURE",
+      "event_name": "Did the patient have a urine culture",
+      "pages": [
+        13
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__22",
+      "event_name": "YES NO",
+      "pages": [
+        13
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__27",
+      "event_name": "Report",
+      "pages": [
+        13
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__27",
+      "event_name": "Element Value",
+      "pages": [
+        13
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__28",
+      "event_name": "Report",
+      "pages": [
+        13
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__28",
+      "event_name": "Element Value",
+      "pages": [
+        13
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__23",
+      "event_name": "YES NO",
+      "pages": [
+        13
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_153",
+      "event_name": "HOSPITAL EVENTS PAGE 153",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CATHETER_ASSOCIATED_URINARY_TRACT_INFECTION_CAUTI_SUTI_2",
+      "event_name": "Catheter-Associated Urinary Tract Infection (CAUTI) SUTI 2",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "START_IS_THERE_A_DIAGNOSIS_OF_UTI__2",
+      "event_name": "START Is there a diagnosis of UTI",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN__3",
+      "event_name": "Did the onset of symptoms begin",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_AN_INDWELLING__2",
+      "event_name": "Did the patient have an indwelling",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_INDWELLING_URINARY__3",
+      "event_name": "Was the indwelling urinary",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__29",
+      "event_name": "Report",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__29",
+      "event_name": "Element Value",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__24",
+      "event_name": "YES NO",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__25",
+      "event_name": "YES NO",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__26",
+      "event_name": "YES NO",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__27",
+      "event_name": "YES NO",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__30",
+      "event_name": "Report",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__30",
+      "event_name": "Element Value",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__31",
+      "event_name": "Report",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__31",
+      "event_name": "Element Value",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__32",
+      "event_name": "Report",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__32",
+      "event_name": "Element Value",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_NTDS_DEFINITION_IS_CONSISTENT_WITH__3",
+      "event_name": "The NTDS definition is consistent with",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "IF_INFORMATION_NOT_CONTAINED_IN_THE__2",
+      "event_name": "If information not contained in the",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "NTDS_DEFINITION_IS_NEEDED_PLEASE_REFER__2",
+      "event_name": "NTDS definition is needed, please refer",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_DATE_OF_EVENT_IS_THE_DATE_THE_FIRST__2",
+      "event_name": "The Date of Event is the date the first",
+      "pages": [
+        14
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "WAS_THE_INDWELLING_URINARY__4",
+      "event_name": "Was the indwelling urinary",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__28",
+      "event_name": "YES NO",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CONTINUE_TO_PAGE_2__2",
+      "event_name": "Continue to page 2",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__33",
+      "event_name": "Report",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__33",
+      "event_name": "Element Value",
+      "pages": [
+        14
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_154",
+      "event_name": "HOSPITAL EVENTS PAGE 154",
+      "pages": [
+        15
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CATHETER_ASSOCIATED_URINARY_TRACT_INFECTION_CAUTI_SUTI_2__2",
+      "event_name": "Catheter-Associated Urinary Tract Infection (CAUTI) SUTI 2",
+      "pages": [
+        15
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__34",
+      "event_name": "Report",
+      "pages": [
+        15
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__34",
+      "event_name": "Element Value",
+      "pages": [
+        15
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_A_URINE_CULTURE_WITH",
+      "event_name": "Did the patient have a urine culture with",
+      "pages": [
+        15
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__29",
+      "event_name": "YES NO",
+      "pages": [
+        15
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__30",
+      "event_name": "YES NO",
+      "pages": [
+        15
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__35",
+      "event_name": "Report",
+      "pages": [
+        15
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__35",
+      "event_name": "Element Value",
+      "pages": [
+        15
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__36",
+      "event_name": "Report",
+      "pages": [
+        15
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__36",
+      "event_name": "Element Value",
+      "pages": [
+        15
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_155",
+      "event_name": "HOSPITAL EVENTS PAGE 155",
+      "pages": [
+        16
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CENTRAL_LINE_ASSOCIATED_BLOODSTREAM_INFECTION_CLABSI",
+      "event_name": "CENTRAL LINE-ASSOCIATED BLOODSTREAM INFECTION (CLABSI)",
+      "pages": [
+        16
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_156",
+      "event_name": "HOSPITAL EVENTS PAGE 156",
+      "pages": [
+        17
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__6",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        17
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__6",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        17
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_157",
+      "event_name": "HOSPITAL EVENTS PAGE 157",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "IS_THERE_A_DIAGNOSIS_OF_CLABSI",
+      "event_name": "Is there a diagnosis of CLABSI",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN_AFTER__2",
+      "event_name": "Did the onset of symptoms begin after",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "IS_THERE_LABORATORY_CONFIRMATION_OF_A",
+      "event_name": "Is there laboratory confirmation of a",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_CENTRAL_LINE_CL_OR_UMBILICAL",
+      "event_name": "Was the central line (CL) or umbilical",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__37",
+      "event_name": "Report",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__37",
+      "event_name": "Element Value",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_DATE_OF_EVENT_IS_THE_DATE_THE_FIRST_ELEMENT_USED_TO_MEET_AN_NHSN",
+      "event_name": "The Date of Event is the date the first element used to meet an NHSN",
+      "pages": [
+        18
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "THE_NTDS_DEFINITION_IS_CONSISTENT_WITH_THE_JANUARY_2016_CDC_CLABSI",
+      "event_name": "The NTDS definition is consistent with the January 2016 CDC CLABSI",
+      "pages": [
+        18
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "CONTINUE_TO_PAGE_2__3",
+      "event_name": "Continue to page 2",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__31",
+      "event_name": "YES NO",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__32",
+      "event_name": "YES NO",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__33",
+      "event_name": "YES NO",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__34",
+      "event_name": "YES NO",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_LINE_IN_PLACE_ON_THE_DATE",
+      "event_name": "Was the line in place on the date",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__35",
+      "event_name": "YES NO",
+      "pages": [
+        18
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__38",
+      "event_name": "Report",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__38",
+      "event_name": "Element Value",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__39",
+      "event_name": "Report",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__39",
+      "event_name": "Element Value",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__40",
+      "event_name": "Report",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__40",
+      "event_name": "Element Value",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__41",
+      "event_name": "Report",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__41",
+      "event_name": "Element Value",
+      "pages": [
+        18
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_158",
+      "event_name": "HOSPITAL EVENTS PAGE 158",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__36",
+      "event_name": "YES NO",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_ORGANISM_S_IDENTIFIED_IN",
+      "event_name": "Did the patient have organism(s) identified in",
+      "pages": [
+        19
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__42",
+      "event_name": "Report",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__42",
+      "event_name": "Element Value",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "LCBI_2",
+      "event_name": "LCBI 2",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__37",
+      "event_name": "YES NO",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE",
+      "event_name": "Did the patient have",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__38",
+      "event_name": "YES NO",
+      "pages": [
+        19
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "CONTINUE_TO_PAGE_3",
+      "event_name": "Continue to page 3",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_AT_LEAST_ONE_OF",
+      "event_name": "Did the patient have at least one of",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "LCBI_3",
+      "event_name": "LCBI 3",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__39",
+      "event_name": "YES NO",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "LCBI_3__2",
+      "event_name": "LCBI 3",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CRITERION_ELEMENTS_MUST_OCCUR_WITHIN",
+      "event_name": "Criterion elements must occur within",
+      "pages": [
+        19
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__43",
+      "event_name": "Report",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__43",
+      "event_name": "Element Value",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__44",
+      "event_name": "Report",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__44",
+      "event_name": "Element Value",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__45",
+      "event_name": "Report",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__45",
+      "event_name": "Element Value",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__40",
+      "event_name": "YES NO",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__41",
+      "event_name": "YES NO",
+      "pages": [
+        19
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_159",
+      "event_name": "HOSPITAL EVENTS PAGE 159",
+      "pages": [
+        20
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_ORGANISMS_S",
+      "event_name": "Did the patient have organisms(s)",
+      "pages": [
+        20
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__42",
+      "event_name": "YES NO",
+      "pages": [
+        20
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WERE_THE_SAME_COMMON_COMMENSAL",
+      "event_name": "Were the same common commensal",
+      "pages": [
+        20
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__46",
+      "event_name": "Report",
+      "pages": [
+        20
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__46",
+      "event_name": "Element Value",
+      "pages": [
+        20
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__43",
+      "event_name": "YES NO",
+      "pages": [
+        20
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__47",
+      "event_name": "Report",
+      "pages": [
+        20
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__47",
+      "event_name": "Element Value",
+      "pages": [
+        20
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__48",
+      "event_name": "Report",
+      "pages": [
+        20
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__48",
+      "event_name": "Element Value",
+      "pages": [
+        20
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CRITERION_ELEMENTS_MUST_OCCUR_WITHIN__2",
+      "event_name": "Criterion elements must occur within",
+      "pages": [
+        20
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_160",
+      "event_name": "HOSPITAL EVENTS PAGE 160",
+      "pages": [
+        21
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DEEP_SURGICAL_SITE_INFECTION",
+      "event_name": "DEEP SURGICAL SITE INFECTION",
+      "pages": [
+        21
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_161",
+      "event_name": "HOSPITAL EVENTS PAGE 161",
+      "pages": [
+        22
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "CODE_OPERATIVE_PROCEDURE_CODE_OPERATIVE_PROCEDURE",
+      "event_name": "Code Operative Procedure Code Operative Procedure",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "AAA_ABDOMINAL_AORTIC_ANEURYSM_REPAIR_LAM_LAMINECTOMY",
+      "event_name": "AAA Abdominal aortic aneurysm repair LAM Laminectomy",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "AMP_LIMB_AMPUTATION_LTP_LIVER_TRANSPLANT",
+      "event_name": "AMP Limb amputation LTP Liver transplant",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "APPY_APPENDIX_SURGERY_NECK_NECK_SURGERY",
+      "event_name": "APPY Appendix surgery NECK Neck surgery",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "AVSD_SHUNT_FOR_DIALYSIS_NEPH_KIDNEY_SURGERY",
+      "event_name": "AVSD Shunt for dialysis NEPH Kidney surgery",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "BILI_BILE_DUCT_LIVER_OR_PANCREATIC_SURGERY_OVRY_OVARIAN_SURGERY",
+      "event_name": "BILI Bile duct, liver or pancreatic surgery OVRY Ovarian surgery",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CEA_CAROTID_ENDARTERECTOMY_PRST_PROSTATE_SURGERY",
+      "event_name": "CEA Carotid endarterectomy PRST Prostate surgery",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CHOL_GALLBLADDER_SURGERY_REC_RECTAL_SURGERY",
+      "event_name": "CHOL Gallbladder surgery REC Rectal surgery",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "COLO_COLON_SURGERY_SB_SMALL_BOWEL_SURGERY",
+      "event_name": "COLO Colon surgery SB Small bowel surgery",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CSEC_CESAREAN_SECTION_SPLE_SPLEEN_SURGERY",
+      "event_name": "CSEC Cesarean section SPLE Spleen surgery",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "GAST_GASTRIC_SURGERY_THOR_THORACIC_SURGERY",
+      "event_name": "GAST Gastric surgery THOR Thoracic surgery",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HTP_HEART_TRANSPLANT_THUR_THYROID_AND_OR_PARATHYROID_SURGERY",
+      "event_name": "HTP Heart transplant THUR Thyroid and/or parathyroid surgery",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HYST_ABDOMINAL_HYSTERECTOMY_VHYS_VAGINAL_HYSTERECTOMY",
+      "event_name": "HYST Abdominal hysterectomy VHYS Vaginal hysterectomy",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "KTP_KIDNEY_TRANSPLANT_XLAP_EXPLORATORY_LAPAROTOMY",
+      "event_name": "KTP Kidney transplant XLAP Exploratory Laparotomy",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CODE_OPERATIVE_PROCEDURE",
+      "event_name": "Code Operative Procedure",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "BRST_BREAST_SURGERY",
+      "event_name": "BRST Breast surgery",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CARD_CARDIAC_SURGERY",
+      "event_name": "CARD Cardiac surgery",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CBGB_CORONARY_ARTERY_BYPASS_GRAFT_WITH_BOTH_CHEST_AND_DONOR_SITE_INCISIONS",
+      "event_name": "CBGB Coronary artery bypass graft with both chest and donor site incisions",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CBGC_CORONARY_ARTERY_BYPASS_GRAFT_WITH_CHEST_INCISION_ONLY",
+      "event_name": "CBGC Coronary artery bypass graft with chest incision only",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CRAN_CRANIOTOMY",
+      "event_name": "CRAN Craniotomy",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "FUSN_SPINAL_FUSION",
+      "event_name": "FUSN Spinal fusion",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "FX_OPEN_REDUCTION_OF_FRACTURE",
+      "event_name": "FX Open reduction of fracture",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HER_HERNIORRHAPHY",
+      "event_name": "HER Herniorrhaphy",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HPRO_HIP_PROSTHESIS",
+      "event_name": "HPRO Hip prosthesis",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "KPRO_KNEE_PROSTHESIS",
+      "event_name": "KPRO Knee prosthesis",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "PACE_PACEMAKER_SURGERY",
+      "event_name": "PACE Pacemaker surgery",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "PVBY_PERIPHERAL_VASCULAR_BYPASS_SURGERY",
+      "event_name": "PVBY Peripheral vascular bypass surgery",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "VSHN_VENTRICULAR_SHUNT",
+      "event_name": "VSHN Ventricular shunt",
+      "pages": [
+        22
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__7",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        22
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_162",
+      "event_name": "HOSPITAL EVENTS PAGE 162",
+      "pages": [
+        23
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__7",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        23
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_163",
+      "event_name": "HOSPITAL EVENTS PAGE 163",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "START_IS_THERE_A_DIAGNOSIS_OF_A_SURGICAL",
+      "event_name": "START Is there a diagnosis of a surgical",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN__4",
+      "event_name": "Did the onset of symptoms begin",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_SSI_OCCUR_WITHIN_30_OR_90",
+      "event_name": "Did the SSI occur within 30 or 90",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_SSI_INVOLVE_DEEP_SOFT_TISSUES",
+      "event_name": "Did the SSI involve deep soft tissues",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__49",
+      "event_name": "Report",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__49",
+      "event_name": "Element Value",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__50",
+      "event_name": "Report",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__50",
+      "event_name": "Element Value",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__51",
+      "event_name": "Report",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__51",
+      "event_name": "Element Value",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__52",
+      "event_name": "Report",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__52",
+      "event_name": "Element Value",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_NTDS_DEFINITION_IS_CONSISTENT_WITH__4",
+      "event_name": "The NTDS definition is consistent with",
+      "pages": [
+        24
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "CONTINUE_TO_PAGE_2__4",
+      "event_name": "Continue to page 2",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__44",
+      "event_name": "YES NO",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__45",
+      "event_name": "YES NO",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__46",
+      "event_name": "YES NO",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__47",
+      "event_name": "YES NO",
+      "pages": [
+        24
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_164",
+      "event_name": "HOSPITAL EVENTS PAGE 164",
+      "pages": [
+        25
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ORGANISM_S_IDENTIFIED_FROM_THE_DEEP_SOFT_TISSUES_OF_THE_INCISION_BY",
+      "event_name": "Organism(s) identified from the deep soft tissues of the incision by",
+      "pages": [
+        25
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "A_CULTURE_OR_NON_CULTURE_BASED_TEST_FROM_THE_DEEP_SOFT_TISSUES_OF_THE",
+      "event_name": "A culture or non-culture based test from the deep soft tissues of the",
+      "pages": [
+        25
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "WAS_THERE_DOCUMENTED",
+      "event_name": "Was there documented",
+      "pages": [
+        25
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__48",
+      "event_name": "YES NO",
+      "pages": [
+        25
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__53",
+      "event_name": "Report",
+      "pages": [
+        25
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__53",
+      "event_name": "Element Value",
+      "pages": [
+        25
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__49",
+      "event_name": "YES NO",
+      "pages": [
+        25
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__54",
+      "event_name": "Report",
+      "pages": [
+        25
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__54",
+      "event_name": "Element Value",
+      "pages": [
+        25
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__55",
+      "event_name": "Report",
+      "pages": [
+        25
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__55",
+      "event_name": "Element Value",
+      "pages": [
+        25
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_TERM_ATTENDING_PHYSICIAN_FOR_THE",
+      "event_name": "The term attending physician for the",
+      "pages": [
+        25
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "SSI_CRITERIA_MAY_BE_INTERPRETED_TO_MEAN",
+      "event_name": "SSI criteria may be interpreted to mean",
+      "pages": [
+        25
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_165",
+      "event_name": "HOSPITAL EVENTS PAGE 165",
+      "pages": [
+        26
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DEEP_VEIN_THROMBOSIS_DVT",
+      "event_name": "DEEP VEIN THROMBOSIS (DVT)",
+      "pages": [
+        26
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__8",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        26
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__8",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        26
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_166",
+      "event_name": "HOSPITAL EVENTS PAGE 166",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DEEP_VEIN_THROMBOSIS_DVT__2",
+      "event_name": "Deep Vein Thrombosis (DVT)",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "START_IS_THERE_A_DIAGNOSIS_OF_A_DVT",
+      "event_name": "START Is there a diagnosis of a DVT",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN_AFTER__3",
+      "event_name": "Did the onset of symptoms begin after",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__56",
+      "event_name": "Report",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__56",
+      "event_name": "Element Value",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__57",
+      "event_name": "Report",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__57",
+      "event_name": "Element Value",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_DVT_TREATED_WITH",
+      "event_name": "Was the DVT treated with",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__58",
+      "event_name": "Report",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__58",
+      "event_name": "Element Value",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__59",
+      "event_name": "Report",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__59",
+      "event_name": "Element Value",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__50",
+      "event_name": "YES NO",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__51",
+      "event_name": "YES NO",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__52",
+      "event_name": "YES NO",
+      "pages": [
+        27
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_167",
+      "event_name": "HOSPITAL EVENTS PAGE 167",
+      "pages": [
+        28
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DELIRIUM",
+      "event_name": "DELIRIUM",
+      "pages": [
+        28
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__9",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        28
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__9",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        28
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_168",
+      "event_name": "HOSPITAL EVENTS PAGE 168",
+      "pages": [
+        29
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DELIRIUM__2",
+      "event_name": "Delirium",
+      "pages": [
+        29
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN_AFTER__4",
+      "event_name": "Did the onset of symptoms begin after",
+      "pages": [
+        29
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__60",
+      "event_name": "Report",
+      "pages": [
+        29
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__60",
+      "event_name": "Element Value",
+      "pages": [
+        29
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__61",
+      "event_name": "Report",
+      "pages": [
+        29
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__61",
+      "event_name": "Element Value",
+      "pages": [
+        29
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DELIRIUM_CAN_OFTEN_BE_TRACED_TO_ONE",
+      "event_name": "Delirium can often be traced to one",
+      "pages": [
+        29
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__62",
+      "event_name": "Report",
+      "pages": [
+        29
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__62",
+      "event_name": "Element Value",
+      "pages": [
+        29
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_DELIRIUM_CAUSED_BY_ALCOHOL",
+      "event_name": "Was the delirium caused by alcohol",
+      "pages": [
+        29
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__53",
+      "event_name": "YES NO",
+      "pages": [
+        29
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__54",
+      "event_name": "YES NO",
+      "pages": [
+        29
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__55",
+      "event_name": "YES NO",
+      "pages": [
+        29
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__63",
+      "event_name": "Report",
+      "pages": [
+        29
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__63",
+      "event_name": "Element Value",
+      "pages": [
+        29
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ARE_ANY_OF_THE_FOLLOWING",
+      "event_name": "Are ANY of the following",
+      "pages": [
+        29
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_169",
+      "event_name": "HOSPITAL EVENTS PAGE 169",
+      "pages": [
+        30
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "MYOCARDIAL_INFARCTION_MI",
+      "event_name": "MYOCARDIAL INFARCTION (MI)",
+      "pages": [
+        30
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__10",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        30
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__10",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        30
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_170",
+      "event_name": "HOSPITAL EVENTS PAGE 170",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "MYOCARDIAL_INFARCTION_MI__2",
+      "event_name": "Myocardial Infarction (MI)",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "IS_THERE_A_DIAGNOSIS_OF_AN_ACUTE__2",
+      "event_name": "Is there a diagnosis of an acute",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN__5",
+      "event_name": "Did the onset of symptoms begin",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__64",
+      "event_name": "Report",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__64",
+      "event_name": "Element Value",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__65",
+      "event_name": "Report",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__65",
+      "event_name": "Element Value",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THERE_DOCUMENTATION_OF_ECG",
+      "event_name": "Was there documentation of ECG",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__66",
+      "event_name": "Report",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__66",
+      "event_name": "Element Value",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__67",
+      "event_name": "Report",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__67",
+      "event_name": "Element Value",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THERE_NEW_ELEVATION_IN_TROPONIN",
+      "event_name": "Was there new elevation in troponin",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__68",
+      "event_name": "Report",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__68",
+      "event_name": "Element Value",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__56",
+      "event_name": "YES NO",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__57",
+      "event_name": "YES NO",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__58",
+      "event_name": "YES NO",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__59",
+      "event_name": "YES NO",
+      "pages": [
+        31
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_171",
+      "event_name": "HOSPITAL EVENTS PAGE 171",
+      "pages": [
+        32
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ORGAN_SPACE_SURGICAL_SITE_INFECTION",
+      "event_name": "ORGAN/SPACE SURGICAL SITE INFECTION",
+      "pages": [
+        32
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "CODE_OPERATIVE_PROCEDURE_CODE_OPERATIVE_PROCEDURE__2",
+      "event_name": "Code Operative Procedure Code Operative Procedure",
+      "pages": [
+        32
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "AAA_ABDOMINAL_AORTIC_ANEURYSM_REPAIR_LAM_LAMINECTOMY__2",
+      "event_name": "AAA Abdominal aortic aneurysm repair LAM Laminectomy",
+      "pages": [
+        32
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "AMP_LIMB_AMPUTATION_LTP_LIVER_TRANSPLANT__2",
+      "event_name": "AMP Limb amputation LTP Liver transplant",
+      "pages": [
+        32
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "APPY_APPENDIX_SURGERY_NECK_NECK_SURGERY__2",
+      "event_name": "APPY Appendix surgery NECK Neck surgery",
+      "pages": [
+        32
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "AVSD_SHUNT_FOR_DIALYSIS_NEPH_KIDNEY_SURGERY__2",
+      "event_name": "AVSD Shunt for dialysis NEPH Kidney surgery",
+      "pages": [
+        32
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "BILI_BILE_DUCT_LIVER_OR_PANCREATIC_SURGERY_OVRY_OVARIAN_SURGERY__2",
+      "event_name": "BILI Bile duct, liver or pancreatic surgery OVRY Ovarian surgery",
+      "pages": [
+        32
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CEA_CAROTID_ENDARTERECTOMY_PRST_PROSTATE_SURGERY__2",
+      "event_name": "CEA Carotid endarterectomy PRST Prostate surgery",
+      "pages": [
+        32
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CHOL_GALLBLADDER_SURGERY_REC_RECTAL_SURGERY__2",
+      "event_name": "CHOL Gallbladder surgery REC Rectal surgery",
+      "pages": [
+        32
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "COLO_COLON_SURGERY_SB_SMALL_BOWEL_SURGERY__2",
+      "event_name": "COLO Colon surgery SB Small bowel surgery",
+      "pages": [
+        32
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CSEC_CESAREAN_SECTION_SPLE_SPLEEN_SURGERY__2",
+      "event_name": "CSEC Cesarean section SPLE Spleen surgery",
+      "pages": [
+        32
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "GAST_GASTRIC_SURGERY_THOR_THORACIC_SURGERY__2",
+      "event_name": "GAST Gastric surgery THOR Thoracic surgery",
+      "pages": [
+        32
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HTP_HEART_TRANSPLANT_THUR_THYROID_AND_OR_PARATHYROID_SURGERY__2",
+      "event_name": "HTP Heart transplant THUR Thyroid and/or parathyroid surgery",
+      "pages": [
+        32
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HYST_ABDOMINAL_HYSTERECTOMY_VHYS_VAGINAL_HYSTERECTOMY__2",
+      "event_name": "HYST Abdominal hysterectomy VHYS Vaginal hysterectomy",
+      "pages": [
+        32
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "KTP_KIDNEY_TRANSPLANT_XLAP_EXPLORATORY_LAPAROTOMY__2",
+      "event_name": "KTP Kidney transplant XLAP Exploratory Laparotomy",
+      "pages": [
+        32
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_172",
+      "event_name": "HOSPITAL EVENTS PAGE 172",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CODE_OPERATIVE_PROCEDURE__2",
+      "event_name": "Code Operative Procedure",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "BRST_BREAST_SURGERY__2",
+      "event_name": "BRST Breast surgery",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CARD_CARDIAC_SURGERY__2",
+      "event_name": "CARD Cardiac surgery",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CBGB_CORONARY_ARTERY_BYPASS_GRAFT_WITH_BOTH_CHEST_AND_DONOR_SITE_INCISIONS__2",
+      "event_name": "CBGB Coronary artery bypass graft with both chest and donor site incisions",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CBGC_CORONARY_ARTERY_BYPASS_GRAFT_WITH_CHEST_INCISION_ONLY__2",
+      "event_name": "CBGC Coronary artery bypass graft with chest incision only",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CRAN_CRANIOTOMY__2",
+      "event_name": "CRAN Craniotomy",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "FUSN_SPINAL_FUSION__2",
+      "event_name": "FUSN Spinal fusion",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "FX_OPEN_REDUCTION_OF_FRACTURE__2",
+      "event_name": "FX Open reduction of fracture",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HER_HERNIORRHAPHY__2",
+      "event_name": "HER Herniorrhaphy",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HPRO_HIP_PROSTHESIS__2",
+      "event_name": "HPRO Hip prosthesis",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "KPRO_KNEE_PROSTHESIS__2",
+      "event_name": "KPRO Knee prosthesis",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "PACE_PACEMAKER_SURGERY__2",
+      "event_name": "PACE Pacemaker surgery",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "PVBY_PERIPHERAL_VASCULAR_BYPASS_SURGERY__2",
+      "event_name": "PVBY Peripheral vascular bypass surgery",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "VSHN_VENTRICULAR_SHUNT__2",
+      "event_name": "VSHN Ventricular shunt",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CODE_SITE_CODE_SITE",
+      "event_name": "Code SITE Code SITE",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "BONE_OSTEOMYELITIS_MED_MEDIASTINITIS",
+      "event_name": "BONE Osteomyelitis MED Mediastinitis",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "BRST_BREAST_ABSCESS_OR_MASTITIS_MEN_MENINGITIS_OR_VENTRICULITIS",
+      "event_name": "BRST Breast abscess or mastitis MEN Meningitis or ventriculitis",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CARD_MYOCARDITIS_OR_PERICARDITIS_ORAL_ORAL_CAVITY_INFECTION_MOUTH_TONGUE_OR_GUMS",
+      "event_name": "CARD Myocarditis or pericarditis ORAL Oral cavity infection (mouth, tongue, or gums)",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DISC_DISC_SPACE_INFECTION_OREP_DEEP_PELVIC_TISSUE_INFECTION_OR_OTHER_INFECTION",
+      "event_name": "DISC Disc space infection OREP Deep pelvic tissue infection or other infection",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "EAR_EAR_MASTOID_INFECTION_PJI_PERIPROSTHETIC_JOINT_INFECTION",
+      "event_name": "EAR Ear, mastoid infection PJI Periprosthetic Joint Infection",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "EMET_ENDOMETRITIS_SA_SPINAL_ABSCESS_INFECTION",
+      "event_name": "EMET Endometritis SA Spinal abscess/infection",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ENDO_ENDOCARDITIS_SINU_SINUSITIS",
+      "event_name": "ENDO Endocarditis SINU Sinusitis",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "IAB_INTRAABDOMINAL_INFECTION_NOT_SPECIFIED",
+      "event_name": "IAB Intraabdominal infection, not specified",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "USI_URINARY_SYSTEM_INFECTION",
+      "event_name": "USI Urinary System Infection",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "IC_INTRACRANIAL_INFECTION_VASC_ARTERIAL_OR_VENUS_INFECTION",
+      "event_name": "IC Intracranial infection VASC Arterial or venus infection",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "JNT_JOINT_OR_BURSA_INFECTION_VCUF_VAGINAL_CUFF_INFECTION",
+      "event_name": "JNT Joint or bursa infection VCUF Vaginal cuff infection",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "LUNG_OTHER_INFECTION_OF_THE_LOWER_RESPIRATORY_TRACT",
+      "event_name": "LUNG Other infection of the lower respiratory tract",
+      "pages": [
+        33
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__11",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        33
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_173",
+      "event_name": "HOSPITAL EVENTS PAGE 173",
+      "pages": [
+        34
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__11",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        34
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_174",
+      "event_name": "HOSPITAL EVENTS PAGE 174",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ORGAN_SPACE_SURGICAL_SITE_INFECTION_O_S_SSI",
+      "event_name": "Organ/Space Surgical Site Infection (O/S SSI)",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "IS_THERE_A_DIAGNOSIS_OF_A",
+      "event_name": "Is there a diagnosis of a",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN_AFTER__5",
+      "event_name": "Did the onset of symptoms begin after",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__69",
+      "event_name": "Report",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__69",
+      "event_name": "Element Value",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__70",
+      "event_name": "Report",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__70",
+      "event_name": "Element Value",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_NTDS_DEFINITION_IS_CONSISTENT",
+      "event_name": "The NTDS definition is consistent",
+      "pages": [
+        35
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__71",
+      "event_name": "Report",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__71",
+      "event_name": "Element Value",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_SSI_OCCUR_WITHIN_30_OR_90_DAYS",
+      "event_name": "Did the SSI occur within 30 or 90 days",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__72",
+      "event_name": "Report",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__72",
+      "event_name": "Element Value",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_SSI_INVOLVE_ANY_PART_OF_THE_BODY",
+      "event_name": "Did the SSI involve any part of the body",
+      "pages": [
+        35
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__73",
+      "event_name": "Report",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__73",
+      "event_name": "Element Value",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__74",
+      "event_name": "Report",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__74",
+      "event_name": "Element Value",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__60",
+      "event_name": "YES NO",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__61",
+      "event_name": "YES NO",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__62",
+      "event_name": "YES NO",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__63",
+      "event_name": "YES NO",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__64",
+      "event_name": "YES NO",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__75",
+      "event_name": "Report",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__75",
+      "event_name": "Element Value",
+      "pages": [
+        35
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_175",
+      "event_name": "HOSPITAL EVENTS PAGE 175",
+      "pages": [
+        36
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "OSTEOMYELITIS",
+      "event_name": "OSTEOMYELITIS",
+      "pages": [
+        36
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__12",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        36
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__12",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        36
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_176",
+      "event_name": "HOSPITAL EVENTS PAGE 176",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "OSTEOMYELITIS__2",
+      "event_name": "Osteomyelitis",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "START_IS_THERE_A_DIAGNOSIS_OF",
+      "event_name": "START Is there a diagnosis of",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN__6",
+      "event_name": "Did the onset of symptoms begin",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__76",
+      "event_name": "Report",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__76",
+      "event_name": "Element Value",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__77",
+      "event_name": "Report",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__77",
+      "event_name": "Element Value",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_NTDS_DEFINITION_IS_CONSISTENT_WITH__5",
+      "event_name": "The NTDS definition is consistent with",
+      "pages": [
+        37
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__78",
+      "event_name": "Report",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__78",
+      "event_name": "Element Value",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_AT_LEAST_ONE_OF_THE",
+      "event_name": "Did the patient have at least one of the",
+      "pages": [
+        37
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__79",
+      "event_name": "Report",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__79",
+      "event_name": "Element Value",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_ORGANISMS",
+      "event_name": "Did the patient have organisms",
+      "pages": [
+        37
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__80",
+      "event_name": "Report",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__80",
+      "event_name": "Element Value",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__65",
+      "event_name": "YES NO",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__66",
+      "event_name": "YES NO",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__67",
+      "event_name": "YES NO",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__68",
+      "event_name": "YES NO",
+      "pages": [
+        37
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_177",
+      "event_name": "HOSPITAL EVENTS PAGE 177",
+      "pages": [
+        38
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "PRESSURE_ULCER",
+      "event_name": "PRESSURE ULCER",
+      "pages": [
+        38
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__13",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        38
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__13",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        38
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_178",
+      "event_name": "HOSPITAL EVENTS PAGE 178",
+      "pages": [
+        39
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "PRESSURE_ULCER__2",
+      "event_name": "Pressure Ulcer",
+      "pages": [
+        39
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "START_ARE_THE_SIGNS_SYMPTOMS_OF_A_PRESSURE",
+      "event_name": "START Are the signs/symptoms of a pressure",
+      "pages": [
+        39
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_NPUAP_STAGE_II",
+      "event_name": "Did the onset of NPUAP Stage II-",
+      "pages": [
+        39
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "IV_UNSTAGEABLE_UNCLASSIFIED_OR",
+      "event_name": "IV, Unstageable/Unclassified, or",
+      "pages": [
+        39
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "SUSPECTED_DEEP_TISSUE_INJURY_BEGIN",
+      "event_name": "Suspected Deep Tissue Injury begin",
+      "pages": [
+        39
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__81",
+      "event_name": "Report",
+      "pages": [
+        39
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__81",
+      "event_name": "Element Value",
+      "pages": [
+        39
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__82",
+      "event_name": "Report",
+      "pages": [
+        39
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__82",
+      "event_name": "Element Value",
+      "pages": [
+        39
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "A_PRESSURE_ULCER_IS_A_LOCALIZED_INJURY",
+      "event_name": "A pressure ulcer is a localized injury",
+      "pages": [
+        39
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__83",
+      "event_name": "Report",
+      "pages": [
+        39
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__83",
+      "event_name": "Element Value",
+      "pages": [
+        39
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_NTDS_DEFINITION_IS_CONSISTENT_WITH__6",
+      "event_name": "The NTDS definition is consistent with",
+      "pages": [
+        39
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__69",
+      "event_name": "YES NO",
+      "pages": [
+        39
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__70",
+      "event_name": "YES NO",
+      "pages": [
+        39
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_179",
+      "event_name": "HOSPITAL EVENTS PAGE 179",
+      "pages": [
+        40
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "PULMONARY_EMBOLISM_PE",
+      "event_name": "PULMONARY EMBOLISM (PE)",
+      "pages": [
+        40
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__14",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        40
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__14",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        40
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_180",
+      "event_name": "HOSPITAL EVENTS PAGE 180",
+      "pages": [
+        41
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "PULMONARY_EMBOLISM_PE__2",
+      "event_name": "Pulmonary Embolism (PE)",
+      "pages": [
+        41
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN_AFTER__6",
+      "event_name": "Did the onset of symptoms begin after",
+      "pages": [
+        41
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__84",
+      "event_name": "Report",
+      "pages": [
+        41
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__84",
+      "event_name": "Element Value",
+      "pages": [
+        41
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__85",
+      "event_name": "Report",
+      "pages": [
+        41
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__85",
+      "event_name": "Element Value",
+      "pages": [
+        41
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "SUBSEGMENTAL_PES_ARE_EXCLUDED_FROM",
+      "event_name": "Subsegmental PEs are excluded from",
+      "pages": [
+        41
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__86",
+      "event_name": "Report",
+      "pages": [
+        41
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__86",
+      "event_name": "Element Value",
+      "pages": [
+        41
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__87",
+      "event_name": "Report",
+      "pages": [
+        41
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__87",
+      "event_name": "Element Value",
+      "pages": [
+        41
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__71",
+      "event_name": "YES NO",
+      "pages": [
+        41
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__72",
+      "event_name": "YES NO",
+      "pages": [
+        41
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__73",
+      "event_name": "YES NO",
+      "pages": [
+        41
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_181",
+      "event_name": "HOSPITAL EVENTS PAGE 181",
+      "pages": [
+        42
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "SEVERE_SEPSIS",
+      "event_name": "SEVERE SEPSIS",
+      "pages": [
+        42
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__15",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        42
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__15",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        42
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_182",
+      "event_name": "HOSPITAL EVENTS PAGE 182",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "SEVERE_SEPSIS__2",
+      "event_name": "Severe Sepsis",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN_AFTER__7",
+      "event_name": "Did the onset of symptoms begin after",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__88",
+      "event_name": "Report",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__88",
+      "event_name": "Element Value",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__89",
+      "event_name": "Report",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__89",
+      "event_name": "Element Value",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_NTDS_DEFINITION_IS_CONSISTENT__2",
+      "event_name": "The NTDS definition is consistent",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "PHYSICIANS_AND_THE_SOCIETY_OF_CRITICAL",
+      "event_name": "Physicians and the Society of Critical",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "IS_THERE_DOCUMENTATION_OF_EITHER_OF_THE",
+      "event_name": "Is there documentation of EITHER of the",
+      "pages": [
+        43
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__90",
+      "event_name": "Report",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__90",
+      "event_name": "Element Value",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__91",
+      "event_name": "Report",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__91",
+      "event_name": "Element Value",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__74",
+      "event_name": "YES NO",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__75",
+      "event_name": "YES NO",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__76",
+      "event_name": "YES NO",
+      "pages": [
+        43
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_183",
+      "event_name": "HOSPITAL EVENTS PAGE 183",
+      "pages": [
+        44
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "STROKE_CVA",
+      "event_name": "STROKE/CVA",
+      "pages": [
+        44
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__16",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        44
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__16",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        44
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_184",
+      "event_name": "HOSPITAL EVENTS PAGE 184",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "STROKE_CVA__2",
+      "event_name": "Stroke/CVA",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "START_IS_THERE_A_DIAGNOSIS_OF_STROKE_CVA",
+      "event_name": "START Is there a diagnosis of stroke/CVA",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN_AFTER__8",
+      "event_name": "Did the onset of symptoms begin after",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__92",
+      "event_name": "Report",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__92",
+      "event_name": "Element Value",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "A_FOCAL_OR_GLOBAL_NEUROLOGICAL",
+      "event_name": "A focal or global neurological",
+      "pages": [
+        45
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_AT_LEAST_ONE_OF_THE__2",
+      "event_name": "Did the patient have at least one of the",
+      "pages": [
+        45
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__93",
+      "event_name": "Report",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__93",
+      "event_name": "Element Value",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_NEUROLOGIC",
+      "event_name": "Did the patient have neurologic",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_NEUROLOGIC_DEFICIT",
+      "event_name": "Did the patient have neurologic deficit",
+      "pages": [
+        45
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ALTHOUGH_THE_NEUROLOGIC_DEFICIT",
+      "event_name": "Although the neurologic deficit",
+      "pages": [
+        45
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "YES_NO__77",
+      "event_name": "YES NO",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__78",
+      "event_name": "YES NO",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__79",
+      "event_name": "YES NO",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__80",
+      "event_name": "YES NO",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__81",
+      "event_name": "YES NO",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__94",
+      "event_name": "Report",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__94",
+      "event_name": "Element Value",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__95",
+      "event_name": "Report",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__95",
+      "event_name": "Element Value",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__96",
+      "event_name": "Report",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__96",
+      "event_name": "Element Value",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__97",
+      "event_name": "Report",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__97",
+      "event_name": "Element Value",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WERE_ANY_OF_THE_FOLLOWING_DOCUMENTED",
+      "event_name": "Were ANY of the following documented",
+      "pages": [
+        45
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "YES_NO__82",
+      "event_name": "YES NO",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__98",
+      "event_name": "Report",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__98",
+      "event_name": "Element Value",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__99",
+      "event_name": "Report",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__99",
+      "event_name": "Element Value",
+      "pages": [
+        45
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_185",
+      "event_name": "HOSPITAL EVENTS PAGE 185",
+      "pages": [
+        46
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "SUPERFICIAL_INCISIONAL_SURGICAL_SITE_INFECTION",
+      "event_name": "SUPERFICIAL INCISIONAL SURGICAL SITE INFECTION",
+      "pages": [
+        46
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "INVOLVES_ONLY_SKIN_AND_SUBCUTANEOUS_TISSUE_OF_THE_INCISION",
+      "event_name": "Involves only skin and subcutaneous tissue of the incision",
+      "pages": [
+        46
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__17",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        46
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_186",
+      "event_name": "HOSPITAL EVENTS PAGE 186",
+      "pages": [
+        47
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__17",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        47
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_187",
+      "event_name": "HOSPITAL EVENTS PAGE 187",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "SUPERFICIAL_INCISIONAL_SURGICAL_SITE_INFECTION_S_I_SSI",
+      "event_name": "Superficial Incisional Surgical Site Infection (S/I SSI)",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "START_IS_THERE_A_DIAGNOSIS_OF_A_SURGICAL_SITE",
+      "event_name": "START Is there a diagnosis of a surgical site",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__83",
+      "event_name": "YES NO",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN__7",
+      "event_name": "Did the onset of symptoms begin",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__100",
+      "event_name": "Report",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__100",
+      "event_name": "Element Value",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_SSI_OCCUR_WITHIN_30",
+      "event_name": "Did the SSI occur within 30",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__84",
+      "event_name": "YES NO",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__101",
+      "event_name": "Report",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__101",
+      "event_name": "Element Value",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THIS_SSI_ONLY_INVOLVE_THE",
+      "event_name": "Did this SSI only involve the",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__85",
+      "event_name": "YES NO",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__102",
+      "event_name": "Report",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__102",
+      "event_name": "Element Value",
+      "pages": [
+        48
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__103",
+      "event_name": "Report",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__103",
+      "event_name": "Element Value",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__86",
+      "event_name": "YES NO",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__104",
+      "event_name": "Report",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__104",
+      "event_name": "Element Value",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__105",
+      "event_name": "Report",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__105",
+      "event_name": "Element Value",
+      "pages": [
+        48
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_NTDS_DEFINITION_IS_CONSISTENT_WITH__7",
+      "event_name": "The NTDS definition is consistent with",
+      "pages": [
+        48
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "THERE_ARE_TWO_SPECIFIC_TYPES_OF",
+      "event_name": "There are two specific types of",
+      "pages": [
+        48
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "C_SECTION_INCISION_OR_CHEST_INCISION",
+      "event_name": "C-section incision or chest incision",
+      "pages": [
+        48
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_188",
+      "event_name": "HOSPITAL EVENTS PAGE 188",
+      "pages": [
+        49
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "UNPLANNED_ADMISSION_TO_THE_ICU",
+      "event_name": "UNPLANNED ADMISSION TO THE ICU",
+      "pages": [
+        49
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__18",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        49
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__18",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        49
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_189",
+      "event_name": "HOSPITAL EVENTS PAGE 189",
+      "pages": [
+        50
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "UNPLANNED_ADMISSION_TO_THE_ICU__2",
+      "event_name": "Unplanned Admission to the ICU",
+      "pages": [
+        50
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_PATIENT_ADMITTED_OR",
+      "event_name": "Was the patient admitted or",
+      "pages": [
+        50
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__87",
+      "event_name": "YES NO",
+      "pages": [
+        50
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_PATIENT_IN_THE_ICU",
+      "event_name": "Was the patient in the ICU",
+      "pages": [
+        50
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__106",
+      "event_name": "Report",
+      "pages": [
+        50
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__106",
+      "event_name": "Element Value",
+      "pages": [
+        50
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__107",
+      "event_name": "Report",
+      "pages": [
+        50
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__107",
+      "event_name": "Element Value",
+      "pages": [
+        50
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__88",
+      "event_name": "YES NO",
+      "pages": [
+        50
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__108",
+      "event_name": "Report",
+      "pages": [
+        50
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__108",
+      "event_name": "Element Value",
+      "pages": [
+        50
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "FLOOR_IS_DEFINED_AS_ANY_OTHER_WARD_THAT",
+      "event_name": "Floor is defined as any other ward that",
+      "pages": [
+        50
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_190",
+      "event_name": "HOSPITAL EVENTS PAGE 190",
+      "pages": [
+        51
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "UNPLANNED_INTUBATION",
+      "event_name": "UNPLANNED INTUBATION",
+      "pages": [
+        51
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__19",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        51
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__19",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        51
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_191",
+      "event_name": "HOSPITAL EVENTS PAGE 191",
+      "pages": [
+        52
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "UNPLANNED_INTUBATION__2",
+      "event_name": "Unplanned Intubation",
+      "pages": [
+        52
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_PATIENT_INTUBATED_DUE_TO",
+      "event_name": "Was the patient intubated due to",
+      "pages": [
+        52
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__89",
+      "event_name": "YES NO",
+      "pages": [
+        52
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_PATIENT_INTUBATED_IN_THE",
+      "event_name": "Was the patient intubated in the",
+      "pages": [
+        52
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__109",
+      "event_name": "Report",
+      "pages": [
+        52
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__109",
+      "event_name": "Element Value",
+      "pages": [
+        52
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__90",
+      "event_name": "YES NO",
+      "pages": [
+        52
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__110",
+      "event_name": "Report",
+      "pages": [
+        52
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__110",
+      "event_name": "Element Value",
+      "pages": [
+        52
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__111",
+      "event_name": "Report",
+      "pages": [
+        52
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__111",
+      "event_name": "Element Value",
+      "pages": [
+        52
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__91",
+      "event_name": "YES NO",
+      "pages": [
+        52
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__112",
+      "event_name": "Report",
+      "pages": [
+        52
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__112",
+      "event_name": "Element Value",
+      "pages": [
+        52
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_192",
+      "event_name": "HOSPITAL EVENTS PAGE 192",
+      "pages": [
+        53
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "UNPLANNED_RETURN_TO_THE_OPERATING_ROOM",
+      "event_name": "UNPLANNED RETURN TO THE OPERATING ROOM",
+      "pages": [
+        53
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__20",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        53
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__20",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        53
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_193",
+      "event_name": "HOSPITAL EVENTS PAGE 193",
+      "pages": [
+        54
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "UNPLANNED_RETURN_TO_THE_OPERATING_ROOM__2",
+      "event_name": "Unplanned Return to the Operating Room",
+      "pages": [
+        54
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_AN_OPERATIVE",
+      "event_name": "Did the patient have an operative",
+      "pages": [
+        54
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__92",
+      "event_name": "YES NO",
+      "pages": [
+        54
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_UNDERGO_A_SUBSEQUENT",
+      "event_name": "Did the patient undergo a subsequent",
+      "pages": [
+        54
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__113",
+      "event_name": "Report",
+      "pages": [
+        54
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__113",
+      "event_name": "Element Value",
+      "pages": [
+        54
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__93",
+      "event_name": "YES NO",
+      "pages": [
+        54
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__114",
+      "event_name": "Report",
+      "pages": [
+        54
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__114",
+      "event_name": "Element Value",
+      "pages": [
+        54
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "THE_SAME_OPERATIVE_SITE_USUALLY_BUT",
+      "event_name": "The same operative site usually (but",
+      "pages": [
+        54
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__115",
+      "event_name": "Report",
+      "pages": [
+        54
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__115",
+      "event_name": "Element Value",
+      "pages": [
+        54
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_194",
+      "event_name": "HOSPITAL EVENTS PAGE 194",
+      "pages": [
+        55
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "VENTILATOR_ASSOCIATED_PNEUMONIA_VAP",
+      "event_name": "VENTILATOR-ASSOCIATED PNEUMONIA (VAP)",
+      "pages": [
+        55
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "IMAGING_TEST_EVIDENCE_SIGNS_SYMPTOMS_LABORATORY",
+      "event_name": "IMAGING TEST EVIDENCE SIGNS/SyMPTOMS LAbORATORy",
+      "pages": [
+        55
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "TWO_OR_MORE_SERIAL_CHEST_IMAGING",
+      "event_name": "Two or more serial chest imaging",
+      "pages": [
+        55
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_195",
+      "event_name": "HOSPITAL EVENTS PAGE 195",
+      "pages": [
+        56
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "TWO_OR_MORE_SERIAL_CHEST_IMAGING__2",
+      "event_name": "Two or more serial chest imaging",
+      "pages": [
+        56
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "CHLAMYDIA_OR_MYCOPLASMA",
+      "event_name": "Chlamydia or Mycoplasma",
+      "pages": [
+        56
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "SURVEILLANCE_CULTURE_TESTING_ASC",
+      "event_name": "Surveillance Culture/Testing (ASC/",
+      "pages": [
+        56
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CHLAMYDIA",
+      "event_name": "Chlamydia)",
+      "pages": [
+        56
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RIA_OR_EIA",
+      "event_name": "RIA or EIA",
+      "pages": [
+        56
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "TWO_OR_MORE_SERIAL_CHEST_IMAGING__3",
+      "event_name": "Two or more serial chest imaging",
+      "pages": [
+        56
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "PATIENT_WHO_IS_IMMUNOCOMPROMISED",
+      "event_name": "Patient who is immunocompromised",
+      "pages": [
+        56
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "LABORATORY_CRITERIA_DEFINED",
+      "event_name": "LABORATORY CRITERIA DEFINED",
+      "pages": [
+        56
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "UNDER_PNU2",
+      "event_name": "UNDER PNU2",
+      "pages": [
+        56
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_196",
+      "event_name": "HOSPITAL EVENTS PAGE 196",
+      "pages": [
+        57
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "IMAGING_TEST_EVIDENCE_SIGNS_SYMPTOMS_LABORATORY__2",
+      "event_name": "IMAGING TEST EVIDENCE SIGNS/SyMPTOMS/LAbORATORy",
+      "pages": [
+        57
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "TWO_OR_MORE_SERIAL_CHEST_IMAGING__4",
+      "event_name": "Two or more serial chest imaging",
+      "pages": [
+        57
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "IMAGING_TEST_EVIDENCE_SIGNS_SYMPTOMS_LABORATORY__3",
+      "event_name": "IMAGING TEST EVIDENCE SIGNS/SyMPTOMS/LAbORATORy",
+      "pages": [
+        57
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "TWO_OR_MORE_SERIAL_CHEST_IMAGING__5",
+      "event_name": "Two or more serial chest imaging",
+      "pages": [
+        57
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_197",
+      "event_name": "HOSPITAL EVENTS PAGE 197",
+      "pages": [
+        58
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ADDITIONAL_INF_ORMATION__21",
+      "event_name": "ADDITIONAL INf ORMATION",
+      "pages": [
+        58
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "RULE_ID_LEVEL_MESSAGE__21",
+      "event_name": "Rule ID Level Message",
+      "pages": [
+        58
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_198",
+      "event_name": "HOSPITAL EVENTS PAGE 198",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "VENTILATOR_ASSOCIATED_PNEUMONIA_VAP_PNU2_BACTERIAL_OF",
+      "event_name": "Ventilator-Associated Pneumonia (VAP) PNU2 Bacterial of",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "START_IS_THERE_A_DIAGNOSIS_OF_PNEUMONIA",
+      "event_name": "START Is there a diagnosis of pneumonia",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN__8",
+      "event_name": "Did the onset of symptoms begin",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_PATIENT_ON_MECHANICAL",
+      "event_name": "Was the patient on mechanical",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_VENTILATOR_IN_PLACE_ON_THE",
+      "event_name": "Was the ventilator in place on the",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_TWO_OR_MORE_SERIAL_CHEST_IMAGING_TEST",
+      "event_name": "Did the patient have two or more serial chest imaging test",
+      "pages": [
+        59
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__116",
+      "event_name": "Report",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__116",
+      "event_name": "Element Value",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__94",
+      "event_name": "YES NO",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__95",
+      "event_name": "YES NO",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__96",
+      "event_name": "YES NO",
+      "pages": [
+        59
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "YES_NO__97",
+      "event_name": "YES NO",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CONTINUE_TO_PAGE_2__5",
+      "event_name": "Continue to page 2",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__117",
+      "event_name": "Report",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__117",
+      "event_name": "Element Value",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__118",
+      "event_name": "Report",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__118",
+      "event_name": "Element Value",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__119",
+      "event_name": "Report",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__119",
+      "event_name": "Element Value",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__120",
+      "event_name": "Report",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__120",
+      "event_name": "Element Value",
+      "pages": [
+        59
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_199",
+      "event_name": "HOSPITAL EVENTS PAGE 199",
+      "pages": [
+        60
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "VENTILATOR_ASSOCIATED_PNEUMONIA_VAP_PNU2_BACTERIAL_OF__2",
+      "event_name": "Ventilator-Associated Pneumonia (VAP) PNU2 Bacterial of",
+      "pages": [
+        60
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "YES_NO__98",
+      "event_name": "YES NO",
+      "pages": [
+        60
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__121",
+      "event_name": "Report",
+      "pages": [
+        60
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__121",
+      "event_name": "Element Value",
+      "pages": [
+        60
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__122",
+      "event_name": "Report",
+      "pages": [
+        60
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__122",
+      "event_name": "Element Value",
+      "pages": [
+        60
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__99",
+      "event_name": "YES NO",
+      "pages": [
+        60
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__123",
+      "event_name": "Report",
+      "pages": [
+        60
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__123",
+      "event_name": "Element Value",
+      "pages": [
+        60
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__124",
+      "event_name": "Report",
+      "pages": [
+        60
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__124",
+      "event_name": "Element Value",
+      "pages": [
+        60
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_200",
+      "event_name": "HOSPITAL EVENTS PAGE 200",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "VENTILATOR_ASSOCIATED_PNEUMONIA_VAP_PNU2_VIRAL_LEGIONELLA_AND",
+      "event_name": "Ventilator-Associated Pneumonia (VAP) PNU2 Viral, Legionella, and",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "START_IS_THERE_A_DIAGNOSIS_OF_PNEUMONIA__2",
+      "event_name": "START Is there a diagnosis of pneumonia",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN__9",
+      "event_name": "Did the onset of symptoms begin",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_PATIENT_ON_MECHANICAL__2",
+      "event_name": "Was the patient on mechanical",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_VENTILATOR_IN_PLACE_ON_THE__2",
+      "event_name": "Was the ventilator in place on the",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_TWO_OR_MORE_SERIAL_CHEST_IMAGING_TEST__2",
+      "event_name": "Did the patient have two or more serial chest imaging test",
+      "pages": [
+        61
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "YES_NO__100",
+      "event_name": "YES NO",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__101",
+      "event_name": "YES NO",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__102",
+      "event_name": "YES NO",
+      "pages": [
+        61
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "YES_NO__103",
+      "event_name": "YES NO",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CONTINUE_TO_PAGE_2__6",
+      "event_name": "Continue to page 2",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__125",
+      "event_name": "Report",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__125",
+      "event_name": "Element Value",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__126",
+      "event_name": "Report",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__126",
+      "event_name": "Element Value",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__127",
+      "event_name": "Report",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__127",
+      "event_name": "Element Value",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__128",
+      "event_name": "Report",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__128",
+      "event_name": "Element Value",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__129",
+      "event_name": "Report",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__129",
+      "event_name": "Element Value",
+      "pages": [
+        61
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_201",
+      "event_name": "HOSPITAL EVENTS PAGE 201",
+      "pages": [
+        62
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "VENTILATOR_ASSOCIATED_PNEUMONIA_VAP_PNU2_VIRAL_LEGIONELLA_AND__2",
+      "event_name": "Ventilator-Associated Pneumonia (VAP) PNU2 Viral, Legionella, and",
+      "pages": [
+        62
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__130",
+      "event_name": "Report",
+      "pages": [
+        62
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__130",
+      "event_name": "Element Value",
+      "pages": [
+        62
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__131",
+      "event_name": "Report",
+      "pages": [
+        62
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__131",
+      "event_name": "Element Value",
+      "pages": [
+        62
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__104",
+      "event_name": "YES NO",
+      "pages": [
+        62
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__105",
+      "event_name": "YES NO",
+      "pages": [
+        62
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__132",
+      "event_name": "Report",
+      "pages": [
+        62
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__132",
+      "event_name": "Element Value",
+      "pages": [
+        62
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__133",
+      "event_name": "Report",
+      "pages": [
+        62
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__133",
+      "event_name": "Element Value",
+      "pages": [
+        62
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_202",
+      "event_name": "HOSPITAL EVENTS PAGE 202",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "VENTILATOR_ASSOCIATED_PNEUMONIA_VAP_PNU3",
+      "event_name": "Ventilator-Associated Pneumonia (VAP) PNU3",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "START_IS_THERE_A_DIAGNOSIS_OF_PNEUMONIA__3",
+      "event_name": "START Is there a diagnosis of pneumonia",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN__10",
+      "event_name": "Did the onset of symptoms begin",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_PATIENT_ON_MECHANICAL__3",
+      "event_name": "Was the patient on mechanical",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_VENTILATOR_IN_PLACE_ON_THE__3",
+      "event_name": "Was the ventilator in place on the",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_TWO_OR_MORE_SERIAL_CHEST_IMAGING_TEST__3",
+      "event_name": "Did the patient have two or more serial chest imaging test",
+      "pages": [
+        63
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__134",
+      "event_name": "Report",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__134",
+      "event_name": "Element Value",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__135",
+      "event_name": "Report",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__135",
+      "event_name": "Element Value",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__136",
+      "event_name": "Report",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__136",
+      "event_name": "Element Value",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__137",
+      "event_name": "Report",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__137",
+      "event_name": "Element Value",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__106",
+      "event_name": "YES NO",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__107",
+      "event_name": "YES NO",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__108",
+      "event_name": "YES NO",
+      "pages": [
+        63
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "YES_NO__109",
+      "event_name": "YES NO",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__138",
+      "event_name": "Report",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__138",
+      "event_name": "Element Value",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CONTINUE_TO_PAGE_2__7",
+      "event_name": "Continue to page 2",
+      "pages": [
+        63
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_203",
+      "event_name": "HOSPITAL EVENTS PAGE 203",
+      "pages": [
+        64
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "VENTILATOR_ASSOCIATED_PNEUMONIA_VAP_PNU3__2",
+      "event_name": "Ventilator-Associated Pneumonia (VAP) PNU3",
+      "pages": [
+        64
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__139",
+      "event_name": "Report",
+      "pages": [
+        64
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__139",
+      "event_name": "Element Value",
+      "pages": [
+        64
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__140",
+      "event_name": "Report",
+      "pages": [
+        64
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__140",
+      "event_name": "Element Value",
+      "pages": [
+        64
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__141",
+      "event_name": "Report",
+      "pages": [
+        64
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__141",
+      "event_name": "Element Value",
+      "pages": [
+        64
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__110",
+      "event_name": "YES NO",
+      "pages": [
+        64
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_204",
+      "event_name": "HOSPITAL EVENTS PAGE 204",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "VENTILATOR_ASSOCIATED_PNEUMONIA_VAP_ALTERNATE_CRITERIA",
+      "event_name": "Ventilator-Associated Pneumonia (VAP) ALTERNATE CRITERIA",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "START_IS_THERE_A_DIAGNOSIS_OF_PNEUMONIA__4",
+      "event_name": "START Is there a diagnosis of pneumonia",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN__11",
+      "event_name": "Did the onset of symptoms begin",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_PATIENT_ON_MECHANICAL__4",
+      "event_name": "Was the patient on mechanical",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_VENTILATOR_IN_PLACE_ON_THE__4",
+      "event_name": "Was the ventilator in place on the",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_TWO_OR_MORE_SERIAL_CHEST_IMAGING_TEST__4",
+      "event_name": "Did the patient have two or more serial chest imaging test",
+      "pages": [
+        65
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__142",
+      "event_name": "Report",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__142",
+      "event_name": "Element Value",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__143",
+      "event_name": "Report",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__143",
+      "event_name": "Element Value",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__144",
+      "event_name": "Report",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__144",
+      "event_name": "Element Value",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__145",
+      "event_name": "Report",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__145",
+      "event_name": "Element Value",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__111",
+      "event_name": "YES NO",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__112",
+      "event_name": "YES NO",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__113",
+      "event_name": "YES NO",
+      "pages": [
+        65
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "YES_NO__114",
+      "event_name": "YES NO",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__146",
+      "event_name": "Report",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__146",
+      "event_name": "Element Value",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CONTINUE_TO_PAGE_2__8",
+      "event_name": "Continue to page 2",
+      "pages": [
+        65
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_205",
+      "event_name": "HOSPITAL EVENTS PAGE 205",
+      "pages": [
+        66
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "VENTILATOR_ASSOCIATED_PNEUMONIA_VAP_ALTERNATE_CRITERIA__2",
+      "event_name": "Ventilator-Associated Pneumonia (VAP) ALTERNATE CRITERIA",
+      "pages": [
+        66
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_WORSENING_GAS_EXCHANGE_FOR",
+      "event_name": "Did the patient have worsening gas exchange (for",
+      "pages": [
+        66
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__147",
+      "event_name": "Report",
+      "pages": [
+        66
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__147",
+      "event_name": "Element Value",
+      "pages": [
+        66
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__148",
+      "event_name": "Report",
+      "pages": [
+        66
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__148",
+      "event_name": "Element Value",
+      "pages": [
+        66
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__149",
+      "event_name": "Report",
+      "pages": [
+        66
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__149",
+      "event_name": "Element Value",
+      "pages": [
+        66
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__115",
+      "event_name": "YES NO",
+      "pages": [
+        66
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_206",
+      "event_name": "HOSPITAL EVENTS PAGE 206",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "VENTILATOR_ASSOCIATED_PNEUMONIA_VAP_ALTERNATE_CRITERIA__3",
+      "event_name": "Ventilator-Associated Pneumonia (VAP) ALTERNATE CRITERIA",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "START_IS_THERE_A_DIAGNOSIS_OF_PNEUMONIA__5",
+      "event_name": "START Is there a diagnosis of pneumonia",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_ONSET_OF_SYMPTOMS_BEGIN__12",
+      "event_name": "Did the onset of symptoms begin",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_PATIENT_ON_MECHANICAL__5",
+      "event_name": "Was the patient on mechanical",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "WAS_THE_VENTILATOR_IN_PLACE_ON_THE__5",
+      "event_name": "Was the ventilator in place on the",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "DID_THE_PATIENT_HAVE_TWO_OR_MORE_SERIAL_CHEST_IMAGING_TEST__5",
+      "event_name": "Did the patient have two or more serial chest imaging test",
+      "pages": [
+        67
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__150",
+      "event_name": "Report",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__150",
+      "event_name": "Element Value",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__151",
+      "event_name": "Report",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__151",
+      "event_name": "Element Value",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__152",
+      "event_name": "Report",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__152",
+      "event_name": "Element Value",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__153",
+      "event_name": "Report",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__153",
+      "event_name": "Element Value",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__116",
+      "event_name": "YES NO",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__117",
+      "event_name": "YES NO",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__118",
+      "event_name": "YES NO",
+      "pages": [
+        67
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "YES_NO__119",
+      "event_name": "YES NO",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__154",
+      "event_name": "Report",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__154",
+      "event_name": "Element Value",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CONTINUE_TO_PAGE_2__9",
+      "event_name": "Continue to page 2",
+      "pages": [
+        67
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "HOSPITAL_EVENTS_PAGE_207",
+      "event_name": "HOSPITAL EVENTS PAGE 207",
+      "pages": [
+        68
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "VENTILATOR_ASSOCIATED_PNEUMONIA_VAP_ALTERNATE_CRITERIA__4",
+      "event_name": "Ventilator-Associated Pneumonia (VAP) ALTERNATE CRITERIA",
+      "pages": [
+        68
+      ],
+      "warnings_count": 0
+    },
+    {
+      "event_id": "REPORT__155",
+      "event_name": "Report",
+      "pages": [
+        68
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__155",
+      "event_name": "Element Value",
+      "pages": [
+        68
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "REPORT__156",
+      "event_name": "Report",
+      "pages": [
+        68
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "ELEMENT_VALUE__156",
+      "event_name": "Element Value",
+      "pages": [
+        68
+      ],
+      "warnings_count": 1
+    },
+    {
+      "event_id": "YES_NO__120",
+      "event_name": "YES NO",
+      "pages": [
+        68
+      ],
+      "warnings_count": 1
+    }
+  ]
+}

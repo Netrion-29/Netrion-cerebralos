@@ -1,0 +1,183 @@
+{
+  "meta": {
+    "system": "Netrion Systems",
+    "product": "CerebralOS",
+    "ruleset": "NTDS Hospital Events (RAW, Canonical)",
+    "year": 2026,
+    "version": "2.0.0",
+    "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
+    "expected_event_count": 21,
+    "extracted_event_count": 21,
+    "missing_titles": 0
+  },
+  "events": [
+    {
+      "event_id": "ACUTE_KIDNEY_INJURY_AKI",
+      "event_name": "Acute Kidney Injury (AKI)",
+      "year": 2026,
+      "start_page": 2,
+      "end_page": 4,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ACUTE_RESPIRATORY_DISTRESS_SYNDROME_ARDS",
+      "event_name": "Acute Respiratory Distress Syndrome (ARDS)",
+      "year": 2026,
+      "start_page": 4,
+      "end_page": 6,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ALCOHOL_WITHDRAWAL_SYNDROME",
+      "event_name": "Alcohol Withdrawal Syndrome",
+      "year": 2026,
+      "start_page": 6,
+      "end_page": 6,
+      "warnings_count": 1
+    },
+    {
+      "event_id": "CARDIAC_ARREST_WITH_CPR",
+      "event_name": "Cardiac Arrest With CPR",
+      "year": 2026,
+      "start_page": 8,
+      "end_page": 10,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "CATHETER_ASSOCIATED_URINARY_TRACT_INFECTION_CAUTI",
+      "event_name": "Catheter-Associated Urinary Tract Infection (CAUTI)",
+      "year": 2026,
+      "start_page": 10,
+      "end_page": 16,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "CENTRAL_LINE_ASSOCIATED_BLOODSTREAM_INFECTION_CLABSI",
+      "event_name": "Central Line-Associated Bloodstream Infection (CLABSI)",
+      "year": 2026,
+      "start_page": 16,
+      "end_page": 24,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "DEEP_SURGICAL_SITE_INFECTION_DEEP_SSI",
+      "event_name": "Deep Surgical Site Infection (Deep SSI)",
+      "year": 2026,
+      "start_page": 24,
+      "end_page": 26,
+      "warnings_count": 2
+    },
+    {
+      "event_id": "DEEP_VEIN_THROMBOSIS_DVT",
+      "event_name": "Deep Vein Thrombosis (DVT)",
+      "year": 2026,
+      "start_page": 26,
+      "end_page": 30,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "DELIRIUM",
+      "event_name": "Delirium",
+      "year": 2026,
+      "start_page": 6,
+      "end_page": 8,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "MYOCARDIAL_INFARCTION_MI",
+      "event_name": "Myocardial Infarction (MI)",
+      "year": 2026,
+      "start_page": 30,
+      "end_page": 32,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "ORGAN_SPACE_SURGICAL_SITE_INFECTION",
+      "event_name": "Organ/Space Surgical Site Infection",
+      "year": 2026,
+      "start_page": 32,
+      "end_page": 33,
+      "warnings_count": 1
+    },
+    {
+      "event_id": "OSTEOMYELITIS",
+      "event_name": "Osteomyelitis",
+      "year": 2026,
+      "start_page": 33,
+      "end_page": 38,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "PRESSURE_ULCER",
+      "event_name": "Pressure Ulcer",
+      "year": 2026,
+      "start_page": 38,
+      "end_page": 40,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "PULMONARY_EMBOLISM_PE",
+      "event_name": "Pulmonary Embolism (PE)",
+      "year": 2026,
+      "start_page": 40,
+      "end_page": 42,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "SEVERE_SEPSIS",
+      "event_name": "Severe Sepsis",
+      "year": 2026,
+      "start_page": 42,
+      "end_page": 44,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "STROKE_CVA",
+      "event_name": "Stroke/CVA",
+      "year": 2026,
+      "start_page": 44,
+      "end_page": 46,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "SUPERFICIAL_INCISIONAL_SURGICAL_SITE_INFECTION",
+      "event_name": "Superficial Incisional Surgical Site Infection",
+      "year": 2026,
+      "start_page": 46,
+      "end_page": 49,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "UNPLANNED_ADMISSION_TO_THE_ICU",
+      "event_name": "Unplanned Admission to the ICU",
+      "year": 2026,
+      "start_page": 49,
+      "end_page": 51,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "UNPLANNED_INTUBATION",
+      "event_name": "Unplanned Intubation",
+      "year": 2026,
+      "start_page": 51,
+      "end_page": 53,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "UNPLANNED_RETURN_TO_THE_OPERATING_ROOM",
+      "event_name": "Unplanned Return to the Operating Room",
+      "year": 2026,
+      "start_page": 53,
+      "end_page": 55,
+      "warnings_count": 0
+    },
+    {
+      "event_id": "VENTILATOR_ASSOCIATED_PNEUMONIA_VAP",
+      "event_name": "Ventilator-Associated Pneumonia (VAP)",
+      "year": 2026,
+      "start_page": 55,
+      "end_page": 68,
+      "warnings_count": 0
+    }
+  ]
+}
