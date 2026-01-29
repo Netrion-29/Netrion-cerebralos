@@ -24,5 +24,6 @@ outputs/*
 # Deaconess source text (local only)
 rules/deaconess/Protocols.txt
 rules/deaconess/Protocols*.txt
-# NTDS PDFs are local-only source documents
-rules/ntds/**/NTDS_*.pdf
+# NTDS Hospital Event PDFs are local-only sources
+rules/ntds/**/*.pdf
+
