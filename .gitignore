@@ -27,4 +27,15 @@ rules/deaconess/Protocols*.txt
 # NTDS Hospital Event PDFs are local-only sources
 rules/ntds/**/*.pdf
 git status
+# NTDS - keep only latest RAW in git; older versions are local-only
+rules/ntds/2025/ntds_events_raw_2025_v*.json
+rules/ntds/2025/ntds_index_2025_v*.json
+rules/ntds/2026/ntds_events_raw_2026_v*.json
+rules/ntds/2026/ntds_index_2026_v*.json
+
+# …but allow the latest “pinned” RAW (we will keep v9 for now)
+!rules/ntds/2025/ntds_events_raw_2025_v9.json
+!rules/ntds/2025/ntds_index_2025_v9.json
+!rules/ntds/2026/ntds_events_raw_2026_v9.json
+!rules/ntds/2026/ntds_index_2026_v9.json
 

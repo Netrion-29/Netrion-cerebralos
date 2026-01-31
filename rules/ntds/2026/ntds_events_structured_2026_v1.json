@@ -5,8 +5,11 @@
     "ruleset": "NTDS Hospital Events (STRUCTURED)",
     "year": 2026,
     "version": "1.0.0",
-    "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-    "event_count": 21
+    "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
+    "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+    "event_count": 21,
+    "converted_at_utc": "2026-01-31T19:29:00Z",
+    "converter_version": "2.0.0"
   },
   "events": [
     {
@@ -20,38 +23,21 @@
         "ELEMENT VALUES": "1. Yes\n2. No",
         "ADDITIONAL INFORMATION": "\u2022\nOnset of AKI Stage 3 began after arrival to your ED/hospital.\n \u2022\nA diagnosis of acute kidney injury (AKI) must be documented in the patient's medical record.\n \u2022\nConsistent with the March 2012 Kidney Disease Improving Global Outcome (KDIGO)Guideline.",
         "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n18501\n1\nValue is not a valid menu option\n18503\n2\nElement cannot be blank\n18504\n2\nElement cannot be \u201cNot Applicable\u201d\n18540\n1\nSingle Entry Max exceeded\n\n=== PAGE 3 ===\n\nHOSPITAL EVENTS\nPAGE 142\nAcute Kidney Injury (AKI)\nDid the onset of AKI Stage 3 begin \nafter the patient arrived \nat your hospital? \nDid the patient have a SCr 3.0 times \ntheir baseline documented?\nDid the patient have an increase \nin serum creatinine to >4.0mg/dl \n(\u2265353.6\u03bcmol/l)?\nWas there initiation of renal \nreplacement therapy OR, in patients \n<18 years, decrease in eGFR to \n<35ml/min per 1.73 m\u00b2?\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c1. Yes\u201d\nWas the patient\u2019s urine output \n<0.3 ml/kg/h for \u226524 hours?\nSTART\nIs there a diagnosis of an acute \nkidney injury (AKI) documented?\nThe NTDS definition is consistent with \nthe March 2012 KDIGO Guideline. \nPlease refer to that or the TPM/TMD \nfor additional information regarding \nStage 3 AKI. \nExclude patients with renal failure \nthat were requiring chronic renal \nreplacement therapy prior to injury. \nReport \nElement Value \n\u201c1. Yes\u201d\nDid the patient experience anuria \nfor >12 hours?\n1\nYES\nNO\nYES\nNO\nYES\nNO\nYES\nNO\nYES\nNO\nYES\nNO\n2\n1\n2\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c1. Yes\u201d\nReport \nElement Value \n\u201c1. Yes\u201d\nReport \nElement Value \n\u201c1. Yes\u201d\nReport \nElement Value \n\u201c2. No\u201d\n\n=== PAGE 4 ===\n\nHOSPITAL EVENTS\nPAGE 143"
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n18501\n1\nValue is not a valid menu option\n18503\n2\nElement cannot be blank\n18504\n2\nElement cannot be \u201cNot Applicable\u201d\n18540\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 142\nAcute Kidney Injury (AKI)\nDid the onset of AKI Stage 3 begin \nafter the patient arrived \nat your hospital? \nDid the patient have a SCr 3.0 times \ntheir baseline documented?\nDid the patient have an increase \nin serum creatinine to >4.0mg/dl \n(\u2265353.6\u03bcmol/l)?\nWas there initiation of renal \nreplacement therapy OR, in patients \n<18 years, decrease in eGFR to \n<35ml/min per 1.73 m\u00b2?\nReport",
+        "ELEMENT VALUE": "\u201c2. No\u201d"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "ACUTE_KIDNEY_INJURY_AKI",
-        "raw_text_sha256": "80ab28745f68cb8b8fbd0e1ed493b15f92a8b335ef9eb7df67e98b500ca46339",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "b86e306c482af0d5f2796816ca522510e57278f004a21bdfc0fcac7447216ffd",
         "pdf_start_page": 2,
-        "pdf_end_page": 4,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 3,
+        "pages": [
+          2,
+          3
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
       "warnings": []
     },
@@ -65,38 +51,21 @@
         "ELEMENT VALUES": "1. Yes\n2. No",
         "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nA diagnosis of ARDS must be documented in the patient's medical record.\n \u2022\nConsistent with the 2012 New Berlin Definition.",
         "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n18601\n1\nValue is not a valid menu option\n18603\n2\nElement cannot be blank\n18604\n2\nElement cannot be \u201cNot Applicable\u201d\n18640\n1\nSingle Entry Max exceeded\n\n=== PAGE 5 ===\n\nHOSPITAL EVENTS\nPAGE 144\nAcute Respiratory Distress Syndrome (ARDS)\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital? \nDid the symptoms begin within 1 week \nof known clinical insult or new OR \nworsening respiratory symptoms?\nDid chest imaging reveal bilateral \nopacities not fully explained by effusions, \nlobar/lung collapse, or nodules?\nWas the respiratory failure fully \nexplained by cardiac failure or fluid \noverload? \nDoes the patient meet one of the following oxygenation criteria?\n\u2022 Mild 200 mm Hg < PaO2/FiO2 < 300 mm Hg with PEEP or CPAP \n\u2265 = 5 cm H2Oc\n\u2022 Moderate 100 mm Hg < PaO2/FiO2 < 200 mm Hg with PEEP >5 \ncm H2O\n\u2022 Severe PaO2/FiO2 < 100 mm Hg with PEEP or CPAP \u2265 5 cm H2O\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nSTART\nIs there a diagnosis of an acute \nrespiratory distress syndrome \n(ARDS) documented?\n1\nYES\nNO\n2\nThe NTDS definition of ARDS is \nconsistent with the 2012 New \nBerlin Definition.\nExclude if ARDS was present on \narrival at your hospital.\n1\n2\nNeed objective assessment (e.g., \nechocardiography) to exclude \nhydrostatic edema if no risk factor \npresent.\n3\n3\nYES\nNO\nYES\nNO\nYES\nNO\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c1. Yes\u201d\nYES\nNO\n\n=== PAGE 6 ===\n\nHOSPITAL EVENTS\nPAGE 145"
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n18601\n1\nValue is not a valid menu option\n18603\n2\nElement cannot be blank\n18604\n2\nElement cannot be \u201cNot Applicable\u201d\n18640\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 144\nAcute Respiratory Distress Syndrome (ARDS)\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital? \nDid the symptoms begin within 1 week \nof known clinical insult or new OR \nworsening respiratory symptoms?\nDid chest imaging reveal bilateral \nopacities not fully explained by effusions, \nlobar/lung collapse, or nodules?\nWas the respiratory failure fully \nexplained by cardiac failure or fluid \noverload? \nDoes the patient meet one of the following oxygenation criteria?\n\u2022 Mild 200 mm Hg < PaO2/FiO2 < 300 mm Hg with PEEP or CPAP \n\u2265 = 5 cm H2Oc\n\u2022 Moderate 100 mm Hg < PaO2/FiO2 < 200 mm Hg with PEEP >5 \ncm H2O\n\u2022 Severe PaO2/FiO2 < 100 mm Hg with PEEP or CPAP \u2265 5 cm H2O\nReport",
+        "ELEMENT VALUE": "\u201c1. Yes\u201d\nYES\nNO"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "ACUTE_RESPIRATORY_DISTRESS_SYNDROME_ARDS",
-        "raw_text_sha256": "3451b340aaceabb1734b3ef65fd617cc76f73663332d806cc7aea7a51a7c0d63",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "fa2d881b2b04ebca760ba7367aecc677acd78c87d6da55fc1fd88200ab4d9182",
         "pdf_start_page": 4,
-        "pdf_end_page": 6,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 5,
+        "pages": [
+          4,
+          5
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
       "warnings": []
     },
@@ -106,43 +75,27 @@
       "ntds_year": 2026,
       "sections": {
         "ELEMENT INTENT": "A potentially preventable event often associated with infectious complications, requiring treatment which could \nincrease the hospital length of stay and the likelihood of mortality.",
-        "DESCRIPTION": "Characterized by tremor, sweating, anxiety, agitation, depression, nausea, and malaise. It occurs 6-48 hours after \ncessation of alcohol consumption and, when uncomplicated, abates after 2-5 days. It may be complicated by grand \nmal seizures and may progress to"
+        "DESCRIPTION": "Characterized by tremor, sweating, anxiety, agitation, depression, nausea, and malaise. It occurs 6-48 hours after \ncessation of alcohol consumption and, when uncomplicated, abates after 2-5 days. It may be complicated by grand \nmal seizures and may progress to delirium (known as delirium tremens).",
+        "ELEMENT VALUES": "1. Yes\n2. No",
+        "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nDocumentation of alcohol withdrawal must be in the patient's medical record.\n \u2022\nConsistent with the 2019 World Health Organization (WHO) definition of Alcohol Withdrawal Syndrome.",
+        "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n18701\n1\nValue is not a valid menu option\n18703\n2\nElement cannot be blank\n18704\n2\nElement cannot be \u201cNot Applicable\u201d\n18740\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 146\nAlcohol Withdrawal Syndrome\nDid the onset of symptoms begin after \nthe patient arrived at your hospital?\nReport",
+        "ELEMENT VALUE": "\u201c1. Yes\u201d\nSTART\nIs there documentation the patient \nexperienced tremors, sweating, \nanxiety, agitation, depression, \nnausea, or malaise that occurred \n6-48 hours after cessation of alcohol \nconsumption?\nYES\nNO\nYES\nNO\n1\n1\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "ALCOHOL_WITHDRAWAL_SYNDROME",
-        "raw_text_sha256": "ca6e1a6db7d605ff47a53bfb98bb844650eb332495631dfec48fcda2d82037d4",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "51687b7b8d9598157af61e1780b02577996959a129be4ac8b6b76d4d72116048",
         "pdf_start_page": 6,
-        "pdf_end_page": 6,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 7,
+        "pages": [
+          6,
+          7
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
-      "warnings": [
-        "RAW_WARN:LOW_ANCHOR_HITS(1)",
-        "PARSE_WARN:MISSING_ELEMENT_VALUES_SECTION"
-      ]
+      "warnings": []
     },
     {
       "event_id": 4,
@@ -155,38 +108,21 @@
         "ELEMENT VALUES": "1. Yes\n2. No",
         "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nCardiac arrest must be documented in the patient's medical record.",
         "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n18801\n1\nValue is not a valid menu option\n18803\n2\nElement cannot be blank\n18804\n2\nElement cannot be \u201cNot Applicable\u201d\n18840\n1\nSingle Entry Max exceeded\n\n=== PAGE 9 ===\n\nHOSPITAL EVENTS\nPAGE 148\nCardiac Arrest with CPR\nSTART\nIs there documentation the patient \nexperienced cardiac arrest \nAFTER arrival at your hospital?\nDid the patient receive compressions \nor defibrillation or cardioversion or \ncardiac pacing in an attempt to restore \ncirculation?\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nCardiac arrest is the sudden cessation \nof cardiac activity after hospital arrival. \nThe patient becomes unresponsive \nwith no normal breathing and no signs \nof circulation. If corrective measures \nare not taken rapidly, this condition \nprogresses to sudden death.\nEXCLUDE patients whose ONLY episode \nof cardiac arrest with CPR was on \narrival to your hospital. \nReport \nElement Value \n\u201c1. Yes\u201d\nYES\nNO\nYES\nNO\n1\n1\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 10 ===\n\nHOSPITAL EVENTS\nPAGE 149"
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n18801\n1\nValue is not a valid menu option\n18803\n2\nElement cannot be blank\n18804\n2\nElement cannot be \u201cNot Applicable\u201d\n18840\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 148\nCardiac Arrest with CPR\nSTART\nIs there documentation the patient \nexperienced cardiac arrest \nAFTER arrival at your hospital?\nDid the patient receive compressions \nor defibrillation or cardioversion or \ncardiac pacing in an attempt to restore \ncirculation?\nReport",
+        "ELEMENT VALUE": "\u201c1. Yes\u201d\nYES\nNO\nYES\nNO\n1\n1\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "CARDIAC_ARREST_WITH_CPR",
-        "raw_text_sha256": "bedcba49d51ad592520a108c6ffebf7fb0a86f9b9d3c0a58ebc86096c70683c8",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "9a033d664003743f3284f8d92a332cdda855b7754f64d43ba89e45a885b6abd4",
         "pdf_start_page": 8,
-        "pdf_end_page": 10,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 9,
+        "pages": [
+          8,
+          9
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
       "warnings": []
     },
@@ -196,42 +132,29 @@
       "ntds_year": 2026,
       "sections": {
         "ELEMENT INTENT": "A potentially preventable event often induced by bacteria entering the urinary tract through the catheter, requiring \ntreatment which could increase the hospital length of stay and the likelihood of mortality.",
-        "DESCRIPTION": "A urinary tract infection (UTI) where an indwelling urinary catheter was in place for > 2 calendar days on the date of \nevent, with day of device placement being Day 1,\nAND\nAn indwelling urinary catheter was in place on the date of event or the day before. If an indwelling urinary catheter \nwas in place for more than 2 consecutive days in an inpatient location and then removed, the date of event for the \nUTI must be the day of device discontinuation or the next day for the UTI to be catheter-associated.\nJanuary 2019 CDC CAUTI Criterion SUTI 1a:\nPatient must meet 1, 2, and 3 below:\n1. Patient had an indwelling urinary catheter that had been in place for more than 2 consecutive days in an \ninpatient location on the date of event AND was either:\n\u2022 Present for any portion of the calendar day on the date of event, \nOR\n\u2022 Removed the day before the date of event.\n2. Patient has at least one of the following signs or symptoms:\n\u2022 Fever (> 38\u2070C): Reminder: To use fever in a patient > 65 years of age, the IUC needs to be in place for \nmore than 2 consecutive days in an inpatient location on date of event and is either still in place or was \nremoved the day before the DOE.\n\u2022 Suprapubic tenderness \n\u2022 Costovertebral angle pain or tenderness \n\u2022 Urinary urgency\n\u2022 Urinary frequency\n\u2022 Dysuria\n3. Patient has a urine culture with no more than two species of organisms identified, at least one of which is a \nbacterium > 10\u2075 CFU/ml.\nJanuary 2019 CDC CAUTI Criterion SUTI 2:\nPatient must meet 1, 2 and 3 below:\n1. Patient is \u2264 1 year of age\n2. Patient has at least one of the following signs or symptoms:\n\u2022 fever (> 38.0\u2070C)\n\u2022 hypothermia (< 36.0\u2070C)\n\u2022 apnea \n\u2022 bradycardia \n\u2022 lethargy \n\u2022 vomiting \n\u2022 suprapubic tenderness \n3. Patient has a urine culture with no more than two species of organisms, at least one of which is a bacterium of \n\u2265 10\u2075 CFU/ml.\n\n=== PAGE 11 ===\n\nHOSPITAL EVENTS\nPAGE 150",
+        "DESCRIPTION": "A urinary tract infection (UTI) where an indwelling urinary catheter was in place for > 2 calendar days on the date of \nevent, with day of device placement being Day 1,\nAND\nAn indwelling urinary catheter was in place on the date of event or the day before. If an indwelling urinary catheter \nwas in place for more than 2 consecutive days in an inpatient location and then removed, the date of event for the \nUTI must be the day of device discontinuation or the next day for the UTI to be catheter-associated.\nJanuary 2019 CDC CAUTI Criterion SUTI 1a:\nPatient must meet 1, 2, and 3 below:\n1. Patient had an indwelling urinary catheter that had been in place for more than 2 consecutive days in an \ninpatient location on the date of event AND was either:\n\u2022 Present for any portion of the calendar day on the date of event, \nOR\n\u2022 Removed the day before the date of event.\n2. Patient has at least one of the following signs or symptoms:\n\u2022 Fever (> 38\u2070C): Reminder: To use fever in a patient > 65 years of age, the IUC needs to be in place for \nmore than 2 consecutive days in an inpatient location on date of event and is either still in place or was \nremoved the day before the DOE.\n\u2022 Suprapubic tenderness \n\u2022 Costovertebral angle pain or tenderness \n\u2022 Urinary urgency\n\u2022 Urinary frequency\n\u2022 Dysuria\n3. Patient has a urine culture with no more than two species of organisms identified, at least one of which is a \nbacterium > 10\u2075 CFU/ml.\nJanuary 2019 CDC CAUTI Criterion SUTI 2:\nPatient must meet 1, 2 and 3 below:\n1. Patient is \u2264 1 year of age\n2. Patient has at least one of the following signs or symptoms:\n\u2022 fever (> 38.0\u2070C)\n\u2022 hypothermia (< 36.0\u2070C)\n\u2022 apnea \n\u2022 bradycardia \n\u2022 lethargy \n\u2022 vomiting \n\u2022 suprapubic tenderness \n3. Patient has a urine culture with no more than two species of organisms, at least one of which is a bacterium of \n\u2265 10\u2075 CFU/ml.\n\nHOSPITAL EVENTS\nPAGE 150",
         "ELEMENT VALUES": "1. Yes\n2. No",
         "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nA diagnosis of Urinary Tract Infection (UTI) must be documented in the patient's medical record.\n \u2022\nConsistent with the January 2019 CDC defined CAUTI.",
         "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n18901\n1\nValue is not a valid menu option\n18903\n2\nElement cannot be blank\n18904\n2\nElement cannot be \u201cNot Applicable\u201d\n18940\n1\nSingle Entry Max exceeded\n\n=== PAGE 12 ===\n\nHOSPITAL EVENTS\nPAGE 151\nCatheter-Associated Urinary Tract Infection (CAUTI) SUTI 1a \n(Patients >1 year of age) (pg. 1 of 2)\nSTART\nIs there a diagnosis of UTI \ndocumented?\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital? \nDid the patient have an indwelling \nurinary catheter during their initial \nstay at your hospital?\nWas the indwelling urinary \ncatheter in place for >2 days on \nthe date of the event?\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nYES\nNO\nYES\nNO\n1\n2\nThe NTDS definition is consistent with \nthe January 2019 CDC CAUTI definition. \nIf information not contained in the \nNTDS definition is needed, please refer \nto the CDC or your hospital\u2019s infection \ncontrol department.\n1\nThe Date of Event is the date the first \nelement used to meet an NHSN site-\nspecific infection criterion occurs for \nthe first time within the seven-day \ninfection window period. The day of \ndevice placement is Day 1.\n2\n2026 NTDS Data Dictionary, Released July 2025\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nWas the indwelling urinary \ncatheter in place on the date \nof event OR the day before?\nYES\nNO\nContinue to page 2\nReport \nElement Value \n\u201c2. No\u201d\n\n=== PAGE 13 ===\n\nHOSPITAL EVENTS\nPAGE 152\nCatheter-Associated Urinary Tract Infection (CAUTI) SUTI 1a \n(Patients >1 year of age) (pg. 2 of 2)\nDid the patient experience any of the following signs/\nsymptoms:\n\u2022 Fever (>38\u2070C)\n\u2022 Suprapubic tenderness\n\u2022 Costovertebral angle pain or tenderness\n\u2022 Urinary urgency\n\u2022 Urinary frequency\n\u2022 Dysuria\nReport \nElement Value \n\u201c2. No\u201d\nDid the patient have a urine culture \nwith no more than two species of \norganisms identified, at least one \nwhich is a bacterium >10\u2075 CFU/ml?\nYES\nNO\nReport \nElement Value \n\u201c1. Yes\u201d\nReport \nElement Value \n\u201c2. No\u201d\n2026 NTDS Data Dictionary, Released July 2025\nYES\nYES\nNO\n\n=== PAGE 14 ===\n\nHOSPITAL EVENTS\nPAGE 153\nCatheter-Associated Urinary Tract Infection (CAUTI) SUTI 2 \n(Patients <1 year of age) (pg. 1 of 2)\n2026 NTDS Data Dictionary, Released July 2025\nSTART\nIs there a diagnosis of UTI \ndocumented?\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital? \nDid the patient have an indwelling \nurinary catheter during their initial \nstay at your hospital?\nWas the indwelling urinary \ncatheter in place for >2 days \non the date of the event?\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nYES\nNO\nYES\nNO\nYES\nNO\n1\n2\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nThe NTDS definition is consistent with \nthe January 2019 CDC CAUTI definition. \nIf information not contained in the \nNTDS definition is needed, please refer \nto the CDC or your hospital\u2019s infection \ncontrol department.\n1\nThe Date of Event is the date the first \nelement used to meet an NHSN site-\nspecific infection criterion occurs for \nthe first time within the seven-day \ninfection window period. The day of \ndevice placement is Day 1.\n2\nWas the indwelling urinary \ncatheter in place on the date \nof event OR the day before?\nYES\nNO\nContinue to page 2\nReport \nElement Value \n\u201c2. No\u201d\n\n=== PAGE 15 ===\n\nHOSPITAL EVENTS\nPAGE 154\nCatheter-Associated Urinary Tract Infection (CAUTI) SUTI 2 \n(Patients <1 year of age) (pg. 2 of 2)\nDid the patient experience any of the following signs/symptoms:\n\u2022 Fever (>38\u2070C)\n\u2022 Hypothermia (<36.0\u2070C)\n\u2022 Apnea\n\u2022 Bradycardia\n\u2022 Lethargy\n\u2022 Vomiting\n\u2022 Suprapubic tenderness\nReport \nElement Value \n\u201c2. No\u201d\nDid the patient have a urine culture with \nno more than two species of organisms \nidentified, at least one which is a \nbacterium >10\u2075 CFU/ml?\nYES\nNO\nYES\nNO\nReport \nElement Value \n\u201c1. Yes\u201d\nReport \nElement Value \n\u201c2. No\u201d\nYES\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 16 ===\n\nHOSPITAL EVENTS\nPAGE 155"
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n18901\n1\nValue is not a valid menu option\n18903\n2\nElement cannot be blank\n18904\n2\nElement cannot be \u201cNot Applicable\u201d\n18940\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 151\nCatheter-Associated Urinary Tract Infection (CAUTI) SUTI 1a \n(Patients >1 year of age) (pg. 1 of 2)\nSTART\nIs there a diagnosis of UTI \ndocumented?\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital? \nDid the patient have an indwelling \nurinary catheter during their initial \nstay at your hospital?\nWas the indwelling urinary \ncatheter in place for >2 days on \nthe date of the event?\nReport",
+        "ELEMENT VALUE": "\u201c2. No\u201d\nYES\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "CATHETER_ASSOCIATED_URINARY_TRACT_INFECTION_CAUTI",
-        "raw_text_sha256": "fcc26558964f7c2b01160bc0bf0a5efb58ceb5440bc96c5de273dede0749fc55",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "55c4b3c713dee3862121ae76d96edcc57cb819eeae33ba6d848ab7f13bfa5955",
         "pdf_start_page": 10,
-        "pdf_end_page": 16,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 15,
+        "pages": [
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
       "warnings": []
     },
@@ -240,195 +163,119 @@
       "canonical_name": "Central Line-Associated Bloodstream Infection (CLABSI)",
       "ntds_year": 2026,
       "sections": {
-        "ELEMENT INTENT": "A potentially preventable event, often induced by bacteria entering the bloodstream through the central line, \nrequiring treatment which could increase the hospital length of stay and the likelihood of mortality.\n\nA potentially preventable event often induced by bacteria, viruses, or endogenous flora contacting a surgical wound, \nrequiring treatment which could increase the hospital length of stay and the likelihood of mortality.",
-        "DESCRIPTION": "A laboratory-confirmed bloodstream infection (LCBI) where central line (CL) or umbilical catheter (UC) was in place for > 2 \ncalendar days on the date of event, with day of device placement being Day 1,\nAND\nThe line was also in place on the date of event or the day before. If a CL or UC was in place for > 2 calendar days \nand then removed, the date of event of the LCBI must be the day of discontinuation or the next day to be a CLABSI. \nIf the patient is admitted or transferred into a facility with an implanted central line (port) in place, and that is the \npatient\u2019s only central line, day of first access in an inpatient location is considered Day 1. \"Access\" is defined as \nline placement, infusion or withdrawal through the line. Such lines continue to be eligible for CLABSI once they are \naccessed until they are either discontinued or the day after patient discharge (as per the Transfer Rule). Note that \nthe \"de-access\" of a port does not result in the patient\u2019s removal from CLABSI surveillance.\nJanuary 2016 CDC Criterion LCBI 1:\nPatient has a recognized pathogen identified from one or more blood specimens by a culture or non-culture \nbased microbiologic testing method which is performed for purposes of clinical diagnosis or treatment (e.g., \nnot Active Surveillance Culture/Testing (ASC/AST).\nAND\nOrganism(s) identified in blood is not related to an infection at another site.\nOR\nJanuary 2016 CDC Criterion LCBI 2:\nPatient has at least one of the following signs or symptoms: fever (>38\u2070C), chills, or hypotension.\nAND\nOrganism(s) identified from blood is not related to an infection at another site.\nAND\nThe same common commensal (i.e., diphtheroids [Corynebacterium spp. not C. diphtheriae], Bacillus spp. [not \nB. anthracis], Propionibacterium spp., coagulase-negative staphylococci [including S. epidermidis], viridans \ngroup streptococci, Aerococcus spp., and Micrococcus spp.) is identified from two or more blood specimens \ndrawn on separate occasions, by a culture or non-culture based microbiologic testing method which is \nperformed for purposes of clinical diagnosis or treatment (e.g., not Active Surveillance Culture/Testing (ASC/\nAST). Criterion elements must occur within the Infection Window Period, the 7-day time period which includes \nthe collection date of the positive blood, the 3 calendar days before and the 3 calendar days after.\nOR\nJanuary 2016 CDC Criterion LCBI 3:\nPatient \u2264 1 year of age has at least one of the following signs or symptoms: fever (>38\u2070 C), hypothemia (<36\u2070C), \napnea, or bradycardia.\nAND\nOrganism(s) identified from blood is not related to an infection at another site.\nAND\nThe same common commensal (i.e., diphtheroids [Corynebacterium spp. not C. diphtheriae], Bacillus spp. [not \nB. anthracis], Propionibacterium spp., coagulase-negative staphylococci [including S. epidermidis], viridans \ngroup streptococci, Aerococcus spp., Micrococcus spp.) is identified from two or more blood specimens drawn \non separate occasions, by a culture or non-culture base microbiologic testing method which is performed for \npurposes of clinical diagnosis or treatment (e.g., not Active Surveillance Culture/Testing (ASC/AST). Criterion \nelements must occur within the Infection Window Period, the 7-day time period which includes the collection \ndate of the positive blood, the 3 calendar days before and the 3 calendar days after.\n\n=== PAGE 17 ===\n\nHOSPITAL EVENTS\nPAGE 156\n\nMust meet the following criteria:\nThe date of event occurs within 30 or 90 days after the NHSN operative procedure (where day 1 = the procedure \ndate) according to list in Table 2\nAND\nInvolves deep soft tissues of the incision (e.g., fascial and muscle layers)\nAND\nPatient has at least one of the following:\na. Purulent drainage from the deep incision.\nb. A deep incision that spontaneously dehisces, or is deliberately opened or aspirated by a surgeon, \nattending physician* or other designee. \nAND\nOrganism(s) identified from the deep soft tissues of the incision by culture or non-culture based \nmicrobiologic testing method which is performed for purposes of clinical diagnosis or treatment \n(for example, not Active Surveillance Culture/Testing (ASC/AST)) or culture or non-culture based \nmicrobiologic testing method is not performed. A culture or non-culture based test from the deep soft \ntissues of the incision that has a negative finding does not meet this criterion.\nAND\nPatient has at least one of the following signs or symptoms: fever (> 38\u00b0C); localized pain or tenderness. \nc. An abscess or other evidence of infection involving the deep incision that is detected on gross anatomical \nor histopathologic exam, or imaging test\n* The term attending physician for the purposes of application of the NHSN SSI criteria may be interpreted to mean \nthe surgeon(s), infectious disease, other physician on the case, emergency physician, or physician\u2019s designee (nurse \npractitioner or physician\u2019s assistant).\nCOMMENTS: There are two specific types of deep incisional SSIs:\n1. Deep Incisional Primary (DIP) \u2013 a deep incisional SSI that is identified in a primary incision in a patient \nthat has had an operation with one or more incisions (e.g., C-section incision or chest incision for CBGB).\n2. Deep Incisional Secondary (DIS) \u2013 a deep incisional SSI that is identified in the secondary incision in a \npatient that has had an operation with more than one incision (e.g., donor site incision for CBGB).\n\n=== PAGE 22 ===\n\nHOSPITAL EVENTS\nPAGE 161\nTable 2. Surveillance Period for Deep Incisional or Organ/Space SSI Following Selected NHSN Operative Procedure \nCategories. Day 1 = the date of the procedure. \n30 DAY SURVEILLANCE\nCode\nOperative Procedure\nCode\nOperative Procedure\nAAA\nAbdominal aortic aneurysm repair\nLAM\nLaminectomy\nAMP\nLimb amputation\nLTP\nLiver transplant\nAPPY\nAppendix surgery\nNECK\nNeck surgery\nAVSD\nShunt for dialysis\nNEPH\nKidney surgery\nBILI\nBile duct, liver or pancreatic surgery\nOVRY\nOvarian surgery\nCEA\nCarotid endarterectomy\nPRST\nProstate surgery\nCHOL\nGallbladder surgery\nREC\nRectal surgery\nCOLO\nColon surgery\nSB\nSmall bowel surgery\nCSEC\nCesarean section\nSPLE\nSpleen surgery\nGAST\nGastric surgery\nTHOR\nThoracic surgery\nHTP\nHeart transplant\nTHUR\nThyroid and/or parathyroid surgery\nHYST\nAbdominal hysterectomy\nVHYS\nVaginal hysterectomy\nKTP\nKidney transplant\nXLAP\nExploratory Laparotomy\n90 DAY SURVEILLANCE\nCode\nOperative Procedure\nBRST\nBreast surgery\nCARD\nCardiac surgery\nCBGB\nCoronary artery bypass graft with both chest and donor site incisions\nCBGC\nCoronary artery bypass graft with chest incision only\nCRAN\nCraniotomy\nFUSN\nSpinal fusion\nFX\nOpen reduction of fracture\nHER\nHerniorrhaphy\nHPRO\nHip prosthesis\nKPRO\nKnee prosthesis\nPACE\nPacemaker surgery\nPVBY\nPeripheral vascular bypass surgery\nVSHN\nVentricular shunt",
-        "ELEMENT VALUES": "1. Yes\n2. No\n\n1. Yes\n2. No",
-        "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nA diagnosis of central line-associated bloodstream infection (CLABSI) must be documented in the patient's \nmedical record.\n \u2022\nConsistent with the January 2016 CDC defined CLABSI.\n\n\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nA diagnosis of a surgical site infection must be documented in the patient's medical record.\n \u2022\nConsistent with the CDC January 2024 defined SSI.\n\n=== PAGE 23 ===\n\nHOSPITAL EVENTS\nPAGE 162",
-        "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary\n\n1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19001\n1\nValue is not a valid menu option\n19003\n2\nElement cannot be blank\n19004\n2\nElement cannot be \u201cNot Applicable\u201d\n19040\n1\nSingle Entry Max exceeded\n\n=== PAGE 18 ===\n\nHOSPITAL EVENTS\nPAGE 157\nCentral Line-Associated Blood Stream Infection (CLABSI) (pg. 1 of 3)\nSTART\nIs there a diagnosis of CLABSI \ndocumented?\nDid the onset of symptoms begin after \nthe patient arrived at your hospital? \nIs there laboratory confirmation of a \nblood stream infection?\nWas the central line (CL) or umbilical \ncatheter (UC) in place >2 calendar \ndays on the date of event?\nReport \nElement Value \n\u201c2. No\u201d\n1\nThe Date of Event is the date the first element used to meet an NHSN \nsite-specific infection criterion occurs for the first time within the seven-\nday infection window period. The day of device placement is Day 1.\nThe NTDS definition is consistent with the January 2016 CDC CLABSI \ndefinition. If information not contained in the NTDS definition is needed, \nplease refer to the CDC or your hospital\u2019s infection control department.\n1\n2\n2\nContinue to page 2\nYES\nNO\nYES\nNO\nYES\nNO\nYES\nNO\nWas the line in place on the date \nof event or the day before?\n3\nYES\nNO\nIf a CL or UC was in place for >2 calendar days and then removed, the \ndate of event of the LCBI must be the day of discontinuation or the next \nday to be a CLABSI. If the patient is admitted or transferred into a facility \nwith an implanted central line (port) in place, and that is the patient\u2019s \nonly central line, day of first access in an inpatient location is considered \nDay 1. \u201cAccess\u201d is defined as line placement, infusion or withdrawal \nthrough the line. Such lines continue to be eligible for CLABSI once they \nare accessed until they are either discontinued or the day after patient \ndischarge (as per the Transfer Rule). Note that the \u201cde-access\u201c of a port \ndoes not result in the patient\u2019s removal from CLABSI surveillance.\n3\n2026 NTDS Data Dictionary, Released July 2025\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\n\n=== PAGE 19 ===\n\nHOSPITAL EVENTS\nPAGE 158\nCentral Line-Associated Blood Stream Infection (CLABSI) (pg. 2 of 3)\nYES\nNO\nYES\nLCBI 1: Did the patient have a\nrecognized pathogen identified from \none or more blood specimens?\nDid the patient have organism(s) identified in \nblood not related to an infection at another site?\nLCBI 2: Did the patient have at least one of the \nfollowing signs or symptoms: fever (>38\u2070C), \nchills, or hypotension?\nReport \nElement Value \n\u201c1. Yes\u201d\nSee\nLCBI 2\nYES\nNO\nDid the patient have \norganism(s) identified from \nblood not related to an \ninfection at another site?\nLCBI 3: Is the patient \n<1 years of age?\nYES\nNO\nWere the same common commensal organisms \u201c2. \nNo\u201d identified from two or more blood specimens \ndrawn on separate occasions, by a culture or non-\nculture based microbiologic testing method which \nis performed for purposes of clinical diagnosis or \ntreatment?\nContinue to page 3\nYES\nNO\nDid the patient have at least one of \nthe following signs or symptoms: fever \n(>38\u2070 C), hypothermia (<36\u2070C), apnea, \nor bradycardia?\nSee\nLCBI 3\nYES\nNO\n4\nSee\nLCBI 3\nCriterion elements must occur within \nthe Infection Window Period, the \n7-day time period which includes the \ncollection date of the positive blood, \nthe 3 calendar days before and the 3 \ncalendar days after.\n4\n2026 NTDS Data Dictionary, Released July 2025\nReport \nElement Value \n\u201c1. Yes\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nYES\nNO\n\n=== PAGE 20 ===\n\nHOSPITAL EVENTS\nPAGE 159\nCentral Line-Associated Blood Stream Infection (CLABSI) (pg. 3 of 3)\nDid the patient have organisms(s) \nidentified from blood not related to an \ninfection at another site?\nYES\nYES\nNO\nWere the same common commensal \norganisms identified from two or more \nblood specimens drawn on separate \noccasions, by a culture or non-culture \nbased microbiologic testing method \nwhich is performed for purposes of \nclinical diagnosis or treatment?\nReport \nElement Value \n\u201c2. No\u201d\n5\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c1. Yes\u201d\nCriterion elements must occur within \nthe Infection Window Period, the \n7-day time period which includes the \ncollection date of the positive blood, \nthe 3 calendar days before and the 3 \ncalendar days after.\n5\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 21 ===\n\nHOSPITAL EVENTS\nPAGE 160\nDEEP SURGICAL SITE INFECTION\n\nRule ID\nLevel\nMessage\n19101\n1\nValue is not a valid menu option\n19103\n2\nElement cannot be blank\n19104\n2\nElement cannot be \u201cNot Applicable\u201d\n19140\n1\nSingle Entry Max exceeded\n\n=== PAGE 24 ===\n\nHOSPITAL EVENTS\nPAGE 163"
+        "ELEMENT INTENT": "A potentially preventable event, often induced by bacteria entering the bloodstream through the central line, \nrequiring treatment which could increase the hospital length of stay and the likelihood of mortality.",
+        "DESCRIPTION": "A laboratory-confirmed bloodstream infection (LCBI) where central line (CL) or umbilical catheter (UC) was in place for > 2 \ncalendar days on the date of event, with day of device placement being Day 1,\nAND\nThe line was also in place on the date of event or the day before. If a CL or UC was in place for > 2 calendar days \nand then removed, the date of event of the LCBI must be the day of discontinuation or the next day to be a CLABSI. \nIf the patient is admitted or transferred into a facility with an implanted central line (port) in place, and that is the \npatient\u2019s only central line, day of first access in an inpatient location is considered Day 1. \"Access\" is defined as \nline placement, infusion or withdrawal through the line. Such lines continue to be eligible for CLABSI once they are \naccessed until they are either discontinued or the day after patient discharge (as per the Transfer Rule). Note that \nthe \"de-access\" of a port does not result in the patient\u2019s removal from CLABSI surveillance.\nJanuary 2016 CDC Criterion LCBI 1:\nPatient has a recognized pathogen identified from one or more blood specimens by a culture or non-culture \nbased microbiologic testing method which is performed for purposes of clinical diagnosis or treatment (e.g., \nnot Active Surveillance Culture/Testing (ASC/AST).\nAND\nOrganism(s) identified in blood is not related to an infection at another site.\nOR\nJanuary 2016 CDC Criterion LCBI 2:\nPatient has at least one of the following signs or symptoms: fever (>38\u2070C), chills, or hypotension.\nAND\nOrganism(s) identified from blood is not related to an infection at another site.\nAND\nThe same common commensal (i.e., diphtheroids [Corynebacterium spp. not C. diphtheriae], Bacillus spp. [not \nB. anthracis], Propionibacterium spp., coagulase-negative staphylococci [including S. epidermidis], viridans \ngroup streptococci, Aerococcus spp., and Micrococcus spp.) is identified from two or more blood specimens \ndrawn on separate occasions, by a culture or non-culture based microbiologic testing method which is \nperformed for purposes of clinical diagnosis or treatment (e.g., not Active Surveillance Culture/Testing (ASC/\nAST). Criterion elements must occur within the Infection Window Period, the 7-day time period which includes \nthe collection date of the positive blood, the 3 calendar days before and the 3 calendar days after.\nOR\nJanuary 2016 CDC Criterion LCBI 3:\nPatient \u2264 1 year of age has at least one of the following signs or symptoms: fever (>38\u2070 C), hypothemia (<36\u2070C), \napnea, or bradycardia.\nAND\nOrganism(s) identified from blood is not related to an infection at another site.\nAND\nThe same common commensal (i.e., diphtheroids [Corynebacterium spp. not C. diphtheriae], Bacillus spp. [not \nB. anthracis], Propionibacterium spp., coagulase-negative staphylococci [including S. epidermidis], viridans \ngroup streptococci, Aerococcus spp., Micrococcus spp.) is identified from two or more blood specimens drawn \non separate occasions, by a culture or non-culture base microbiologic testing method which is performed for \npurposes of clinical diagnosis or treatment (e.g., not Active Surveillance Culture/Testing (ASC/AST). Criterion \nelements must occur within the Infection Window Period, the 7-day time period which includes the collection \ndate of the positive blood, the 3 calendar days before and the 3 calendar days after.\n\nHOSPITAL EVENTS\nPAGE 156",
+        "ELEMENT VALUES": "1. Yes\n2. No",
+        "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nA diagnosis of central line-associated bloodstream infection (CLABSI) must be documented in the patient's \nmedical record.\n \u2022\nConsistent with the January 2016 CDC defined CLABSI.",
+        "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19001\n1\nValue is not a valid menu option\n19003\n2\nElement cannot be blank\n19004\n2\nElement cannot be \u201cNot Applicable\u201d\n19040\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 157\nCentral Line-Associated Blood Stream Infection (CLABSI) (pg. 1 of 3)\nSTART\nIs there a diagnosis of CLABSI \ndocumented?\nDid the onset of symptoms begin after \nthe patient arrived at your hospital? \nIs there laboratory confirmation of a \nblood stream infection?\nWas the central line (CL) or umbilical \ncatheter (UC) in place >2 calendar \ndays on the date of event?\nReport",
+        "ELEMENT VALUE": "\u201c1. Yes\u201d\nCriterion elements must occur within \nthe Infection Window Period, the \n7-day time period which includes the \ncollection date of the positive blood, \nthe 3 calendar days before and the 3 \ncalendar days after.\n5\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "CENTRAL_LINE_ASSOCIATED_BLOODSTREAM_INFECTION_CLABSI",
-        "raw_text_sha256": "329e74d7aed74e0329bd27743ad448c45b399169c877022305db2e1a400b6649",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "189aaa767ffe88fc238d769391f9ae2c87a06ff626f0d6044fa83996bf77b59e",
         "pdf_start_page": 16,
-        "pdf_end_page": 24,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 20,
+        "pages": [
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
-      "warnings": [
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:ELEMENT INTENT",
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:DESCRIPTION",
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:ELEMENT VALUES",
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:ADDITIONAL INFORMATION",
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:DATA SOURCE HIERARCHY GUIDE",
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:ASSOCIATED EDIT CHECKS"
-      ]
+      "warnings": []
     },
     {
       "event_id": 7,
       "canonical_name": "Deep Surgical Site Infection (Deep SSI)",
       "ntds_year": 2026,
       "sections": {
-        "UNPARSED": "Deep Surgical Site Infection (Deep SSI) (pg. 1 of 2)\nSTART\nIs there a diagnosis of a surgical \nsite infection documented?\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital? \nDid the SSI occur within 30 or 90 \ndays after an NHSN operative \nprocedure?\nDid the SSI involve deep soft tissues \nof the incision?\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\n1\nThe NTDS definition is consistent with \nthe January 2024 CDC SSI definition. If \ninformation not contained in the NTDS \ndefinition is needed, please refer to the \nCDC or your hospital\u2019s infection control\ndepartment.\n1\nContinue to page 2\nYES\nNO\nYES\nNO\nYES\nNO\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 25 ===\n\nHOSPITAL EVENTS\nPAGE 164\nDeep Surgical Site Infection (Deep SSI) (pg. 2 of 2)\nDid the patient have at least one of the following:\na. \nPurulent drainage from the deep incision. \nb. \nA deep incision that spontaneously dehisces, or is deliberately opened \nor aspirated by a surgeon, attending physician or other designee.\nAND\nOrganism(s) identified from the deep soft tissues of the incision by \nculture or non-culture based microbiologic testing method which \nis performed for purposes of clinical diagnosis or treatment (for \nexample, not Active Surveillance Culture/Testing (ASC/AST)) or culture \nor non-culture based microbiologic testing method is not performed. \nA culture or non-culture based test from the deep soft tissues of the \nincision that has a negative finding does not meet this criterion.\nAND\nPatient has at least one of the following signs or symptoms: fever (>38 \n\u00b0C); localized pain or tenderness.\nc. \nAn abscess or other evidence of infection involving the deep incision \nthat is detected on gross anatomical or histopathological exam, or \nimaging test.\nWas there documented\nevidence of infection?\nYES\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c1. Yes\u201d\n2\n2\nThe term attending physician for the \npurposes of application of the NHSN \nSSI criteria may be interpreted to mean \nthe surgeon(s), infectious disease, \nother physician on the case, emergency \nphysician, or physician\u2019s designee \n(nurse practitioner or physician\u2019s \nassistant).\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 26 ===\n\nHOSPITAL EVENTS\nPAGE 165"
+        "ELEMENT INTENT": "A potentially preventable event often induced by bacteria, viruses, or endogenous flora contacting a surgical wound, \nrequiring treatment which could increase the hospital length of stay and the likelihood of mortality.",
+        "DESCRIPTION": "Must meet the following criteria:\nThe date of event occurs within 30 or 90 days after the NHSN operative procedure (where day 1 = the procedure \ndate) according to list in Table 2\nAND\nInvolves deep soft tissues of the incision (e.g., fascial and muscle layers)\nAND\nPatient has at least one of the following:\na. Purulent drainage from the deep incision.\nb. A deep incision that spontaneously dehisces, or is deliberately opened or aspirated by a surgeon, \nattending physician* or other designee. \nAND\nOrganism(s) identified from the deep soft tissues of the incision by culture or non-culture based \nmicrobiologic testing method which is performed for purposes of clinical diagnosis or treatment \n(for example, not Active Surveillance Culture/Testing (ASC/AST)) or culture or non-culture based \nmicrobiologic testing method is not performed. A culture or non-culture based test from the deep soft \ntissues of the incision that has a negative finding does not meet this criterion.\nAND\nPatient has at least one of the following signs or symptoms: fever (> 38\u00b0C); localized pain or tenderness. \nc. An abscess or other evidence of infection involving the deep incision that is detected on gross anatomical \nor histopathologic exam, or imaging test\n* The term attending physician for the purposes of application of the NHSN SSI criteria may be interpreted to mean \nthe surgeon(s), infectious disease, other physician on the case, emergency physician, or physician\u2019s designee (nurse \npractitioner or physician\u2019s assistant).\nCOMMENTS: There are two specific types of deep incisional SSIs:\n1. Deep Incisional Primary (DIP) \u2013 a deep incisional SSI that is identified in a primary incision in a patient \nthat has had an operation with one or more incisions (e.g., C-section incision or chest incision for CBGB).\n2. Deep Incisional Secondary (DIS) \u2013 a deep incisional SSI that is identified in the secondary incision in a \npatient that has had an operation with more than one incision (e.g., donor site incision for CBGB).\n\nHOSPITAL EVENTS\nPAGE 161\nTable 2. Surveillance Period for Deep Incisional or Organ/Space SSI Following Selected NHSN Operative Procedure \nCategories. Day 1 = the date of the procedure. \n30 DAY SURVEILLANCE\nCode\nOperative Procedure\nCode\nOperative Procedure\nAAA\nAbdominal aortic aneurysm repair\nLAM\nLaminectomy\nAMP\nLimb amputation\nLTP\nLiver transplant\nAPPY\nAppendix surgery\nNECK\nNeck surgery\nAVSD\nShunt for dialysis\nNEPH\nKidney surgery\nBILI\nBile duct, liver or pancreatic surgery\nOVRY\nOvarian surgery\nCEA\nCarotid endarterectomy\nPRST\nProstate surgery\nCHOL\nGallbladder surgery\nREC\nRectal surgery\nCOLO\nColon surgery\nSB\nSmall bowel surgery\nCSEC\nCesarean section\nSPLE\nSpleen surgery\nGAST\nGastric surgery\nTHOR\nThoracic surgery\nHTP\nHeart transplant\nTHUR\nThyroid and/or parathyroid surgery\nHYST\nAbdominal hysterectomy\nVHYS\nVaginal hysterectomy\nKTP\nKidney transplant\nXLAP\nExploratory Laparotomy\n90 DAY SURVEILLANCE\nCode\nOperative Procedure\nBRST\nBreast surgery\nCARD\nCardiac surgery\nCBGB\nCoronary artery bypass graft with both chest and donor site incisions\nCBGC\nCoronary artery bypass graft with chest incision only\nCRAN\nCraniotomy\nFUSN\nSpinal fusion\nFX\nOpen reduction of fracture\nHER\nHerniorrhaphy\nHPRO\nHip prosthesis\nKPRO\nKnee prosthesis\nPACE\nPacemaker surgery\nPVBY\nPeripheral vascular bypass surgery\nVSHN\nVentricular shunt",
+        "ELEMENT VALUES": "1. Yes\n2. No",
+        "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nA diagnosis of a surgical site infection must be documented in the patient's medical record.\n \u2022\nConsistent with the CDC January 2024 defined SSI.\n\nHOSPITAL EVENTS\nPAGE 162",
+        "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19101\n1\nValue is not a valid menu option\n19103\n2\nElement cannot be blank\n19104\n2\nElement cannot be \u201cNot Applicable\u201d\n19140\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 163\nDeep Surgical Site Infection (Deep SSI) (pg. 1 of 2)\nSTART\nIs there a diagnosis of a surgical \nsite infection documented?\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital? \nDid the SSI occur within 30 or 90 \ndays after an NHSN operative \nprocedure?\nDid the SSI involve deep soft tissues \nof the incision?\nReport",
+        "ELEMENT VALUE": "\u201c1. Yes\u201d\n2\n2\nThe term attending physician for the \npurposes of application of the NHSN \nSSI criteria may be interpreted to mean \nthe surgeon(s), infectious disease, \nother physician on the case, emergency \nphysician, or physician\u2019s designee \n(nurse practitioner or physician\u2019s \nassistant).\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [
-        "NOTE_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-      ],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "DEEP_SURGICAL_SITE_INFECTION_DEEP_SSI",
-        "raw_text_sha256": "c1eafc97daa1875fc0e9e7508523639b5c791c9f5f9f9e8ad268c951ea365fe5",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "41b24a023f35eb5af53a34a393ce4182e409b4cc37351da17fa6c8c5029b8fe6",
+        "pdf_start_page": 21,
+        "pdf_end_page": 25,
+        "pages": [
+          21,
+          22,
+          23,
+          24,
+          25
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
-      "page_receipts": {
-        "pdf_start_page": 24,
-        "pdf_end_page": 26,
-        "doc_start_page": 0,
-        "doc_end_page": 0
-      },
-      "warnings": [
-        "RAW_WARN:LOW_ANCHOR_HITS(0)",
-        "PARSE_WARN:NO_SECTION_HEADINGS_FOUND"
-      ]
+      "warnings": []
     },
     {
       "event_id": 8,
       "canonical_name": "Deep Vein Thrombosis (DVT)",
       "ntds_year": 2026,
       "sections": {
-        "ELEMENT INTENT": "A potentially preventable event often induced by immobility, anesthesia, stroke, venous catheters, dehydration, \nand/or thrombocytosis, requiring treatment which could increase the hospital length of stay and the likelihood of \nmortality.\n\nA potentially preventable event often induced by infection, stroke, lung or liver disease, medications, low sodium, \nlow blood sugar, urinary retention, dehydration, low oxygen, or an unfamiliar environment, requiring treatment \nwhich could increase the hospital length of stay and the likelihood of mortality.",
-        "DESCRIPTION": "The formation, development, or existence of a blood clot or thrombus within the venous system, which may be \ncoupled with inflammation.\n\nAcute onset of behaviors characterized by restlessness, illusions, and incoherence of thought and speech. Delirium \ncan often be traced to one or more contributing factors, such as a severe or chronic medical illness, changes in your \nmetabolic balance (such as low sodium), medication, infection, surgery, or alcohol or drug withdrawal.\nOR\nPatient tests positive after using an objective screening tool like the Confusion Assessment Method (CAM) or the \nIntensive Care Delirium Screening Checklist (ICDSC).\nOR\nA diagnosis of delirium documented in the patient\u2019s medical record.",
-        "ELEMENT VALUES": "1. Yes\n2. No\n\n1. Yes\n2. No",
-        "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nA diagnosis of deep vein thrombosis (DVT) must be documented in the patient's medical record, which may be \nconfirmed by venogram, ultrasound, or CT.\n \u2022\nThe patient must be treated with anticoagulation therapy and/or placement of a vena cava filter or clipping of \nthe vena cava.\n\n\u2022 Onset of symptoms began after arrival to your ED/hospital.",
-        "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary\n\n1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19201\n1\nValue is not a valid menu option\n19203\n2\nElement cannot be blank\n19204\n2\nElement cannot be \u201cNot Applicable\u201d\n19240\n1\nSingle Entry Max exceeded\n\n=== PAGE 27 ===\n\nHOSPITAL EVENTS\nPAGE 166\nDeep Vein Thrombosis (DVT)\nSTART\nIs there a diagnosis of a DVT \ndocumented?\nDid the onset of symptoms begin after \nthe patient arrived at your hospital?\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nWas the DVT treated with \nanticoagulation therapy and/or \nplacement of a vena cava filter or \nclipping of the vena cava?\nReport \nElement Value \n\u201c1. Yes\u201d\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nYES\nNO\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 28 ===\n\nHOSPITAL EVENTS\nPAGE 167\nDELIRIUM\n\nRule ID\nLevel\nMessage\n21601\n1\nValue is not a valid menu option\n21603\n2\nElement cannot be blank\n21604\n2\nElement cannot be \u201cNot Applicable\u201d\n21640\n1\nSingle Entry Max exceeded\n\n=== PAGE 29 ===\n\nHOSPITAL EVENTS\nPAGE 168\nDelirium\nDid the onset of symptoms begin after \nthe patient arrived at your hospital?\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nDelirium can often be traced to one \nor more contributing factors, such as \na severe or chronic medical illness, \nchanges in your metabolic balance \n(such as low sodium), medication, \ninfection, surgery, or alcohol or drug \nwithdrawal.\nReport \nElement Value \n\u201c1. Yes\u201d\nWas the delirium caused by alcohol \nwithdrawal?\nYES\nNO\nYES\nNO\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\nSTART\nAre ANY of the following \ndocumented?\n\u2022 Signs/symptoms of delirium\n\u2022 Diagnosis of delirium\n\u2022 Positive delirium screen\n1\n1\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 30 ===\n\nHOSPITAL EVENTS\nPAGE 169",
-        "EXCLUDE": "\u2022 Patients whose delirium is due to alcohol withdrawal."
+        "ELEMENT INTENT": "A potentially preventable event often induced by immobility, anesthesia, stroke, venous catheters, dehydration, \nand/or thrombocytosis, requiring treatment which could increase the hospital length of stay and the likelihood of \nmortality.",
+        "DESCRIPTION": "The formation, development, or existence of a blood clot or thrombus within the venous system, which may be \ncoupled with inflammation.",
+        "ELEMENT VALUES": "1. Yes\n2. No",
+        "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nA diagnosis of deep vein thrombosis (DVT) must be documented in the patient's medical record, which may be \nconfirmed by venogram, ultrasound, or CT.\n \u2022\nThe patient must be treated with anticoagulation therapy and/or placement of a vena cava filter or clipping of \nthe vena cava.",
+        "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19201\n1\nValue is not a valid menu option\n19203\n2\nElement cannot be blank\n19204\n2\nElement cannot be \u201cNot Applicable\u201d\n19240\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 166\nDeep Vein Thrombosis (DVT)\nSTART\nIs there a diagnosis of a DVT \ndocumented?\nDid the onset of symptoms begin after \nthe patient arrived at your hospital?\nReport",
+        "ELEMENT VALUE": "\u201c2. No\u201d\nYES\nNO\nYES\nNO\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "DEEP_VEIN_THROMBOSIS_DVT",
-        "raw_text_sha256": "1cdd10d5191cc8ecf9cdb718ac75b43f0451303266027b506905abf8e22dd1a2",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "0bc9bcebefe458dc63cf21f70fb2739345a0c7897d7b975401e53a4733061afb",
         "pdf_start_page": 26,
-        "pdf_end_page": 30,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 27,
+        "pages": [
+          26,
+          27
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
-      "warnings": [
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:ELEMENT INTENT",
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:DESCRIPTION",
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:ELEMENT VALUES",
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:ADDITIONAL INFORMATION",
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:DATA SOURCE HIERARCHY GUIDE",
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:ASSOCIATED EDIT CHECKS"
-      ]
+      "warnings": []
     },
     {
       "event_id": 9,
       "canonical_name": "Delirium",
       "ntds_year": 2026,
       "sections": {
+        "ELEMENT INTENT": "A potentially preventable event often induced by infection, stroke, lung or liver disease, medications, low sodium, \nlow blood sugar, urinary retention, dehydration, low oxygen, or an unfamiliar environment, requiring treatment \nwhich could increase the hospital length of stay and the likelihood of mortality.",
+        "DESCRIPTION": "Acute onset of behaviors characterized by restlessness, illusions, and incoherence of thought and speech. Delirium \ncan often be traced to one or more contributing factors, such as a severe or chronic medical illness, changes in your \nmetabolic balance (such as low sodium), medication, infection, surgery, or alcohol or drug withdrawal.\nOR\nPatient tests positive after using an objective screening tool like the Confusion Assessment Method (CAM) or the \nIntensive Care Delirium Screening Checklist (ICDSC).\nOR\nA diagnosis of delirium documented in the patient\u2019s medical record.",
+        "EXCLUDE": "\u2022 Patients whose delirium is due to alcohol withdrawal.",
         "ELEMENT VALUES": "1. Yes\n2. No",
-        "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nDocumentation of alcohol withdrawal must be in the patient's medical record.\n \u2022\nConsistent with the 2019 World Health Organization (WHO) definition of Alcohol Withdrawal Syndrome.",
+        "ADDITIONAL INFORMATION": "\u2022 Onset of symptoms began after arrival to your ED/hospital.",
         "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n18701\n1\nValue is not a valid menu option\n18703\n2\nElement cannot be blank\n18704\n2\nElement cannot be \u201cNot Applicable\u201d\n18740\n1\nSingle Entry Max exceeded\n\n=== PAGE 7 ===\n\nHOSPITAL EVENTS\nPAGE 146\nAlcohol Withdrawal Syndrome\nDid the onset of symptoms begin after \nthe patient arrived at your hospital?\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nNote that a diagnosis of alcohol \nwithdrawal syndrome is not required \nby the NTDS definition.\nReport \nElement Value \n\u201c1. Yes\u201d\nSTART\nIs there documentation the patient \nexperienced tremors, sweating, \nanxiety, agitation, depression, \nnausea, or malaise that occurred \n6-48 hours after cessation of alcohol \nconsumption?\nYES\nNO\nYES\nNO\n1\n1\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 8 ===\n\nHOSPITAL EVENTS\nPAGE 147"
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n21601\n1\nValue is not a valid menu option\n21603\n2\nElement cannot be blank\n21604\n2\nElement cannot be \u201cNot Applicable\u201d\n21640\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 168\nDelirium\nDid the onset of symptoms begin after \nthe patient arrived at your hospital?\nReport",
+        "ELEMENT VALUE": "\u201c2. No\u201d\nSTART\nAre ANY of the following \ndocumented?\n\u2022 Signs/symptoms of delirium\n\u2022 Diagnosis of delirium\n\u2022 Positive delirium screen\n1\n1\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "DELIRIUM",
-        "raw_text_sha256": "c85558ff75800c540ddba4097a5079cadea3173fd1d1b4e1e03749f6cf633392",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "b142e8616f726a3712f42ac27f9aa5123622d2da4ab0b91f0f6fa0b43d42c77a",
+        "pdf_start_page": 28,
+        "pdf_end_page": 29,
+        "pages": [
+          28,
+          29
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
-      "page_receipts": {
-        "pdf_start_page": 6,
-        "pdf_end_page": 8,
-        "doc_start_page": 0,
-        "doc_end_page": 0
-      },
-      "warnings": [
-        "PARSE_WARN:MISSING_DESCRIPTION_SECTION"
-      ]
+      "warnings": []
     },
     {
       "event_id": 10,
@@ -440,38 +287,21 @@
         "ELEMENT VALUES": "1. Yes\n2. No",
         "ADDITIONAL INFORMATION": "\u2022 Onset of symptoms began after arrival to your ED/hospital.",
         "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19401\n1\nValue is not a valid menu option\n19403\n2\nElement cannot be blank\n19404\n2\nElement cannot be \u201cNot Applicable\u201d\n19440\n1\nSingle Entry Max exceeded\n\n=== PAGE 31 ===\n\nHOSPITAL EVENTS\nPAGE 170\nMyocardial Infarction (MI)\nSTART\nIs there a diagnosis of an acute\nmyocardial infarction (MI)\ndocumented?\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital?\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nWas there documentation of ECG \nchanges indicative of an acute MI?\nReport \nElement Value \n\u201c1. Yes\u201d\nReport \nElement Value \n\u201c2. No\u201d\nWas there new elevation in troponin \ngreater than three times upper level \nof the reference range?\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nYES\nNO\nYES\nNO\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 32 ===\n\nHOSPITAL EVENTS\nPAGE 171"
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19401\n1\nValue is not a valid menu option\n19403\n2\nElement cannot be blank\n19404\n2\nElement cannot be \u201cNot Applicable\u201d\n19440\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 170\nMyocardial Infarction (MI)\nSTART\nIs there a diagnosis of an acute\nmyocardial infarction (MI)\ndocumented?\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital?\nReport",
+        "ELEMENT VALUE": "\u201c2. No\u201d\nYES\nNO\nYES\nNO\nYES\nNO\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "MYOCARDIAL_INFARCTION_MI",
-        "raw_text_sha256": "191fbc3152b8533b7e5196826c9beb72164803201720c9fc0dafd2a33f281870",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "846120aecc8aa4bc4f8a774f37c093c3818f67a772fdf17769d778d6b7c92412",
         "pdf_start_page": 30,
-        "pdf_end_page": 32,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 31,
+        "pages": [
+          30,
+          31
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
       "warnings": []
     },
@@ -481,93 +311,57 @@
       "ntds_year": 2026,
       "sections": {
         "ELEMENT INTENT": "A potentially preventable event often induced by bacteria or endogenous flora contacting a surgical wound, \nrequiring treatment which could increase the hospital length of stay and the likelihood of mortality.",
-        "DESCRIPTION": "Must meet the following criteria:\nInfection occurs within 30 or 90 days after the NHSN operative procedure (where day 1 = the procedure date) \naccording to the list in Table 2\nAND\nInfection involves any part of the body deeper than the fascial/muscle layers, that is opened or manipulated during \nthe operative procedure\nAND\nPatient has at least one of the following:\na. Purulent drainage from a drain that is placed into the organ/space (e.g., closed suction drainage system, \nopen drain, T-tube drain, CT guided drainage).\nb. Organisms are identified from fluid or tissue in the organ/space by a culture or non-culture based \nmicrobiologic testing method which is performed for purposes of clinical diagnosis or treatment (e.g., \nnot Active Surveillance Culture/Testing (ASC/AST)).\nc. An abscess or other evidence of infection involving the organ/space that is detected on gross anatomical \nor histopathologic exam, or imaging test evidence suggestive of infection.\nAND\nMeets at least one criterion for a specific organ/space infection site listed in Table 3. These criteria are found in the \nSurveillance Definitions for Specific Types of Infections chapter.\nTable 2. Surveillance Period for Deep Incisional or Organ/Space SSI Following Selected NHSN Operative Procedure \nCategories. Day 1 = the date of the procedure.\n30 DAY SURVEILLANCE\nCode\nOperative Procedure\nCode\nOperative Procedure\nAAA\nAbdominal aortic aneurysm repair\nLAM\nLaminectomy\nAMP\nLimb amputation\nLTP\nLiver transplant\nAPPY\nAppendix surgery\nNECK\nNeck surgery\nAVSD\nShunt for dialysis\nNEPH\nKidney surgery\nBILI\nBile duct, liver or pancreatic surgery\nOVRY\nOvarian surgery\nCEA\nCarotid endarterectomy\nPRST\nProstate surgery\nCHOL\nGallbladder surgery\nREC\nRectal surgery\nCOLO\nColon surgery\nSB\nSmall bowel surgery\nCSEC\nCesarean section\nSPLE\nSpleen surgery\nGAST\nGastric surgery\nTHOR\nThoracic surgery\nHTP\nHeart transplant\nTHUR\nThyroid and/or parathyroid surgery\nHYST\nAbdominal hysterectomy\nVHYS\nVaginal hysterectomy\nKTP\nKidney transplant\nXLAP\nExploratory Laparotomy\n\n=== PAGE 33 ===\n\nHOSPITAL EVENTS\nPAGE 172\n90 DAY SURVEILLANCE\nCode\nOperative Procedure\nBRST\nBreast surgery\nCARD\nCardiac surgery\nCBGB\nCoronary artery bypass graft with both chest and donor site incisions\nCBGC\nCoronary artery bypass graft with chest incision only\nCRAN\nCraniotomy\nFUSN\nSpinal fusion\nFX\nOpen reduction of fracture\nHER\nHerniorrhaphy\nHPRO\nHip prosthesis\nKPRO\nKnee prosthesis\nPACE\nPacemaker surgery\nPVBY\nPeripheral vascular bypass surgery\nVSHN\nVentricular shunt\nTable 3. Specific Sites of an Organ/Space SSI.\nCode\nSITE\nCode\nSITE\nBONE"
+        "DESCRIPTION": "Must meet the following criteria:\nInfection occurs within 30 or 90 days after the NHSN operative procedure (where day 1 = the procedure date) \naccording to the list in Table 2\nAND\nInfection involves any part of the body deeper than the fascial/muscle layers, that is opened or manipulated during \nthe operative procedure\nAND\nPatient has at least one of the following:\na. Purulent drainage from a drain that is placed into the organ/space (e.g., closed suction drainage system, \nopen drain, T-tube drain, CT guided drainage).\nb. Organisms are identified from fluid or tissue in the organ/space by a culture or non-culture based \nmicrobiologic testing method which is performed for purposes of clinical diagnosis or treatment (e.g., \nnot Active Surveillance Culture/Testing (ASC/AST)).\nc. An abscess or other evidence of infection involving the organ/space that is detected on gross anatomical \nor histopathologic exam, or imaging test evidence suggestive of infection.\nAND\nMeets at least one criterion for a specific organ/space infection site listed in Table 3. These criteria are found in the \nSurveillance Definitions for Specific Types of Infections chapter.\nTable 2. Surveillance Period for Deep Incisional or Organ/Space SSI Following Selected NHSN Operative Procedure \nCategories. Day 1 = the date of the procedure.\n30 DAY SURVEILLANCE\nCode\nOperative Procedure\nCode\nOperative Procedure\nAAA\nAbdominal aortic aneurysm repair\nLAM\nLaminectomy\nAMP\nLimb amputation\nLTP\nLiver transplant\nAPPY\nAppendix surgery\nNECK\nNeck surgery\nAVSD\nShunt for dialysis\nNEPH\nKidney surgery\nBILI\nBile duct, liver or pancreatic surgery\nOVRY\nOvarian surgery\nCEA\nCarotid endarterectomy\nPRST\nProstate surgery\nCHOL\nGallbladder surgery\nREC\nRectal surgery\nCOLO\nColon surgery\nSB\nSmall bowel surgery\nCSEC\nCesarean section\nSPLE\nSpleen surgery\nGAST\nGastric surgery\nTHOR\nThoracic surgery\nHTP\nHeart transplant\nTHUR\nThyroid and/or parathyroid surgery\nHYST\nAbdominal hysterectomy\nVHYS\nVaginal hysterectomy\nKTP\nKidney transplant\nXLAP\nExploratory Laparotomy\n\nHOSPITAL EVENTS\nPAGE 172\n90 DAY SURVEILLANCE\nCode\nOperative Procedure\nBRST\nBreast surgery\nCARD\nCardiac surgery\nCBGB\nCoronary artery bypass graft with both chest and donor site incisions\nCBGC\nCoronary artery bypass graft with chest incision only\nCRAN\nCraniotomy\nFUSN\nSpinal fusion\nFX\nOpen reduction of fracture\nHER\nHerniorrhaphy\nHPRO\nHip prosthesis\nKPRO\nKnee prosthesis\nPACE\nPacemaker surgery\nPVBY\nPeripheral vascular bypass surgery\nVSHN\nVentricular shunt\nTable 3. Specific Sites of an Organ/Space SSI.\nCode\nSITE\nCode\nSITE\nBONE\nOsteomyelitis\nMED\nMediastinitis\nBRST\nBreast abscess or mastitis\nMEN\nMeningitis or ventriculitis\nCARD\nMyocarditis or pericarditis\nORAL\nOral cavity infection (mouth, tongue, or gums)\nDISC\nDisc space infection\nOREP\nDeep pelvic tissue infection or other infection \nof the male or female reproductive tract\nEAR\nEar, mastoid infection\nPJI\nPeriprosthetic Joint Infection\nEMET\nEndometritis\nSA\nSpinal abscess/infection\nENDO\nEndocarditis\nSINU\nSinusitis\nGIT\nGastrointestional (GI) tract infection\nUR\nUpper respiratory tract, pharyngitis, laryngitis, \nepiglottitis\nIAB\nIntraabdominal infection, not specified \nelsewhere\nUSI\nUrinary System Infection\nIC\nIntracranial infection\nVASC\nArterial or venus infection\nJNT\nJoint or bursa infection\nVCUF\nVaginal cuff infection\nLUNG\nOther infection of the lower respiratory tract",
+        "ELEMENT VALUES": "1. Yes\n2. No",
+        "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nA diagnosis of a surgical site infection must be documented in the patient's medical record.\n \u2022\nConsistent with the CDC January 2019 defined SSI.\n\nHOSPITAL EVENTS\nPAGE 173",
+        "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19501\n1\nValue is not a valid menu option\n19503\n2\nElement cannot be blank\n19504\n2\nElement cannot be \u201cNot Applicable\u201d\n19540\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 174\nOrgan/Space Surgical Site Infection (O/S SSI)\nSTART\nIs there a diagnosis of a\nsurgical site infection\ndocumented?\nDid the onset of symptoms begin after \nthe patient arrived at your hospital?\nReport",
+        "ELEMENT VALUE": "\u201c2. No\u201d\n1\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "ORGAN_SPACE_SURGICAL_SITE_INFECTION",
-        "raw_text_sha256": "a46261cf2c2ee9eb051031a15afa1f364ad996295a208eff0444d812703d9606",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "d44b89a2e362da5a28c744889f4c6027718a0e1e22f898b8d9a49138eeb1a8d3",
         "pdf_start_page": 32,
-        "pdf_end_page": 33,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 35,
+        "pages": [
+          32,
+          33,
+          34,
+          35
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
-      "warnings": [
-        "RAW_WARN:LOW_ANCHOR_HITS(1)",
-        "PARSE_WARN:MISSING_ELEMENT_VALUES_SECTION"
-      ]
+      "warnings": []
     },
     {
       "event_id": 12,
       "canonical_name": "Osteomyelitis",
       "ntds_year": 2026,
       "sections": {
-        "ELEMENT VALUES": "1. Yes\n2. No\n\n1. Yes\n2. No",
-        "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nA diagnosis of a surgical site infection must be documented in the patient's medical record.\n \u2022\nConsistent with the CDC January 2019 defined SSI.\n\n=== PAGE 34 ===\n\nHOSPITAL EVENTS\nPAGE 173\n\n\u2022 Onset of symptoms began after arrival to your ED/hospital.\n\u2022 A diagnosis of osteomyelitis must be documented in the patient's medical record.\n\u2022 Consistent with the January 2020 CDC definition of Bone and Joint Infection.",
-        "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary\n\n1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19501\n1\nValue is not a valid menu option\n19503\n2\nElement cannot be blank\n19504\n2\nElement cannot be \u201cNot Applicable\u201d\n19540\n1\nSingle Entry Max exceeded\n\n=== PAGE 35 ===\n\nHOSPITAL EVENTS\nPAGE 174\nOrgan/Space Surgical Site Infection (O/S SSI)\nSTART\nIs there a diagnosis of a\nsurgical site infection\ndocumented?\nDid the onset of symptoms begin after \nthe patient arrived at your hospital?\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nThe NTDS definition is consistent \nwith the January 2019 CDC SSI \ndefinition. If information not \ncontained in the NTDS definition \nis needed, please refer to the CDC \nor your hospital\u2019s infection control \ndepartment.\nReport \nElement Value \n\u201c1. Yes\u201d\nDid the SSI occur within 30 or 90 days \nafter an NHSN operative procedure?\nReport \nElement Value \n\u201c2. No\u201d\nDid the SSI involve any part of the body \ndeeper than the fascial/muscle layers, \nthat was opened or manipulated during \nthe operative procedure?\nDid the patient have at least ONE of the following: \n\u2022 Purulent drainage from a drain that is placed into the organ/\nspace?\n\u2022 Organisms identified from fluid or tissue in the organ/space \nby a culture or non-culture based microbiologic testing \nmethod which is performed for purposes of clinical diagnosis \nor treatment. \n\u2022 An abscess or other evidence of infection involving the organ/\nspace that is detected on gross anatomical or histopathologic \nexam, or imaging test evidence suggestive of infection.\nReport \nElement Value \n\u201c2. No\u201d\nWas the patient\u2019s organ/space infection \nsite listed on Table 3?\n1\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nYES\nNO\nYES\nNO\nYES\nNO\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\n1\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 36 ===\n\nHOSPITAL EVENTS\nPAGE 175\nOSTEOMYELITIS\n\nRule ID\nLevel\nMessage\n19601\n1\nValue is not a valid menu option\n19603\n2\nElement cannot be blank\n19604\n2\nElement cannot be \u201cNot Applicable\u201d\n19640\n1\nSingle Entry Max exceeded\n\n=== PAGE 37 ===\n\nHOSPITAL EVENTS\nPAGE 176\nOsteomyelitis\nSTART\nIs there a diagnosis of \nosteomyelitis documented?\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital?\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nThe NTDS definition is consistent with \nthe January 2020 CDC Bone and Joint \ninfection definition. If information not \ncontained in the NTDS definition is \nneeded, please refer to the CDC or your \nhospital\u2019s infection control department. \nReport \nElement Value \n\u201c1. Yes\u201d\nDid the patient have at least one of the \nfollowing: \n\u2022 Organisms identified from bone \nby culture or non-culture based \nmicrobiologic testing method\n\u2022 Evidence of osteomyelitis on gross \nanatomic or histopathologic exam\n\u2022 Two of the following: localized signs/\nsymptoms, fever (>38\u2070C), swelling, pain/\ntenderness, heat, or drainage\nReport \nElement Value \n\u201c2. No\u201d\nDid the patient have organisms \nidentified from blood by culture or \nnon-culture based microbiologic \ntesting method OR imaging test \nsuggestive of infection with clinical \ncorrelation?\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nYES\nNO\nYES\nNO\n1\n1\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 38 ===\n\nHOSPITAL EVENTS\nPAGE 177",
         "ELEMENT INTENT": "A potentially preventable event often induced by bacteria or fungi, diabetes, and/or a weakened immune system, \nrequiring treatment which could increase the hospital length of stay and the likelihood of mortality.",
-        "DESCRIPTION": "Osteomyelitis must meet at least one of the following criteria:\n1. Patient has organism(s) identified from bone by culture or non-culture based microbiologic testing \nmethod, which is performed for purposes of clinical diagnosis and treatment, for example, not Active \nSurveillance Culture/Testing (ASC/AST).\n2. Patient has evidence of osteomyelitis on gross anatomic or histopathologic exam.\n3. Patient has at least two of the following localized signs or symptoms:\n \u2022 Fever (> 38.0\u00b0C)\n \u2022 Swelling*\n \u2022 Pain or tenderness*\n \u2022 Heat*\n \u2022 Drainage*\nAND at least one of the following:\na. Organisms identified from blood by culture or non-culture based microbiologic testing method, which \nis performed for purposes of clinical diagnosis and treatment, for example, not Active Surveillance \nCulture/Testing (ASC/AST) AND Imaging test evidence suggestive of infection (for example, x-ray, CT scan, \nMRI, radiolabel scan [gallium, technetium, etc.]), which if equivocal is supported by clinical correlation, \nspecifically, physician documentation of antimicrobial treatment for osteomyelitis.\nb. Imaging test evidence suggestive of infection (for example, x-ray, CT scan, MRI, radiolabel scan [gallium, \ntechnetium, etc.]), which if equivocal is supported by clinical correlation, specifically, physician \ndocumentation of antimicrobial treatment for osteomyelitis).\n*With no other recognized cause"
+        "DESCRIPTION": "Osteomyelitis must meet at least one of the following criteria:\n1. Patient has organism(s) identified from bone by culture or non-culture based microbiologic testing \nmethod, which is performed for purposes of clinical diagnosis and treatment, for example, not Active \nSurveillance Culture/Testing (ASC/AST).\n2. Patient has evidence of osteomyelitis on gross anatomic or histopathologic exam.\n3. Patient has at least two of the following localized signs or symptoms:\n \u2022 Fever (> 38.0\u00b0C)\n \u2022 Swelling*\n \u2022 Pain or tenderness*\n \u2022 Heat*\n \u2022 Drainage*\nAND at least one of the following:\na. Organisms identified from blood by culture or non-culture based microbiologic testing method, which \nis performed for purposes of clinical diagnosis and treatment, for example, not Active Surveillance \nCulture/Testing (ASC/AST) AND Imaging test evidence suggestive of infection (for example, x-ray, CT scan, \nMRI, radiolabel scan [gallium, technetium, etc.]), which if equivocal is supported by clinical correlation, \nspecifically, physician documentation of antimicrobial treatment for osteomyelitis.\nb. Imaging test evidence suggestive of infection (for example, x-ray, CT scan, MRI, radiolabel scan [gallium, \ntechnetium, etc.]), which if equivocal is supported by clinical correlation, specifically, physician \ndocumentation of antimicrobial treatment for osteomyelitis).\n*With no other recognized cause",
+        "ELEMENT VALUES": "1. Yes\n2. No",
+        "ADDITIONAL INFORMATION": "\u2022 Onset of symptoms began after arrival to your ED/hospital.\n\u2022 A diagnosis of osteomyelitis must be documented in the patient's medical record.\n\u2022 Consistent with the January 2020 CDC definition of Bone and Joint Infection.",
+        "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19601\n1\nValue is not a valid menu option\n19603\n2\nElement cannot be blank\n19604\n2\nElement cannot be \u201cNot Applicable\u201d\n19640\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 176\nOsteomyelitis\nSTART\nIs there a diagnosis of \nosteomyelitis documented?\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital?\nReport",
+        "ELEMENT VALUE": "\u201c2. No\u201d\nYES\nNO\nYES\nNO\nYES\nNO\n1\n1\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "OSTEOMYELITIS",
-        "raw_text_sha256": "a2d2977cabc4feb518b0a8eb8f9af0df45d592ef3cbf4ea68b54ebd424fd0a50",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "451c29a4f2e6a5a0d83bed644fa6566ef0722aed8757579452a934f4fd950660",
+        "pdf_start_page": 36,
+        "pdf_end_page": 37,
+        "pages": [
+          36,
+          37
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
-      "page_receipts": {
-        "pdf_start_page": 33,
-        "pdf_end_page": 38,
-        "doc_start_page": 0,
-        "doc_end_page": 0
-      },
-      "warnings": [
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:ELEMENT VALUES",
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:ADDITIONAL INFORMATION",
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:DATA SOURCE HIERARCHY GUIDE",
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:ASSOCIATED EDIT CHECKS"
-      ]
+      "warnings": []
     },
     {
       "event_id": 13,
@@ -579,38 +373,21 @@
         "ELEMENT VALUES": "1. Yes\n2. No",
         "ADDITIONAL INFORMATION": "\u2022\nOnset of NPUAP Stage II began after arrival to your ED/hospital.\n \u2022\nPressure ulcer documentation must be in the patient's medical record.\n \u2022\nConsistent with the NPUAP 2014.",
         "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19801\n1\nValue is not a valid menu option\n19803\n2\nElement cannot be blank\n19804\n2\nElement cannot be \u201cNot Applicable\u201d\n19840\n1\nSingle Entry Max exceeded\n\n=== PAGE 39 ===\n\nHOSPITAL EVENTS\nPAGE 178\nPressure Ulcer\nSTART\nAre the signs/symptoms of a pressure \nulcer documented?\nDid the onset of NPUAP Stage II-\nIV, Unstageable/Unclassified, or \nSuspected Deep Tissue Injury begin \nafter the patient arrived at your \nhospital?\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nA pressure ulcer is a localized injury \nto the skin and/or underlying tissue \nusually over a bony prominence, as \na result of pressure, or pressure in \ncombination with shear. A number of \ncontributing or confounding factors are \nalso associated with pressure ulcers; \nthe significance of these factors is yet \nto be elucidated.\nReport \nElement Value \n\u201c1. Yes\u201d\nThe NTDS definition is consistent with \nthe NPUAP 2014. \nYES\nNO\nYES\nNO\n1\n2\n2\n1\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 40 ===\n\nHOSPITAL EVENTS\nPAGE 179"
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19801\n1\nValue is not a valid menu option\n19803\n2\nElement cannot be blank\n19804\n2\nElement cannot be \u201cNot Applicable\u201d\n19840\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 178\nPressure Ulcer\nSTART\nAre the signs/symptoms of a pressure \nulcer documented?\nDid the onset of NPUAP Stage II-\nIV, Unstageable/Unclassified, or \nSuspected Deep Tissue Injury begin \nafter the patient arrived at your \nhospital?\nReport",
+        "ELEMENT VALUE": "\u201c1. Yes\u201d\nThe NTDS definition is consistent with \nthe NPUAP 2014. \nYES\nNO\nYES\nNO\n1\n2\n2\n1\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "PRESSURE_ULCER",
-        "raw_text_sha256": "1fe8cc1fcdc2ee6dec8c09d9f35df658dadc9af8d8cc6348dc6ae5b8f18f6887",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "5c226c3022387b284f3b0d90a1a33e48c281170a8e95866e59ff776f6a8f7add",
         "pdf_start_page": 38,
-        "pdf_end_page": 40,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 39,
+        "pages": [
+          38,
+          39
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
       "warnings": []
     },
@@ -625,38 +402,21 @@
         "ELEMENT VALUES": "1. Yes\n2. No",
         "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nConsider the condition present if the patient has a VQ scan interpreted as high probability of pulmonary \nembolism or a positive pulmonary arteriogram or positive CT angiogram and/or a diagnosis of PE is documented \nin the patient\u2019s medical record.",
         "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19701\n1\nValue is not a valid menu option\n19703\n2\nElement cannot be blank\n19704\n2\nElement cannot be \u201cNot Applicable\u201d\n19740\n1\nSingle Entry Max exceeded\n\n=== PAGE 41 ===\n\nHOSPITAL EVENTS\nPAGE 180\nPulmonary Embolism (PE)\nSTART\nAre ANY of the following documented?\n\u2022 A V-Q scan interpreted as high \nprobability of pulmonary embolism\n\u2022 A positive pulmonary arteriogram\n\u2022 A positive CT angiogram\n\u2022 A diagnosis of PE\nDid the onset of symptoms begin after \nthe patient arrived at your hospital?\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nSubsegmental PEs are excluded from \nthe NTDS definition of PE. \nReport \nElement Value \n\u201c1. Yes\u201d\nWas the PE subsegmental?\nReport \nElement Value \n\u201c2. No\u201d\n1\nYES\nNO\nYES\nNO\nYES\nNO\n1\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 42 ===\n\nHOSPITAL EVENTS\nPAGE 181"
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19701\n1\nValue is not a valid menu option\n19703\n2\nElement cannot be blank\n19704\n2\nElement cannot be \u201cNot Applicable\u201d\n19740\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 180\nPulmonary Embolism (PE)\nSTART\nAre ANY of the following documented?\n\u2022 A V-Q scan interpreted as high \nprobability of pulmonary embolism\n\u2022 A positive pulmonary arteriogram\n\u2022 A positive CT angiogram\n\u2022 A diagnosis of PE\nDid the onset of symptoms begin after \nthe patient arrived at your hospital?\nReport",
+        "ELEMENT VALUE": "\u201c2. No\u201d\n1\nYES\nNO\nYES\nNO\nYES\nNO\n1\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "PULMONARY_EMBOLISM_PE",
-        "raw_text_sha256": "0e636dc99bfb99cd31740b599204b422cacf79919c1529a21fc984bff03dc4bb",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "526ae1ee883a4f170af08f80ee30633aef3b65ff945c8b788be7ead6aa884f66",
         "pdf_start_page": 40,
-        "pdf_end_page": 42,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 41,
+        "pages": [
+          40,
+          41
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
       "warnings": []
     },
@@ -670,38 +430,21 @@
         "ELEMENT VALUES": "1. Yes\n2. No",
         "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nA diagnosis of sepsis must be documented in the patient's medical record.\n \u2022\nConsistent with the American College of Chest Physicians and the Society of Critical Care Medicine October \n2010.",
         "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19901\n1\nValue is not a valid menu option\n19903\n2\nElement cannot be blank\n19904\n2\nElement cannot be \u201cNot Applicable\u201d\n19940\n1\nSingle Entry Max exceeded\n\n=== PAGE 43 ===\n\nHOSPITAL EVENTS\nPAGE 182\nSevere Sepsis\nSTART\nIs a diagnosis of sepsis documented?\nDid the onset of symptoms begin after \nthe patient arrived at your hospital?\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nThe NTDS definition is consistent \nwith the American College of Chest \nPhysicians and the Society of Critical \nCare Medicine October 2010.\nIs there documentation of EITHER of the \nfollowing: \n\u2022 Sepsis plus organ dysfunction, hypotension, \nor hypoperfusion to 1 or more organs\n\u2022 Sepsis with persisting arterial hypotension \nor hypoperfusion despite adequate fluid \nresuscitation\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c1. Yes\u201d\n1\nYES\nNO\nYES\nNO\nYES\nNO\n1\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 44 ===\n\nHOSPITAL EVENTS\nPAGE 183"
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n19901\n1\nValue is not a valid menu option\n19903\n2\nElement cannot be blank\n19904\n2\nElement cannot be \u201cNot Applicable\u201d\n19940\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 182\nSevere Sepsis\nSTART\nIs a diagnosis of sepsis documented?\nDid the onset of symptoms begin after \nthe patient arrived at your hospital?\nReport",
+        "ELEMENT VALUE": "\u201c1. Yes\u201d\n1\nYES\nNO\nYES\nNO\nYES\nNO\n1\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "SEVERE_SEPSIS",
-        "raw_text_sha256": "e6b8311eb18fccde75e1c8bba068967ae54329caa765eb08804b473896ef8960",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "ee96f249fc5fd9055e95f6a884e966ac8d3e721605161f4eadb184d08ce6c20f",
         "pdf_start_page": 42,
-        "pdf_end_page": 44,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 43,
+        "pages": [
+          42,
+          43
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
       "warnings": []
     },
@@ -715,38 +458,21 @@
         "ELEMENT VALUES": "1. Yes\n2. No",
         "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nA diagnosis of stroke/CVA must be documented in the patient's medical record.\n \u2022\nAlthough the neurologic deficit must not present on admission, risk factors predisposing to stroke (e.g., blunt \ncerebrovascular injury, dysrhythmia) may be present on admission.",
         "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n20001\n1\nValue is not a valid menu option\n20003\n2\nElement cannot be blank\n20004\n2\nElement cannot be \u201cNot Applicable\u201d\n20040\n1\nSingle Entry Max exceeded\n\n=== PAGE 45 ===\n\nHOSPITAL EVENTS\nPAGE 184\nStroke/CVA \nSTART\nIs there a diagnosis of stroke/CVA \ndocumented?\nDid the onset of symptoms begin after \nthe patient arrived at your hospital?\nReport \nElement Value \n\u201c2. No\u201d\nA focal or global neurological \ndeficit of rapid onset and NOT \npresent on admission caused \nby a clot obstructing the flow \nof blood to the brain (ischemic \nstroke). Or by a blood vessel \nrupturing and preventing blood \nflow to the brain (hemorrhagic \nstroke). Or a transient ischemic \nattack which is temporarily \ncaused by a temporary clot. \nDid the patient have at least one of the \nfollowing symptoms? \n\u2022 Change in level of consciousness\n\u2022 Hemiplegia\n\u2022 Hemiparesis\n\u2022 Numbness or sensory loss affecting one \nside of the body\n\u2022 Dysphasia or aphasia\n\u2022 Hemianopia\n\u2022 Amaurosis fugax\n\u2022 Other neurological signs or symptoms \nconsistent with stroke\nReport \nElement Value \n\u201c1. Yes\u201d\nDid the patient have neurologic \ndeficit >24 h?\nDid the patient have neurologic deficit \n<24 h?\nYES\nNO\nDid the patient have the following symptoms? \n\u2022 Change in level of consciousness\n\u2022 Hemiplegia\n\u2022 Hemiparesis\n\u2022 Numbness or sensory loss affecting one side of the body\n\u2022 Dysphasia or aphasia\n\u2022 Hemianopia\n\u2022 Amaurosis fugax\n\u2022 Other neurological signs or symptoms consistent with stroke\n1\n1\n2\n2\nAlthough the neurologic deficit \nmust not present on admission, \nrisk factors predisposing to \nstroke (e.g., blunt cerebrovascular \ninjury, dysrhythmia) may be \npresent on admission.\nYES\nNO\nYES\nNO\nYES\nNO\nYES\nNO\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nWere ANY of the following documented \nwith no other readily identifiable non-stroke \ncauses AND a confirmed diagnosis: \n\u2022 A new hemorrhage or infarct consistent \nwith stroke documented by neuroimaging?\n\u2022 Therapeutic intervention(s) for stroke \nperformed?\n\u2022 Death from neurologic deficit?\nYES\nNO\nReport \nElement Value \n\u201c1. Yes\u201d\nReport \nElement Value \n\u201c2. No\u201d\n\n=== PAGE 46 ===\n\nHOSPITAL EVENTS\nPAGE 185"
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n20001\n1\nValue is not a valid menu option\n20003\n2\nElement cannot be blank\n20004\n2\nElement cannot be \u201cNot Applicable\u201d\n20040\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 184\nStroke/CVA \nSTART\nIs there a diagnosis of stroke/CVA \ndocumented?\nDid the onset of symptoms begin after \nthe patient arrived at your hospital?\nReport",
+        "ELEMENT VALUE": "\u201c2. No\u201d"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "STROKE_CVA",
-        "raw_text_sha256": "34eb17605f2f189b4ba05026dca0077c9cbc0aeaf30fba556d0098a06c3a79ca",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "f1d150ef24d52b4df19d87d7c00f2f3e36b4f0c34a52ef45dd43c396c4c55aab",
         "pdf_start_page": 44,
-        "pdf_end_page": 46,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 45,
+        "pages": [
+          44,
+          45
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
       "warnings": []
     },
@@ -758,40 +484,24 @@
         "ELEMENT INTENT": "A potentially preventable event often induced by endogenous flora or exogenous contamination contacting a \nsurgical site, requiring treatment which could increase the hospital length of stay.",
         "DESCRIPTION": "Must meet the following criteria:\nInfection occurs within 30 days after any NHSN operative procedure (where day 1 = the procedure date)\nAND\nInvolves only skin and subcutaneous tissue of the incision\nAND\nPatient has at least one of the following:\na. Purulent drainage from the superficial incision.\nb. Organisms identified from an aseptically-obtained specimen from the superficial incision or sub \ncutaneous tissue by a culture or non-culture based microbiologic testing method which is performed for \npurposes of clinical diagnosis or treatment (e.g., not Active Surveillance Culture/Testing (ASC/AST)).\nc. Superficial incision that is deliberately opened by a surgeon, attending physician** or other designee and \nculture or non-culture based testing is not performed.\n \nAND\nPatient has at least one of the following signs or symptoms: pain or tenderness; localized swelling; \nerythema; or heat. A culture or non-culture based test that has a negative finding does not meet this \ncriterion.\nd. Diagnosis of a superficial incisional SSI by the surgeon or attending physician** or other designee.\n**The term attending physician for the purposes of application of the NHSN SSI criteria may be interpreted to mean \nthe surgeon(s), infectious disease, other physician on the case, emergency physician, or physician\u2019s designee (nurse \npractitioner or physician\u2019s assistant).\nCOMMENTS: There are two specific types of superficial incisional SSIs:\n1. Superficial Incisional Primary (SIP) \u2013 a superficial incisional SSI that is identified in the primary incision in \na patient that has had an operation with one or more incisions (e.g., C- section incision or chest incision \nfor CBGB).\n2. Superficial Incisional Secondary (SIS) \u2013 a superficial incisional SSI that is identified in the secondary \nincision in a patient that has had an operation with more than one incision (e.g., donor site incision for \nCBGB).",
         "ELEMENT VALUES": "1. Yes\n2. No",
-        "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nA diagnosis of a surgical site infection must be documented in the patient's medical record.\n \u2022\nConsistent with the January 2019 CDC defined SSI.\n\n=== PAGE 47 ===\n\nHOSPITAL EVENTS\nPAGE 186",
+        "ADDITIONAL INFORMATION": "\u2022\nOnset of symptoms began after arrival to your ED/hospital.\n \u2022\nA diagnosis of a surgical site infection must be documented in the patient's medical record.\n \u2022\nConsistent with the January 2019 CDC defined SSI.\n\nHOSPITAL EVENTS\nPAGE 186",
         "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n20101\n1\nValue is not a valid menu option\n20103\n2\nElement cannot be blank\n20104\n2\nElement cannot be \u201cNot Applicable\u201d\n20140\n1\nSingle Entry Max exceeded\n\n=== PAGE 48 ===\n\nHOSPITAL EVENTS\nPAGE 187\nSuperficial Incisional Surgical Site Infection (S/I SSI)\nSTART\nIs there a diagnosis of a surgical site \ninfection documented?\n1\nYES\nNO\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital?\nReport \nElement Value \n\u201c2. No\u201d\nDid the SSI occur within 30\ndays after an NHSN\noperative procedure?\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\nDid this SSI only involve the \nskin and subcutaneous tissue \nof the incision?\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\n2\nDid the patient have at least ONE of the following: \n\u2022 Purulent drainage from the superficial incision\n\u2022 Organisms identified from an aseptically-\nobtained specimen from the superficial incision \nor subcutaneous tissue by a culture or non-\nculture based microbiologic testing method \nwhich is performed for purposes of clinical \ndiagnosis or treatment\n\u2022 A superficial incision that was deliberately \nopened by a surgeon, attending physician or \nother designee and culture or non-culture-\nbased testing is not performed AND at least \none of the following signs or symptoms: pain \nor tenderness; localized swelling; erythema; or \nheat\nReport \nElement Value \n\u201c2. No\u201d\nNO\nYES\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c1. Yes\u201d\nThe NTDS definition is consistent with \nthe January 2019 CDC SSI definition. If \ninformation not contained in the NTDS \ndefinition is needed, please refer to the \nCDC or your hospital\u2019s infection control \ndepartment.\n1\n2\nThere are two specific types of \nsuperficial incisional SSIs:\n1. Superficial Incisional Primary (SIP) \n- a superficial incisional SSI that is \nidentified in the primary incision in \na patient that has had an operation \nwith one or more incisions (e.g., \nC-section incision or chest incision \nfor CBGB).\n2. Superficial Incisional Secondary (SIS) \n\u2013 a superficial incisional SSI that is \nidentified in the secondary incision in \na patient that has had an operation \nwith more than one incision (e.g., \ndonor site incision for CBGC).\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 49 ===\n\nHOSPITAL EVENTS\nPAGE 188"
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n20101\n1\nValue is not a valid menu option\n20103\n2\nElement cannot be blank\n20104\n2\nElement cannot be \u201cNot Applicable\u201d\n20140\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 187\nSuperficial Incisional Surgical Site Infection (S/I SSI)\nSTART\nIs there a diagnosis of a surgical site \ninfection documented?\n1\nYES\nNO\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital?\nReport",
+        "ELEMENT VALUE": "\u201c1. Yes\u201d\nThe NTDS definition is consistent with \nthe January 2019 CDC SSI definition. If \ninformation not contained in the NTDS \ndefinition is needed, please refer to the \nCDC or your hospital\u2019s infection control \ndepartment.\n1\n2\nThere are two specific types of \nsuperficial incisional SSIs:\n1. Superficial Incisional Primary (SIP) \n- a superficial incisional SSI that is \nidentified in the primary incision in \na patient that has had an operation \nwith one or more incisions (e.g., \nC-section incision or chest incision \nfor CBGB).\n2. Superficial Incisional Secondary (SIS) \n\u2013 a superficial incisional SSI that is \nidentified in the secondary incision in \na patient that has had an operation \nwith more than one incision (e.g., \ndonor site incision for CBGC).\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "SUPERFICIAL_INCISIONAL_SURGICAL_SITE_INFECTION",
-        "raw_text_sha256": "df8b75ba8fa0550804bb1e6fea2fd8cd97a281778358cedb2035cbab0ae1c336",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "573845d1716a99b808c546eddc93427d090e62153ef9fc634e75da34df0309e4",
         "pdf_start_page": 46,
-        "pdf_end_page": 49,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 48,
+        "pages": [
+          46,
+          47,
+          48
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
       "warnings": []
     },
@@ -806,38 +516,21 @@
         "ELEMENT VALUES": "1. Yes\n2. No",
         "ADDITIONAL INFORMATION": "\u2022 Must have occurred during the patient's initial stay at your hospital.",
         "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n20201\n1\nValue is not a valid menu option\n20203\n2\nElement cannot be blank\n20204\n2\nElement cannot be \u201cNot Applicable\u201d\n20240\n1\nSingle Entry Max exceeded\n\n=== PAGE 50 ===\n\nHOSPITAL EVENTS\nPAGE 189\nUnplanned Admission to the ICU\nSTART\nWas the patient admitted or\ntransferred to the ICU from\nthe floor during the initial\nstay at your hospital?\n1\nYES\nNO\nWas the patient in the ICU\ndowngraded and admitted or\ntransferred to the floor then\nreadmitted to the ICU?\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c1. Yes\u201d\nYES\nNO\nReport \nElement Value \n\u201c1. Yes\u201d\nFloor is defined as any other ward that \nis not an ICU. \u201cFloor\u201d also includes step-\ndown units and the operating room for \nthe purposes of this definition.\nEXCLUDE: Patients with a planned\npost-operative ICU stay. This means \nthat it was known prior to surgery \nthat the patient would require \npostoperative ICU care.\nINCLUDE: Patients who required ICU \ncare due to an event that occurred \nduring surgery or in the PACU.\n1\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 51 ===\n\nHOSPITAL EVENTS\nPAGE 190"
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n20201\n1\nValue is not a valid menu option\n20203\n2\nElement cannot be blank\n20204\n2\nElement cannot be \u201cNot Applicable\u201d\n20240\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 189\nUnplanned Admission to the ICU\nSTART\nWas the patient admitted or\ntransferred to the ICU from\nthe floor during the initial\nstay at your hospital?\n1\nYES\nNO\nWas the patient in the ICU\ndowngraded and admitted or\ntransferred to the floor then\nreadmitted to the ICU?\nReport",
+        "ELEMENT VALUE": "\u201c1. Yes\u201d\nFloor is defined as any other ward that \nis not an ICU. \u201cFloor\u201d also includes step-\ndown units and the operating room for \nthe purposes of this definition.\nEXCLUDE: Patients with a planned\npost-operative ICU stay. This means \nthat it was known prior to surgery \nthat the patient would require \npostoperative ICU care.\nINCLUDE: Patients who required ICU \ncare due to an event that occurred \nduring surgery or in the PACU.\n1\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "UNPLANNED_ADMISSION_TO_THE_ICU",
-        "raw_text_sha256": "c8c848f4e14e58051d3f20c08ea273c02e42cff4cade0ccb6d285405a661f2a0",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "904dd5359ba7430947e56dd79e4edbb327fb8489f62fb3d10c3ddf329be075d6",
         "pdf_start_page": 49,
-        "pdf_end_page": 51,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 50,
+        "pages": [
+          49,
+          50
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
       "warnings": []
     },
@@ -851,38 +544,21 @@
         "ELEMENT VALUES": "1. Yes\n2. No",
         "ADDITIONAL INFORMATION": "\u2022 Must have occurred during the patient's initial stay at your hospital.\n\u2022 For patients who were intubated in the field or emergency department, or those intubated for surgery, an \nunplanned intubation occurs if they require reintubation > 24 hours after they were extubated.",
         "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n20301\n1\nValue is not a valid menu option\n20303\n2\nElement cannot be blank\n20304\n2\nElement cannot be \u201cNot Applicable\u201d\n20340\n1\nSingle Entry Max exceeded\n\n=== PAGE 52 ===\n\nHOSPITAL EVENTS\nPAGE 191\nUnplanned Intubation\nSTART\nWas the patient intubated due to \nsevere respiratory distress, hypoxia, \nhypercarbia, or respiratory acidosis?\nYES\nNO\nWas the patient intubated in the\nfield, emergency department, or\nfor surgery?\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c1. Yes\u201d\nDid they require reintubation >24 hours \nafter being extubated?\nYES\nNO\nReport \nElement Value \n\u201c1. Yes\u201d\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 53 ===\n\nHOSPITAL EVENTS\nPAGE 192"
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n20301\n1\nValue is not a valid menu option\n20303\n2\nElement cannot be blank\n20304\n2\nElement cannot be \u201cNot Applicable\u201d\n20340\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 191\nUnplanned Intubation\nSTART\nWas the patient intubated due to \nsevere respiratory distress, hypoxia, \nhypercarbia, or respiratory acidosis?\nYES\nNO\nWas the patient intubated in the\nfield, emergency department, or\nfor surgery?\nReport",
+        "ELEMENT VALUE": "\u201c1. Yes\u201d\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "UNPLANNED_INTUBATION",
-        "raw_text_sha256": "3a55067f6ee765622ac50a01a05341b027d6cd7f60a5fa9d408e53a0cbba021f",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "39f2db6282b7de9763c1cb7a3079b153ef7968ddc72d03f216814d13835388f0",
         "pdf_start_page": 51,
-        "pdf_end_page": 53,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 52,
+        "pages": [
+          51,
+          52
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
       "warnings": []
     },
@@ -893,48 +569,27 @@
       "sections": {
         "ELEMENT INTENT": "A potentially preventable event that highlights possible opportunities for improvements in care.",
         "DESCRIPTION": "The patient underwent a subsequent operative procedure at the same operative site as the initial operative \nprocedure. Both procedures must have been performed in the operating room at your center.",
-        "EXCLUDE": "\u2022 Planned return to the operating room after damage control surgery or staged surgical interventions.\n\u2022 Procedures performed in an interventional radiology suite.\n\u2022 Procedures performed in a hybrid operating room where the intervention is limited to a percutaneous \napproach.\n\u2022 Pre-planned multiple-stage approach procedures.\n\n\u2022 Planned return to the operating \nroom after damage control surgery \nor staged surgical interventions.\n\u2022 Procedures performed in an \ninterventional radiology suite.\n\u2022 Procedures performed in a \nhybrid operating room where \nthe intervention is limited to a \npercutaneous approach.\n\u2022 Pre-planned multiple-stage approach \nprocedures.\n1\nReport \nElement Value \n\u201c2. No\u201d\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 55 ===\n\nHOSPITAL EVENTS\nPAGE 194",
+        "EXCLUDE": "\u2022 Planned return to the operating \nroom after damage control surgery \nor staged surgical interventions.\n\u2022 Procedures performed in an \ninterventional radiology suite.\n\u2022 Procedures performed in a \nhybrid operating room where \nthe intervention is limited to a \npercutaneous approach.\n\u2022 Pre-planned multiple-stage approach \nprocedures.\n1\nReport",
         "ELEMENT VALUES": "1. Yes\n2. No",
         "ADDITIONAL INFORMATION": "\u2022 The same operative site usually (but not exclusively) implies there was a need to re-open the previous \nincision.\n\u2022 Element Value \u201c1. Yes\u201d is reported whether the initial intervention was related to the injuries (e.g., \nanastomotic leak after laparotomy, hardware failure/infection after ORIF of fractures) OR if there is a return to \nthe operating room for an unplanned intervention related to a secondary procedure (e.g., return to the OR for \nbleeding after tracheostomy).\n\u2022 Element Value \u201c2. No\u201d is reported if there is intent to return to the operating room for a two-stage approach.",
         "DATA SOURCE HIERARCHY GUIDE": "1. Operative Report\n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Nursing Notes/Flow Sheet\n5. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n22601\n1\nValue is not a valid menu option\n22602\n2\nElement cannot be blank\n22603\n2\nElement cannot be \u201cNot Applicable\u201d\n22640\n1\nSingle Entry Max exceeded\n\n=== PAGE 54 ===\n\nHOSPITAL EVENTS\nPAGE 193\nUnplanned Return to the Operating Room \nSTART\nDid the patient have an operative \nprocedure performed in the operating \nroom during their initial stay at your \nhospital?\nYES\nNO\nDid the patient undergo a subsequent \noperative procedure in the operating \nroom at your hospital at the same \noperative site?\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nReport \nElement Value \n\u201c1. Yes\u201d\n1\nThe same operative site usually (but \nnot exclusively) implies there was the \nneed to re-open the previous incision."
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n22601\n1\nValue is not a valid menu option\n22602\n2\nElement cannot be blank\n22603\n2\nElement cannot be \u201cNot Applicable\u201d\n22640\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 193\nUnplanned Return to the Operating Room \nSTART\nDid the patient have an operative \nprocedure performed in the operating \nroom during their initial stay at your \nhospital?\nYES\nNO\nDid the patient undergo a subsequent \noperative procedure in the operating \nroom at your hospital at the same \noperative site?\nReport",
+        "ELEMENT VALUE": "\u201c2. No\u201d\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [
-        "NOTE_2026_EVENT20_RENAMED_TO_UNPLANNED_RETURN_TO_OR"
-      ],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "UNPLANNED_RETURN_TO_THE_OPERATING_ROOM",
-        "raw_text_sha256": "817055d2a0d3da775a135ccb1c8c0a598aabfe0bdbfd9c51aca47d25df86d69d",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "f9a8aace026f91f0128de7dd3c9012b9ef2ece32a63477a7a7db46fa397cf6ab",
         "pdf_start_page": 53,
-        "pdf_end_page": 55,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pdf_end_page": 54,
+        "pages": [
+          53,
+          54
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
-      "warnings": [
-        "PARSE_WARN:DUPLICATE_SECTION_MERGED:EXCLUDE"
-      ]
+      "warnings": []
     },
     {
       "event_id": 21,
@@ -942,42 +597,37 @@
       "ntds_year": 2026,
       "sections": {
         "ELEMENT INTENT": "A potentially preventable event often induced by bacteria or virus entering the lungs, requiring treatment which \ncould increase the hospital length of stay and the likelihood of mortality.",
-        "DESCRIPTION": "A pneumonia where the patient is on mechanical ventilation for > 2 calendar days on the date of event, with day of \nventilator placement being Day 1,\nAND\nThe ventilator was in place on the date of event or the day before.\nVAP Algorithm (PNU2 Bacterial or Filamentous Fungal Pathogens):\nimaging test evidence\nsigns/symptoms\nlaboratory\nTwo or more serial chest imaging \ntest results with at least one of the \nfollowing:\nAt least one of the following:\nAt least one of the following:\n\u2022 New and persistent or \nprogressive and persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants \n \u2264 1 year-old\nNOTE: In patients without \nunderlying pulmonary or \ncardiac disease (for example: \nrespiratory distress syndrome, \nbronchopulmonary dysplasia, \npulmonary edema, or chronic \nobstructive pulmonary disease), \none definitive chest imaging test \nresult is acceptable.\n\u2022 Fever (> 38\u2070C or > 100.4\u2070F)\n\u2022 Leukopenia (< 4000 WBC/mm\u1d4c) or \nleukocytosis \n(\u2265 12,000 WBC/mm\u1d4c)\n\u2022 For adults \u2265 70 years old, altered \nmental status with no other \nrecognized cause\nAND at least one of the following:\n\u2022 New onset of purulent sputum or \nchange in character of sputum, or \nincreased respiratory secretions, \nor increased suctioning \nrequirements\n\u2022 New onset or worsening cough, or \ndyspnea, or tachypnea\n\u2022 Rales or bronchial breath sounds\n\u2022 Worsening gas exchange (for \nexample: O2 desaturations [for \nexample: PaO2/FiO2 < 240], \nincreased oxygen requirements, \nor increased ventilator demand) \n\u2022 Organism identified from blood\n\u2022 Organism identified from pleural \nfluid\n\u2022 Positive quantitative culture \nor corresponding semi-\nquantitative culture result from \nminimally-contaminated LRT \nspecimen (specifically, BAL, \nprotected specimen brushing or \nendotracheal aspirate) \n\u2022 \u2265 5% BAL-obtained cells contain \nintracellular bacteria on direct \nmicroscopic exam (for example: \nGram\u2019s stain) \n\u2022 Positive quantitative culture or \ncorresponding semi-quantitative \nculture result of lung tissue \n\u2022 Histopathologic exam shows \nat least one of the following \nevidences of pneumonia:\n\u2212 Abscess formation or foci of \nconsolidation with intense PMN \naccumulation in bronchioles and \nalveoli\n\u2212 Evidence of lung parenchyma \ninvasion by fungal hyphae or \npseudohyphae\n\n=== PAGE 56 ===\n\nHOSPITAL EVENTS\nPAGE 195\nVAP Algorithm (PNU2 Viral, Legionnella, and other Bacterial Pneumonias):\nimaging test evidence\nsigns/symptoms\nlaboratory\nTwo or more serial chest imaging \ntest results with at least one of \nthe following:\nAt least one of the following:\nAt least one of the following:\n\u2022 New and persistent or \nprogressive and persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants \n \u2264 1 year-old\nNOTE: In patients without \nunderlying pulmonary or \ncardiac disease (for example: \nrespiratory distress syndrome, \nbronchopulmonary dysplasia, \npulmonary edema, or chronic \nobstructive pulmonary disease), \none definitive chest imaging test \nresult is acceptable.\n\u2022 Fever (>38\u2070C or >100.4\u2070F)\n\u2022 Leukopenia (<4000 WBC/mm\u1d4c) or \nleukocytosis (\u226512,000 WBC/mm\u1d4c)\n\u2022 For adults \u226570 years old, altered \nmental status with no other \nrecognized cause\nAND at least one of the following:\n\u2022 New onset of purulent sputum or \nchange in character of sputum, or \nincreased respiratory secretions, or \nincreased suctioning requirements\n\u2022 New onset or worsening cough, or \ndyspnea, or tachypnea\n\u2022 Rales or bronchial breath sounds\n\u2022 Worsening gas exchange (for \nexample: O2 desaturations [for \nexample: PaO2/FiO2 <240], \nincreased oxygen requirements, or \nincreased ventilator demand) \n\u2022 Virus, Bordetella, Legionella, \nChlamydia or Mycoplasma \nidentified from respiratory \nsecretions or tissue by a culture or \nnon-culture based microbiologic \ntesting method which is performed \nfor purposes of clinical diagnosis or \ntreatment (for example: not Active \nSurveillance Culture/Testing (ASC/\nAST). \n\u2022 Fourfold rise in paired sera (IgG) for \npathogen (e.g., influenza viruses, \nChlamydia) \n\u2022 Fourfold rise in Legionella \npneumophila serogroup 1 antibody \ntiter to \u2265 1:128 in paired acute and \nconvalescent sera by indirect IFA. \n\u2022 Detection of L. pneumophila \nserogroup 1 antigens in urine by \nRIA or EIA\nVAP Algorithm (PNU3 Immunocompromised Patients):\nimaging test evidence\nsigns/symptoms\nlaboratory\nTwo or more serial chest imaging \ntest results with at least one of \nthe following:\nPatient who is immunocompromised \n(see definition in footnote) has at least \none of the following:\nAt least one of the following:\n\u2022 New and persistent or \nprogressive and persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants \n \u22641 year-old\nNOTE: In patients without \nunderlying pulmonary or \ncardiac disease (for example: \nrespiratory distress syndrome, \nbronchopulmonary dysplasia, \npulmonary edema, or chronic \nobstructive pulmonary disease), \none definitive chest imaging test \nresult is acceptable.\n\u2022 Fever (>38\u2070C or >100.4\u2070F)\n\u2022 For adults \u226570 years old, altered \nmental status with no other \nrecognized cause\n\u2022 New onset of purulent sputum or \nchange in character of sputum, or \nincreased respiratory secretions, or \nincreased suctioning requirements\n\u2022 New onset or worsening cough, or \ndyspnea, or tachypnea\n\u2022 Rales or bronchial breath sounds\n\u2022 Worsening gas exchange (for \nexample: O2 desaturations [for \nexample: PaO2/FiO2 < 240], \nincreased oxygen requirements, or \nincreased ventilator demand) \n\u2022 Hemoptysis\n\u2022 Pleuritic chest pain\n\u2022 Identification of matching Candida \nspp. from blood and one of the \nfollowing: sputum, endotracheal \naspirate, BAL or protected \nspecimen brushing.\n\u2022 Evidence of fungi from minimally-\ncontaminated LRT specimen \n(e.g., BAL or protected specimen \nbrushing) from one of the \nfollowing: \n\u2212 Direct microscopic exam \n\u2212 Positive culture of fungi\n\u2212 Non-culture diagnostic \nlaboratory test \nOR \n\u2022 Any of the following from: \nLABORATORY CRITERIA DEFINED \nUNDER PNU2\n\n=== PAGE 57 ===\n\nHOSPITAL EVENTS\nPAGE 196\nVAP Algorithm ALTERNATE CRITERIA (PNU1), for infant's \u2264 1 year old:\nimaging test evidence\nsigns/symptoms/laboratory\nTwo or more serial chest imaging \ntest results with at least one of the \nfollowing:\nWorsening gas exchange (for example: 2 desaturations [for example pulse \noximetry < 94%], increased oxygen requirements, or increased ventilator \ndemand)\nAnd at least three of the following: \n\u2022 Temperature instability \n\u2022 Leukopenia (\u2264 4000 WBC/mm3) or leukocytosis (> 15,000 WBC/mm3) \nand left shift (> 10% band forms) \n\u2022 New onset of purulent sputum or change in character of sputum, or \nincreased respiratory secretions or increased suctioning requirements \n\u2022 Apnea, tachypnea, nasal flaring with retraction of chest wall or nasal \nflaring with grunting \n\u2022 Wheezing, rales, or rhonchi \n\u2022 Cough \n\u2022 Bradycardia (< 100 beats/min) or tachycardia (> 170 beats/min)\n\u2022 New and persistent or progressive \nand persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants \n \u2264 1 year-old\nNOTE: In patients without \nunderlying pulmonary or \ncardiac disease (for example: \nrespiratory distress syndrome, \nbronchopulmonary dysplasia, \npulmonary edema, or chronic \nobstructive pulmonary disease), one \ndefinitive chest imaging test result is \nacceptable.\nVAP Algorithm ALTERNATE CRITERIA (PNU1), for children \u02c3 1 year old or \u2264 12 years old:\nimaging test evidence\nsigns/symptoms/laboratory\nTwo or more serial chest imaging \ntest results with at least one of the \nfollowing:\nALTERNATE CRITERIA, for child > 1 year old or \u2264 12 years old, at least three \nof the following: \n\u2022 Fever (> 38. 0\u00b0C or > 100. 4\u00b0F) or hypothermia (< 36. 0\u00b0C or < 96. 8\u00b0F) \n\u2022 Leukopenia (\u2264 4000 WBC/mm3) or leukocytosis (\u2265 15,000 WBC/mm3) \n\u2022 New onset of purulent sputum or change in character of sputum, or \nincreased respiratory secretions, or increased suctioning requirements \n\u2022 New onset or worsening cough, or dyspnea, apnea, or tachypnea\n\u2022 Rales or bronchial breath sounds \n\u2022 Worsening gas exchange (for example: O2 desaturations [for example \npulse oximetry < 94%], increased oxygen requirements, or increased \nventilator demand)\n\u2022 New and persistent or progressive \nand persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants \n \u2264 1 year-old\nNOTE: In patients without \nunderlying pulmonary or \ncardiac disease (for example: \nrespiratory distress syndrome, \nbronchopulmonary dysplasia, \npulmonary edema, or chronic \nobstructive pulmonary disease), one \ndefinitive chest imaging test result is \nacceptable.\n\n=== PAGE 58 ===\n\nHOSPITAL EVENTS\nPAGE 197",
+        "DESCRIPTION": "A pneumonia where the patient is on mechanical ventilation for > 2 calendar days on the date of event, with day of \nventilator placement being Day 1,\nAND\nThe ventilator was in place on the date of event or the day before.\nVAP Algorithm (PNU2 Bacterial or Filamentous Fungal Pathogens):\nimaging test evidence\nsigns/symptoms\nlaboratory\nTwo or more serial chest imaging \ntest results with at least one of the \nfollowing:\nAt least one of the following:\nAt least one of the following:\n\u2022 New and persistent or \nprogressive and persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants \n \u2264 1 year-old\nNOTE: In patients without \nunderlying pulmonary or \ncardiac disease (for example: \nrespiratory distress syndrome, \nbronchopulmonary dysplasia, \npulmonary edema, or chronic \nobstructive pulmonary disease), \none definitive chest imaging test \nresult is acceptable.\n\u2022 Fever (> 38\u2070C or > 100.4\u2070F)\n\u2022 Leukopenia (< 4000 WBC/mm\u1d4c) or \nleukocytosis \n(\u2265 12,000 WBC/mm\u1d4c)\n\u2022 For adults \u2265 70 years old, altered \nmental status with no other \nrecognized cause\nAND at least one of the following:\n\u2022 New onset of purulent sputum or \nchange in character of sputum, or \nincreased respiratory secretions, \nor increased suctioning \nrequirements\n\u2022 New onset or worsening cough, or \ndyspnea, or tachypnea\n\u2022 Rales or bronchial breath sounds\n\u2022 Worsening gas exchange (for \nexample: O2 desaturations [for \nexample: PaO2/FiO2 < 240], \nincreased oxygen requirements, \nor increased ventilator demand) \n\u2022 Organism identified from blood\n\u2022 Organism identified from pleural \nfluid\n\u2022 Positive quantitative culture \nor corresponding semi-\nquantitative culture result from \nminimally-contaminated LRT \nspecimen (specifically, BAL, \nprotected specimen brushing or \nendotracheal aspirate) \n\u2022 \u2265 5% BAL-obtained cells contain \nintracellular bacteria on direct \nmicroscopic exam (for example: \nGram\u2019s stain) \n\u2022 Positive quantitative culture or \ncorresponding semi-quantitative \nculture result of lung tissue \n\u2022 Histopathologic exam shows \nat least one of the following \nevidences of pneumonia:\n\u2212 Abscess formation or foci of \nconsolidation with intense PMN \naccumulation in bronchioles and \nalveoli\n\u2212 Evidence of lung parenchyma \ninvasion by fungal hyphae or \npseudohyphae\n\nHOSPITAL EVENTS\nPAGE 195\nVAP Algorithm (PNU2 Viral, Legionnella, and other Bacterial Pneumonias):\nimaging test evidence\nsigns/symptoms\nlaboratory\nTwo or more serial chest imaging \ntest results with at least one of \nthe following:\nAt least one of the following:\nAt least one of the following:\n\u2022 New and persistent or \nprogressive and persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants \n \u2264 1 year-old\nNOTE: In patients without \nunderlying pulmonary or \ncardiac disease (for example: \nrespiratory distress syndrome, \nbronchopulmonary dysplasia, \npulmonary edema, or chronic \nobstructive pulmonary disease), \none definitive chest imaging test \nresult is acceptable.\n\u2022 Fever (>38\u2070C or >100.4\u2070F)\n\u2022 Leukopenia (<4000 WBC/mm\u1d4c) or \nleukocytosis (\u226512,000 WBC/mm\u1d4c)\n\u2022 For adults \u226570 years old, altered \nmental status with no other \nrecognized cause\nAND at least one of the following:\n\u2022 New onset of purulent sputum or \nchange in character of sputum, or \nincreased respiratory secretions, or \nincreased suctioning requirements\n\u2022 New onset or worsening cough, or \ndyspnea, or tachypnea\n\u2022 Rales or bronchial breath sounds\n\u2022 Worsening gas exchange (for \nexample: O2 desaturations [for \nexample: PaO2/FiO2 <240], \nincreased oxygen requirements, or \nincreased ventilator demand) \n\u2022 Virus, Bordetella, Legionella, \nChlamydia or Mycoplasma \nidentified from respiratory \nsecretions or tissue by a culture or \nnon-culture based microbiologic \ntesting method which is performed \nfor purposes of clinical diagnosis or \ntreatment (for example: not Active \nSurveillance Culture/Testing (ASC/\nAST). \n\u2022 Fourfold rise in paired sera (IgG) for \npathogen (e.g., influenza viruses, \nChlamydia) \n\u2022 Fourfold rise in Legionella \npneumophila serogroup 1 antibody \ntiter to \u2265 1:128 in paired acute and \nconvalescent sera by indirect IFA. \n\u2022 Detection of L. pneumophila \nserogroup 1 antigens in urine by \nRIA or EIA\nVAP Algorithm (PNU3 Immunocompromised Patients):\nimaging test evidence\nsigns/symptoms\nlaboratory\nTwo or more serial chest imaging \ntest results with at least one of \nthe following:\nPatient who is immunocompromised \n(see definition in footnote) has at least \none of the following:\nAt least one of the following:\n\u2022 New and persistent or \nprogressive and persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants \n \u22641 year-old\nNOTE: In patients without \nunderlying pulmonary or \ncardiac disease (for example: \nrespiratory distress syndrome, \nbronchopulmonary dysplasia, \npulmonary edema, or chronic \nobstructive pulmonary disease), \none definitive chest imaging test \nresult is acceptable.\n\u2022 Fever (>38\u2070C or >100.4\u2070F)\n\u2022 For adults \u226570 years old, altered \nmental status with no other \nrecognized cause\n\u2022 New onset of purulent sputum or \nchange in character of sputum, or \nincreased respiratory secretions, or \nincreased suctioning requirements\n\u2022 New onset or worsening cough, or \ndyspnea, or tachypnea\n\u2022 Rales or bronchial breath sounds\n\u2022 Worsening gas exchange (for \nexample: O2 desaturations [for \nexample: PaO2/FiO2 < 240], \nincreased oxygen requirements, or \nincreased ventilator demand) \n\u2022 Hemoptysis\n\u2022 Pleuritic chest pain\n\u2022 Identification of matching Candida \nspp. from blood and one of the \nfollowing: sputum, endotracheal \naspirate, BAL or protected \nspecimen brushing.\n\u2022 Evidence of fungi from minimally-\ncontaminated LRT specimen \n(e.g., BAL or protected specimen \nbrushing) from one of the \nfollowing: \n\u2212 Direct microscopic exam \n\u2212 Positive culture of fungi\n\u2212 Non-culture diagnostic \nlaboratory test \nOR \n\u2022 Any of the following from: \nLABORATORY CRITERIA DEFINED \nUNDER PNU2\n\nHOSPITAL EVENTS\nPAGE 196\nVAP Algorithm ALTERNATE CRITERIA (PNU1), for infant's \u2264 1 year old:\nimaging test evidence\nsigns/symptoms/laboratory\nTwo or more serial chest imaging \ntest results with at least one of the \nfollowing:\nWorsening gas exchange (for example: 2 desaturations [for example pulse \noximetry < 94%], increased oxygen requirements, or increased ventilator \ndemand)\nAnd at least three of the following: \n\u2022 Temperature instability \n\u2022 Leukopenia (\u2264 4000 WBC/mm3) or leukocytosis (> 15,000 WBC/mm3) \nand left shift (> 10% band forms) \n\u2022 New onset of purulent sputum or change in character of sputum, or \nincreased respiratory secretions or increased suctioning requirements \n\u2022 Apnea, tachypnea, nasal flaring with retraction of chest wall or nasal \nflaring with grunting \n\u2022 Wheezing, rales, or rhonchi \n\u2022 Cough \n\u2022 Bradycardia (< 100 beats/min) or tachycardia (> 170 beats/min)\n\u2022 New and persistent or progressive \nand persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants \n \u2264 1 year-old\nNOTE: In patients without \nunderlying pulmonary or \ncardiac disease (for example: \nrespiratory distress syndrome, \nbronchopulmonary dysplasia, \npulmonary edema, or chronic \nobstructive pulmonary disease), one \ndefinitive chest imaging test result is \nacceptable.\nVAP Algorithm ALTERNATE CRITERIA (PNU1), for children \u02c3 1 year old or \u2264 12 years old:\nimaging test evidence\nsigns/symptoms/laboratory\nTwo or more serial chest imaging \ntest results with at least one of the \nfollowing:\nALTERNATE CRITERIA, for child > 1 year old or \u2264 12 years old, at least three \nof the following: \n\u2022 Fever (> 38. 0\u00b0C or > 100. 4\u00b0F) or hypothermia (< 36. 0\u00b0C or < 96. 8\u00b0F) \n\u2022 Leukopenia (\u2264 4000 WBC/mm3) or leukocytosis (\u2265 15,000 WBC/mm3) \n\u2022 New onset of purulent sputum or change in character of sputum, or \nincreased respiratory secretions, or increased suctioning requirements \n\u2022 New onset or worsening cough, or dyspnea, apnea, or tachypnea\n\u2022 Rales or bronchial breath sounds \n\u2022 Worsening gas exchange (for example: O2 desaturations [for example \npulse oximetry < 94%], increased oxygen requirements, or increased \nventilator demand)\n\u2022 New and persistent or progressive \nand persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants \n \u2264 1 year-old\nNOTE: In patients without \nunderlying pulmonary or \ncardiac disease (for example: \nrespiratory distress syndrome, \nbronchopulmonary dysplasia, \npulmonary edema, or chronic \nobstructive pulmonary disease), one \ndefinitive chest imaging test result is \nacceptable.\n\nHOSPITAL EVENTS\nPAGE 197",
         "ELEMENT VALUES": "1. Yes\n2. No",
         "ADDITIONAL INFORMATION": "\u2022 Onset of symptoms began after arrival to your ED/hospital.\n\u2022 A diagnosis of pneumonia must be documented in the patient's medical record.\n\u2022 Consistent with the January 2019 CDC defined VAP.",
         "DATA SOURCE HIERARCHY GUIDE": "1. History and Physical \n2. Physician Notes/Flow Sheet\n3. Progress Notes\n4. Case Management/Social Services Notes\n5. Nursing Notes/Flow Sheet\n6. Triage/Trauma Flow Sheet\n7. Discharge Summary",
-        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n20501\n1\nValue is not a valid menu option\n20503\n2\nElement cannot be blank\n20504\n2\nElement cannot be \u201cNot Applicable\u201d\n20540\n1\nSingle Entry Max exceeded\n\n=== PAGE 59 ===\n\nHOSPITAL EVENTS\nPAGE 198\nVentilator-Associated Pneumonia (VAP) PNU2 Bacterial of \nFilamentous Fungal Pathogens (pg. 1 of 2)\nSTART\nIs there a diagnosis of pneumonia \ndocumented?\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital? \nWas the patient on mechanical \nventilation for >2 calendar days?\nWas the ventilator in place on the \ndate of event (when the pneumonia \nhappened) OR the day before?\nDid the patient have two or more serial chest imaging test \nresults with at least one of the following?: \n\u2022 New and persistent or progressive and persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants <1-year-old\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nYES\nNO\nYES\nNO\n1\nNOTE: In patients without underlying pulmonary or \ncardiac disease (for example: respiratory distress \nsyndrome, bronchopulmonary dysplasia, pulmonary \nedema, or chronic obstructive pulmonary disease), \none definitive chest imaging test result is acceptable.\n1\nYES\nNO\nYES\nNO\nContinue to page 2\n2026 NTDS Data Dictionary, Released July 2025\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\n\n=== PAGE 60 ===\n\nHOSPITAL EVENTS\nPAGE 199\nVentilator-Associated Pneumonia (VAP) PNU2 Bacterial of \nFilamentous Fungal Pathogens (pg. 2 of 2)\nDid the patient have at least one of the following \u201cSigns/symptoms?\u201d:\n\u2022 Fever (>38\u2070C or >100.4\u2070F)\n\u2022 Leukopenia (<4000 WBC/mm3) or leukocytosis (\u226512,000 WBC/mm3)\n\u2022 For adults \u226570 years old, altered mental status with no other recognized cause\nAND at least one of the following:\n\u2022 New onset of purulent sputum or change in character of \nsputum, or increased respiratory secretions, or increased \nsuctioning requirements\n\u2022 New onset or worsening cough, or dyspnea, or tachypnea\n\u2022 Rales or bronchial breath sounds\n\u2022 Worsening gas exchange (For example: O2 desaturations \n[for example: PaO2/FiO2 <240], increased oxygen \nrequirements, or increased ventilator demand)\nYES\nYES\nNO\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\nDid the patient have at least one of the following \u201cLaboratory\u201d findings?\n\u2022 Organism identified from blood\n\u2022 Organism identified from pleural fluid\n\u2022 Positive quantitative culture or corresponding semi-quantitative culture result from minimally \ncontaminated LRT specimen (specifically, BAL, protected specimen brushing or endotracheal \naspirate)\n\u2022 \u22655% BAL-obtained cells contain intracellular bacteria on direct microscopic exam (for example: \nGram\u2019s stain)\n\u2022 Positive quantitative culture or corresponding semi-quantitative culture result of lung tissue\n\u2022 Histopathologic exam shows at least one of the following evidences of pneumonia:\n \n\u2212Abscess formation or foci of consolidation with intense PMN accumulation in bronchioles \nand alveoli\n \n\u2212Evidence of lung parenchyma invasion by fungal hyphae or pseudohyphae\nReport \nElement Value \n\u201c1. Yes\u201d\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\n\n=== PAGE 61 ===\n\nHOSPITAL EVENTS\nPAGE 200\nVentilator-Associated Pneumonia (VAP) PNU2 Viral, Legionella, and \nother Bacterial Pneumonias (pg. 1 of 2)\nSTART\nIs there a diagnosis of pneumonia \ndocumented?\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital? \nWas the patient on mechanical \nventilation for >2 calendar days?\nWas the ventilator in place on the \ndate of event (when the pneumonia \nhappened) OR the day before?\nDid the patient have two or more serial chest imaging test \nresults with at least one of the following?: \n\u2022 New and persistent or progressive and persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants <1-year-old\nYES\nNO\nYES\nNO\nYES\nNO\n1\nNOTE: In patients without underlying pulmonary or \ncardiac disease (for example: respiratory distress \nsyndrome, bronchopulmonary dysplasia, pulmonary \nedema, or chronic obstructive pulmonary disease), \none definitive chest imaging test result is acceptable.\n1\nYES\nNO\nYES\nNO\nContinue to page 2\n2026 NTDS Data Dictionary, Released July 2025\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\n\n=== PAGE 62 ===\n\nHOSPITAL EVENTS\nPAGE 201\nVentilator-Associated Pneumonia (VAP) PNU2 Viral, Legionella, and \nother Bacterial Pneumonias (pg. 2 of 2)\nDid the patient have at least one of the following \u201cSigns/symptoms?\u201d:\n\u2022 Fever (>38\u2070C or >100.4\u2070F)\n\u2022 Leukopenia (<4000 WBC/mm3) or leukocytosis (\u226512,000 WBC/mm3)\n\u2022 For adults \u226570 years old, altered mental status with no other recognized cause\nDid the patient have at least one of the following?\n\u2022 New onset of purulent sputum or change in character of \nsputum, or increased respiratory secretions, or increased \nsuctioning requirements\n\u2022 New onset or worsening cough, or dyspnea, or tachypnea\n\u2022 Rales or bronchial breath sounds\n\u2022 Worsening gas exchange (for example: O2 desaturations \n[for example: PaO2/FiO2 <240], increased oxygen \nrequirements, or increased ventilator demand)\nYES\nReport \nElement Value \n\u201c2. No\u201d\nDid the patient have at least one of the following findings?\n\u2022 Virus, Bordetella, Legionella, Chlamydia or Mycoplasma identified from respiratory secretions\nOR\n\u2022 Tissue by a culture or nonculture based microbiologic testing method which is performed for \npurposes of clinical diagnosis or treatment (for example: not Active Surveillance Culture/Testing \n(ASC/AST)\n\u2022 Fourfold rise in paired sera (IgG) for pathogen (e.g., influenza viruses, Chlamydia)\n\u2022 Fourfold rise in Legionella pneumophila serogroup 1 antibody titer to \u22651:128 in paired acute\nAND\n\u2022 Convalescent sera by indirect IFA\n\u2022 Detection of L. pneumophila serogroup 1 antigens in urine by RIA or EIA\nReport \nElement Value \n\u201c1. Yes\u201d\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\n\n=== PAGE 63 ===\n\nHOSPITAL EVENTS\nPAGE 202\nVentilator-Associated Pneumonia (VAP) PNU3 \nImmunocompromised Patients (pg. 1 of 2)\nSTART\nIs there a diagnosis of pneumonia \ndocumented?\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital? \nWas the patient on mechanical \nventilation for >2 calendar days?\nWas the ventilator in place on the \ndate of event (when the pneumonia \nhappened) OR the day before?\nDid the patient have two or more serial chest imaging test \nresults with at least one of the following?: \n\u2022 New and persistent or progressive and persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants <1-year-old\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nYES\nNO\nYES\nNO\n1\nNOTE: In patients without underlying pulmonary or \ncardiac disease (for example: respiratory distress \nsyndrome, bronchopulmonary dysplasia, pulmonary \nedema, or chronic obstructive pulmonary disease), \none definitive chest imaging test result is acceptable.\n1\nYES\nNO\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\nContinue to page 2\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 64 ===\n\nHOSPITAL EVENTS\nPAGE 203\nVentilator-Associated Pneumonia (VAP) PNU3 \nImmunocompromised Patients (pg. 2 of 2)\nDid the patient have at least one of the following?\n\u2022 Fever (>38\u2070C or >100.4\u2070F)\n\u2022 For adults \u226570 years old, altered mental status with no other recognized cause\n\u2022 New onset of purulent sputum or change in character of sputum, or increased respiratory \nsecretions, or increased suctioning requirements\n\u2022 New onset or worsening cough, or dyspnea, or tachypnea\n\u2022 Rales or bronchial breath sounds\n\u2022 Worsening gas exchange (for example: O2 desaturations [for example: PaO2/FiO2 <240], \nincreased oxygen requirements, or increased ventilator demand)\n\u2022 Hemoptysis\n\u2022 Pleuritic chest pain\nReport \nElement Value \n\u201c2. No\u201d\nDid the patient have at least one of the following?\n\u2022 Identification of matching Candida spp. from blood and one of the following: \nsputum, endotracheal aspirate, BAL or protected specimen brushing.\n\u2022 Evidence of fungi from minimally-contaminated LRT specimen (e.g., BAL or \nprotected specimen brushing) from one of the following:\n \n\u2212\nDirect microscopic exam\n \n\u2212\nPositive culture of fungi\n \n\u2212\nNon-culture diagnostic laboratory test\n OR\n\u2022 Any of the \u201cLABORATORY CRITERIA\u201d defined under PNU2\nYES\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nReport \nElement Value \n\u201c1. Yes\u201d\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 65 ===\n\nHOSPITAL EVENTS\nPAGE 204\nVentilator-Associated Pneumonia (VAP) ALTERNATE CRITERIA \n(PNU1), for infants <1-year-old (pg. 1 of 2)\nSTART\nIs there a diagnosis of pneumonia \ndocumented?\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital? \nWas the patient on mechanical \nventilation for >2 calendar days?\nWas the ventilator in place on the \ndate of event (when the pneumonia \nhappened) OR the day before?\nDid the patient have two or more serial chest imaging test \nresults with at least one of the following?: \n\u2022 New and persistent or progressive and persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants <1-year-old\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nYES\nNO\nYES\nNO\n1\nNOTE: In patients without underlying pulmonary or \ncardiac disease (for example: respiratory distress \nsyndrome, bronchopulmonary dysplasia, pulmonary \nedema, or chronic obstructive pulmonary disease), \none definitive chest imaging test result is acceptable.\n1\nYES\nNO\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\nContinue to page 2\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 66 ===\n\nHOSPITAL EVENTS\nPAGE 205\nVentilator-Associated Pneumonia (VAP) ALTERNATE CRITERIA \n(PNU1), for infants <1-year-old (pg. 2 of 2)\nDid the patient have worsening gas exchange (for \nexample: 2 desaturations [for example pulse oximetry \n<94%], increased oxygen requirements, or increased \nventilator demand)?\nDid the patient have at least three of the following?\n\u2022 Temperature instability\n\u2022 Leukopenia (\u22644000 WBC/mm3) or leukocytosis (>15,000 WBC/mm3) and left \nshift (>10% band forms)\n\u2022 New onset of purulent sputum or change in character of sputum, or increased \nrespiratory secretions or increased suctioning requirements\n\u2022 Apnea, tachypnea, nasal flaring with retraction of chest wall or nasal flaring \nwith grunting\n\u2022 Wheezing, rales, or rhonchi\n\u2022 Cough\n\u2022 Bradycardia (<100 beats/min) or tachycardia (>170 beats/min)\nYES\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nReport \nElement Value \n\u201c1. Yes\u201d\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 67 ===\n\nHOSPITAL EVENTS\nPAGE 206\nVentilator-Associated Pneumonia (VAP) ALTERNATE CRITERIA \n(PNU1), for children >1-year-old or <12-years-old (pg. 1 of 2)\nSTART\nIs there a diagnosis of pneumonia \ndocumented?\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital? \nWas the patient on mechanical \nventilation for >2 calendar days?\nWas the ventilator in place on the \ndate of event (when the pneumonia \nhappened) OR the day before?\nDid the patient have two or more serial chest imaging test \nresults with at least one of the following?: \n\u2022 New and persistent or progressive and persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants <1-year-old\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c2. No\u201d\nYES\nNO\nYES\nNO\nYES\nNO\n1\nNOTE: In patients without underlying pulmonary or \ncardiac disease (for example: respiratory distress \nsyndrome, bronchopulmonary dysplasia, pulmonary \nedema, or chronic obstructive pulmonary disease), \none definitive chest imaging test result is acceptable.\n1\nYES\nNO\nYES\nNO\nReport \nElement Value \n\u201c2. No\u201d\nContinue to page 2\n2026 NTDS Data Dictionary, Released July 2025\n\n=== PAGE 68 ===\n\nHOSPITAL EVENTS\nPAGE 207\nVentilator-Associated Pneumonia (VAP) ALTERNATE CRITERIA \n(PNU1), for children >1-year-old or <12-years-old (pg. 2 of 2)\nALTERNATE CRITERIA, for child >1 year old or \u226412 years old: \nDid the patient have at least three of the following:\n\u2022 Fever (>38. 0\u00b0C or >100. 4\u00b0F) or hypothermia (<36. 0\u00b0C or <96. 8\u00b0F)\n\u2022 Leukopenia (\u22644000 WBC/mm3) or leukocytosis (\u226515,000 WBC/mm3)\n\u2022 New onset of purulent sputum or change in character of sputum, or \nincreased respiratory secretions, or increased suctioning requirements\n\u2022 New onset or worsening cough, or dyspnea, apnea, or tachypnea\n\u2022 Rales or bronchial breath sounds\n\u2022 Worsening gas exchange (for example: O2 desaturations [for example \npulse oximetry <94%], increased oxygen requirements, or increased \nventilator demand)\nYES\nReport \nElement Value \n\u201c2. No\u201d\nReport \nElement Value \n\u201c1. Yes\u201d\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025"
+        "ASSOCIATED EDIT CHECKS": "Rule ID\nLevel\nMessage\n20501\n1\nValue is not a valid menu option\n20503\n2\nElement cannot be blank\n20504\n2\nElement cannot be \u201cNot Applicable\u201d\n20540\n1\nSingle Entry Max exceeded\n\nHOSPITAL EVENTS\nPAGE 198\nVentilator-Associated Pneumonia (VAP) PNU2 Bacterial of \nFilamentous Fungal Pathogens (pg. 1 of 2)\nSTART\nIs there a diagnosis of pneumonia \ndocumented?\nDid the onset of symptoms begin \nafter the patient arrived at your \nhospital? \nWas the patient on mechanical \nventilation for >2 calendar days?\nWas the ventilator in place on the \ndate of event (when the pneumonia \nhappened) OR the day before?\nDid the patient have two or more serial chest imaging test \nresults with at least one of the following?: \n\u2022 New and persistent or progressive and persistent\n\u2022 Infiltrate\n\u2022 Consolidation\n\u2022 Cavitation\n\u2022 Pneumatoceles, in infants <1-year-old\nReport",
+        "ELEMENT VALUE": "\u201c1. Yes\u201d\nYES\nNO\n2026 NTDS Data Dictionary, Released July 2025"
       },
-      "year_notes": [],
       "provenance": {
         "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-        "raw_file": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-        "raw_event_id": "VENTILATOR_ASSOCIATED_PNEUMONIA_VAP",
-        "raw_text_sha256": "4390d08734b852db973cb8d2a6b60b82f3b8d713708e424436b08f6f0a4b3de4",
-        "extractor_meta": {
-          "system": "Netrion Systems",
-          "product": "CerebralOS",
-          "ruleset": "NTDS Hospital Events (RAW, Canonical+TokenMatch+Suffix)",
-          "year": 2026,
-          "version": "5.0.0",
-          "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
-          "expected_event_count": 21,
-          "extracted_event_count": 21,
-          "missing_titles": 0,
-          "flags": [
-            "CHANGELOG_2026_UNPLANNED_VISIT_OR_RETIRED",
-            "CHANGELOG_2026_UNPLANNED_RETURN_OR_NEW",
-            "CHANGELOG_2026_DEEP_SSI_ADDITIONAL_INFO_CHANGED"
-          ]
-        },
-        "converter_version": "1.0.0",
-        "converted_at_utc": "2026-01-29T23:16:07Z"
-      },
-      "page_receipts": {
+        "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+        "raw_text_sha256": "6e09dc924a51238c0043201985c9f0318cc7cdf2f6455af84591799d20e2e306",
         "pdf_start_page": 55,
         "pdf_end_page": 68,
-        "doc_start_page": 0,
-        "doc_end_page": 0
+        "pages": [
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68
+        ],
+        "converted_at_utc": "2026-01-31T19:29:00Z",
+        "converter_version": "2.0.0"
       },
       "warnings": []
     }

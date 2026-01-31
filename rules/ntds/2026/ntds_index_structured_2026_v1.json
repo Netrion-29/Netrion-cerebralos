@@ -5,240 +5,354 @@
     "ruleset": "NTDS Hospital Events (STRUCTURED)",
     "year": 2026,
     "version": "1.0.0",
-    "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v5.json",
-    "event_count": 21
+    "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
+    "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json",
+    "event_count": 21,
+    "converted_at_utc": "2026-01-31T19:29:00Z",
+    "converter_version": "2.0.0"
   },
   "events": [
     {
       "event_id": 1,
       "canonical_name": "Acute Kidney Injury (AKI)",
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "EXCLUDE",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
       "warnings_count": 0,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 2,
-        "end": 4
-      }
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 2,
       "canonical_name": "Acute Respiratory Distress Syndrome (ARDS)",
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
       "warnings_count": 0,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 4,
-        "end": 6
-      }
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 3,
       "canonical_name": "Alcohol Withdrawal Syndrome",
-      "warnings_count": 2,
-      "has_description": true,
-      "has_element_values": false,
-      "pdf_pages": {
-        "start": 6,
-        "end": 6
-      }
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
+      "warnings_count": 0,
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 4,
       "canonical_name": "Cardiac Arrest With CPR",
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "EXCLUDE",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
       "warnings_count": 0,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 8,
-        "end": 10
-      }
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 5,
       "canonical_name": "Catheter-Associated Urinary Tract Infection (CAUTI)",
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
       "warnings_count": 0,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 10,
-        "end": 16
-      }
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 6,
       "canonical_name": "Central Line-Associated Bloodstream Infection (CLABSI)",
-      "warnings_count": 6,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 16,
-        "end": 24
-      }
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
+      "warnings_count": 0,
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 7,
       "canonical_name": "Deep Surgical Site Infection (Deep SSI)",
-      "warnings_count": 2,
-      "has_description": false,
-      "has_element_values": false,
-      "pdf_pages": {
-        "start": 24,
-        "end": 26
-      }
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
+      "warnings_count": 0,
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 8,
       "canonical_name": "Deep Vein Thrombosis (DVT)",
-      "warnings_count": 6,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 26,
-        "end": 30
-      }
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
+      "warnings_count": 0,
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 9,
       "canonical_name": "Delirium",
-      "warnings_count": 1,
-      "has_description": false,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 6,
-        "end": 8
-      }
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "EXCLUDE",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
+      "warnings_count": 0,
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 10,
       "canonical_name": "Myocardial Infarction (MI)",
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
       "warnings_count": 0,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 30,
-        "end": 32
-      }
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 11,
       "canonical_name": "Organ/Space Surgical Site Infection",
-      "warnings_count": 2,
-      "has_description": true,
-      "has_element_values": false,
-      "pdf_pages": {
-        "start": 32,
-        "end": 33
-      }
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
+      "warnings_count": 0,
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 12,
       "canonical_name": "Osteomyelitis",
-      "warnings_count": 4,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 33,
-        "end": 38
-      }
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
+      "warnings_count": 0,
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 13,
       "canonical_name": "Pressure Ulcer",
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
       "warnings_count": 0,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 38,
-        "end": 40
-      }
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 14,
       "canonical_name": "Pulmonary Embolism (PE)",
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "EXCLUDE",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
       "warnings_count": 0,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 40,
-        "end": 42
-      }
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 15,
       "canonical_name": "Severe Sepsis",
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
       "warnings_count": 0,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 42,
-        "end": 44
-      }
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 16,
       "canonical_name": "Stroke/CVA",
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
       "warnings_count": 0,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 44,
-        "end": 46
-      }
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 17,
       "canonical_name": "Superficial Incisional Surgical Site Infection",
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
       "warnings_count": 0,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 46,
-        "end": 49
-      }
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 18,
       "canonical_name": "Unplanned Admission to the ICU",
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "EXCLUDE",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
       "warnings_count": 0,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 49,
-        "end": 51
-      }
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 19,
       "canonical_name": "Unplanned Intubation",
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
       "warnings_count": 0,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 51,
-        "end": 53
-      }
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 20,
       "canonical_name": "Unplanned Return to the Operating Room",
-      "warnings_count": 1,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 53,
-        "end": 55
-      }
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "EXCLUDE",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
+      "warnings_count": 0,
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     },
     {
       "event_id": 21,
       "canonical_name": "Ventilator-Associated Pneumonia (VAP)",
+      "ntds_year": 2026,
+      "sections_present": [
+        "ELEMENT INTENT",
+        "DESCRIPTION",
+        "ELEMENT VALUES",
+        "ADDITIONAL INFORMATION",
+        "DATA SOURCE HIERARCHY GUIDE",
+        "ASSOCIATED EDIT CHECKS",
+        "ELEMENT VALUE"
+      ],
       "warnings_count": 0,
-      "has_description": true,
-      "has_element_values": true,
-      "pdf_pages": {
-        "start": 55,
-        "end": 68
-      }
+      "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/ntds_events_raw_2026_v9.json"
     }
   ]
 }

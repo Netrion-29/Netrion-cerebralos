@@ -1,0 +1,181 @@
+{
+  "meta": {
+    "system": "Netrion Systems",
+    "product": "CerebralOS",
+    "ruleset": "NTDS Hospital Events (RAW)",
+    "year": 2026,
+    "version": "9.0.0",
+    "source_pdf": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/ntds/2026/Hospital Events 2026.pdf",
+    "event_count": 21
+  },
+  "events": [
+    {
+      "event_id": 1,
+      "event_name": "Acute Kidney Injury (AKI)",
+      "pdf_start_page": 2,
+      "pdf_end_page": 3,
+      "pages_count": 2,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 2,
+      "event_name": "Acute Respiratory Distress Syndrome (ARDS)",
+      "pdf_start_page": 4,
+      "pdf_end_page": 5,
+      "pages_count": 2,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 3,
+      "event_name": "Alcohol Withdrawal Syndrome",
+      "pdf_start_page": 6,
+      "pdf_end_page": 7,
+      "pages_count": 2,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 4,
+      "event_name": "Cardiac Arrest With CPR",
+      "pdf_start_page": 8,
+      "pdf_end_page": 9,
+      "pages_count": 2,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 5,
+      "event_name": "Catheter-Associated Urinary Tract Infection (CAUTI)",
+      "pdf_start_page": 10,
+      "pdf_end_page": 15,
+      "pages_count": 6,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 6,
+      "event_name": "Central Line-Associated Bloodstream Infection (CLABSI)",
+      "pdf_start_page": 16,
+      "pdf_end_page": 20,
+      "pages_count": 5,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 7,
+      "event_name": "Deep Surgical Site Infection (Deep SSI)",
+      "pdf_start_page": 21,
+      "pdf_end_page": 25,
+      "pages_count": 5,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 8,
+      "event_name": "Deep Vein Thrombosis (DVT)",
+      "pdf_start_page": 26,
+      "pdf_end_page": 27,
+      "pages_count": 2,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 9,
+      "event_name": "Delirium",
+      "pdf_start_page": 28,
+      "pdf_end_page": 29,
+      "pages_count": 2,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 10,
+      "event_name": "Myocardial Infarction (MI)",
+      "pdf_start_page": 30,
+      "pdf_end_page": 31,
+      "pages_count": 2,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 11,
+      "event_name": "Organ/Space Surgical Site Infection",
+      "pdf_start_page": 32,
+      "pdf_end_page": 35,
+      "pages_count": 4,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 12,
+      "event_name": "Osteomyelitis",
+      "pdf_start_page": 36,
+      "pdf_end_page": 37,
+      "pages_count": 2,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 13,
+      "event_name": "Pressure Ulcer",
+      "pdf_start_page": 38,
+      "pdf_end_page": 39,
+      "pages_count": 2,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 14,
+      "event_name": "Pulmonary Embolism (PE)",
+      "pdf_start_page": 40,
+      "pdf_end_page": 41,
+      "pages_count": 2,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 15,
+      "event_name": "Severe Sepsis",
+      "pdf_start_page": 42,
+      "pdf_end_page": 43,
+      "pages_count": 2,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 16,
+      "event_name": "Stroke/CVA",
+      "pdf_start_page": 44,
+      "pdf_end_page": 45,
+      "pages_count": 2,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 17,
+      "event_name": "Superficial Incisional Surgical Site Infection",
+      "pdf_start_page": 46,
+      "pdf_end_page": 48,
+      "pages_count": 3,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 18,
+      "event_name": "Unplanned Admission to the ICU",
+      "pdf_start_page": 49,
+      "pdf_end_page": 50,
+      "pages_count": 2,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 19,
+      "event_name": "Unplanned Intubation",
+      "pdf_start_page": 51,
+      "pdf_end_page": 52,
+      "pages_count": 2,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 20,
+      "event_name": "Unplanned Return to the Operating Room",
+      "pdf_start_page": 53,
+      "pdf_end_page": 54,
+      "pages_count": 2,
+      "warnings_count": 0
+    },
+    {
+      "event_id": 21,
+      "event_name": "Ventilator-Associated Pneumonia (VAP)",
+      "pdf_start_page": 55,
+      "pdf_end_page": 68,
+      "pages_count": 14,
+      "warnings_count": 0
+    }
+  ]
+}
