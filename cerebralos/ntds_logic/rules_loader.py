@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+MAPPER_PATH = REPO_ROOT / "rules" / "mappers" / "epic_deaconess_mapper_v1.json"
 
 
 @dataclass(frozen=True)
@@ -69,6 +70,21 @@ def load_shared() -> Dict[str, Any]:
         normalized["noise_buckets"] = dict(normalized["buckets"])
         return normalized
     raise SystemExit("shared_v1.json missing noise_buckets (or legacy buckets) dict")
+
+
+def load_mapper() -> Dict[str, Any]:
+    """Load mapper JSON and return its `query_patterns` mapping.
+
+    Fail-closed: return empty dict if missing or malformed.
+    """
+    try:
+        obj = _read_json(MAPPER_PATH)
+    except SystemExit:
+        return {}
+    qp = obj.get("query_patterns", {})
+    if not isinstance(qp, dict):
+        return {}
+    return qp
 
 
 def print_shared_debug(ruleset: Ruleset) -> None:
@@ -146,6 +162,68 @@ def load_event(year: int, event_id: int) -> Tuple[Dict[str, Any], Path]:
 
     if "gates" not in obj or not isinstance(obj["gates"], list) or not obj["gates"]:
         raise SystemExit(f"{path} missing gates[]")
+    # Ensure reporting.warnings is a list
+    obj.setdefault("reporting", {})
+    if obj["reporting"].get("warnings") is None:
+        obj["reporting"]["warnings"] = []
+    elif not isinstance(obj["reporting"].get("warnings"), list):
+        obj["reporting"]["warnings"] = [str(obj["reporting"].get("warnings"))]
+
+    # Load supporting artifacts for expansion
+    shared = load_shared()
+    mapper = {}
+    try:
+        mapper = load_mapper()
+    except Exception:
+        # fail-closed: leave mapper empty and record warning
+        obj["reporting"]["warnings"].append("mapper_load_failed")
+
+    noise = shared.get("noise_buckets", {})
+
+    def _looks_like_regex(s: str) -> bool:
+        # heuristic: contains backslash or regex metacharacters
+        if not isinstance(s, str):
+            return False
+        meta = set('\\.^$*+?{}[]|()')
+        return any((c in meta) for c in s)
+
+    def _uniq_preserve(seq):
+        out = []
+        seen = set()
+        for s in seq:
+            if s not in seen:
+                out.append(s)
+                seen.add(s)
+        return out
+
+    def _expand_list(keys):
+        out = []
+        for k in keys:
+            if isinstance(k, str) and k in mapper:
+                out.extend(list(mapper[k]))
+            elif isinstance(k, str) and k in noise:
+                out.extend(list(noise[k]))
+            elif isinstance(k, str) and _looks_like_regex(k):
+                out.append(k)
+            else:
+                # unresolved symbolic key
+                obj["reporting"]["warnings"].append(f"unresolved key: {k}")
+        return _uniq_preserve([p for p in out if isinstance(p, str)])
+
+    # Expand gates
+    for g in obj.get("gates", []):
+        qkeys = g.get("query_keys", []) if isinstance(g.get("query_keys"), list) else []
+        ex_keys = g.get("exclude_keys", []) if isinstance(g.get("exclude_keys"), list) else []
+        # combine exclude_keys and exclude_noise_keys if present
+        ex_noise = g.get("exclude_noise_keys", []) if isinstance(g.get("exclude_noise_keys"), list) else []
+        g["query_patterns"] = _expand_list(qkeys)
+        g["exclude_patterns"] = _expand_list(ex_keys + ex_noise)
+
+    # Expand exclusions
+    for ex in obj.get("exclusions", []):
+        ex_keys = ex.get("exclude_keys", []) if isinstance(ex.get("exclude_keys"), list) else []
+        ex["exclude_patterns"] = _expand_list(ex_keys)
+
     return obj, path
 
 

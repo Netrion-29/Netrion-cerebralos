@@ -149,10 +149,12 @@
 			"\\bembolus\\b.*\\bpulmonary\\b"
 		],
 		"pe_dx_negative": [
-			"\\bno\\s+acute\\s+PE\\b",
-			"\\bno\\s+pulmonary\\s+embol(?:ism)?\\b",
-			"\\bnegative\\s+for\\s+(pulmonary\\s+embol(?:ism)?|PE)\\b",
-			"\\bno\\s+filling\\s+defects?\\b"
+			"\\bno acute pe\\b",
+			"\\bcta\\b.*\\bnegative\\b.*\\bpe\\b",
+			"\\bctpe\\b.*\\bno acute pe\\b",
+			"\\bno (evidence|sign) of (a )?pulmonary embol(ism|us)\\b",
+			"\\bno filling defects\\b.*\\bpulmonary (artery|arteries)\\b",
+			"\\bnegative for pulmonary embol(ism|us)\\b"
 		],
 		"pe_prophylaxis_noise": [
 			"\\bppx\\b",
