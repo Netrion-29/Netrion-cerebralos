@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "event_id": 7,
+    "canonical_name": "Deep Surgical Site Infection (Deep SSI)",
+    "ntds_year": 2026,
+    "version": "1.0.0"
+  },
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "deep_ssi_dx",
+      "gate_name": "Diagnosis of Deep SSI",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["deep_ssi_dx"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["PHYSICIAN_NOTE", "SURGERY_NOTE", "DISCHARGE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of deep SSI."
+    }
+  ],
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "rule_id": "EXCL_POA",
+      "reason": "Documented prior/present on arrival.",
+      "query_keys": ["history_noise"]
+    }
+  ],
+  "summary_overrides": {},
+  "debug": "Template-based Deep SSI placeholders"
+}

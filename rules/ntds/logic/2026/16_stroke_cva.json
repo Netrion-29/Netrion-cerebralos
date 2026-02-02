@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "event_id": 16,
+    "canonical_name": "Stroke/CVA",
+    "ntds_year": 2026,
+    "version": "1.0.0"
+  },
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "stroke_dx",
+      "gate_name": "Diagnosis of Stroke/CVA",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["stroke_dx"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["PHYSICIAN_NOTE", "IMAGING", "DISCHARGE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of stroke/CVA."
+    }
+  ],
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "rule_id": "EXCL_POA",
+      "reason": "Documented prior/present on arrival.",
+      "query_keys": ["history_noise"]
+    }
+  ],
+  "summary_overrides": {},
+  "debug": "Template-based Stroke/CVA placeholders"
+}

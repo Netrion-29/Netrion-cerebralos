@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "event_id": 15,
+    "canonical_name": "Severe Sepsis",
+    "ntds_year": 2026,
+    "version": "1.0.0"
+  },
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "sepsis_dx",
+      "gate_name": "Diagnosis of Severe Sepsis",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["sepsis_dx"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["PHYSICIAN_NOTE", "LAB", "DISCHARGE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of severe sepsis."
+    }
+  ],
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "rule_id": "EXCL_POA",
+      "reason": "Documented prior/present on arrival.",
+      "query_keys": ["history_noise"]
+    }
+  ],
+  "summary_overrides": {},
+  "debug": "Template-based Severe Sepsis placeholders"
+}

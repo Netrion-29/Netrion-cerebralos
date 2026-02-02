@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "event_id": 21,
+    "canonical_name": "Ventilator-Associated Pneumonia (VAP)",
+    "ntds_year": 2026,
+    "version": "1.0.0"
+  },
+  "gates": [
+    {
+      "gate_type": "evidence_all",
+      "gate_id": "vap_evidence",
+      "gate_name": "Evidence consistent with VAP",
+      "required": true,
+      "min_count": 2,
+      "query_keys": ["vap_dx", "vap_cxr"],
+      "exclude_noise_keys": ["history_noise"],
+      "allowed_sources": ["RADIOLOGY_REPORT", "CLINICAL_NOTE", "MICROBIOLOGY"],
+      "fail_outcome": "NO",
+      "fail_reason": "Insufficient evidence for VAP."
+    }
+  ],
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "rule_id": "EXCL_PROPHY",
+      "reason": "Prophylactic ventilator-associated care documented.",
+      "query_keys": ["prophylaxis_noise"]
+    }
+  ],
+  "summary_overrides": {},
+  "debug": "Template-based VAP placeholders"
+}

@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "event_id": 6,
+    "canonical_name": "Central Line-Associated Bloodstream Infection (CLABSI)",
+    "ntds_year": 2026,
+    "version": "1.0.0"
+  },
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "clabsi_dx",
+      "gate_name": "Diagnosis/lab evidence of CLABSI",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["clabsi_dx"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["LAB", "PHYSICIAN_NOTE", "DISCHARGE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of CLABSI."
+    }
+  ],
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "rule_id": "EXCL_POA",
+      "reason": "Documented prior/present on arrival.",
+      "query_keys": ["history_noise"]
+    }
+  ],
+  "summary_overrides": {},
+  "debug": "Template-based CLABSI placeholders"
+}

@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "event_id": 19,
+    "canonical_name": "Unplanned Intubation",
+    "ntds_year": 2026,
+    "version": "1.0.0"
+  },
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "unplanned_intubation_dx",
+      "gate_name": "Documentation of unplanned intubation",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["unplanned_intubation"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["PROCEDURE", "PHYSICIAN_NOTE", "EVENT_LOG"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of unplanned intubation."
+    }
+  ],
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "rule_id": "EXCL_POA",
+      "reason": "Planned/intubation prior to arrival.",
+      "query_keys": ["history_noise"]
+    }
+  ],
+  "summary_overrides": {},
+  "debug": "Template-based Unplanned Intubation placeholders"
+}

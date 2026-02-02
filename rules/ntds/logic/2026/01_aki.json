@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "event_id": 1,
+    "canonical_name": "Acute Kidney Injury (AKI)",
+    "ntds_year": 2026,
+    "version": "1.0.0",
+    "source": "NTDS Hospital Events (STRUCTURED)"
+  },
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "aki_dx",
+      "gate_name": "Diagnosis of AKI",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["aki_dx"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["PHYSICIAN_NOTE", "LAB", "DISCHARGE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of AKI diagnosis found."
+    },
+    {
+      "gate_type": "timing_after_arrival",
+      "gate_id": "aki_after_arrival",
+      "gate_name": "Onset after arrival",
+      "required": true,
+      "query_key": "aki_onset",
+      "arrival_field": "arrival_time",
+      "timestamp_required": true,
+      "allowed_sources": ["PHYSICIAN_NOTE", "LAB"],
+      "fail_outcome": "UNABLE_TO_DETERMINE",
+      "fail_reason": "Cannot prove AKI onset after arrival."
+    }
+  ],
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "rule_id": "EXCL_POA",
+      "reason": "Documented prior/present on arrival.",
+      "query_keys": ["history_noise"]
+    }
+  ],
+  "summary_overrides": {},
+  "debug": "Template-based AKI rule placeholders"
+}

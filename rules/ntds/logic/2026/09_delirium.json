@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "event_id": 9,
+    "canonical_name": "Delirium",
+    "ntds_year": 2026,
+    "version": "1.0.0"
+  },
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "delirium_dx",
+      "gate_name": "Diagnosis of Delirium",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["delirium_dx"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["PHYSICIAN_NOTE", "NURSING_NOTE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of delirium."
+    }
+  ],
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "rule_id": "EXCL_POA",
+      "reason": "Documented prior/present on arrival.",
+      "query_keys": ["history_noise"]
+    }
+  ],
+  "summary_overrides": {},
+  "debug": "Template-based Delirium placeholders"
+}

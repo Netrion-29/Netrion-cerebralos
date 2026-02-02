@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "event_id": 2,
+    "canonical_name": "Acute Respiratory Distress Syndrome (ARDS)",
+    "ntds_year": 2026,
+    "version": "1.0.0"
+  },
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "ards_dx",
+      "gate_name": "Diagnosis of ARDS",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["ards_dx"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["PHYSICIAN_NOTE", "IMAGING", "DISCHARGE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of ARDS diagnosis found."
+    },
+    {
+      "gate_type": "timing_after_arrival",
+      "gate_id": "ards_after_arrival",
+      "gate_name": "Onset after arrival",
+      "required": true,
+      "query_key": "ards_onset",
+      "arrival_field": "arrival_time",
+      "timestamp_required": true,
+      "allowed_sources": ["PHYSICIAN_NOTE", "IMAGING"],
+      "fail_outcome": "UNABLE_TO_DETERMINE",
+      "fail_reason": "Cannot prove ARDS onset after arrival."
+    }
+  ],
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "rule_id": "EXCL_POA",
+      "reason": "Documented prior/present on arrival.",
+      "query_keys": ["history_noise"]
+    }
+  ],
+  "summary_overrides": {},
+  "debug": "Template-based ARDS placeholders"
+}

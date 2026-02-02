@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "event_id": 17,
+    "canonical_name": "Superficial Incisional Surgical Site Infection",
+    "ntds_year": 2026,
+    "version": "1.0.0"
+  },
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "superficial_ssi_dx",
+      "gate_name": "Diagnosis of Superficial SSI",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["superficial_ssi_dx"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["PHYSICIAN_NOTE", "SURGERY_NOTE", "DISCHARGE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of superficial SSI."
+    }
+  ],
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "rule_id": "EXCL_POA",
+      "reason": "Documented prior/present on arrival.",
+      "query_keys": ["history_noise"]
+    }
+  ],
+  "summary_overrides": {},
+  "debug": "Template-based Superficial SSI placeholders"
+}

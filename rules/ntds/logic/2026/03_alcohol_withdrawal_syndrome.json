@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "event_id": 3,
+    "canonical_name": "Alcohol Withdrawal Syndrome",
+    "ntds_year": 2026,
+    "version": "1.0.0"
+  },
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "aws_dx",
+      "gate_name": "Diagnosis of Alcohol Withdrawal",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["alcohol_withdrawal_dx"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["PHYSICIAN_NOTE", "NURSING_NOTE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of alcohol withdrawal found."
+    }
+  ],
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "rule_id": "EXCL_POA",
+      "reason": "Documented prior/present on arrival.",
+      "query_keys": ["history_noise"]
+    }
+  ],
+  "summary_overrides": {},
+  "debug": "Template-based Alcohol Withdrawal placeholders"
+}

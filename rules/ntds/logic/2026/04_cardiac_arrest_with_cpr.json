@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "event_id": 4,
+    "canonical_name": "Cardiac Arrest With CPR",
+    "ntds_year": 2026,
+    "version": "1.0.0"
+  },
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "ca_dx",
+      "gate_name": "Documentation of cardiac arrest",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["cardiac_arrest_dx"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["PHYSICIAN_NOTE", "EVENT_LOG"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of cardiac arrest found."
+    },
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "ca_cpr",
+      "gate_name": "CPR performed",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["cpr_documented"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["EVENT_LOG", "PHYSICIAN_NOTE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of CPR performed."
+    }
+  ],
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "rule_id": "EXCL_POA",
+      "reason": "Documented prior/present on arrival.",
+      "query_keys": ["history_noise"]
+    }
+  ],
+  "summary_overrides": {},
+  "debug": "Template-based Cardiac Arrest placeholders"
+}

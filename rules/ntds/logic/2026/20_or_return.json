@@ -1,0 +1,81 @@
+{
+   "meta": {
+      "event_id": 20,
+      "canonical_name": "Unplanned Return to the Operating Room",
+      "ntds_year": 2026,
+      "version": "1.0.0",
+      "source": "NTDS Hospital Events (STRUCTURED)"
+   },
+   "element_values": {
+      "YES": "1",
+      "NO": "2"
+   },
+   "exclusions": [
+      {
+         "gate_type": "exclude_if_any",
+         "gate_id": "or_excl_planned",
+         "gate_name": "Exclude planned/staged return to OR",
+         "rule_id": "OR_EXCL_PLANNED",
+         "reason": "Planned/staged return (excluded).",
+         "query_keys": ["or_planned_staged"],
+         "require_context_keys": ["or_procedure_context"]
+      },
+      {
+         "gate_type": "exclude_if_any",
+         "gate_id": "or_excl_ir",
+         "gate_name": "Exclude interventional radiology-only interventions",
+         "rule_id": "OR_EXCL_IR",
+         "reason": "Interventional Radiology-only intervention excluded.",
+         "query_keys": ["or_ir"]
+      },
+      {
+         "gate_type": "exclude_if_any",
+         "gate_id": "or_excl_osh",
+         "gate_name": "Exclude if procedure occurred outside hospital",
+         "rule_id": "OR_EXCL_OSH",
+         "reason": "Outside facility OR/transfer (excluded).",
+            "query_keys": ["osh_or"],
+            "require_context_keys": ["or_procedure_context"]
+      }
+   ],
+   "gates": [
+      {
+         "gate_type": "evidence_any",
+         "gate_id": "or_initial_procedure",
+         "gate_name": "Initial operative procedure documented",
+         "required": true,
+         "min_count": 1,
+         "query_keys": ["or_initial_procedure"],
+         "allowed_sources": ["OPERATIVE_REPORT", "PHYSICIAN_NOTE", "PROCEDURE", "DISCHARGE"],
+         "fail_outcome": "NO",
+         "fail_reason": "No initial operative procedure documented."
+      },
+      {
+         "gate_type": "evidence_any",
+         "gate_id": "or_return_to_or",
+         "gate_name": "Return to operating room documented",
+         "required": true,
+         "min_count": 1,
+         "query_keys": ["or_return_unplanned"],
+         "allowed_sources": ["OPERATIVE_REPORT", "PHYSICIAN_NOTE", "PROCEDURE", "DISCHARGE"],
+         "fail_outcome": "NO",
+         "fail_reason": "No return to operating room documented."
+      },
+      {
+         "gate_type": "evidence_any",
+         "gate_id": "or_same_operative_site",
+         "gate_name": "Same operative site confirmation",
+         "required": true,
+         "min_count": 1,
+         "query_keys": ["or_same_site"],
+         "allowed_sources": ["OPERATIVE_REPORT", "PHYSICIAN_NOTE", "PROCEDURE", "DISCHARGE"],
+         "fail_outcome": "UNABLE_TO_DETERMINE",
+         "fail_reason": "Cannot confirm same operative site from documentation."
+      }
+   ],
+   "reporting": {
+      "if_excluded": "EXCLUDED",
+      "if_any_required_gate_fails": "use_fail_outcome",
+      "if_all_required_gates_pass": "YES"
+   }
+}

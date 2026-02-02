@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "event_id": 12,
+    "canonical_name": "Osteomyelitis",
+    "ntds_year": 2026,
+    "version": "1.0.0"
+  },
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "osteomyelitis_dx",
+      "gate_name": "Diagnosis of Osteomyelitis",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["osteomyelitis_dx"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["PHYSICIAN_NOTE", "IMAGING", "SURGERY_NOTE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of osteomyelitis."
+    }
+  ],
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "rule_id": "EXCL_POA",
+      "reason": "Documented prior/present on arrival.",
+      "query_keys": ["history_noise"]
+    }
+  ],
+  "summary_overrides": {},
+  "debug": "Template-based Osteomyelitis placeholders"
+}

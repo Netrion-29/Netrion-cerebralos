@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "event_id": 8,
+    "canonical_name": "Deep Vein Thrombosis (DVT)",
+    "ntds_year": 2026,
+    "version": "1.0.1",
+    "source": "NTDS Hospital Events (STRUCTURED)"
+  },
+  "element_values": {
+    "YES": "1",
+    "NO": "2"
+  },
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "gate_id": "dvt_excl_poa",
+      "gate_name": "Exclude if DVT present on arrival",
+      "rule_id": "DVT_EXCL_POA",
+      "reason": "DVT documented as present on arrival / prior to arrival (not a hospital event).",
+      "query_keys": ["dvt_poa_phrase"],
+      "require_context_keys": ["dvt_dx"]
+    }
+  ],
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "dvt_dx",
+      "gate_name": "Diagnosis of DVT documented",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["dvt_dx"],
+      "allowed_sources": ["PHYSICIAN_NOTE", "CONSULT_NOTE", "IMAGING", "DISCHARGE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of DVT diagnosis found."
+    },
+    {
+      "gate_type": "timing_after_arrival",
+      "gate_id": "dvt_after_arrival",
+      "gate_name": "Onset after arrival to ED/hospital",
+      "required": true,
+      "query_key": "dvt_onset",
+      "arrival_field": "arrival_time",
+      "timestamp_required": true,
+      "allowed_sources": ["PHYSICIAN_NOTE", "CONSULT_NOTE", "NURSING_NOTE", "IMAGING"],
+      "fail_outcome": "UNABLE_TO_DETERMINE",
+      "fail_reason": "Cannot prove onset after arrival (missing or unclear timestamp/context)."
+    },
+    {
+      "gate_type": "requires_treatment_any",
+      "gate_id": "dvt_treated",
+      "gate_name": "Treated with anticoagulation and/or vena cava filter/clipping",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["dvt_treatment_anticoag", "dvt_treatment_filter"],
+      "allowed_sources": ["MAR", "PHYSICIAN_NOTE", "CONSULT_NOTE", "PROCEDURE", "DISCHARGE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No evidence of required DVT treatment per NTDS definition."
+    }
+  ],
+  "reporting": {
+    "if_excluded": "EXCLUDED",
+    "if_any_required_gate_fails": "use_fail_outcome",
+    "if_all_required_gates_pass": "YES"
+  }
+}

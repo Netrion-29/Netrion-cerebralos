@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "event_id": 11,
+    "canonical_name": "Organ/Space Surgical Site Infection",
+    "ntds_year": 2026,
+    "version": "1.0.0"
+  },
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "organ_space_ssi_dx",
+      "gate_name": "Diagnosis of Organ/Space SSI",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["organ_space_ssi_dx"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["SURGERY_NOTE", "PHYSICIAN_NOTE", "DISCHARGE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of organ/space SSI."
+    }
+  ],
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "rule_id": "EXCL_POA",
+      "reason": "Documented prior/present on arrival.",
+      "query_keys": ["history_noise"]
+    }
+  ],
+  "summary_overrides": {},
+  "debug": "Template-based Organ/Space SSI placeholders"
+}
