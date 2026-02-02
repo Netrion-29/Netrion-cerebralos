@@ -1,0 +1,39 @@
+{
+  "meta": {
+    "name": "ntds_shared_v1",
+    "version": "1.0.0",
+    "locked": true
+  },
+  "noise_buckets": {
+    "history_noise": [
+      "history of",
+      "hx of",
+      "prior",
+      "chronic",
+      "on long-term anticoag",
+      "on Eliquis",
+      "on warfarin",
+      "history:"
+    ],
+    "ruleout_noise": [
+      "rule out",
+      "r/o",
+      "negative for",
+      "no evidence of",
+      "without evidence of",
+      "CTA negative",
+      "no filling defects",
+      "no acute PE",
+      "negative for PE"
+    ],
+    "prophylaxis_noise": [
+      "ppx",
+      "prophylaxis",
+      "DVT PPX",
+      "PE PPX",
+      "SQ heparin prophylaxis",
+      "subcutaneous heparin",
+      "on prophylaxis"
+    ]
+  }
+}

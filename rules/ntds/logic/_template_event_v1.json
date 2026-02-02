@@ -1,0 +1,28 @@
+{
+  "meta": {
+    "event_id": null,
+    "canonical_name": "",
+    "ntds_year": null,
+    "version": "1.0.0"
+  },
+  "gates": [
+    {
+      "gate_id": "",
+      "required": true,
+      "query_keys": [],
+      "exclude_keys": [],
+      "pass_if_any": false,
+      "evidence_limit": 8
+    }
+  ],
+  "exclusions": [
+    {
+      "rule_id": "",
+      "reason": "",
+      "exclude_keys": [],
+      "evidence_limit": 8
+    }
+  ],
+  "summary_overrides": {},
+  "debug": "Optional notes for maintainers"
+}
