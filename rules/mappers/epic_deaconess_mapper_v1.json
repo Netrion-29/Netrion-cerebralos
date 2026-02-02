@@ -1,0 +1,219 @@
+{
+	"meta": {
+		"system": "Netrion Systems",
+		"product": "CerebralOS",
+		"artifact": "Epic Deaconess Mapper",
+		"version": "1.0.3",
+		"notes": [
+			"DVT diagnosis must be separated from prophylaxis mentions.",
+			"Standalone 'DVT' is too permissive because it matches 'DVT PPX' headers.",
+			"POA acronym removed because Epic frequently uses POA = Power of Attorney."
+		]
+	},
+	"query_patterns": {
+		"dvt_dx": [
+			"\\bdeep\\s+vein\\s+thrombosis\\b",
+			"\\bvenous\\s+duplex\\b.*\\bpositive\\b",
+			"\\bduplex\\b.*\\bpositive\\b.*\\bthrombus\\b",
+			"\\bthrombus\\b.*\\b(popli(teal)?|femoral|iliac|tibial|peroneal)\\b",
+			"\\bocclusive\\s+thrombus\\b",
+			"\\bnon[- ]?occlusive\\s+thrombus\\b",
+			"\\bvenogram\\b.*\\bpositive\\b",
+			"\\bct\\b.*\\bvenogram\\b.*\\bthrombus\\b"
+		],
+		"dvt_dx_noise_prophylaxis": [
+			"\\bppx\\b",
+			"\\bprophylaxis\\b",
+			"\\bprophy\\b",
+			"\\bvte\\s*ppx\\b",
+			"\\bscd\\b",
+			"\\bsequential\\s+compression\\b"
+		],
+		"dvt_poa_phrase": [
+			"\\bpresent\\s+on\\s+arrival\\b",
+			"\\bprior\\s+to\\s+arrival\\b",
+			"\\bbefore\\s+arrival\\b",
+			"\\bon\\s+arrival\\b"
+		],
+		"dvt_onset": [
+			"\\bonset\\b.*\\bafter\\b.*\\barrival\\b",
+			"\\bafter\\s+arrival\\b",
+			"\\bdeveloped\\b.*\\bdeep\\s+vein\\s+thrombosis\\b.*\\bduring\\b.*\\bstay\\b"
+		],
+		"dvt_treatment_anticoag": [
+			"\\bheparin\\b(?!.*\\bppx\\b)(?!.*\\bprophylaxis\\b)",
+			"\\benoxaparin\\b",
+			"\\blovenox\\b",
+			"\\bapixaban\\b",
+			"\\beliquis\\b",
+			"\\brivaroxaban\\b",
+			"\\bxarelto\\b",
+			"\\bwarfarin\\b",
+			"\\bcoumadin\\b"
+		],
+		"dvt_treatment_filter": [
+			"\\bivc\\s+filter\\b",
+			"\\bvena\\s+cava\\s+filter\\b",
+			"\\bclipp?ing\\b.*\\bvena\\s+cava\\b"
+		],
+		"or_initial_procedure": [
+			"\\boperative\\s+report\\b",
+			"\\bop\\s+note\\b",
+			"\\boperating\\s+room\\b",
+			"\\bto\\s+the\\s+or\\b",
+			"\\bwent\\s+to\\s+or\\b",
+			"\\bprocedure:\\b",
+			"\\bop\\s+note:\\b"
+		],
+		"or_return_unplanned": [
+			"\\breturn\\s+to\\s+or\\b",
+			"\\bback\\s+to\\s+or\\b",
+			"\\btake\\s+back\\s+to\\s+or\\b",
+			"\\bre-?operation\\b",
+			"\\breoperation\\b",
+			"\\bre-?exploration\\b",
+			"\\bwashout\\b",
+			"\\btakeback\\b"
+		],
+		"or_planned_staged": [
+			"\\bplanned\\s+return\\b",
+			"\\bstaged\\b",
+			"\\bsecond\\s+look\\b",
+			"\\bdamage\\s+control\\s+planned\\b",
+			"\\bplanned\\s+re-?exploration\\b",
+			"\\bpre-?planned\\b"
+		],
+		"or_same_site": [
+			"\\bsame\\s+operative\\s+site\\b",
+			"\\bsame\\s+site\\b",
+			"\\bre-?open\\b",
+			"\\breopen\\b",
+			"\\bre-?opening\\b",
+			"\\btakeback\\s+for\\s+same\\s+site\\b"
+		],
+		"or_ir": [
+			"\\binterventional\\s+radiology\\b",
+			"\\bir\\s+suite\\b",
+			"\\bangiography\\s+suite\\b"
+		],
+		"osh_or": [
+			"\\boutside\\s+hospital\\b",
+			"\\bosh\\b",
+			"\\btransferred\\s+from\\b",
+			"\\bperformed\\s+at\\s+outside\\b",
+			"\\bprior\\s+facility\\b"
+		]
+		,
+		"or_context": [
+			"\\boperating room\\b",
+			"\\breturn to (the )?or\\b",
+			"\\bback to (the )?or\\b",
+			"\\bop note\\b",
+			"\\boperative report\\b",
+			"\\bpost[- ]?op\\b",
+			"\\bsurgery\\b",
+			"\\bre-operation\\b|\\breoperation\\b",
+			"\\bwashout\\b",
+			"\\btake[- ]?back\\b",
+			"\\bexploratory laparotomy\\b|\\bxlap\\b"
+		]
+		,
+		"or_procedure_context": [
+			"\\boperating room\\b",
+			"\\bOR\\b",
+			"\\bop note\\b",
+			"\\boperative report\\b",
+			"\\bsurgery\\b",
+			"\\bto (the )?or\\b",
+			"\\breturn to (the )?or\\b",
+			"\\bback to (the )?or\\b",
+			"\\bre-operation\\b|\\breoperation\\b",
+			"\\bre-exploration\\b",
+			"\\bwashout\\b"
+		]
+		,
+		"pe_dx": [
+			"\\bacute\\s+(pulmonary\\s+embol(?:ism)?|PE)\\b",
+			"\\b(pulmonary\\s+embol(?:ism)?|PE)\\b.*\\b(positive|confirmed|diagnos)\\b",
+			"\\b(positive|confirmed|diagnos)\\b.*\\b(pulmonary\\s+embol(?:ism)?|PE)\\b",
+			"\\bfilling\\s+defect\\b.*\\bpulmonary\\s+arter",
+			"\\b(?:segmental|subsegmental)\\b.*\\b(pulmonary\\s+embol|PE)\\b",
+			"\\bembolus\\b.*\\bpulmonary\\b"
+		],
+		"pe_dx_positive": [
+			"\\bacute\\s+(pulmonary\\s+embol(?:ism)?|PE)\\b",
+			"\\b(pulmonary\\s+embol(?:ism)?|PE)\\b.*\\b(positive|confirmed|diagnos)\\b",
+			"\\b(positive|confirmed|diagnos)\\b.*\\b(pulmonary\\s+embol(?:ism)?|PE)\\b",
+			"\\bfilling\\s+defect\\b.*\\bpulmonary\\s+arter",
+			"\\b(?:segmental|subsegmental)\\b.*\\b(pulmonary\\s+embol|PE)\\b",
+			"\\bembolus\\b.*\\bpulmonary\\b"
+		],
+		"pe_dx_negative": [
+			"\\bno\\s+acute\\s+PE\\b",
+			"\\bno\\s+pulmonary\\s+embol(?:ism)?\\b",
+			"\\bnegative\\s+for\\s+(pulmonary\\s+embol(?:ism)?|PE)\\b",
+			"\\bno\\s+filling\\s+defects?\\b"
+		],
+		"pe_prophylaxis_noise": [
+			"\\bppx\\b",
+			"\\bprophylaxis\\b",
+			"\\bscd\\b",
+			"\\bSCD\\b",
+			"\\bvte\\s*ppx\\b",
+			"\\bsequential\\s+compression\\b"
+		],
+		"pe_negative_noise": [
+			"\\bno\\s+filling\\s+defects?\\b",
+			"\\bnegative\\s+for\\s+pulmonary\\s+embol(?:ism)?\\b",
+			"\\bno\\s+pulmonary\\s+embol(?:ism)?\\b",
+			"\\bno\\s+evidence\\s+of\\s+pulmonary\\s+embol(?:ism)?\\b",
+			"\\bno\\s+acute\\s+PE\\b",
+			"\\bno\\s+PE\\b"
+		],
+		"pe_dx_positive": [
+			"\\bacute\\s+(pulmonary\\s+embol(?:ism)?|PE)\\b",
+			"\\b(pulmonary\\s+embol(?:ism)?|PE)\\b.*\\b(positive|confirmed|diagnos)\\b",
+			"\\b(positive|confirmed|diagnos)\\b.*\\b(pulmonary\\s+embol(?:ism)?|PE)\\b",
+			"\\bfilling\\s+defect\\b.*\\bpulmonary\\s+arter",
+			"\\b(?:segmental|subsegmental)\\b.*\\bpulmonary\\s+embol",
+			"\\bembolus\\b.*\\bpulmonary\\b"
+		],
+		"pe_history_noise": [
+			"\\bhx\\b.*\\b(pulmonary\\s+embol|PE)\\b",
+			"\\bhistory\\s+of\\s+(pulmonary\\s+embol|PE)\\b",
+			"\\bprior\\s+(pulmonary\\s+embol|PE)\\b",
+			"\\bold\\s+(pulmonary\\s+embol|PE)\\b",
+			"\\bon\\s+(eliquis|apixaban|xarelto|rivaroxaban|warfarin|coumadin)\\b.*\\bfor\\b.*\\b(pulmonary\\s+embol|PE)\\b"
+		],
+		"pe_ruleout_noise": [
+			"CTA CHEST FOR PULMONARY EMBOLISM",
+			"\\bfor\\s+pulmonary\\s+embol(?:ism)?\\b",
+			"\\brule\\s*out\\b.*\\bpulmonary\\s+embol",
+			"\\br/o\\b.*\\bPE\\b",
+			"\\bno\\s+pulmonary\\s+embol",
+			"\\bnegative\\s+for\\s+pulmonary\\s+embol",
+			"\\bwithout\\s+pulmonary\\s+embol",
+			"\\brule\\s*out\\s+pe\\b",
+			"\\br/?o\\s*pe\\b",
+			"\\bno\\s+pe\\b",
+			"\\bnegative\\s+for\\s+pe\\b"
+		],
+		"pe_poa_strict": [
+			"\\b(pulmonary\\s+embol(?:ism)?|PE)\\b.*\\bpresent\\s+on\\s+arrival\\b",
+			"\\bpresent\\s+on\\s+arrival\\b.*\\b(pulmonary\\s+embol(?:ism)?|PE)\\b",
+			"\\b(pulmonary\\s+embol(?:ism)?|PE)\\b.*\\bPOA\\b",
+			"\\bPOA\\b.*\\b(pulmonary\\s+embol(?:ism)?|PE)\\b"
+		],
+		"pe_onset": [
+			"\\bonset\\b.*\\bafter\\b.*\\barrival\\b",
+			"\\bafter\\s+arrival\\b",
+			"\\bdeveloped\\b.*\\bpulmonary\\s+embolism\\b.*\\bduring\\b.*\\bstay\\b",
+			"\\bdeveloped\\b.*\\bpulmonary\\s+embol",
+			"\\bafter\\s+arrival\\b.*\\bpulmonary\\s+embol"
+		],
+		"pe_subsegmental_only": [
+			"\\bsubsegmental\\b.*\\bpulmonary\\s+embol",
+			"\\bsubsegmental\\s+pulmonary\\s+embol\\b"
+		]
+	}
+}
