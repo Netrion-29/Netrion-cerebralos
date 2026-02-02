@@ -38,4 +38,19 @@ rules/ntds/2026/ntds_index_2026_v*.json
 !rules/ntds/2025/ntds_index_2025_v9.json
 !rules/ntds/2026/ntds_events_raw_2026_v9.json
 !rules/ntds/2026/ntds_index_2026_v9.json
+# local PHI / exports
+data_raw/
+outputs/
+
+# python junk
+__pycache__/
+*.pyc
+
+# intermediate NTDS extraction artifacts (keep structured v1 only)
+rules/ntds/**/ntds_events_raw_*.json
+rules/ntds/**/ntds_index_20*_v*.json
+rules/ntds/**/ntds_index_*_v*.json
+
+# accidental json-as-py copies
+rules/ntds/**/ntds_events_structured_*.py
 
