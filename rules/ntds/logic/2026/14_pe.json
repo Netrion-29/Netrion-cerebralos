@@ -13,14 +13,6 @@
   "exclusions": [
     {
       "gate_type": "exclude_if_any",
-      "gate_id": "pe_excl_negative_study",
-      "gate_name": "Exclude if imaging explicitly negative for PE",
-      "rule_id": "PE_EXCL_NEGATIVE_STUDY",
-      "reason": "Imaging explicitly negative for PE.",
-      "query_keys": ["pe_dx_negative"]
-    },
-    {
-      "gate_type": "exclude_if_any",
       "gate_id": "pe_excl_poa",
       "gate_name": "Exclude if PE present on arrival/prior",
       "rule_id": "PE_EXCL_POA",
@@ -30,6 +22,17 @@
     }
   ],
   "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "pe_negative_study",
+      "gate_name": "Imaging explicitly negative for PE",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["pe_dx_negative"],
+      "allowed_sources": ["IMAGING"],
+      "pass_outcome": "NO",
+      "pass_reason": "Imaging explicitly negative for PE."
+    },
     {
       "gate_type": "evidence_any",
       "gate_id": "pe_dx",

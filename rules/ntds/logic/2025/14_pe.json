@@ -13,37 +13,58 @@
   "exclusions": [
     {
       "gate_type": "exclude_if_any",
-      "gate_id": "pe_excl_negative_study",
-      "gate_name": "Exclude if imaging explicitly negative for PE",
-      "rule_id": "PE_EXCL_NEGATIVE_STUDY",
-      "reason": "Imaging explicitly negative for PE.",
-      "query_keys": ["pe_dx_negative"]
-    },
-    {
-      "gate_type": "exclude_if_any",
       "gate_id": "pe_excl_poa",
       "gate_name": "Exclude if PE present on arrival/prior",
       "rule_id": "PE_EXCL_POA",
       "reason": "PE documented as present on arrival / prior to arrival (not a hospital event).",
-      "query_keys": ["pe_poa_strict"],
-      "require_context_keys": ["pe_dx_positive"]
+      "query_keys": [
+        "pe_poa_strict"
+      ],
+      "require_context_keys": [
+        "pe_dx_positive"
+      ]
     }
   ],
   "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "pe_negative_study",
+      "gate_name": "Imaging explicitly negative for PE",
+      "required": true,
+      "min_count": 1,
+      "query_keys": [
+        "pe_dx_negative"
+      ],
+      "allowed_sources": [
+        "IMAGING"
+      ],
+      "pass_outcome": "NO",
+      "pass_reason": "Imaging explicitly negative for PE."
+    },
     {
       "gate_type": "evidence_any",
       "gate_id": "pe_dx",
       "gate_name": "Diagnosis of PE documented",
       "required": true,
       "min_count": 1,
-      "query_keys": ["pe_dx_positive"],
-      "exclude_noise_keys": ["pe_prophylaxis_noise", "pe_ruleout_noise", "pe_history_noise"],
-      "allowed_sources": ["IMAGING", "PHYSICIAN_NOTE", "CONSULT_NOTE", "DISCHARGE"],
+      "query_keys": [
+        "pe_dx_positive"
+      ],
+      "exclude_noise_keys": [
+        "pe_prophylaxis_noise",
+        "pe_ruleout_noise",
+        "pe_history_noise"
+      ],
+      "allowed_sources": [
+        "IMAGING",
+        "PHYSICIAN_NOTE",
+        "CONSULT_NOTE",
+        "DISCHARGE"
+      ],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of PE diagnosis found."
     },
     {
-
       "gate_type": "timing_after_arrival",
       "gate_id": "pe_after_arrival",
       "gate_name": "Onset after arrival to ED/hospital",
@@ -51,9 +72,14 @@
       "query_key": "pe_onset",
       "arrival_field": "arrival_time",
       "timestamp_required": true,
-      "allowed_sources": ["IMAGING", "PHYSICIAN_NOTE", "CONSULT_NOTE", "DISCHARGE"],
+      "allowed_sources": [
+        "PHYSICIAN_NOTE",
+        "CONSULT_NOTE",
+        "IMAGING",
+        "NURSING_NOTE"
+      ],
       "fail_outcome": "UNABLE_TO_DETERMINE",
-      "fail_reason": "Cannot prove PE onset after arrival."
+      "fail_reason": "Cannot prove PE onset after arrival (missing/unclear timing evidence)."
     }
   ],
   "reporting": {
