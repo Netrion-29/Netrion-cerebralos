@@ -54,3 +54,6 @@ rules/ntds/**/ntds_index_*_v*.json
 # accidental json-as-py copies
 rules/ntds/**/ntds_events_structured_*.py
 
+# Keep structured v1 JSON files tracked (do not ignore)
+!rules/ntds/**/ntds_events_structured_*_v1.json
+
