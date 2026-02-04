@@ -14,7 +14,7 @@ Defines the core data structures for the NTDS engine:
 
 Design:
 - Deterministic
-- Fail-closed: missing required data → INDETERMINATE / NOT_EVALUATED
+- Fail-closed: missing required data → UNABLE_TO_DETERMINE / NOT_EVALUATED
 - No invented data
 """
 

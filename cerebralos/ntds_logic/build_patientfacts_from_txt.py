@@ -163,7 +163,10 @@ def build_patientfacts(
         if not stripped:
             continue
         
-        # Check for section header
+        # Check for section header - section headers define the source type for
+        # subsequent lines until a new section is detected. Any timestamp in the
+        # header is preserved and applied to following evidence entries until
+        # overwritten by a newer timestamp.
         new_source = _detect_source_type(stripped, current_source)
         if new_source != current_source:
             current_source = new_source
@@ -173,7 +176,8 @@ def build_patientfacts(
                 current_timestamp = ts
             continue
         
-        # Check for timestamp in line
+        # Check for timestamp in line - updates current_timestamp for this and
+        # subsequent evidence entries
         ts = _extract_timestamp(stripped)
         if ts:
             current_timestamp = ts
