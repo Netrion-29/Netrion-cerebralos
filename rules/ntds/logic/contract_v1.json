@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "name": "ntds_contract_v1",
+    "version": "1.0.0",
+    "locked": true,
+    "description": "NTDS Logic Contract - defines allowed outcomes and evidence constraints"
+  },
+  "outcomes": {
+    "allowed": [
+      "YES",
+      "NO",
+      "EXCLUDED",
+      "UNABLE_TO_DETERMINE",
+      "NOT_EVALUATED"
+    ],
+    "defaults": {
+      "missing_required_data": "UNABLE_TO_DETERMINE",
+      "exclusion_triggered": "EXCLUDED",
+      "all_gates_pass": "YES"
+    }
+  },
+  "evidence": {
+    "max_items_per_gate": 8,
+    "max_items_per_exclusion": 8,
+    "require_source_type": true,
+    "require_timestamp": false
+  },
+  "validation": {
+    "strict_mode": true,
+    "fail_on_unknown_gate_type": true,
+    "require_gate_id": true
+  }
+}
