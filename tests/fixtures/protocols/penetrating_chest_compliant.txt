@@ -1,0 +1,23 @@
+PATIENT_ID: TEST_PEN_CHEST_001
+ARRIVAL_TIME: 2026-01-22 22:00:00
+
+[TRAUMA_HP] 2026-01-22 22:05:00
+Category I trauma activation for 22-year-old male, single GSW to left chest.
+Penetrating chest injury, gunshot wound to left anterior thorax at 4th intercostal space.
+BP 75/45, HR 140, RR 32, GCS 14.
+Hemodynamically unstable. Signs of life present: pulse palpable, respiratory effort present.
+Breath sounds diminished on left. Respiratory distress with tachypnea.
+FAST exam positive for pericardial effusion, cardiac tamponade suspected.
+
+[NURSING_NOTE] 2026-01-22 22:10:00
+Left chest tube placed emergently. Output 1200mL blood immediately.
+Portable AP chest x-ray obtained prior to OR.
+
+[IMAGING] 2026-01-22 22:12:00
+Portable chest x-ray: Large left hemothorax. Retained hemothorax after chest tube.
+Possible cardiac silhouette enlargement suggesting pericardial effusion.
+
+[OPERATIVE_NOTE] 2026-01-22 22:30:00
+Left anterior thoracotomy performed in ED for hemodynamic collapse.
+Pericardial tamponade confirmed. Cardiac laceration repaired.
+Patient transferred to OR for definitive repair.

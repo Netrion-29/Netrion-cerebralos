@@ -1,0 +1,24 @@
+PATIENT_ID: TEST_BD_001
+ARRIVAL_TIME: 2026-01-21 06:00:00
+
+[TRAUMA_HP] 2026-01-21 06:15:00
+Category I trauma activation for 35-year-old male involved in high-speed MVC.
+Trauma activation level: Category 1.
+Primary survey completed. Patient hemodynamically unstable on arrival.
+BP 90/60, HR 125, GCS 14.
+Massive transfusion protocol initiated.
+
+[LAB] 2026-01-21 06:20:00
+ABG drawn at 06:18.
+ARTERIAL BLOOD GAS RESULTS:
+pH: 7.28
+pCO2: 32 mmHg
+pO2: 95 mmHg
+Base deficit: -6.2 mEq/L
+HCO3: 18 mEq/L
+Lactate: 4.1 mmol/L
+Base deficit on initial admission blood gas consistent with hemorrhagic shock.
+
+[PHYSICIAN_NOTE] 2026-01-21 06:45:00
+ABG results reviewed. Base deficit of -6.2 consistent with Class III hemorrhage.
+Continuing resuscitation with blood products.

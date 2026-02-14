@@ -1,0 +1,26 @@
+PATIENT_ID: TEST_RIB_001
+ARRIVAL_TIME: 2026-01-21 08:00:00
+
+[TRAUMA_HP] 2026-01-21 08:15:00
+Category II trauma activation for 55-year-old male after fall from ladder.
+BP 130/80, HR 88, RR 20, GCS 15. Alert and oriented.
+Chest wall tenderness on palpation of left lateral ribs.
+Pain assessment: NRS 7/10 at rest, 9/10 with deep inspiration.
+Rib fracture management protocol to be initiated pending imaging.
+
+[IMAGING] 2026-01-21 08:45:00
+CT Chest with 3D reconstruction:
+Fractures of left ribs 5, 6, 7 and 8 identified.
+No pneumothorax. Small left pleural effusion.
+Rib fracture locations confirmed on imaging.
+
+[NURSING_NOTE] 2026-01-21 10:00:00
+Patient assessed. Respiratory rate 18 breaths per minute.
+Incentive spirometry measurement: 1250 mL (goal 1500 mL).
+Cough effort: moderate, able to clear secretions with splinting.
+Pain score reassessed: NRS 5/10 after multimodal analgesia.
+
+[PHYSICIAN_NOTE] 2026-01-21 10:30:00
+Rib fracture management protocol initiated.
+Pain management plan: scheduled acetaminophen, PRN oxycodone, rib block considered.
+Pulmonary toilet regimen ordered. Continue incentive spirometry q1h while awake.

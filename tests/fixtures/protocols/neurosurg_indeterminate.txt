@@ -1,0 +1,18 @@
+PATIENT_ID: TEST_NEUROSURG_003
+ARRIVAL_TIME: 2026-02-18 18:00:00
+
+[TRAUMA_HP] 2026-02-18 18:10:00
+Category I activation for 30-year-old male. Pedestrian struck.
+Traumatic brain injury suspected. Head injury from impact.
+Patient intubated in field. Unable to assess GCS at this time.
+BP 160/95, HR 58, RR 14 vent.
+
+[IMAGING] 2026-02-18 18:30:00
+CT scan pending. Head imaging not yet obtained.
+No intracranial findings to report at this time.
+
+[PHYSICIAN_NOTE] 2026-02-18 18:45:00
+Suspected severe TBI but GCS not documented at arrival.
+No CT completed. Imaging delayed due to hemodynamic management.
+Unable to perform neurologic exam due to sedation.
+Pending full assessment after stabilization.

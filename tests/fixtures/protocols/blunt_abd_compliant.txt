@@ -1,0 +1,21 @@
+PATIENT_ID: TEST_BLUNT_ABD_001
+ARRIVAL_TIME: 2026-01-22 07:00:00
+
+[TRAUMA_HP] 2026-01-22 07:10:00
+Category I trauma activation for 25-year-old male, MVC with seatbelt sign.
+Blunt abdominal trauma suspected. Seatbelt mark across lower abdomen.
+BP 85/55, HR 125, RR 28, GCS 15.
+Abdomen: distended, diffusely tender with guarding.
+Hemodynamically unstable, hypotension requiring fluid resuscitation.
+
+[NURSING_NOTE] 2026-01-22 07:15:00
+FAST exam positive for free fluid in Morison pouch and pelvis.
+2L crystalloid administered. BP 95/60, HR 115, RR 24.
+
+[IMAGING] 2026-01-22 07:30:00
+CT abdomen with contrast: Grade IV splenic laceration with active extravasation.
+Moderate hemoperitoneum. No other solid organ injury.
+
+[PHYSICIAN_NOTE] 2026-01-22 07:35:00
+Blunt abdominal injury with hemodynamic instability and positive FAST.
+Hemodynamically unstable despite resuscitation. Taken emergently to OR for laparotomy.

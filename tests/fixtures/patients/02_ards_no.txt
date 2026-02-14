@@ -1,0 +1,12 @@
+PATIENT_ID: TEST_ARDS_002
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[IMAGING] 2026-01-15 09:00:00
+Chest X-ray: Lungs clear bilaterally.
+No infiltrates or consolidation.
+Heart size normal.
+
+[PHYSICIAN_NOTE] 2026-01-15 10:00:00
+Respiratory status stable. Breathing comfortably on room air.
+Oxygen saturation 98% on room air.
+Lungs clear to auscultation bilaterally.

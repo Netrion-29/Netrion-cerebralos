@@ -1,0 +1,18 @@
+PATIENT_ID: TEST_SOLID_ORGAN_003
+ARRIVAL_TIME: 2026-02-09 22:00:00
+
+[TRAUMA_HP] 2026-02-09 22:10:00
+Category I activation for 26-year-old male. MVC with steering wheel impact.
+FAST positive. Concern for internal organ damage.
+
+[IMAGING] 2026-02-09 22:30:00
+CT abdomen: hepatic laceration identified. Liver injury on imaging.
+Radiology report does not specify severity classification.
+No mention of active vascular findings on scan.
+No documentation of peritoneal fluid volume.
+
+[PHYSICIAN_NOTE] 2026-02-09 22:45:00
+Hepatic injury seen on CT.
+No vital sign trend documented this encounter.
+No severity classification assigned.
+Patient admitted. Awaiting complete surgical evaluation.

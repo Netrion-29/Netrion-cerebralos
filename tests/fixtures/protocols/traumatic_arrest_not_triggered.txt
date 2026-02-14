@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_TRAUMATIC_ARREST_002
+ARRIVAL_TIME: 2026-02-06 09:00:00
+
+[TRAUMA_HP] 2026-02-06 09:10:00
+Category II activation for 48-year-old male. Fall from 8 feet.
+Alert and oriented on arrival. GCS 15. Ambulatory at scene.
+BP 130/82, HR 76, RR 14.
+Left heel pain and swelling. No other complaints.
+
+[IMAGING] 2026-02-06 09:30:00
+Left calcaneus x-ray: comminuted calcaneal fracture.
+Thoracolumbar spine imaging normal. No other injuries.
+
+[PHYSICIAN_NOTE] 2026-02-06 09:50:00
+Isolated left calcaneal fracture. Splinted. Admitted for orthopedic management.
+Hemodynamically stable throughout stay.

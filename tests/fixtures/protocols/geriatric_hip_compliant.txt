@@ -1,0 +1,21 @@
+PATIENT_ID: TEST_GERIATRIC_HIP_001
+ARRIVAL_TIME: 2026-02-14 07:00:00
+
+[TRAUMA_HP] 2026-02-14 07:10:00
+Category II activation for 82-year-old female. Mechanical fall at home.
+Age 82. Right hip pain and inability to bear weight.
+BP 138/82, HR 76, RR 16, GCS 15.
+
+[IMAGING] 2026-02-14 07:30:00
+AP pelvis x-ray: right intertrochanteric fracture confirmed.
+Hip fracture identified on imaging. Proximal femur fracture.
+Imaging confirms hip fracture.
+
+[PHYSICIAN_NOTE] 2026-02-14 08:00:00
+Orthopedic consultation obtained.
+Orthopedic assessment documents intertrochanteric hip fracture, stable pattern.
+Fracture classification: AO/OTA 31-A2.
+Surgical intervention planned. ORIF recommended.
+Surgery within 24 hours. Operative fixation scheduled for tomorrow morning.
+Surgical timing documented.
+Medical clearance in progress.

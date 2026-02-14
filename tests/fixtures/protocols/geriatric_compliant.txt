@@ -1,0 +1,32 @@
+PATIENT_ID: TEST_GERIATRIC_001
+ARRIVAL_TIME: 2026-02-13 09:00:00
+
+[TRAUMA_HP] 2026-02-13 09:10:00
+Category II activation for 78-year-old male. Fall from standing height.
+Trauma admission. Age 78.
+BP 142/88, HR 86, RR 18, GCS 15.
+History of diabetes mellitus and chronic atrial fibrillation.
+Arrhythmia documented. On warfarin therapy (anticoagulant, not aspirin).
+Past medical history includes cirrhosis and syncope.
+Baseline functional status: ambulatory with walker.
+
+[IMAGING] 2026-02-13 09:30:00
+CT head: acute subdural hematoma, right frontal region.
+CT cervical spine: no acute fracture identified.
+CT chest: 4 left-sided rib fractures. Fracture confirmed on imaging.
+Imaging confirming multiple qualifying injuries.
+
+[LAB] 2026-02-13 09:20:00
+INR 2.8. GFR: 38 mL/min. Creatinine 1.9.
+Renal function impaired. GFR < 45.
+
+[PHYSICIAN_NOTE] 2026-02-13 10:00:00
+Geriatric trauma patient meeting qualifying injury criteria:
+subdural hematoma and 4 rib fractures.
+Medical vulnerability: anticoagulation (warfarin), arrhythmia,
+diabetes mellitus, syncope, GFR < 45.
+Cardiac history: atrial fibrillation with ejection fraction 35%.
+EF: 35%. BMI: 28.
+Home medications reconciled. Medication reconciliation completed.
+Comorbidities assessed. Medical history reviewed.
+Admitted to trauma service.

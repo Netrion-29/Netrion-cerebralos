@@ -1,0 +1,11 @@
+PATIENT_ID: TEST_DELIRIUM_002
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[PHYSICIAN_NOTE] 2026-01-15 10:00:00
+Patient alert and oriented x4 throughout hospitalization.
+Mental status clear and appropriate.
+GCS 15.
+
+[NURSING_NOTE] 2026-01-16 08:00:00
+Patient oriented to person, place, time, and situation.
+Follows commands appropriately. No behavioral concerns.

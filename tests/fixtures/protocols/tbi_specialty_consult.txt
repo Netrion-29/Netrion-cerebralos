@@ -1,0 +1,24 @@
+PATIENT_ID: TEST_TBI_EDGE_001
+ARRIVAL_TIME: 2026-01-21 03:00:00
+
+[TRAUMA_HP] 2026-01-21 03:10:00
+Category I trauma activation for 19-year-old male, motorcycle crash.
+Suspected traumatic brain injury.
+BP 85/50, HR 135, GCS 7.
+Patient intubated in field. Cardiopulmonary resuscitation adequate.
+GCS assessed after adequate cardiopulmonary resuscitation: GCS 7.
+Neurosurgery consulted at 03:15.
+
+[PHYSICIAN_NOTE] 2026-01-21 03:30:00
+GCS remains 7 after resuscitation. CT head ordered urgently.
+Neurosurgery notified, Dr. Smith paged at 03:15.
+Time of contact: 03:15. Neurosurgery responded at 03:28.
+
+[CONSULT_NOTE] 2026-01-21 03:28:00
+Neurosurgery evaluation. Patient with GCS 7 after resuscitation.
+CT head shows epidural hematoma. Recommend emergent craniotomy.
+Neurosurgery arrived at bedside at 03:28.
+
+[OPERATIVE_NOTE] 2026-01-21 04:00:00
+Emergent craniotomy for evacuation of epidural hematoma.
+Patient taken to OR for definitive neurosurgical intervention.

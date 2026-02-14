@@ -1,0 +1,14 @@
+PATIENT_ID: TEST_ROTEM_003
+ARRIVAL_TIME: 2026-01-20 22:00:00
+
+[TRAUMA_HP] 2026-01-20 22:10:00
+Category I activation for 32-year-old male, stab wound to left flank.
+Hemodynamically unstable. BP 78/50, HR 128, RR 26.
+Massive Transfusion Protocol activated. ED blood box opened.
+Balanced blood resuscitation initiated.
+
+[PHYSICIAN_NOTE] 2026-01-20 22:40:00
+Patient taken to OR for exploratory laparotomy.
+Splenic laceration repaired. Bleeding controlled intraoperatively.
+No ROTEM panel ordered during resuscitation.
+No ROTEM parameters documented.

@@ -1,0 +1,21 @@
+PATIENT_ID: TEST_NEUROSURG_NC_001
+ARRIVAL_TIME: 2026-02-27 02:00:00
+
+[TRAUMA_HP] 2026-02-27 02:10:00
+Category I activation for 55-year-old male. Assault with bat.
+Head injury sustained. Traumatic brain injury suspected. TBI.
+GCS: 8. Intubated for airway protection.
+BP 168/98, HR 58, neurologic examination shows fixed left pupil.
+Focal neurologic deficit documented.
+
+[IMAGING] 2026-02-27 02:30:00
+CT head: acute right subdural hematoma with 10 mm midline shift.
+Intracranial pathology confirmed. Brain CT documented.
+Epidural hematoma component also identified.
+
+[PHYSICIAN_NOTE] 2026-02-27 03:00:00
+Severe TBI with intracranial mass lesion. GCS 8.
+No neurosurgical consult obtained.
+Neurosurgery consultation not requested despite qualifying criteria.
+No neurosurgical evaluation obtained.
+Patient managed expectantly without neurosurgery involvement.

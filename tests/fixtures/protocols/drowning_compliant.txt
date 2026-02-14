@@ -1,0 +1,25 @@
+PATIENT_ID: TEST_DROWNING_001
+ARRIVAL_TIME: 2026-02-07 15:00:00
+
+[TRAUMA_HP] 2026-02-07 15:10:00
+Category I activation for 16-year-old male. Drowning event with submersion.
+Patient dove into shallow pool and struck head on bottom.
+Submersion time approximately 3 minutes per witnesses.
+Dive into shallow water with suspected cervical spine injury.
+BP 100/62, HR 110, RR 24 (labored), GCS 12.
+Traumatic mechanism associated with drowning event confirmed.
+
+[NURSING_NOTE] 2026-02-07 15:15:00
+Cervical collar applied. Supplemental oxygen initiated.
+Patient coughing with frothy sputum. Respiratory distress noted.
+
+[PHYSICIAN_NOTE] 2026-02-07 15:25:00
+Trauma-directed evaluation completed. Full trauma assessment performed.
+Mechanism: diving into shallow water with submersion and possible cervical injury.
+Neurologic exam: moving all extremities, no focal deficit.
+
+[IMAGING] 2026-02-07 15:40:00
+CT cervical spine: no fracture or subluxation.
+CT head: no intracranial abnormality.
+Chest x-ray obtained: bilateral pulmonary infiltrates consistent
+with aspiration. Imaging results reviewed.

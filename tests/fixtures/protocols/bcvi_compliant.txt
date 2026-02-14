@@ -1,0 +1,27 @@
+PATIENT_ID: TEST_BCVI_001
+ARRIVAL_TIME: 2026-02-04 06:00:00
+
+[TRAUMA_HP] 2026-02-04 06:10:00
+Category I activation for 42-year-old male. High-speed MVC with rollover.
+Blunt trauma mechanism. GCS 8 on arrival. Intubated in field.
+Severe facial trauma with midface instability.
+Neurologic examination: focal neurologic deficit noted.
+Left-sided hemiparesis. Lateralizing deficit present.
+Expanding cervical hematoma noted on left.
+
+[NURSING_NOTE] 2026-02-04 06:15:00
+Hemodynamically stable post-intubation. BP 110/72, HR 98, RR 14 vent.
+
+[IMAGING] 2026-02-04 06:30:00
+CT cervical spine: C2 transverse foramen fracture with subluxation.
+CT head: diffuse axonal injury pattern. No midline shift.
+Basilar skull fracture involving the carotid canal identified.
+CTA neck obtained. CT angiography neck demonstrates Grade II
+left internal carotid artery dissection.
+
+[PHYSICIAN_NOTE] 2026-02-04 06:50:00
+Neurologic examination findings consistent with BCVI.
+Focal deficit inconsistent with head CT findings.
+Multiple BCVI risk factors present: basilar skull fracture,
+cervical transverse foramen fracture, diffuse axonal injury with GCS < 6 equivalent.
+Anticoagulation initiated per BCVI protocol.

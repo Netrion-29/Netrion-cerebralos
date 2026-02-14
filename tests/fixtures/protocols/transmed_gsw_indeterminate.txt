@@ -1,0 +1,14 @@
+PATIENT_ID: TEST_TRANSMED_003
+ARRIVAL_TIME: 2026-01-28 18:00:00
+
+[TRAUMA_HP] 2026-01-28 18:10:00
+Category I activation for 26-year-old male, GSW to chest.
+Transmediastinal gunshot wound suspected. Mediastinal involvement possible.
+BP 90/55, HR 125, RR 26. Hemodynamically unstable.
+Entry wound left anterior chest. No exit wound identified.
+
+[PHYSICIAN_NOTE] 2026-01-28 18:40:00
+Patient taken directly to OR. No CT chest imaging obtained.
+No documentation of signs of life assessment.
+No chest x-ray obtained prior to surgery.
+No esophageal imaging documented.

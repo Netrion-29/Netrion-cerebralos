@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_BD_003
+ARRIVAL_TIME: 2026-01-21 14:00:00
+
+[TRAUMA_HP] 2026-01-21 14:15:00
+Category I trauma activation for 28-year-old male, stabbing victim.
+Trauma activation level: Category 1.
+Patient alert, BP 100/65, HR 110.
+Active hemorrhage from left flank wound.
+
+[PHYSICIAN_NOTE] 2026-01-21 14:30:00
+Patient taken emergently to OR for exploratory laparotomy.
+Blood gas not obtained prior to OR.
+
+[OPERATIVE_NOTE] 2026-01-21 16:00:00
+Exploratory laparotomy performed. Small bowel injury repaired.
+Hemostasis achieved. Patient stable post-op.

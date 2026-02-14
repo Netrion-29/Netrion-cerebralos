@@ -1,0 +1,27 @@
+PATIENT_ID: TEST_TBI_004
+ARRIVAL_TIME: 2026-01-20 22:00:00
+
+[TRAUMA_HP] 2026-01-20 22:15:00
+Patient arrived via EMS following assault.
+Suspected traumatic brain injury based on mechanism and altered mental status.
+Patient combative, difficult to assess.
+Unable to obtain accurate GCS on arrival due to patient agitation.
+
+[PHYSICIAN_NOTE] 2026-01-20 22:45:00
+Patient sedated for CT scan.
+Post-sedation, unable to accurately assess neurologic status.
+Awaiting CT results.
+
+[IMAGING] 2026-01-20 23:15:00
+CT BRAIN WITHOUT CONTRAST
+
+FINDINGS:
+Small right parietal contusion. No significant mass effect.
+
+IMPRESSION:
+Traumatic brain injury with small parietal contusion.
+
+[PHYSICIAN_NOTE] 2026-01-20 23:45:00
+CT confirms TBI.
+Patient remains sedated, GCS assessment deferred until sedation wears off.
+Admit to ICU for monitoring.

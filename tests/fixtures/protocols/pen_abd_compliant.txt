@@ -1,0 +1,24 @@
+PATIENT_ID: TEST_PEN_ABD_001
+ARRIVAL_TIME: 2026-02-01 14:00:00
+
+[TRAUMA_HP] 2026-02-01 14:10:00
+Category I activation for 34-year-old male with penetrating abdominal injury.
+Stab wound to left lower quadrant with evisceration of omentum.
+Entry wound located in the left lower abdominal quadrant.
+BP 92/58, HR 122, RR 22, GCS 15.
+Hemodynamic instability with peritoneal signs on examination.
+Exam reveals diffuse abdominal tenderness with guarding and rigidity.
+
+[NURSING_NOTE] 2026-02-01 14:15:00
+FAST exam performed. Positive FAST examination with free fluid in Morrison pouch.
+Hemodynamic status: unstable. Vitals trending down.
+
+[IMAGING] 2026-02-01 14:25:00
+CT abdomen/pelvis not obtained due to hemodynamic instability.
+Wound exploration performed at bedside: fascial penetration confirmed.
+Anterior abdominal fascia violated.
+
+[PHYSICIAN_NOTE] 2026-02-01 14:30:00
+Operative decision made for emergent laparotomy.
+Surgical intervention indicated given evisceration, positive FAST, and hemodynamic instability.
+Patient taken to OR for exploratory laparotomy.

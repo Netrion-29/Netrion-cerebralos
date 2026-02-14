@@ -1,0 +1,13 @@
+PATIENT_ID: TEST_OR_001
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[PHYSICIAN_NOTE] 2026-01-15 14:00:00
+Patient taken to the operating room for exploratory laparotomy.
+Operative report: Splenectomy and liver repair performed.
+Op note documented.
+
+[PHYSICIAN_NOTE] 2026-01-18 10:00:00
+Patient taken back to OR for same operative site complication.
+Return to OR for hemorrhage at prior surgical site.
+Re-operation performed for same site bleeding.
+Washout of abdomen — same site as initial procedure.

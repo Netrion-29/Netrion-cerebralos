@@ -1,0 +1,14 @@
+PATIENT_ID: TEST_MENTAL_HEALTH_003
+ARRIVAL_TIME: 2026-02-16 20:00:00
+
+[TRAUMA_HP] 2026-02-16 20:10:00
+Category I activation for 25-year-old male. Assault victim. Stabbing.
+Intentional violent mechanism. Age 25. Stab wound to chest.
+BP 92/58, HR 120, RR 24, GCS 13.
+
+[PHYSICIAN_NOTE] 2026-02-16 22:00:00
+Post-operative. Patient intubated and sedated.
+Unable to determine patient's capacity for evaluation at this time.
+No documentation of awareness or orientation status.
+No assessment initiated due to clinical acuity.
+No consult placed. Pending clinical improvement.

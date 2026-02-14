@@ -1,0 +1,13 @@
+PATIENT_ID: TEST_BLOOD_002
+ARRIVAL_TIME: 2026-01-23 14:00:00
+
+[TRAUMA_HP] 2026-01-23 14:10:00
+Category II activation for 50-year-old female, low-speed vehicle collision.
+Seatbelt sign across chest. Mild chest wall tenderness.
+BP 130/82, HR 78, RR 16, GCS 15. Hemodynamically stable.
+No active bleeding. No signs of internal hemorrhage.
+
+[PHYSICIAN_NOTE] 2026-01-23 14:40:00
+CT chest and abdomen negative for injury. No fluid collection.
+Observation period completed. No deterioration.
+Discharged home with return precautions.

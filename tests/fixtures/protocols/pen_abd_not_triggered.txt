@@ -1,0 +1,13 @@
+PATIENT_ID: TEST_PEN_ABD_002
+ARRIVAL_TIME: 2026-02-01 08:00:00
+
+[TRAUMA_HP] 2026-02-01 08:10:00
+Category II activation for 45-year-old male involved in low-speed MVC.
+Blunt mechanism. Restrained driver. No loss of consciousness.
+Complaints of mild left shoulder soreness. No external injuries noted.
+BP 132/82, HR 76, RR 16, GCS 15.
+No tenderness on exam. Chest clear bilaterally.
+
+[PHYSICIAN_NOTE] 2026-02-01 08:40:00
+Isolated left clavicle contusion. No fracture on imaging.
+Tetanus updated. Discharged with follow-up instructions.

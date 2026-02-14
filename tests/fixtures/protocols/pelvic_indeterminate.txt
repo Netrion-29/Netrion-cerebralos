@@ -1,0 +1,20 @@
+PATIENT_ID: TEST_PELVIC_003
+ARRIVAL_TIME: 2026-02-20 20:00:00
+
+[TRAUMA_HP] 2026-02-20 20:10:00
+Category I activation for 50-year-old male. MVC.
+Pelvic fracture noted on initial survey. Pelvic ring injury suspected.
+BP 94/60, HR 112, RR 22, GCS 15.
+
+[IMAGING] 2026-02-20 20:30:00
+Pelvic x-ray obtained. Fracture identified but not characterized.
+Ring pattern stability not assessed on plain film.
+CT pelvis not yet obtained.
+
+[PHYSICIAN_NOTE] 2026-02-20 20:45:00
+Pelvic injury confirmed on x-ray. Extent unclear.
+No documentation of hemodynamic trend relative to pelvic source.
+No CT for fracture characterization obtained.
+No assessment for associated genitourinary injury.
+No binder placement documented.
+Resuscitation in progress. Awaiting CT when stable.

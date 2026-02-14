@@ -1,0 +1,22 @@
+PATIENT_ID: TEST_AUTOPSY_001
+ARRIVAL_TIME: 2026-01-25 01:00:00
+
+[TRAUMA_HP] 2026-01-25 01:10:00
+Category I activation for 55-year-old male, pedestrian struck by vehicle.
+Multiple injuries. GCS 3 on arrival. CPR in progress.
+Trauma patient death at 01:45. Time of death documented.
+Pronounced dead at 01:45.
+
+[PHYSICIAN_NOTE] 2026-01-25 02:00:00
+CT imaging completed prior to death showed massive intracranial hemorrhage.
+Imaging status: CT head completed pre-arrest.
+No operative intervention performed prior to death.
+Operative status: no surgery prior to death.
+Trauma Surgeon determination: unexpected death.
+Cause of death: traumatic brain injury with cerebral herniation.
+
+[NURSING_NOTE] 2026-01-25 02:15:00
+Vanderburgh County Coroner notified per policy. VCC contacted at 02:10.
+Coroner accepted the case. VCC will direct the autopsy process.
+Patient is not an organ donor. Organ donor status documented.
+Family notified of death. Autopsy consent discussion not required (VCC case).

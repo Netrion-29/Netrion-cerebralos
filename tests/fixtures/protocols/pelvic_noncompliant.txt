@@ -1,0 +1,23 @@
+PATIENT_ID: TEST_PELVIC_NC_001
+ARRIVAL_TIME: 2026-02-25 06:00:00
+
+[TRAUMA_HP] 2026-02-25 06:10:00
+Category I activation for 40-year-old male. Motorcycle collision.
+Pelvic fracture suspected. Pelvic ring injury on exam.
+BP 78/44, HR 142, RR 28, GCS 13.
+Hemodynamic instability with pelvic source. Hypotension refractory.
+
+[IMAGING] 2026-02-25 06:25:00
+Pelvic x-ray: unstable pelvic ring disruption.
+Pubic symphysis diastasis 4 cm. Sacral fracture displaced.
+CT pelvis confirmed unstable pattern. Pelvic CT confirms instability.
+No gross hematuria on catheter placement. No urologic injury.
+
+[NURSING_NOTE] 2026-02-25 06:20:00
+No pelvic binder applied. Binder not applied on arrival.
+Pelvic binder not placed despite hemodynamic instability and unstable fracture.
+
+[PHYSICIAN_NOTE] 2026-02-25 06:40:00
+Unstable pelvic ring disruption with hemorrhagic shock.
+Massive transfusion initiated. Pelvic binder not applied.
+Patient taken to angiography suite without binder placement.

@@ -1,0 +1,15 @@
+PATIENT_ID: TEST_PELVIC_002
+ARRIVAL_TIME: 2026-02-20 14:00:00
+
+[TRAUMA_HP] 2026-02-20 14:10:00
+Category III activation for 66-year-old female. Low-energy fall.
+Isolated right wrist injury. No hip or trunk complaints.
+BP 140/86, HR 68, RR 14, GCS 15.
+Hemodynamically stable. Ambulating in ED.
+
+[IMAGING] 2026-02-20 14:30:00
+Right wrist x-ray: distal radius fracture.
+No abdominal or trunk imaging obtained.
+
+[PHYSICIAN_NOTE] 2026-02-20 14:50:00
+Isolated wrist fracture. Splinted. Discharged with follow-up.

@@ -1,0 +1,13 @@
+PATIENT_ID: TEST_VASC_003
+ARRIVAL_TIME: 2026-01-21 20:00:00
+
+[TRAUMA_HP] 2026-01-21 20:10:00
+Category I activation for 38-year-old female, gunshot wound to right thigh.
+Active hemorrhage noted. Tourniquet in place from field.
+BP 92/58, HR 115, RR 22. Blood transfusion started.
+Hemodynamically unstable with ongoing hemorrhage.
+
+[PHYSICIAN_NOTE] 2026-01-21 20:45:00
+Patient taken directly to OR for vascular repair.
+No CT angiography obtained prior to surgery.
+No documentation of angioembolization consideration.

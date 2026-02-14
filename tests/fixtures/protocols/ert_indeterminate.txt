@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_ERT_003
+ARRIVAL_TIME: 2026-02-05 18:00:00
+
+[TRAUMA_HP] 2026-02-05 18:05:00
+Category I activation for 22-year-old male. Pulseless on arrival.
+Blunt trauma from high-speed MVC. Pulseless trauma patient.
+Pre-hospital data unavailable. Field report not provided.
+BP unattainable. No pulse detected.
+
+[PHYSICIAN_NOTE] 2026-02-05 18:15:00
+EMS report not available. Duration of pulselessness unknown.
+No pre-hospital documentation provided to receiving team.
+No field provider handoff documented.
+No pupillary exam documented.
+No rhythm strip attached to chart.
+Awaiting further clinical data before proceeding.

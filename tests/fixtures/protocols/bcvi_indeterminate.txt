@@ -1,0 +1,19 @@
+PATIENT_ID: TEST_BCVI_003
+ARRIVAL_TIME: 2026-02-04 20:00:00
+
+[TRAUMA_HP] 2026-02-04 20:10:00
+Category I activation for 33-year-old male. High-speed MVC, unrestrained.
+Blunt trauma to head and chest. Intubated in field.
+Unable to perform full assessment.
+
+[IMAGING] 2026-02-04 20:30:00
+CT head obtained: small subdural hemorrhage. No midline shift.
+No cervical spine imaging obtained.
+No CTA neck ordered.
+
+[PHYSICIAN_NOTE] 2026-02-04 20:50:00
+Examination deferred due to sedation.
+No assessment performed.
+No cervical spine imaging ordered.
+No documentation of cervical risk factors assessed.
+Patient in ICU for monitoring.

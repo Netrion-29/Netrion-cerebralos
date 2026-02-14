@@ -1,0 +1,12 @@
+PATIENT_ID: TEST_HYPO_002
+ARRIVAL_TIME: 2026-01-21 10:00:00
+
+[PHYSICIAN_NOTE] 2026-01-21 10:15:00
+Patient is a 62-year-old female presenting with chest pain.
+Non-trauma admission. Medical evaluation for possible acute coronary syndrome.
+BP 145/90, HR 92, RR 18.
+
+[NURSING_NOTE] 2026-01-21 10:30:00
+Cardiac monitoring initiated. 12-lead EKG obtained.
+Troponin drawn. Aspirin administered.
+No traumatic mechanism. Medical admission.

@@ -1,0 +1,23 @@
+PATIENT_ID: TEST_BURNS_NC_001
+ARRIVAL_TIME: 2026-02-23 10:00:00
+
+[TRAUMA_HP] 2026-02-23 10:10:00
+Category I activation for 35-year-old male. Thermal injury from industrial fire.
+Burn mechanism: thermal burn from flash fire at work. Flame exposure confirmed.
+Burns to face, bilateral hands, and anterior chest.
+TBSA estimated at 25%. Total body surface area: 25%.
+Partial thickness and full thickness burns.
+Second degree to chest. Third degree to hands.
+Inhalation injury suspected.
+BP 102/62, HR 116, RR 24, GCS 15.
+
+[NURSING_NOTE] 2026-02-23 10:30:00
+Airway assessment completed. Early airway management initiated.
+Fluid resuscitation started per Parkland formula.
+
+[PHYSICIAN_NOTE] 2026-02-23 12:00:00
+35% TBSA burns meeting ABA criteria for burn center transfer.
+Burn location includes face and hands.
+Referral to burn center not initiated.
+No burn center referral placed. Transfer not arranged.
+Burn center referral deferred due to "patient stability."

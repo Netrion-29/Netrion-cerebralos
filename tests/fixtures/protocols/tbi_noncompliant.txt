@@ -1,0 +1,30 @@
+PATIENT_ID: TEST_TBI_002
+ARRIVAL_TIME: 2026-01-20 18:00:00
+
+[TRAUMA_HP] 2026-01-20 18:15:00
+Patient arrived via ambulance following fall from height.
+Suspected traumatic brain injury observed.
+Glasgow Coma Scale (GCS) assessed on arrival: 10 (E3 V3 M4).
+Patient hypotensive with BP 85/50, tachycardic with HR 120.
+GCS reassessed during initial Emergency Department evaluation prior to adequate resuscitation.
+
+[PHYSICIAN_NOTE] 2026-01-20 18:45:00
+Resuscitation initiated with 2L crystalloid bolus.
+Blood pressure improved to 110/70, heart rate decreased to 95.
+Patient adequately resuscitated after fluid bolus.
+Note: GCS was already documented on arrival before resuscitation was completed.
+Documentation confirming GCS was assessed BEFORE adequate cardiopulmonary resuscitation.
+Location and timing of GCS assessment: Emergency Department, pre-resuscitation.
+
+[IMAGING] 2026-01-20 19:15:00
+CT BRAIN WITHOUT CONTRAST
+
+FINDINGS:
+Left temporal contusion with surrounding edema. No skull fracture.
+
+IMPRESSION:
+Traumatic brain injury with left temporal contusion.
+
+[PHYSICIAN_NOTE] 2026-01-20 19:45:00
+CT confirms TBI. Patient GCS remains 10.
+Will admit to ICU for neuro monitoring.

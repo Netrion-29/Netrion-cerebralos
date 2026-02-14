@@ -1,0 +1,14 @@
+PATIENT_ID: TEST_AUTOPSY_003
+ARRIVAL_TIME: 2026-01-25 18:00:00
+
+[TRAUMA_HP] 2026-01-25 18:10:00
+Category I activation for 62-year-old female, motorcycle crash.
+Patient expired at 19:30. Time of death: 19:30.
+Pronounced dead in trauma bay.
+
+[PHYSICIAN_NOTE] 2026-01-25 19:45:00
+Unexpected death. Trauma Surgeon notes unexpected death.
+Cause of death unclear from clinical presentation.
+No documentation of CT imaging prior to death.
+No documentation of operative status.
+No coroner or VCC notification documented yet.

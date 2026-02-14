@@ -1,0 +1,11 @@
+PATIENT_ID: TEST_BLUNT_CHEST_003
+ARRIVAL_TIME: 2026-01-22 16:00:00
+
+[TRAUMA_HP] 2026-01-22 16:10:00
+Category II trauma activation for 44-year-old male, fall from 10 feet onto chest.
+Blunt chest injury with anterior chest wall tenderness.
+BP 125/80, HR 92, RR 20, GCS 15.
+
+[NURSING_NOTE] 2026-01-22 16:30:00
+Patient comfortable at rest. Complains of pain with deep inspiration.
+Vital signs stable.

@@ -1,0 +1,17 @@
+PATIENT_ID: TEST_ARDS_001
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[PHYSICIAN_NOTE] 2026-01-16 10:00:00
+Patient has developed acute respiratory distress syndrome.
+ARDS diagnosed based on Berlin criteria.
+Bilateral opacities noted on chest imaging.
+PaO2/FiO2 ratio 142, consistent with moderate ARDS.
+
+[IMAGING] 2026-01-16 09:30:00
+CXR: Bilateral infiltrates noted.
+Diffuse bilateral airspace disease with consolidation.
+
+[PHYSICIAN_NOTE] 2026-01-16 14:00:00
+Patient on mechanical ventilation with PEEP of 12 cmH2O.
+P/F ratio 142 consistent with moderate ARDS.
+CPAP settings adjusted.

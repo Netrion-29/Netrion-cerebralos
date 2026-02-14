@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_DVT_ADULT_003
+ARRIVAL_TIME: 2026-02-11 20:00:00
+
+[TRAUMA_HP] 2026-02-11 20:10:00
+Category I trauma activation for 55-year-old male. Fall from roof.
+Trauma admission confirmed. Age 55.
+Multiple orthopedic injuries. Admitted.
+BP 92/56, HR 118, RR 22. GCS 15.
+
+[PHYSICIAN_NOTE] 2026-02-12 08:00:00
+Patient in ICU day 2. LOS > 24 hours.
+Coagulation status not documented.
+Bleeding status not assessed.
+No documentation regarding anticoagulation history.
+No mention of operative plans relative to DVT timing.
+DVT prophylaxis not yet addressed in orders.

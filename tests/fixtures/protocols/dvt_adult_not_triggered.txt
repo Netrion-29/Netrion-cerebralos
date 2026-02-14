@@ -1,0 +1,12 @@
+PATIENT_ID: TEST_DVT_ADULT_002
+ARRIVAL_TIME: 2026-02-11 14:00:00
+
+[TRAUMA_HP] 2026-02-11 14:10:00
+Outpatient orthopedic clinic visit for 45-year-old male.
+Elective right knee arthroscopy. Same-day surgery case.
+BP 128/78, HR 72, RR 14.
+Healthy male. No relevant medical history.
+
+[PHYSICIAN_NOTE] 2026-02-11 16:00:00
+Right knee meniscal debridement performed. Routine recovery.
+Discharged same day. Outpatient follow-up in 2 weeks.

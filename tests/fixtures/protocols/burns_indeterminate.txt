@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_BURNS_003
+ARRIVAL_TIME: 2026-02-08 18:00:00
+
+[TRAUMA_HP] 2026-02-08 18:10:00
+Category I activation for 50-year-old male. Thermal injury from workplace
+accident. Burn sustained. Burn mechanism not fully documented.
+Extent of burns unclear. GCS 15.
+BP 110/70, HR 96, RR 18.
+
+[PHYSICIAN_NOTE] 2026-02-08 18:30:00
+Burns noted to trunk and extremities.
+No TBSA assessment documented. No total body surface area estimation.
+No depth assessment documented.
+No specific burn location mapping completed.
+No inhalation assessment documented.
+Awaiting full burn team evaluation.

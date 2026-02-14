@@ -1,0 +1,18 @@
+PATIENT_ID: TEST_RIB2_003
+ARRIVAL_TIME: 2026-02-10 20:00:00
+
+[TRAUMA_HP] 2026-02-10 20:10:00
+Category II activation for 65-year-old male. Fall on ice.
+Right-sided chest wall ecchymosis. Rib fractures suspected.
+GCS 15. Right chest wall tenderness.
+
+[IMAGING] 2026-02-10 20:30:00
+Chest x-ray: possible right-sided rib fractures. Not clearly delineated.
+Rib fracture suspected but count uncertain.
+CT not obtained.
+
+[PHYSICIAN_NOTE] 2026-02-10 20:50:00
+Suspected rib fractures. No definitive count documented.
+Lung volumes adequate on upright film.
+Patient resting comfortably. Observation plan in place.
+Admitted for observation. Pending further imaging.

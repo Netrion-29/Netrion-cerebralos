@@ -1,0 +1,12 @@
+PATIENT_ID: TEST_OB_003
+ARRIVAL_TIME: 2026-01-24 20:00:00
+
+[TRAUMA_HP] 2026-01-24 20:10:00
+Category I activation for 30-year-old female, high-speed MVC.
+Pregnant with trauma activation. Gestational age approximately 28 weeks.
+Pregnancy confirmed. BP 100/60, HR 110, RR 22, GCS 14.
+
+[PHYSICIAN_NOTE] 2026-01-24 20:40:00
+CT abdomen with fetal shielding shows splenic laceration.
+No OB consultation documented yet. No fetal monitoring initiated.
+No documentation of fetal heart rate assessment.

@@ -1,0 +1,14 @@
+PATIENT_ID: TEST_BLUNT_CHEST_002
+ARRIVAL_TIME: 2026-01-22 12:00:00
+
+[TRAUMA_HP] 2026-01-22 12:10:00
+Category II trauma activation for 30-year-old female, pedestrian struck by vehicle.
+Primary complaint: bilateral lower extremity pain.
+BP 120/75, HR 88, RR 16, GCS 15.
+No chest tenderness. Lung sounds clear bilaterally.
+Pelvis stable. Bilateral tibial fractures.
+
+[IMAGING] 2026-01-22 12:30:00
+X-ray bilateral tibia/fibula: Bilateral tibial shaft fractures.
+Pelvis x-ray: No fracture.
+No chest imaging ordered - no thoracic mechanism suspected.

@@ -1,0 +1,22 @@
+PATIENT_ID: TEST_ERT_001
+ARRIVAL_TIME: 2026-02-05 02:00:00
+
+[TRAUMA_HP] 2026-02-05 02:05:00
+Category I activation for 27-year-old male. Pulseless on arrival.
+Penetrating thoracic GSW. Single entry wound left anterior chest.
+Pulseless trauma patient with penetrating chest mechanism.
+Witnessed arrest in field. Down time approximately 8 minutes.
+Signs of life present: organized cardiac electrical activity on monitor.
+Pupillary response present. Reactive pupils bilaterally.
+BP unattainable. HR undetectable by palpation.
+
+[NURSING_NOTE] 2026-02-05 02:08:00
+CPR in progress. Massive transfusion protocol activated.
+Signs of life documented on arrival: organized cardiac activity.
+Arrest timing: witnessed arrest with transport time under 15 minutes.
+
+[OPERATIVE_NOTE] 2026-02-05 02:12:00
+Emergency resuscitative thoracotomy performed in trauma bay.
+ED thoracotomy via left anterolateral approach.
+Cardiac tamponade evacuated. Cardiorrhaphy performed.
+ROSC achieved after thoracotomy and cross-clamping.

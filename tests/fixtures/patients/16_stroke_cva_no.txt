@@ -1,0 +1,12 @@
+PATIENT_ID: TEST_STROKE_002
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[PHYSICIAN_NOTE] 2026-01-15 10:00:00
+Neurological exam normal. No focal deficits.
+Cranial nerves II-XII intact bilaterally.
+Motor strength 5/5 in all extremities.
+Gait steady and coordinated.
+
+[IMAGING] 2026-01-15 11:00:00
+CT head: No acute intracranial pathology.
+No hemorrhage, mass effect, or midline shift.

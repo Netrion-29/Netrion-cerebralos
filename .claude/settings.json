@@ -1,0 +1,8 @@
+{
+  "autoApprove": {
+    "read": true,
+    "write": true,
+    "edit": true,
+    "bash": true
+  }
+}

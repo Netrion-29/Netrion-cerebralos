@@ -1,0 +1,12 @@
+PATIENT_ID: TEST_PEN_CHEST_002
+ARRIVAL_TIME: 2026-01-22 18:00:00
+
+[TRAUMA_HP] 2026-01-22 18:10:00
+Category II activation for 40-year-old male, ground-level trip and fall.
+Right arm laceration from broken glass. No complaints of dyspnea.
+BP 130/80, HR 88, RR 16, GCS 15.
+Lungs clear bilaterally.
+
+[PHYSICIAN_NOTE] 2026-01-22 18:30:00
+Arm laceration repaired. Neurovascular intact distally.
+No other injuries identified. Discharge from ED.

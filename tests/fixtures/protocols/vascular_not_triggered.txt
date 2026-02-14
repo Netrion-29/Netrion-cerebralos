@@ -1,0 +1,11 @@
+PATIENT_ID: TEST_VASC_002
+ARRIVAL_TIME: 2026-01-21 08:00:00
+
+[TRAUMA_HP] 2026-01-21 08:10:00
+Category II activation for 60-year-old male, fall from standing height.
+Left hip pain. No external bleeding. No signs of internal bleeding.
+BP 140/85, HR 76, RR 14, GCS 15. Hemodynamically stable.
+
+[PHYSICIAN_NOTE] 2026-01-21 08:30:00
+Left hip fracture confirmed on imaging. Neurovascular status intact.
+Orthopedic consultation obtained. Admit for surgical repair.

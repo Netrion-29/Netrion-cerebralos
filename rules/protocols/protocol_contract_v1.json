@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "locked": true,
+    "description": "Global execution contract for Deaconess trauma protocol evaluation",
+    "design": "Deterministic, fail-closed, evidence-based compliance assessment with full audit trails"
+  },
+  "outcomes": {
+    "allowed": [
+      "COMPLIANT",
+      "NON_COMPLIANT",
+      "NOT_TRIGGERED",
+      "INDETERMINATE"
+    ],
+    "defaults": {
+      "missing_required_data": "INDETERMINATE"
+    },
+    "semantics": {
+      "COMPLIANT": "All protocol requirements met, full adherence demonstrated",
+      "NON_COMPLIANT": "Protocol applies but one or more requirements failed",
+      "NOT_TRIGGERED": "Protocol does not apply to this patient (trigger criteria not met)",
+      "INDETERMINATE": "Missing required data or timing unclear (fail-closed)"
+    }
+  },
+  "evidence": {
+    "max_items_per_requirement": 8,
+    "description": "Maximum evidence items to include per requirement evaluation (prevents information overload)"
+  },
+  "requirement_types": {
+    "supported": [
+      "MANDATORY",
+      "CONDITIONAL",
+      "CONTRAINDICATED"
+    ],
+    "semantics": {
+      "MANDATORY": "Must be met if protocol applies (e.g., trigger criteria, required data elements)",
+      "CONDITIONAL": "Only evaluated if applicable (e.g., timing requirements when protocol triggered)",
+      "CONTRAINDICATED": "Safety exclusion - hard-stop if detected"
+    }
+  },
+  "evaluation_order": {
+    "1_evaluation_mode": "Check if protocol is EVALUABLE vs CONTEXT_ONLY",
+    "2_contraindications": "Check safety exclusions first (CONTRAINDICATED requirements)",
+    "3_trigger_criteria": "Determine protocol applicability (REQ_TRIGGER_CRITERIA)",
+    "4_required_data": "Validate data completeness (REQ_REQUIRED_DATA_ELEMENTS)",
+    "5_timing_critical": "Check timing compliance (REQ_TIMING_CRITICAL)",
+    "6_default_compliant": "If all requirements pass, outcome=COMPLIANT"
+  },
+  "timing": {
+    "supported_formats": [
+      "%Y-%m-%dT%H:%M:%SZ",
+      "%Y-%m-%dT%H:%M:%S",
+      "%Y-%m-%d %H:%M:%S",
+      "%Y-%m-%d %H:%M",
+      "%m/%d/%y %H%M",
+      "%m/%d/%Y %H%M",
+      "%m/%d/%Y %H:%M",
+      "%m/%d/%y %H:%M"
+    ],
+    "description": "Timestamp parsing supports multiple Epic export formats"
+  }
+}

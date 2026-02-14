@@ -1,0 +1,10 @@
+PATIENT_ID: TEST_NAT_002
+ARRIVAL_TIME: 2026-01-26 14:00:00
+
+[TRAUMA_HP] 2026-01-26 14:10:00
+12-year-old male, skateboard accident witnessed by multiple bystanders.
+Fell from ramp, right forearm deformity. BP 110/70, HR 90, RR 18, GCS 15.
+
+[PHYSICIAN_NOTE] 2026-01-26 14:30:00
+Right forearm fracture confirmed on imaging. Mechanism consistent with injury.
+Splint applied. Discharged with orthopedic follow-up.

@@ -1,0 +1,23 @@
+PATIENT_ID: TEST_BLUNT_CHEST_001
+ARRIVAL_TIME: 2026-01-22 08:00:00
+
+[TRAUMA_HP] 2026-01-22 08:10:00
+Category I trauma activation for 52-year-old male, MVC with steering wheel impact.
+Blunt chest trauma with sternal tenderness and bilateral chest wall pain.
+BP 100/65, HR 110, RR 26, GCS 15.
+Breath sounds diminished on left. Respiratory distress noted.
+
+[IMAGING] 2026-01-22 08:30:00
+Portable AP chest x-ray: Left-sided pneumothorax. Multiple left rib fractures.
+No widened mediastinum.
+CT Chest: Left pneumothorax confirmed. Fractures of ribs 4-8 on left.
+Small left hemothorax. Sternal contusion without fracture.
+
+[NURSING_NOTE] 2026-01-22 08:45:00
+Left chest tube placed. 200mL initial output.
+Vital signs: BP 108/70, HR 102, RR 22. Hemodynamically stable post chest tube.
+
+[PHYSICIAN_NOTE] 2026-01-22 09:00:00
+Blunt thoracic injury with pneumothorax and hemothorax managed with chest tube.
+EKG obtained: normal sinus rhythm, no ST changes. Cardiac contusion ruled out.
+Respiratory status improving after chest tube placement.

@@ -1,0 +1,11 @@
+PATIENT_ID: TEST_HANG_002
+ARRIVAL_TIME: 2026-01-22 11:00:00
+
+[TRAUMA_HP] 2026-01-22 11:10:00
+Category II activation for 30-year-old male, assault.
+Punched in face multiple times. Facial lacerations.
+BP 128/80, HR 88, RR 16, GCS 15. No neck involvement.
+
+[PHYSICIAN_NOTE] 2026-01-22 11:30:00
+Facial laceration repaired. Nasal fracture identified on imaging.
+No cervical spine pathology. Discharged with follow-up.

@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_DROWNING_002
+ARRIVAL_TIME: 2026-02-07 10:00:00
+
+[TRAUMA_HP] 2026-02-07 10:10:00
+Category III activation for 70-year-old female with isolated hip injury
+after mechanical fall at home. No loss of consciousness. No head injury.
+BP 148/90, HR 68, RR 16, GCS 15.
+Right hip tenderness and shortened externally rotated leg.
+
+[IMAGING] 2026-02-07 10:30:00
+AP pelvis x-ray: right intertrochanteric femur fracture.
+No other injuries on imaging survey.
+
+[PHYSICIAN_NOTE] 2026-02-07 10:50:00
+Isolated right hip fracture. Orthopedic consult obtained.
+Admitted for operative fixation. Medically optimized for surgery.

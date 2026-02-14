@@ -1,0 +1,28 @@
+PATIENT_ID: TEST_TBI_003
+ARRIVAL_TIME: 2026-01-20 20:00:00
+
+[TRAUMA_HP] 2026-01-20 20:15:00
+Patient arrived via private vehicle with isolated lower extremity injury.
+Mechanism: Twisted ankle while hiking.
+Patient alert and oriented x4.
+Glasgow Coma Scale (GCS): 15 (E4 V5 M6).
+Neurological exam normal. No concerning findings on examination.
+
+[PHYSICIAN_NOTE] 2026-01-20 20:30:00
+Physical exam reveals isolated right ankle injury.
+Neurovascular exam intact distally.
+Patient ambulating with assistance.
+
+[IMAGING] 2026-01-20 21:00:00
+X-RAY RIGHT ANKLE
+
+FINDINGS:
+No fracture identified. Soft tissue swelling present.
+
+IMPRESSION:
+Ankle sprain, no fracture.
+
+[PHYSICIAN_NOTE] 2026-01-20 21:15:00
+Ankle sprain confirmed.
+Discharge home with crutches and ankle brace.
+Follow up with orthopedics in one week.

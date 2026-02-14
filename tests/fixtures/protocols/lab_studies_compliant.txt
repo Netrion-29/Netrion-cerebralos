@@ -1,0 +1,20 @@
+PATIENT_ID: TEST_LAB_001
+ARRIVAL_TIME: 2026-01-22 09:00:00
+
+[TRAUMA_HP] 2026-01-22 09:10:00
+Category I trauma activation for 38-year-old male, MVC at highway speed.
+BP 90/60, HR 120, RR 24, GCS 14.
+Alert and oriented x3. Mechanism of injury: unrestrained driver, high-speed MVC.
+Anticipated operative intervention likely given abdominal distension.
+No prior outside laboratory results available.
+
+[NURSING_NOTE] 2026-01-22 09:15:00
+Labs drawn per trauma protocol: CBC, BMP, type and screen, coagulation panel.
+Lactic acid 3.2. Hemoglobin 10.1.
+
+[LAB] 2026-01-22 09:30:00
+CBC: WBC 14.2, Hgb 10.1, Hct 30.2, Plt 198.
+BMP: Na 138, K 4.1, Cr 1.0, Glucose 142.
+PT/INR: PT 13.2, INR 1.1. PTT: 28.
+Type and Screen: O positive, antibody screen negative.
+Lactic acid: 3.2 mmol/L.

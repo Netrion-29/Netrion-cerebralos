@@ -1,0 +1,13 @@
+PATIENT_ID: TEST_ROLE_003
+ARRIVAL_TIME: 2026-01-27 18:00:00
+
+[TRAUMA_HP] 2026-01-27 18:10:00
+Category II trauma activation for 50-year-old male, fall from height.
+Trauma patient evaluation initiated.
+BP 130/80, HR 88, RR 16, GCS 15.
+
+[PHYSICIAN_NOTE] 2026-01-27 18:40:00
+Patient evaluated. Multiple rib fractures on imaging.
+No documentation of admission service determination.
+No documentation of trauma surgeon notification or response time.
+No sign-off or transfer of care documentation.

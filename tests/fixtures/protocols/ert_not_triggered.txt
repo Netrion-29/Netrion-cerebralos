@@ -1,0 +1,17 @@
+PATIENT_ID: TEST_ERT_002
+ARRIVAL_TIME: 2026-02-05 10:00:00
+
+[TRAUMA_HP] 2026-02-05 10:10:00
+Category II activation for 44-year-old female. Restrained passenger in MVC.
+Alert and oriented. Ambulatory at scene.
+BP 118/74, HR 80, RR 16, GCS 15.
+Mild chest wall tenderness. No respiratory distress.
+Hemodynamically stable throughout evaluation.
+
+[IMAGING] 2026-02-05 10:30:00
+CT chest: two left-sided rib fractures. No pneumothorax.
+No other injuries on survey.
+
+[PHYSICIAN_NOTE] 2026-02-05 10:50:00
+Admitted for observation of rib fractures. Adequate pain control.
+Discharged next day in stable condition.

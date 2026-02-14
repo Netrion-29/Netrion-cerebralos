@@ -1,0 +1,19 @@
+PATIENT_ID: TEST_DVT_ADULT_NC_001
+ARRIVAL_TIME: 2026-02-21 08:00:00
+
+[TRAUMA_HP] 2026-02-21 08:10:00
+Category I trauma activation for 50-year-old male. Fall from height.
+Trauma admission confirmed. Age 50.
+Multiple lower extremity fractures. BP 104/68, HR 96, RR 18, GCS 15.
+No active bleeding. Bleeding status: controlled.
+Coagulation normal. INR 1.0. No prior anticoagulation.
+No intracranial hemorrhage. No planned surgery within first 24 hours.
+
+[NURSING_NOTE] 2026-02-21 08:30:00
+Admitted to surgical floor. Length of stay anticipated > 24 hours. Admitted.
+
+[PHYSICIAN_NOTE] 2026-02-22 14:00:00
+Hospital day 2. DVT prophylaxis delayed. Enoxaparin not ordered.
+Chemical DVT prophylaxis not initiated in the first 36 hours.
+DVT prophylaxis held without documented contraindication.
+Prophylaxis delayed beyond protocol timeframe.

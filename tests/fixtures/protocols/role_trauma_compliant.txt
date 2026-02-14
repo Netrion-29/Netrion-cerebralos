@@ -1,0 +1,23 @@
+PATIENT_ID: TEST_ROLE_001
+ARRIVAL_TIME: 2026-01-27 06:00:00
+
+[TRAUMA_HP] 2026-01-27 06:10:00
+Category I trauma activation for 45-year-old male, gunshot wound to abdomen.
+Trauma patient presenting to Deaconess Midtown Hospital.
+BP 90/60, HR 120, RR 24, GCS 14.
+
+[ED_NOTE] 2026-01-27 06:15:00
+Trauma activation level: Category I. Activation level documented.
+Patient admitted to Trauma Services. Admission determination made.
+Admitted to trauma service per protocol.
+
+[PHYSICIAN_NOTE] 2026-01-27 06:20:00
+Trauma Surgeon notified at 06:12. Trauma surgeon contacted via ESA Call Center.
+Trauma Surgeon responded and arrived in the ED to evaluate the patient at 0627.
+Trauma Surgeon assessment completed. Response time documented.
+Decision to proceed to OR for exploratory laparotomy.
+
+[CONSULT_NOTE] 2026-01-27 10:00:00
+Post-operative course stable. I have seen and examined patient on the above stated date.
+Sign-off completed for trauma service management. Receiving service identified.
+Trauma services transfer of care complete.

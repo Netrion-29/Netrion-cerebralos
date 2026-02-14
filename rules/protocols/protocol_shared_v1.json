@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "locked": true,
+    "description": "Shared pattern buckets for protocol evaluation",
+    "design": "Reusable pattern collections for common clinical actions, orders, and assessments"
+  },
+  "action_buckets": {
+    "vital_signs_patterns": [
+      "\\bblood\\s+pressure\\b",
+      "\\bBP\\b:?\\s*\\d+/\\d+",
+      "\\bsystolic\\b.*\\d+\\s*mmHg",
+      "\\bheart\\s+rate\\b",
+      "\\bHR\\b:?\\s*\\d+",
+      "\\bpulse\\b.*\\d+\\s*bpm",
+      "\\brespiratory\\s+rate\\b",
+      "\\bRR\\b:?\\s*\\d+",
+      "\\bGCS\\b",
+      "\\bglasgow\\s+coma\\s+scale\\b",
+      "\\btemperature\\b.*\\d+"
+    ],
+    "imaging_order_patterns": [
+      "\\bCT\\s+(ordered|performed|scan)\\b",
+      "\\bX-ray\\s+(ordered|taken|performed)\\b",
+      "\\bultrasound\\b.*\\b(FAST|trauma)\\b",
+      "\\bFAST\\s+(exam|examination|scan)\\b",
+      "\\bMRI\\s+(ordered|performed)\\b",
+      "\\brad(iology)?\\s+(ordered|consult)\\b"
+    ],
+    "lab_order_patterns": [
+      "\\bCBC\\s+(ordered|drawn|collected)\\b",
+      "\\bcomplete\\s+blood\\s+count\\b",
+      "\\btype\\s+and\\s+(screen|cross)\\b",
+      "\\bROTEM\\s+(ordered|performed|panel)\\b",
+      "\\blactic\\s+acid\\b",
+      "\\blactate\\b.*\\d+",
+      "\\bABG\\b",
+      "\\barterial\\s+blood\\s+gas\\b",
+      "\\bPT/INR\\b",
+      "\\bPTT\\b",
+      "\\bfibrinogen\\b"
+    ],
+    "medication_admin_patterns": [
+      "\\btranexamic\\s+acid\\b",
+      "\\bTXA\\b",
+      "\\bFFP\\b",
+      "\\bfresh\\s+frozen\\s+plasma\\b",
+      "\\bpacked\\s+red\\s+blood\\s+cells\\b",
+      "\\bPRBC\\b",
+      "\\bplatelets?\\b.*\\badministered\\b",
+      "\\bcryoprecipitate\\b"
+    ],
+    "resuscitation_patterns": [
+      "\\bMTP\\b",
+      "\\bmassive\\s+transfusion\\s+protocol\\b",
+      "\\bactivated\\b.*\\bMTP\\b",
+      "\\bfluid\\s+resuscitation\\b",
+      "\\bcrystalloid\\b",
+      "\\bcardiopulmonary\\s+resuscitation\\b",
+      "\\bCPR\\b",
+      "\\bintubat(ed|ion)\\b",
+      "\\bairway\\s+secured\\b"
+    ],
+    "timing_phrases": [
+      "\\bwithin\\s+\\d+\\s+(minutes?|hours?)\\b",
+      "\\bafter\\s+arrival\\b",
+      "\\bbefore\\s+surgery\\b",
+      "\\bpost-resuscitation\\b",
+      "\\bpre-operative\\b",
+      "\\bintraoperative\\b",
+      "\\bimmediately\\b",
+      "\\bpromptly\\b"
+    ],
+    "assessment_patterns": [
+      "\\btrauma\\s+(assessment|evaluation)\\b",
+      "\\bprimary\\s+survey\\b",
+      "\\bsecondary\\s+survey\\b",
+      "\\bABCDE\\s+assessed\\b",
+      "\\bneurological\\s+exam\\b",
+      "\\bfocal\\s+neurologic\\s+deficit\\b"
+    ]
+  },
+  "exclusion_patterns": {
+    "historical_findings": [
+      "\\bhistory\\s+of\\b",
+      "\\bhx\\s+of\\b",
+      "\\bprior\\b",
+      "\\bchronic\\b",
+      "\\bbaseline\\b",
+      "\\bpreexisting\\b"
+    ],
+    "ruled_out": [
+      "\\bnegative\\s+for\\b",
+      "\\brule(d)?\\s+out\\b",
+      "\\bR/O\\b",
+      "\\bno\\s+evidence\\s+of\\b",
+      "\\bunlikely\\b"
+    ],
+    "planned_not_done": [
+      "\\bplanned\\b",
+      "\\bconsidered\\b",
+      "\\bif\\s+needed\\b",
+      "\\bwill\\s+(perform|order)\\b",
+      "\\bto\\s+be\\s+(done|ordered)\\b"
+    ]
+  }
+}

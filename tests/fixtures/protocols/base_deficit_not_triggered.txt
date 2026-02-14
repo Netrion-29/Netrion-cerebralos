@@ -1,0 +1,21 @@
+PATIENT_ID: TEST_BD_002
+ARRIVAL_TIME: 2026-01-21 10:00:00
+
+[TRAUMA_HP] 2026-01-21 10:15:00
+Category II trauma consult for 55-year-old female with ground-level fall.
+Mechanism: Tripped on curb and fell.
+Patient hemodynamically stable. BP 135/85, HR 78, GCS 15.
+Isolated left wrist deformity.
+
+[IMAGING] 2026-01-21 10:45:00
+X-RAY LEFT WRIST
+
+FINDINGS:
+Distal radius fracture (Colles fracture). No dislocation.
+
+IMPRESSION:
+Left distal radius fracture, non-displaced.
+
+[PHYSICIAN_NOTE] 2026-01-21 11:00:00
+Wrist fracture confirmed. Patient stable throughout evaluation.
+Splint applied. Discharge with orthopedic follow-up.

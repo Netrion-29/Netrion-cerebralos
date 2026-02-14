@@ -1,0 +1,10 @@
+PATIENT_ID: TEST_AUTOPSY_002
+ARRIVAL_TIME: 2026-01-25 10:00:00
+
+[TRAUMA_HP] 2026-01-25 10:10:00
+Category II activation for 40-year-old male, fall from ladder.
+Left wrist fracture. BP 128/78, HR 80, RR 16, GCS 15.
+
+[PHYSICIAN_NOTE] 2026-01-25 10:30:00
+Distal radius fracture. Cast applied.
+Patient stable, discharged home with orthopedic follow-up.

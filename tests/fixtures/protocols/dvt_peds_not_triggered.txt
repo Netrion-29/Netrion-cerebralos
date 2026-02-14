@@ -1,0 +1,12 @@
+PATIENT_ID: TEST_DVT_PEDS_002
+ARRIVAL_TIME: 2026-02-12 14:00:00
+
+[TRAUMA_HP] 2026-02-12 14:10:00
+Category III for 18-year-old female. Isolated wrist injury from fall.
+Age 18. Not a pediatric patient.
+BP 118/74, HR 72, RR 14, GCS 15.
+Minor mechanism. No systemic injuries.
+
+[PHYSICIAN_NOTE] 2026-02-12 14:40:00
+Distal radius fracture. Splinted. Discharged from ED.
+Brief visit. No inpatient stay required.

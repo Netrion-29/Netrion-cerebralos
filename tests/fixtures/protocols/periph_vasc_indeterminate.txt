@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_PERIPH_VASC_003
+ARRIVAL_TIME: 2026-02-03 19:00:00
+
+[TRAUMA_HP] 2026-02-03 19:10:00
+Category I activation for 25-year-old male with upper extremity injury.
+Stab wound to left arm near brachial region. Extremity trauma confirmed.
+Left upper extremity with wound in proximity to brachial artery.
+GCS 15.
+
+[PHYSICIAN_NOTE] 2026-02-03 19:30:00
+Wound to left upper arm. Report of injury near major vessel.
+No vascular examination documented.
+No pulse examination performed.
+No Doppler or ABI obtained.
+No imaging ordered.
+Patient awaiting further evaluation.

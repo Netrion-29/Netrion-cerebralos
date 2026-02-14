@@ -1,0 +1,22 @@
+PATIENT_ID: TEST_TRAUMATIC_ARREST_001
+ARRIVAL_TIME: 2026-02-06 01:00:00
+
+[TRAUMA_HP] 2026-02-06 01:05:00
+Category I activation for 35-year-old male. Traumatic cardiac arrest.
+Pedestrian struck by vehicle at high speed. Blunt trauma mechanism.
+Cardiac arrest at scene. No pulse on EMS arrival.
+Signs of life: organized cardiac electrical activity on initial rhythm check.
+Patient had agonal respirations in field per EMS.
+BP unattainable. No palpable pulse.
+
+[NURSING_NOTE] 2026-02-06 01:08:00
+CPR ongoing. Cardiac rhythm monitored: PEA on arrival.
+Monitor data obtained. Cardiac rhythm documented.
+Bilateral pleural decompression performed. No improvement.
+Trauma-directed resuscitation initiated per protocol.
+
+[PHYSICIAN_NOTE] 2026-02-06 01:15:00
+Mechanism of injury: blunt pedestrian-vs-auto at estimated 45 mph.
+Signs of life present in field per EMS. Organized cardiac activity noted.
+Interventions: bilateral chest decompression, pelvic binder,
+massive transfusion. ROSC achieved at 12 minutes.

@@ -1,0 +1,20 @@
+PATIENT_ID: TEST_SOLID_ORGAN_NC_001
+ARRIVAL_TIME: 2026-02-24 14:00:00
+
+[TRAUMA_HP] 2026-02-24 14:10:00
+Category I activation for 28-year-old male. MVC. Blunt abdominal trauma.
+BP 88/52, HR 126, RR 24, GCS 15.
+
+[IMAGING] 2026-02-24 14:30:00
+CT abdomen: splenic laceration Grade IV with active splenic extravasation.
+Free fluid throughout the abdomen. Hemoperitoneum documented.
+Solid organ injury confirmed: splenic injury.
+Injury grade: Grade 4. Pseudoaneurysm identified.
+
+[PHYSICIAN_NOTE] 2026-02-24 15:00:00
+Grade IV splenic laceration with active extravasation.
+Hemodynamic status initially unstable, required transfusion.
+Post-resuscitation hemodynamic stability achieved.
+Serial imaging not obtained. No follow-up CT ordered.
+Repeat imaging not obtained despite high-grade injury.
+No serial examination protocol documented.

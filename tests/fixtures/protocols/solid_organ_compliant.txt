@@ -1,0 +1,26 @@
+PATIENT_ID: TEST_SOLID_ORGAN_001
+ARRIVAL_TIME: 2026-02-09 14:00:00
+
+[TRAUMA_HP] 2026-02-09 14:10:00
+Category I activation for 30-year-old male. MVC with steering wheel impact
+to abdomen. Blunt abdominal mechanism. Seatbelt sign present.
+BP 94/58, HR 118, RR 22, GCS 15.
+Hemodynamic instability on arrival. Abdominal tenderness diffuse.
+
+[NURSING_NOTE] 2026-02-09 14:15:00
+FAST exam positive. Free fluid in abdomen noted on initial survey.
+
+[IMAGING] 2026-02-09 14:30:00
+CT abdomen with contrast: splenic laceration, Grade III.
+Injury grade confirmed: Grade 3.
+Hemoperitoneum with free fluid in abdomen pelvis.
+No splenic extravasation identified on initial scan.
+Hemodynamic status: unstable requiring fluid resuscitation.
+
+[PHYSICIAN_NOTE] 2026-02-09 14:45:00
+Solid organ injury confirmed: splenic laceration Grade III.
+Post-resuscitation hemodynamic status improving.
+Hemodynamic stability achieved after 2L crystalloid and 2U pRBC.
+Serial exams and repeat imaging planned.
+No angiography indicated at this time given hemodynamic improvement.
+Admitted to surgical ICU for non-operative management.

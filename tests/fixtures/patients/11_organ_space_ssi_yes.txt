@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_ORGAN_SSI_001
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[PHYSICIAN_NOTE] 2026-01-15 14:00:00
+Patient underwent surgery for exploratory laparotomy.
+Operative procedure performed for penetrating abdominal trauma.
+
+[PHYSICIAN_NOTE] 2026-02-05 10:00:00
+Patient re-presented within 30 days of procedure.
+CT abdomen shows intra-abdominal abscess in left upper quadrant.
+Peritonitis suspected based on clinical findings.
+Organism identified from aseptically obtained fluid culture positive for E. coli.
+
+[IMAGING] 2026-02-05 09:00:00
+CT abdomen/pelvis: Fluid collection in left upper quadrant suspicious for abscess.
+Imaging consistent with abscess measuring 4.2 x 3.1 cm.

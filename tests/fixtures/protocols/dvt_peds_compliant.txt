@@ -1,0 +1,21 @@
+PATIENT_ID: TEST_DVT_PEDS_001
+ARRIVAL_TIME: 2026-02-12 10:00:00
+
+[TRAUMA_HP] 2026-02-12 10:10:00
+Category I trauma activation for 14-year-old male. Pedestrian struck by vehicle.
+Trauma admission confirmed. Age 14.
+Right femur fracture and left tibia fracture. Long-bone fracture confirmed.
+BP 100/65, HR 120, RR 22, GCS 15.
+Obesity documented: BMI 32. Central venous catheter placed for resuscitation.
+DVT risk factor assessment: obesity and central venous catheter present.
+No active bleeding. Bleeding status: controlled post-reduction.
+No intracranial hemorrhage.
+
+[NURSING_NOTE] 2026-02-12 10:30:00
+Admitted to PICU. Length of stay anticipated > 24 hours. Admitted.
+Pubertal status: Tanner stage 4. Weight 95 kg.
+
+[PHYSICIAN_NOTE] 2026-02-12 22:00:00
+DVT risk factors documented: obesity, prolonged bedrest, central venous catheter.
+Chemical DVT prophylaxis ordered. Enoxaparin initiated weight-based dosing.
+No contraindications identified.

@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_HYPO_003
+ARRIVAL_TIME: 2026-01-21 22:00:00
+
+[TRAUMA_HP] 2026-01-21 22:10:00
+Category I trauma activation for 32-year-old male, MVC with rollover.
+BP 88/55, HR 130, RR 28, GCS 10.
+Patient extricated from vehicle in cold weather.
+Massive transfusion protocol activated.
+
+[NURSING_NOTE] 2026-01-21 22:30:00
+Patient taken emergently to OR for damage control laparotomy.
+No temperature documented prior to OR.
+
+[OPERATIVE_NOTE] 2026-01-22 00:30:00
+Damage control laparotomy performed. Splenic injury repaired.
+Patient transferred to ICU post-operatively.

@@ -1,0 +1,24 @@
+PATIENT_ID: TEST_SBIRT_NC_001
+ARRIVAL_TIME: 2026-03-01 01:00:00
+
+[TRAUMA_HP] 2026-03-01 01:10:00
+Category I trauma activation for 30-year-old male. Single vehicle MVC.
+Alcohol screening initiated. Screening for substance use per protocol.
+Alcohol on breath. Age 30. BP 128/78, HR 96, RR 18, GCS 15.
+
+[LAB] 2026-03-01 01:15:00
+ETOH: 220 mg/dL. Markedly elevated.
+Urine drug screen positive for benzodiazepines and opioids. UDS positive.
+
+[NURSING_NOTE] 2026-03-01 02:00:00
+AUDIT-C score: 9. AUDIT-C completed and documented.
+Positive screen documented. Multiple substance use indicators present.
+No brief intervention performed.
+No counseling provided or referral placed.
+Social work not consulted. No intervention documented.
+Patient discharged without substance use follow-up.
+
+[PHYSICIAN_NOTE] 2026-03-01 04:00:00
+Positive ETOH 220 and positive UDS for multiple substances.
+CIWA assessment not ordered despite positive screen.
+No brief intervention or counseling documented.

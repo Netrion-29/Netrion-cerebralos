@@ -1,0 +1,298 @@
+{
+  "meta": {
+    "name": "deaconess_protocol_action_buckets",
+    "version": "1.0.0",
+    "description": "Pattern pools for protocol applicability gates and trigger conditions"
+  },
+  "action_buckets": {
+    "protocol_tbi_gate": [
+      "\\btraumatic\\s+brain\\s+injur",
+      "\\btbi\\b",
+      "\\bhead\\s+injur",
+      "\\bintracranial\\s+hemorrh",
+      "\\bsubdural\\b",
+      "\\bsubarachnoid\\s+hemorrh",
+      "\\bSAH\\b",
+      "\\bepidural\\s+hematoma",
+      "\\bcerebral\\s+contusion",
+      "\\bdiffuse\\s+axonal",
+      "\\bintraparenchymal\\s+hemorrh",
+      "\\bintraventricular\\s+hemorrh",
+      "\\bskull\\s+fracture",
+      "\\bdepressed.*skull",
+      "\\bconcussion"
+    ],
+    "protocol_gcs_documented": [
+      "\\bGCS\\s*:?\\s*\\d+",
+      "\\bglasgow\\s+coma\\s+scale\\s*:?\\s*\\d+"
+    ],
+    "protocol_rib_fx_gate": [
+      "\\brib\\s+fracture",
+      "\\bfractured\\s+rib",
+      "\\brib\\s+fx\\b",
+      "\\bflail\\s+chest",
+      "\\brib\\s+\\d+.*fracture",
+      "\\bfracture.*rib\\s+\\d"
+    ],
+    "protocol_blunt_abd_gate": [
+      "\\bblunt\\s+abdom",
+      "\\babdominal\\s+trauma",
+      "\\bFAST.*positive",
+      "\\bpositive\\s+FAST",
+      "\\bfree\\s+fluid.*abdom",
+      "\\babdominal.*contusion",
+      "\\babdominal.*injur"
+    ],
+    "protocol_blunt_chest_gate": [
+      "\\bblunt\\s+chest",
+      "\\bblunt\\s+thoracic",
+      "\\bchest\\s+wall\\s+trauma",
+      "\\bthoracic\\s+trauma",
+      "\\bpulmonary\\s+contusion",
+      "\\bflail\\s+chest",
+      "\\bsternal\\s+fracture",
+      "\\baortic\\s+injur",
+      "\\btraumatic\\s+aortic"
+    ],
+    "protocol_penetrating_abd_gate": [
+      "\\bpenetrating.*abdom",
+      "\\bstab\\s+wound.*abdom",
+      "\\bgsw.*abdom",
+      "\\bGSW.*abdom",
+      "\\babdom.*penetrating",
+      "\\babdom.*stab\\s+wound",
+      "\\babdom.*gunshot"
+    ],
+    "protocol_penetrating_neck_gate": [
+      "\\bpenetrating.*neck",
+      "\\bstab\\s+wound.*neck",
+      "\\bgsw.*neck",
+      "\\bGSW.*neck",
+      "\\bneck.*penetrating",
+      "\\bneck.*stab\\s+wound",
+      "\\bneck.*gunshot"
+    ],
+    "protocol_penetrating_chest_gate": [
+      "\\bpenetrating.*(?:chest|thorax|thoracic)",
+      "\\bstab\\s+wound.*(?:chest|thorax)",
+      "\\bgsw.*(?:chest|thorax)",
+      "\\bGSW.*(?:chest|thorax)",
+      "\\b(?:chest|thorax).*penetrating",
+      "\\b(?:chest|thorax).*stab\\s+wound",
+      "\\b(?:chest|thorax).*gunshot"
+    ],
+    "protocol_vascular_trauma_gate": [
+      "\\bvascular\\s+injur",
+      "\\barterial\\s+injur",
+      "\\bvenous\\s+injur",
+      "\\bvascular\\s+compromise",
+      "\\bpulseless\\s+extremit",
+      "\\bexpanding\\s+hematoma",
+      "\\bactive\\s+(?:arterial\\s+)?extravasation",
+      "\\bhard\\s+sign"
+    ],
+    "protocol_bcvi_gate": [
+      "\\bbcvi\\b",
+      "\\bBCVI\\b",
+      "\\bblunt\\s+cerebrovascul",
+      "\\bcarotid.*dissect",
+      "\\bvertebral.*dissect",
+      "\\bcarotid.*injur",
+      "\\bvertebral.*injur",
+      "\\bLe\\s+Fort\\s+(?:II|III)\\b",
+      "\\bbasilar\\s+skull\\s+fracture",
+      "\\bpetrous\\s+bone\\s+fracture",
+      "\\bdiffuse\\s+axonal\\s+injur",
+      "\\b(?:c1|c2|c3|C1|C2|C3)\\s*fracture",
+      "\\bcervical\\s+spine\\s+fracture.*sublux"
+    ],
+    "protocol_dvt_gate": [
+      "\\btrauma\\b",
+      "\\binjur",
+      "\\bfall\\b",
+      "\\bMVC\\b",
+      "\\bmotor\\s+vehicle",
+      "\\bassault",
+      "\\bpedestrian",
+      "\\bcollision",
+      "\\bcrash",
+      "\\bgsw\\b",
+      "\\bstab\\s+wound"
+    ],
+    "protocol_geriatric_hip_fx_gate": [
+      "\\bhip\\s+fracture",
+      "\\bfemoral\\s+neck\\s+fractur",
+      "\\bintertrochanteric.*fractur",
+      "\\bsubtrochanteric.*fractur",
+      "\\bneck\\s+of\\s+femur.*fractur"
+    ],
+    "protocol_sbirt_gate": [
+      "\\btrauma\\b",
+      "\\binjur",
+      "\\bfall\\b",
+      "\\bMVC\\b",
+      "\\bmotor\\s+vehicle",
+      "\\bassault",
+      "\\bpedestrian",
+      "\\bcollision"
+    ],
+    "protocol_ert_gate": [
+      "\\bresuscitative\\s+thoracotomy",
+      "\\bemergency\\s+thoracotomy",
+      "\\bpenetrating.*(?:arrest|pulseless)",
+      "\\b(?:arrest|pulseless).*penetrating"
+    ],
+    "protocol_traumatic_arrest_gate": [
+      "\\btraumatic\\s+(?:cardiac\\s+)?arrest",
+      "\\bcardiac\\s+arrest.*trauma",
+      "\\bpulseless.*trauma",
+      "\\btrauma.*pulseless",
+      "\\btrauma.*cardiac\\s+arrest",
+      "\\basystole.*trauma"
+    ],
+    "protocol_drowning_gate": [
+      "\\bdrowning",
+      "\\bsubmersion",
+      "\\bnear[- ]drowning",
+      "\\bfound\\s+in\\s+water",
+      "\\bfound\\s+submerged"
+    ],
+    "protocol_burn_gate": [
+      "\\bburn\\b",
+      "\\btbsa\\b",
+      "\\bTBSA\\b",
+      "\\bscald",
+      "\\bflame\\s+injur",
+      "\\bthermal\\s+injur",
+      "\\bchemical\\s+burn",
+      "\\belectrical\\s+burn",
+      "\\binhalation\\s+injur"
+    ],
+    "protocol_solid_organ_gate": [
+      "\\bsplenic\\s+(?:injur|lacerat|rupture)",
+      "\\bspleen.*(?:injur|lacerat|grade|rupture)",
+      "\\bhepatic\\s+(?:injur|lacerat)",
+      "\\bliver.*(?:injur|lacerat|grade)",
+      "\\brenal\\s+(?:injur|lacerat|contusion)",
+      "\\bkidney.*(?:injur|lacerat|grade)",
+      "\\bpancreatic\\s+(?:injur|lacerat)",
+      "\\bsolid\\s+organ\\s+injur"
+    ],
+    "protocol_msk_gate": [
+      "\\bopen\\s+fracture",
+      "\\bcompartment\\s+syndrome",
+      "\\bmangled\\s+extremit",
+      "\\breplantation",
+      "\\bcrush\\s+injur",
+      "\\bamputation",
+      "\\bneurovascular\\s+compromise",
+      "\\bfemur\\s+fracture",
+      "\\bmultiple.*long\\s+bone.*fracture"
+    ],
+    "protocol_neurosurg_gate": [
+      "\\bcraniotomy",
+      "\\bcranial\\s+decompression",
+      "\\bepidural\\s+hematoma.*evacu",
+      "\\bsubdural\\s+hematoma.*evacu",
+      "\\bdepressed\\s+skull\\s+fracture",
+      "\\bpenetrating.*(?:brain|cranial)\\s+injur",
+      "\\bICP\\s+monitor",
+      "\\bburr\\s+hole",
+      "\\bventriculostomy"
+    ],
+    "protocol_spinal_gate": [
+      "\\bspinal\\s+injur",
+      "\\bspinal\\s+cord",
+      "\\bc-?spine",
+      "\\bcervical\\s+spine",
+      "\\bthoracic\\s+spine.*fractur",
+      "\\blumbar\\s+spine.*fractur",
+      "\\bspinal\\s+fractur",
+      "\\bneurologic\\s+deficit"
+    ],
+    "protocol_pelvic_fx_gate": [
+      "\\bpelvic\\s+fracture",
+      "\\bacetabul.*fractur",
+      "\\bpelvic\\s+ring",
+      "\\bunstable\\s+pelvis",
+      "\\bopen\\s+book\\s+pelvis",
+      "\\bpelvic\\s+binder"
+    ],
+    "protocol_cat1_only_gate": [
+      "\\bcategory\\s*1\\s",
+      "\\bcategory\\s+I\\b(?!I)",
+      "\\bcat\\.?\\s*1\\s",
+      "\\bcat\\.?\\s+I\\b(?!I)",
+      "\\blevel\\s*1\\s+trauma",
+      "\\blevel\\s+I\\s+trauma(?!\\s*I)"
+    ],
+    "protocol_rotem_gate": [
+      "\\bMTP\\b",
+      "\\bmassive\\s+transfusion",
+      "\\bcode\\s+crimson",
+      "\\bED\\s+blood\\s+box",
+      "\\bbalanced\\s+blood\\s+resuscitation"
+    ],
+    "protocol_vascular_intervention_gate": [
+      "\\barterial\\s+extravasation",
+      "\\bpseudoaneurysm",
+      "\\bangioemboliz",
+      "\\bactive.*(?:extravasation|bleed|hemorrhage)",
+      "\\bhemodynamic(?:ally)?\\s+(?:unstable|instabil)",
+      "\\bvascular\\s+emergency"
+    ],
+    "protocol_hanging_gate": [
+      "\\bhanging\\b",
+      "\\basphyxiation",
+      "\\bligature",
+      "\\bstrangulation",
+      "\\bself[- ]?inflicted.*neck"
+    ],
+    "protocol_transfusion_gate": [
+      "\\btransfusion\\b",
+      "\\bPRBC",
+      "\\bpacked\\s+red",
+      "\\bblood\\s+product",
+      "\\bhemorrhag.*shock",
+      "\\bMTP\\b",
+      "\\bmassive\\s+transfusion",
+      "\\bactive.*bleed",
+      "\\bshock.*hemorrhag"
+    ],
+    "protocol_hypothermia_gate": [
+      "\\btrauma\\b",
+      "\\binjur",
+      "\\bfall\\b",
+      "\\bMVC\\b",
+      "\\bmotor\\s+vehicle",
+      "\\bassault"
+    ],
+    "protocol_lab_studies_gate": [
+      "\\btrauma\\b",
+      "\\binjur",
+      "\\bfall\\b",
+      "\\bMVC\\b",
+      "\\bmotor\\s+vehicle",
+      "\\bassault"
+    ],
+    "protocol_ob_gate": [
+      "\\bpregnant",
+      "\\bpregnancy",
+      "\\bgestational",
+      "\\bgravid"
+    ],
+    "protocol_death_gate": [
+      "\\bpatient\\s+expired",
+      "\\bpronounced\\s+dead",
+      "\\btime\\s+of\\s+death",
+      "\\bdeclared\\s+dead",
+      "\\bpronounced\\s+deceased"
+    ],
+    "protocol_gsw_transmed_gate": [
+      "\\bgunshot\\s+wound",
+      "\\bgsw\\b",
+      "\\bGSW\\b",
+      "\\bbullet\\s+wound"
+    ]
+  }
+}

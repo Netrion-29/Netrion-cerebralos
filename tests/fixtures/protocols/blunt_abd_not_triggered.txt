@@ -1,0 +1,12 @@
+PATIENT_ID: TEST_BLUNT_ABD_002
+ARRIVAL_TIME: 2026-01-22 10:00:00
+
+[TRAUMA_HP] 2026-01-22 10:10:00
+Category II trauma activation for 60-year-old female, ground-level fall.
+Landed on outstretched hand. Left wrist deformity.
+BP 140/85, HR 72, RR 16, GCS 15.
+No abdominal complaints. Abdomen soft, non-tender.
+
+[IMAGING] 2026-01-22 10:30:00
+Left wrist x-ray: Colles fracture, displaced.
+No abdominal imaging indicated.

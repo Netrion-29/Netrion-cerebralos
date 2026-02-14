@@ -1,0 +1,13 @@
+PATIENT_ID: TEST_PU_001
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[NURSING_NOTE] 2026-01-20 08:00:00
+Skin assessment: New pressure ulcer identified on sacrum.
+Stage III pressure injury noted.
+Area approximately 3 x 4 cm with tissue loss.
+Wound care initiated.
+
+[PHYSICIAN_NOTE] 2026-01-20 10:00:00
+Patient developed pressure ulcer during this hospitalization.
+Stage 3 pressure sore on sacrum.
+Wound care team consulted.

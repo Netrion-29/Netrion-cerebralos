@@ -1,0 +1,15 @@
+PATIENT_ID: TEST_GERIATRIC_HIP_002
+ARRIVAL_TIME: 2026-02-14 12:00:00
+
+[TRAUMA_HP] 2026-02-14 12:10:00
+Category III for 35-year-old male. Sports injury to right knee.
+Age 35. Isolated knee ligament injury. No osseous injury.
+BP 120/76, HR 70, RR 14, GCS 15.
+
+[IMAGING] 2026-02-14 12:30:00
+Right knee x-ray: no acute osseous abnormality.
+MRI right knee: ACL tear. No other findings.
+
+[PHYSICIAN_NOTE] 2026-02-14 13:00:00
+Isolated ACL injury. Knee immobilizer applied.
+Outpatient referral to sports medicine. Discharged.

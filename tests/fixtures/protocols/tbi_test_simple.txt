@@ -1,0 +1,27 @@
+PATIENT_ID: TEST_TBI_001
+ARRIVAL_TIME: 2026-01-20 14:30:00
+
+[TRAUMA_HP] 2026-01-20 14:45:00
+Patient arrived via EMS after motor vehicle collision.
+Presence of suspected traumatic brain injury based on mechanism and decreased level of consciousness.
+Glasgow Coma Scale (GCS) on arrival: 12 (E3 V4 M5).
+
+[PHYSICIAN_NOTE] 2026-01-20 15:00:00
+Post-resuscitation assessment completed. Patient adequately resuscitated with BP 120/80, HR 88.
+Documentation confirming GCS assessed after adequate cardiopulmonary resuscitation: GCS reassessed: 13 (E4 V4 M5).
+Location and timing of GCS assessment: Emergency Department.
+GCS reflects post-resuscitation neurologic status.
+CT brain ordered.
+
+[IMAGING] 2026-01-20 15:45:00
+CT BRAIN WITHOUT CONTRAST
+
+FINDINGS:
+Small right frontal contusion. No midline shift. No skull fracture identified.
+
+IMPRESSION:
+Confirmed traumatic brain injury with right frontal contusion.
+
+[PHYSICIAN_NOTE] 2026-01-20 16:00:00
+CT confirms TBI. Patient now GCS 14. GCS assessment occurred during initial Emergency Department evaluation.
+Will admit to ICU for observation and serial neuro checks.

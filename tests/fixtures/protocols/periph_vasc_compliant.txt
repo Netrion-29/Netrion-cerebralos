@@ -1,0 +1,26 @@
+PATIENT_ID: TEST_PERIPH_VASC_001
+ARRIVAL_TIME: 2026-02-03 12:00:00
+
+[TRAUMA_HP] 2026-02-03 12:10:00
+Category I activation for 38-year-old male with lower extremity injury.
+GSW to right thigh with massive hemorrhage. Extremity trauma confirmed.
+BP 78/48, HR 140, RR 28, GCS 15.
+Right lower extremity with pulsatile hemorrhage from wound.
+Absent distal pulses in right foot. Limb ischemia evident
+with pallor and absent dorsalis pedis pulse.
+
+[NURSING_NOTE] 2026-02-03 12:15:00
+Tourniquet applied to right proximal thigh. Hemorrhage controlled.
+Vascular examination: absent distal pulses right lower extremity.
+Pulse examination confirms no palpable pulse distally.
+
+[IMAGING] 2026-02-03 12:30:00
+CT angiography right lower extremity obtained.
+CTA demonstrates transection of superficial femoral artery.
+Active contrast extravasation identified.
+
+[PHYSICIAN_NOTE] 2026-02-03 12:40:00
+Hard signs of arterial injury confirmed: absent distal pulses,
+pulsatile hemorrhage, and limb ischemia.
+Vascular surgery consulted for emergent repair.
+Pulses absent distally confirmed on Doppler assessment. ABI 0.2 right.

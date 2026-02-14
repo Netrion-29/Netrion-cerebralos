@@ -1,0 +1,14 @@
+PATIENT_ID: TEST_PEN_ABD_003
+ARRIVAL_TIME: 2026-02-01 21:00:00
+
+[TRAUMA_HP] 2026-02-01 21:10:00
+Category I activation for 28-year-old male with penetrating abdominal injury.
+GSW to right flank. Entry wound noted in right flank region.
+GCS 15. Patient reporting pain at wound site.
+
+[PHYSICIAN_NOTE] 2026-02-01 21:40:00
+Wound noted to right flank. No further assessment documented.
+No vital signs recorded. No hemodynamic assessment.
+No imaging or FAST exam documented.
+No wound exploration performed.
+Disposition pending further workup.

@@ -1,0 +1,234 @@
+#!/bin/bash
+# ============================================================================
+# CerebralOS Governance Engine — One-Command Patient Evaluation
+# ============================================================================
+#
+# Usage:
+#   ./cerebral run Dallas_Clark.txt          Evaluate + open HTML report
+#   ./cerebral run-all                       Batch all patients + open dashboard
+#   ./cerebral live Dallas_Clark.txt         Evaluate as in-hospital + open HTML
+#   ./cerebral watch                         Monitor data_raw/ for new files
+#   ./cerebral excel                         Regenerate Excel dashboard only
+#   ./cerebral help                          Show this help
+#
+# Requirements: Python 3.9+, openpyxl (pip install openpyxl)
+# Optional:     fswatch (brew install fswatch) for watch mode
+# ============================================================================
+
+set -euo pipefail
+
+PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+export PYTHONPATH="$PROJECT_DIR"
+DATA_DIR="$PROJECT_DIR/data_raw"
+OUTPUT_DIR="$PROJECT_DIR/outputs/pi_reports"
+PYTHON="${CEREBRAL_PYTHON:-python3}"
+MODULE="cerebralos.ingestion.batch_eval"
+
+# Colors for terminal output
+PINK='\033[38;5;206m'
+GOLD='\033[38;5;220m'
+GREEN='\033[38;5;42m'
+GRAY='\033[38;5;245m'
+BOLD='\033[1m'
+RESET='\033[0m'
+
+_banner() {
+    echo -e "${PINK}${BOLD}"
+    echo "  ╔═══════════════════════════════════════════╗"
+    echo "  ║       CerebralOS Governance Engine        ║"
+    echo "  ║          Deaconess Trauma Center           ║"
+    echo "  ╚═══════════════════════════════════════════╝"
+    echo -e "${RESET}"
+}
+
+_resolve_patient() {
+    local input="$1"
+    # Accept bare filename, filename with .txt, or full path
+    if [[ -f "$input" ]]; then
+        echo "$input"
+    elif [[ -f "$DATA_DIR/$input" ]]; then
+        echo "$DATA_DIR/$input"
+    elif [[ -f "$DATA_DIR/${input}.txt" ]]; then
+        echo "$DATA_DIR/${input}.txt"
+    else
+        echo ""
+    fi
+}
+
+cmd_run() {
+    if [[ -z "${1:-}" ]]; then
+        echo -e "${PINK}Error:${RESET} No patient file specified."
+        echo "Usage: ./cerebral run <patient_file.txt>"
+        echo ""
+        echo "Available patients:"
+        ls "$DATA_DIR"/*.txt 2>/dev/null | while read -r f; do
+            echo "  $(basename "$f")"
+        done
+        exit 1
+    fi
+
+    local patient_file
+    patient_file=$(_resolve_patient "$1")
+    if [[ -z "$patient_file" ]]; then
+        echo -e "${PINK}Error:${RESET} Patient file not found: $1"
+        echo "Checked: $1, $DATA_DIR/$1, $DATA_DIR/$1.txt"
+        exit 1
+    fi
+
+    _banner
+    echo -e "${GOLD}Evaluating:${RESET} $(basename "$patient_file")"
+    echo ""
+
+    "$PYTHON" -m "$MODULE" \
+        --patient "$patient_file" \
+        --all-reports \
+        --open
+
+    local stem
+    stem="$(basename "${patient_file%.txt}")"
+    echo ""
+    echo -e "${GREEN}Reports generated:${RESET}"
+    echo -e "  HTML:  ${BOLD}$OUTPUT_DIR/${stem}_report.html${RESET}"
+    echo -e "  Text:  $OUTPUT_DIR/${stem}_pi_report.txt"
+    echo -e "  JSON:  $OUTPUT_DIR/${stem}_results.json"
+    echo -e "  Excel: $PROJECT_DIR/outputs/trauma_dashboard.xlsx"
+}
+
+cmd_run_all() {
+    _banner
+    echo -e "${GOLD}Batch evaluating all patients in:${RESET} $DATA_DIR"
+    echo ""
+
+    "$PYTHON" -m "$MODULE" \
+        --patient-dir "$DATA_DIR" \
+        --all-reports \
+        --dashboard \
+        --open
+
+    echo ""
+    echo -e "${GREEN}Dashboard:${RESET} ${BOLD}$OUTPUT_DIR/index.html${RESET}"
+    echo -e "${GREEN}Excel:${RESET}     ${BOLD}$PROJECT_DIR/outputs/trauma_dashboard.xlsx${RESET}"
+}
+
+cmd_live() {
+    if [[ -z "${1:-}" ]]; then
+        echo -e "${PINK}Error:${RESET} No patient file specified."
+        echo "Usage: ./cerebral live <patient_file.txt>"
+        exit 1
+    fi
+
+    local patient_file
+    patient_file=$(_resolve_patient "$1")
+    if [[ -z "$patient_file" ]]; then
+        echo -e "${PINK}Error:${RESET} Patient file not found: $1"
+        exit 1
+    fi
+
+    _banner
+    echo -e "${PINK}${BOLD}LIVE MODE${RESET} — $(basename "$patient_file")"
+    echo ""
+
+    "$PYTHON" -m "$MODULE" \
+        --patient "$patient_file" \
+        --all-reports \
+        --live \
+        --open
+}
+
+cmd_watch() {
+    if ! command -v fswatch &>/dev/null; then
+        echo -e "${PINK}Error:${RESET} fswatch is required for watch mode."
+        echo "Install with: brew install fswatch"
+        exit 1
+    fi
+
+    _banner
+    echo -e "${GOLD}Watching${RESET} $DATA_DIR for new/changed .txt files..."
+    echo -e "${GRAY}Press Ctrl+C to stop.${RESET}"
+    echo ""
+
+    fswatch -0 --event Created --event Updated "$DATA_DIR" | while read -d "" event; do
+        # Only process .txt files
+        if [[ "$event" == *.txt ]]; then
+            local basename_file
+            basename_file="$(basename "$event")"
+            echo ""
+            echo -e "${GOLD}Detected change:${RESET} $basename_file"
+            "$PYTHON" -m "$MODULE" \
+                --patient "$event" \
+                --all-reports \
+                --open \
+                2>&1 || echo -e "${PINK}Error processing $basename_file${RESET}"
+        fi
+    done
+}
+
+cmd_excel() {
+    _banner
+    echo -e "${GOLD}Regenerating Excel dashboard from all patients...${RESET}"
+    echo ""
+
+    "$PYTHON" -m "$MODULE" \
+        --patient-dir "$DATA_DIR" \
+        --excel \
+        --no-open
+
+    local excel_path="$PROJECT_DIR/outputs/trauma_dashboard.xlsx"
+    echo ""
+    echo -e "${GREEN}Excel:${RESET} ${BOLD}$excel_path${RESET}"
+
+    # Open in Excel/Numbers
+    if [[ "$(uname)" == "Darwin" ]]; then
+        open "$excel_path"
+    fi
+}
+
+cmd_help() {
+    _banner
+    echo -e "${BOLD}Commands:${RESET}"
+    echo ""
+    echo -e "  ${GOLD}run${RESET} <file.txt>     Evaluate single patient, open HTML report"
+    echo -e "                       Generates: HTML + Text + JSON + Excel"
+    echo ""
+    echo -e "  ${GOLD}run-all${RESET}             Batch evaluate all patients in data_raw/"
+    echo -e "                       Generates: All reports + Dashboard + Excel"
+    echo ""
+    echo -e "  ${GOLD}live${RESET} <file.txt>     Evaluate in-hospital patient (provisional results)"
+    echo -e "                       Adds live banner and provisional markers"
+    echo ""
+    echo -e "  ${GOLD}watch${RESET}               Monitor data_raw/ for new/changed files"
+    echo -e "                       Auto-evaluates and opens reports (requires fswatch)"
+    echo ""
+    echo -e "  ${GOLD}excel${RESET}               Regenerate Excel dashboard from all patients"
+    echo ""
+    echo -e "  ${GOLD}help${RESET}                Show this help message"
+    echo ""
+    echo -e "${BOLD}Examples:${RESET}"
+    echo "  ./cerebral run Dallas_Clark.txt"
+    echo "  ./cerebral run Dallas_Clark          # .txt suffix optional"
+    echo "  ./cerebral run-all"
+    echo "  ./cerebral live Lolita_Calcia.txt"
+    echo "  ./cerebral watch"
+    echo ""
+    echo -e "${BOLD}Directories:${RESET}"
+    echo "  Patient files:  $DATA_DIR"
+    echo "  Reports:        $OUTPUT_DIR"
+    echo "  Excel:          $PROJECT_DIR/outputs/trauma_dashboard.xlsx"
+    echo ""
+    echo -e "${GRAY}Set CEREBRAL_PYTHON to use a different Python (default: python3)${RESET}"
+}
+
+# ---- Main dispatch ----
+case "${1:-help}" in
+    run)      shift; cmd_run "$@" ;;
+    run-all)  cmd_run_all ;;
+    live)     shift; cmd_live "$@" ;;
+    watch)    cmd_watch ;;
+    excel)    cmd_excel ;;
+    help|-h|--help) cmd_help ;;
+    *)
+        echo -e "${PINK}Unknown command:${RESET} $1"
+        echo "Run './cerebral help' for usage."
+        exit 1
+        ;;
+esac

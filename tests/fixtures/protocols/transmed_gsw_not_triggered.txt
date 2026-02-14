@@ -1,0 +1,10 @@
+PATIENT_ID: TEST_TRANSMED_002
+ARRIVAL_TIME: 2026-01-28 10:00:00
+
+[TRAUMA_HP] 2026-01-28 10:10:00
+Category II activation for 30-year-old male, stab wound to right arm.
+Isolated extremity injury. BP 128/78, HR 84, RR 16, GCS 15.
+
+[PHYSICIAN_NOTE] 2026-01-28 10:30:00
+Superficial laceration to right bicep. Neurovascular intact distally.
+Wound repaired. Tetanus updated. Discharged with follow-up.

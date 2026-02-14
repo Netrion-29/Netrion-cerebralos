@@ -1,0 +1,15 @@
+PATIENT_ID: TEST_NEUROSURG_002
+ARRIVAL_TIME: 2026-02-18 10:00:00
+
+[TRAUMA_HP] 2026-02-18 10:10:00
+Category III activation for 60-year-old female. Ground-level fall.
+Isolated right ankle injury. No loss of consciousness.
+BP 138/84, HR 74, RR 14, GCS 15.
+Alert and oriented. No neurologic concerns.
+
+[IMAGING] 2026-02-18 10:30:00
+Right ankle x-ray: lateral malleolus fracture.
+No other imaging indicated.
+
+[PHYSICIAN_NOTE] 2026-02-18 10:50:00
+Ankle fracture. Splinted. Orthopedic follow-up. Discharged.

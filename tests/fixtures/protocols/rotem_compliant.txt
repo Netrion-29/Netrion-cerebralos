@@ -1,0 +1,23 @@
+PATIENT_ID: TEST_ROTEM_001
+ARRIVAL_TIME: 2026-01-20 03:00:00
+
+[TRAUMA_HP] 2026-01-20 03:10:00
+Category I activation for 28-year-old male with multiple gunshot wounds to abdomen.
+Hemodynamically unstable. BP 70/40, HR 130, RR 28, GCS 14.
+Massive Transfusion Protocol activated. ED blood box utilized.
+Balanced blood resuscitation initiated for ongoing hemorrhage.
+
+[LAB] 2026-01-20 03:20:00
+ROTEM trauma panel ordered and drawn. Blue top tube collected.
+Specimen hand-delivered to lab per protocol.
+EXTEM CT: 92 sec (>80 → FFP administered).
+EXTEM A10: 35 mm (<40 → evaluate FIBTEM A10).
+FIBTEM A10: 8 mm (<10 → Cryoprecipitate given).
+EXTEM ML: 12%.
+ROTEM parameters documented and reviewed.
+
+[PHYSICIAN_NOTE] 2026-01-20 03:45:00
+Treatment decisions guided by ROTEM values.
+FFP given for prolonged EXTEM CT.
+Cryoprecipitate administered for low FIBTEM A10.
+Bleeding controlled after targeted intervention.

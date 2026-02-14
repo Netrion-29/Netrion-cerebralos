@@ -1,0 +1,30 @@
+PATIENT_ID: TEST_TRANSMED_001
+ARRIVAL_TIME: 2026-01-28 02:00:00
+
+[TRAUMA_HP] 2026-01-28 02:10:00
+Category I activation for 22-year-old male, transmediastinal gunshot wound.
+GSW to chest with suspected mediastinal traversal.
+Entry wound right anterior chest, exit wound left posterior chest.
+Entry and exit wound locations documented.
+BP 80/50, HR 135, RR 28, SBP 80. Hemodynamically unstable.
+No cardiac arrest. Signs of life present: blood pressure present,
+respiratory effort present.
+
+[IMAGING] 2026-01-28 02:25:00
+Portable chest x-ray: bilateral hemothorax. CXR obtained.
+CT chest with contrast obtained: transmediastinal trajectory confirmed.
+Mediastinal widening present. No pericardial effusion.
+No pulse differential noted.
+Pneumothorax left side. Hemothorax bilateral.
+
+[PHYSICIAN_NOTE] 2026-01-28 02:40:00
+Transmediastinal trajectory confirmed on imaging.
+Witnessed signs of life confirmed. No cardiac arrest.
+Hemodynamic status documented. BP 80/50, HR 135.
+Bilateral chest tubes placed. MTP activated.
+Patient taken to OR for emergent thoracotomy.
+Esophageal imaging deferred — operative management pursued.
+
+[OPERATIVE_NOTE] 2026-01-28 03:30:00
+Left anterolateral thoracotomy performed. Aortic injury identified and repaired.
+Bilateral hemothorax evacuated. Hemostasis achieved.

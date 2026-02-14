@@ -1,0 +1,21 @@
+PATIENT_ID: TEST_MENTAL_HEALTH_NC_001
+ARRIVAL_TIME: 2026-03-02 10:00:00
+
+[TRAUMA_HP] 2026-03-02 10:10:00
+Category I activation for 28-year-old male. Intentional GSW.
+Assault victim. Intentional violent mechanism confirmed. Age 28.
+Stab wound and associated GSW. Assaulted by multiple individuals.
+BP 96/60, HR 118, RR 22, GCS 14.
+
+[NURSING_NOTE] 2026-03-02 10:30:00
+Patient alert and able to participate in assessment.
+Cognitive status documented: oriented and communicative.
+Patient cooperative with care team.
+
+[PHYSICIAN_NOTE] 2026-03-02 16:00:00
+Post-operative day 1. Patient stable and conversant.
+No mental health screening performed during admission.
+No assessment initiated prior to planned discharge.
+Screening not performed. Patient discharged without
+mental health evaluation. No screening completed before discharge.
+No assessment performed prior to discharged.

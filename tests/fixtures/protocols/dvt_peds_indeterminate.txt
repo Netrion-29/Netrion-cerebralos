@@ -1,0 +1,18 @@
+PATIENT_ID: TEST_DVT_PEDS_003
+ARRIVAL_TIME: 2026-02-12 18:00:00
+
+[TRAUMA_HP] 2026-02-12 18:10:00
+Category I trauma activation for 10-year-old female. Struck by auto.
+Trauma admission confirmed. Age 10.
+Right femur fracture. Long-bone fracture. Admitted for operative fixation.
+BP 90/58, HR 130, RR 24, GCS 15.
+
+[NURSING_NOTE] 2026-02-12 18:30:00
+Admitted to PICU. Anticipated prolonged stay.
+No documentation of pubertal status or Tanner stage.
+
+[PHYSICIAN_NOTE] 2026-02-13 10:00:00
+Post-operative day 1. Patient recovering.
+Bleeding assessment not documented.
+DVT risk factor assessment not formally completed.
+No orders for chemical prophylaxis documented.

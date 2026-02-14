@@ -1,0 +1,15 @@
+PATIENT_ID: TEST_RIB_002
+ARRIVAL_TIME: 2026-01-21 10:00:00
+
+[TRAUMA_HP] 2026-01-21 10:15:00
+Category II trauma activation for 42-year-old female, MVC.
+BP 125/75, HR 82, RR 16, GCS 15.
+Chest wall non-tender. Primary complaint is left wrist pain.
+
+[IMAGING] 2026-01-21 10:45:00
+CT Chest: No fractures identified. Lungs clear. No pneumothorax.
+Left wrist x-ray: Distal radius fracture, non-displaced.
+
+[PHYSICIAN_NOTE] 2026-01-21 11:00:00
+No thoracic injury identified. Wrist fracture management initiated.
+Discharged with splint and orthopedic follow-up.

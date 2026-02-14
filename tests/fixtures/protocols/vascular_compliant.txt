@@ -1,0 +1,19 @@
+PATIENT_ID: TEST_VASC_001
+ARRIVAL_TIME: 2026-01-21 14:00:00
+
+[TRAUMA_HP] 2026-01-21 14:10:00
+Category I activation for 45-year-old male, motorcycle crash.
+Active hemorrhage from left lower extremity. Tourniquet applied in field.
+BP 88/60, HR 120, RR 24. Hemodynamically unstable.
+Blood transfusion initiated with emergency-release PRBCs.
+
+[IMAGING] 2026-01-21 14:35:00
+CT angiography left lower extremity: Active arterial extravasation from
+left superficial femoral artery. Pseudoaneurysm identified.
+Angioembolizable lesion confirmed.
+
+[PHYSICIAN_NOTE] 2026-01-21 14:50:00
+Trauma Vascular Emergency activated. Category A designation.
+IR consulted. Angioembolization performed successfully.
+BP improved to 110/72 after embolization. HR decreased to 92.
+Repeat BP confirms hemodynamic stability: 118/76.

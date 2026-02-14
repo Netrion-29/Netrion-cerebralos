@@ -1,0 +1,30 @@
+PATIENT_ID: TEST_NAT_001
+ARRIVAL_TIME: 2026-01-26 08:00:00
+
+[TRAUMA_HP] 2026-01-26 08:10:00
+2-year-old male brought by mother. Suspected non-accidental trauma.
+NAT evaluation initiated. Child abuse suspected based on injury pattern.
+History provided by mother: reported fall from couch.
+Historian: mother. Injury history inconsistent with developmental age.
+Age: 2 years. Developmental age assessment: ambulatory, pre-verbal.
+
+[ED_NOTE] 2026-01-26 08:20:00
+Complete head-to-toe physical examination performed.
+Multiple bruises in various stages of healing noted on torso and extremities.
+Bruising identified on back and buttocks inconsistent with reported mechanism.
+
+[IMAGING] 2026-01-26 08:45:00
+CT head obtained: no acute intracranial hemorrhage.
+Skeletal survey performed: healing rib fractures bilateral, age 2-4 weeks.
+Abdominal imaging negative for solid organ injury.
+
+[LAB] 2026-01-26 08:50:00
+CBC, CMP, coagulation studies all within normal limits.
+No coagulopathy identified.
+
+[CONSULT_NOTE] 2026-01-26 09:00:00
+Social Work consultation obtained immediately upon NAT suspicion.
+SW consult documented. Social work notified and responded.
+CPS notified and reported per policy. Law enforcement contacted.
+Ophthalmology evaluation requested. Medical photography performed.
+Admission for ongoing NAT evaluation and safety concerns.

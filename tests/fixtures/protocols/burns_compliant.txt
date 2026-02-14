@@ -1,0 +1,30 @@
+PATIENT_ID: TEST_BURNS_001
+ARRIVAL_TIME: 2026-02-08 11:00:00
+
+[TRAUMA_HP] 2026-02-08 11:10:00
+Category I activation for 40-year-old male. Thermal injury from house fire.
+Burn mechanism: enclosed space fire with flame exposure.
+Extensive burns to face, hands, and chest.
+TBSA estimated at 35%. Total body surface area: 35% involvement.
+Partial thickness and full thickness burns identified.
+Second degree burns to anterior chest. Third degree burns to bilateral hands.
+Inhalation injury suspected: singed nasal hairs, carbonaceous sputum.
+BP 98/60, HR 120, RR 26, GCS 15.
+
+[NURSING_NOTE] 2026-02-08 11:20:00
+Early airway assessment performed. Airway secured via intubation
+due to suspected inhalation injury and facial edema.
+Fluid resuscitation initiated per Parkland formula.
+Carbon monoxide level obtained.
+
+[IMAGING] 2026-02-08 11:40:00
+Chest x-ray: bilateral pulmonary infiltrates.
+No pneumothorax. No fractures.
+
+[PHYSICIAN_NOTE] 2026-02-08 11:50:00
+Burn assessment: 35% TBSA. Full thickness to bilateral hands.
+Face and hands involvement meeting ABA referral criteria.
+Burn location includes face, hands, and anterior chest.
+Inhalation injury confirmed clinically.
+No concomitant traumatic injuries identified.
+Transfer to burn center arranged per regional protocol.

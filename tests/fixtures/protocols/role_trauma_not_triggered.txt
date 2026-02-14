@@ -1,0 +1,7 @@
+PATIENT_ID: TEST_ROLE_002
+ARRIVAL_TIME: 2026-01-27 12:00:00
+
+[PHYSICIAN_NOTE] 2026-01-27 12:10:00
+65-year-old female presenting with chest pain. No injury mechanism.
+Medical admission for cardiac workup. No activation called.
+ECG shows ST changes. Cardiology consulted.

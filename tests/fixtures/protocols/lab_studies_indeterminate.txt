@@ -1,0 +1,7 @@
+PATIENT_ID: TEST_LAB_003
+ARRIVAL_TIME: 2026-01-22 14:00:00
+
+[TRAUMA_HP] 2026-01-22 14:10:00
+Category II trauma activation for patient after bicycle crash.
+BP 130/80, HR 85, RR 16, GCS 15.
+Alert and oriented.

@@ -3,9 +3,10 @@
     "system": "Netrion Systems",
     "product": "CerebralOS",
     "ruleset": "Deaconess Protocols (STRUCTURED v1)",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "source_raw": "/Users/sarah/NetrionSystems/netrion-cerebralos/rules/deaconess/protocols_deaconess_raw_v1.json",
-    "protocol_count": 44
+    "protocol_count": 43,
+    "notes": "v1.1.0: Added REQ_TRIGGER_CRITERIA with pattern-based applicability gates to all protocols. Removed Role of Trauma Services."
   },
   "protocols": [
     {
@@ -27,62 +28,53 @@
       "requirements": [
         {
           "id": "REQ_TRIGGER_CRITERIA",
-          "description": "Trigger criteria satisfied per protocol definition (textual gates).",
+          "description": "Applicability gate: suspected or confirmed TBI with documented GCS.",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Presence of suspected or confirmed traumatic brain injury with documented post-resuscitation GCS"
+            "protocol_tbi_gate"
           ],
           "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation"
+            "TRAUMA_HP",
+            "PHYSICIAN_NOTE",
+            "RADIOLOGY",
+            "NURSING_NOTE"
           ],
-          "failure_consequence": "INDETERMINATE if trigger data missing; NOT_TRIGGERED if criteria not met.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if post-resuscitation GCS is not documented | INDETERMINATE if timing of GCS assessment relative to resuscitation is unclear"
+          "failure_consequence": "NOT_TRIGGERED if no TBI evidence found.",
+          "notes": null
         },
         {
           "id": "REQ_REQUIRED_DATA_ELEMENTS",
           "description": "Required data elements present for evaluation and compliance determination.",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Documented Glasgow Coma Scale score",
-            "Documentation confirming GCS assessed after adequate cardiopulmonary resuscitation",
-            "Location and timing of GCS assessment (e.g., Emergency Department)"
+            "protocol_gcs_documented"
           ],
           "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation"
+            "TRAUMA_HP",
+            "PHYSICIAN_NOTE",
+            "NURSING_NOTE"
           ],
           "failure_consequence": "INDETERMINATE if required data elements are missing.",
           "notes": null
         },
         {
           "id": "REQ_TIMING_CRITICAL",
-          "description": "Timing-critical elements met (first-pass placeholder; refine later).",
+          "description": "GCS must reflect post-resuscitation neurologic status.",
           "requirement_type": "CONDITIONAL",
           "trigger_conditions": [
-            "GCS must reflect post-resuscitation neurologic status",
-            "GCS assessment must occur during initial Emergency Department evaluation or equivalent documented assessment"
+            "protocol_gcs_documented"
           ],
           "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation"
+            "TRAUMA_HP",
+            "PHYSICIAN_NOTE",
+            "NURSING_NOTE"
           ],
           "failure_consequence": "NON_COMPLIANT if timing-critical elements not met when applicable.",
           "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Physician notes",
-        "Nursing documentation"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Nursing documentation"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "RIB_FRACTURE_MANAGEMENT",
@@ -92,9 +84,7 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [
-        "Documented rib fracture(s) confirmed on imaging"
-      ],
+      "inclusion_criteria": ["Documented rib fracture(s) confirmed on imaging"],
       "exclusion_criteria": [
         "Ongoing shock or active resuscitation",
         "Fractures limited to ribs 1, 2, 11, or 12",
@@ -104,57 +94,32 @@
       ],
       "requirements": [
         {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: documented rib fracture(s) on imaging.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_rib_fx_gate"
+          ],
+          "acceptable_evidence": ["RADIOLOGY", "TRAUMA_HP", "PHYSICIAN_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if no rib fracture documented on imaging.",
+          "notes": null
+        },
+        {
           "id": "REQ_REQUIRED_DATA_ELEMENTS",
           "description": "Required data elements present for evaluation and compliance determination.",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Imaging confirming rib fracture location and rib numbers",
-            "Patient age",
-            "Respiratory rate",
-            "Incentive spirometry measurement",
-            "Pain assessment documentation",
-            "Nursing or respiratory therapy documentation of cough and secretion clearance"
+            "protocol_rib_fx_gate"
           ],
           "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Imaging reports",
-            "Respiratory therapy documentation"
+            "TRAUMA_HP", "PHYSICIAN_NOTE", "NURSING_NOTE", "RADIOLOGY"
           ],
           "failure_consequence": "INDETERMINATE if required data elements are missing.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if rib fracture numbering is unclear | INDETERMINATE if required physiologic or pain data are missing"
-        },
-        {
-          "id": "REQ_TIMING_CRITICAL",
-          "description": "Timing-critical elements met (first-pass placeholder; refine later).",
-          "requirement_type": "CONDITIONAL",
-          "trigger_conditions": [
-            "Trigger evaluation based on admission status",
-            "Timing references are evaluative only and must not be treated as prescriptive"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Imaging reports",
-            "Respiratory therapy documentation"
-          ],
-          "failure_consequence": "NON_COMPLIANT if timing-critical elements not met when applicable.",
           "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Physician notes",
-        "Nursing documentation",
-        "Imaging reports",
-        "Respiratory therapy documentation"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Nursing documentation", "Imaging reports"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "BLUNT_ABDOMINAL_TRAUMA",
@@ -164,9 +129,7 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [
-        "Suspected or confirmed blunt mechanism involving the abdomen"
-      ],
+      "inclusion_criteria": ["Suspected or confirmed blunt mechanism involving the abdomen"],
       "exclusion_criteria": [
         "No blunt mechanism involving the abdomen",
         "Isolated penetrating abdominal trauma (handled under separate protocol)"
@@ -174,79 +137,33 @@
       "requirements": [
         {
           "id": "REQ_TRIGGER_CRITERIA",
-          "description": "Trigger criteria satisfied per protocol definition (textual gates).",
+          "description": "Applicability gate: blunt abdominal mechanism documented.",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Trigger Pathway A \u2014 Hemodynamic Instability:",
-            "Hemodynamic instability defined as at least two of the following:",
-            "\u2013 Systolic blood pressure < 90 mmHg on more than one documented reading",
-            "\u2013 Heart rate > 100 beats per minute",
-            "\u2013 Respiratory rate > 30 breaths per minute"
+            "protocol_blunt_abd_gate"
           ],
           "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Imaging reports",
-            "Point-of-care ultrasound documentation"
+            "TRAUMA_HP", "PHYSICIAN_NOTE", "RADIOLOGY"
           ],
-          "failure_consequence": "INDETERMINATE if trigger data missing; NOT_TRIGGERED if criteria not met.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if required vital sign data are missing or incomplete | INDETERMINATE if FAST result is undocumented when FAST is referenced | INDETERMINATE if imaging findings are referenced but imaging report is unavailable"
+          "failure_consequence": "NOT_TRIGGERED if no blunt abdominal mechanism documented.",
+          "notes": null
         },
         {
           "id": "REQ_REQUIRED_DATA_ELEMENTS",
           "description": "Required data elements present for evaluation and compliance determination.",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Blood pressure measurements (with repeat readings if < 90 mmHg)",
-            "Heart rate",
-            "Respiratory rate",
-            "Abdominal physical examination findings",
-            "FAST examination result (if performed)",
-            "Hemodynamic status at time of FAST or imaging",
-            "Abdominal CT imaging report (if obtained)"
+            "protocol_blunt_abd_gate"
           ],
           "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Imaging reports",
-            "Point-of-care ultrasound documentation"
+            "TRAUMA_HP", "PHYSICIAN_NOTE", "NURSING_NOTE", "RADIOLOGY"
           ],
           "failure_consequence": "INDETERMINATE if required data elements are missing.",
           "notes": null
-        },
-        {
-          "id": "REQ_TIMING_CRITICAL",
-          "description": "Timing-critical elements met (first-pass placeholder; refine later).",
-          "requirement_type": "CONDITIONAL",
-          "trigger_conditions": [
-            "Hemodynamic status assessed contemporaneously with abdominal evaluation",
-            "FAST timing relative to documented vital signs",
-            "Timing references are evaluative only and must not be treated as prescriptive"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Imaging reports",
-            "Point-of-care ultrasound documentation"
-          ],
-          "failure_consequence": "NON_COMPLIANT if timing-critical elements not met when applicable.",
-          "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Physician notes",
-        "Nursing documentation",
-        "Imaging reports",
-        "Point-of-care ultrasound documentation"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Nursing documentation", "Imaging reports"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "BLUNT_CHEST_TRAUMA",
@@ -256,70 +173,41 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [
-        "Suspected or confirmed blunt mechanism involving the thorax"
-      ],
+      "inclusion_criteria": ["Suspected or confirmed blunt mechanism involving the thorax"],
       "exclusion_criteria": [
         "No blunt mechanism involving the thorax",
         "Isolated penetrating chest trauma (handled under separate protocol)"
       ],
       "requirements": [
         {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: blunt thoracic mechanism documented.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_blunt_chest_gate"
+          ],
+          "acceptable_evidence": [
+            "TRAUMA_HP", "PHYSICIAN_NOTE", "RADIOLOGY"
+          ],
+          "failure_consequence": "NOT_TRIGGERED if no blunt thoracic mechanism documented.",
+          "notes": null
+        },
+        {
           "id": "REQ_REQUIRED_DATA_ELEMENTS",
           "description": "Required data elements present for evaluation and compliance determination.",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Documentation of blunt thoracic mechanism",
-            "Chest imaging report (portable chest x-ray and/or CT chest)",
-            "Vital signs and hemodynamic status",
-            "FAST examination result when cardiac tamponade is referenced",
-            "EKG report when cardiac contusion or severe anterior chest trauma is referenced",
-            "Documentation of respiratory findings when chest wall injury is referenced"
+            "protocol_blunt_chest_gate"
           ],
           "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Imaging reports",
-            "EKG reports",
-            "Point-of-care ultrasound documentation"
+            "TRAUMA_HP", "PHYSICIAN_NOTE", "NURSING_NOTE", "RADIOLOGY"
           ],
           "failure_consequence": "INDETERMINATE if required data elements are missing.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if a referenced diagnostic finding lacks supporting documentation | INDETERMINATE if hemodynamic status at time of referenced evaluation is unclear"
-        },
-        {
-          "id": "REQ_TIMING_CRITICAL",
-          "description": "Timing-critical elements met (first-pass placeholder; refine later).",
-          "requirement_type": "CONDITIONAL",
-          "trigger_conditions": [
-            "Timing references are evaluative only",
-            "Chest imaging timing relative to admission must be documented when referenced",
-            "FAST or EKG timing must be documented when those findings are referenced"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Imaging reports",
-            "EKG reports",
-            "Point-of-care ultrasound documentation"
-          ],
-          "failure_consequence": "NON_COMPLIANT if timing-critical elements not met when applicable.",
           "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Physician notes",
-        "Nursing documentation",
-        "Imaging reports",
-        "EKG reports",
-        "Point-of-care ultrasound documentation"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Nursing documentation", "Imaging reports"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "PENETRATING_ABDOMINAL_TRAUMA",
@@ -329,16 +217,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["Penetrating injury to the abdomen"],
+      "exclusion_criteria": ["No penetrating mechanism involving the abdomen"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: penetrating abdominal mechanism documented.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_penetrating_abd_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "ED_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if no penetrating abdominal mechanism documented.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "PENETRATING_NECK_INJURY",
@@ -348,16 +243,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["Penetrating injury to the neck"],
+      "exclusion_criteria": ["No penetrating mechanism involving the neck"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: penetrating neck mechanism documented.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_penetrating_neck_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "ED_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if no penetrating neck mechanism documented.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "PERIPHERAL_VASCULAR_TRAUMA",
@@ -367,16 +269,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["Suspected or confirmed peripheral vascular injury"],
+      "exclusion_criteria": ["No vascular injury identified"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: peripheral vascular injury documented.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_vascular_trauma_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "RADIOLOGY", "OPERATIVE_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if no vascular injury documented.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes", "Imaging reports"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "BLUNT_CEREBROVASCULAR_INJURY_BCVI",
@@ -386,16 +295,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["BCVI screening criteria met or confirmed BCVI"],
+      "exclusion_criteria": ["No BCVI risk factors identified"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: BCVI risk factors or confirmed BCVI.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_bcvi_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "RADIOLOGY"],
+          "failure_consequence": "NOT_TRIGGERED if no BCVI risk factors or injury documented.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes", "Imaging reports"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "DVT_PROPHYLAXIS_ADULT_TRAUMA_PATIENT",
@@ -405,16 +321,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["All adult trauma patients admitted to the hospital"],
+      "exclusion_criteria": ["Pediatric patients (age < 18)"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: admitted adult trauma patient.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_dvt_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "ED_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if not a trauma patient.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "DVT_PROPHYLAXIS_PEDIATRIC_TRAUMA_PATIENT",
@@ -424,16 +347,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["Pediatric trauma patient (age <= 17)"],
+      "exclusion_criteria": ["Adult patients (age >= 18)"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: pediatric patient (age <= 17).",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "age:<=:17"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if patient age > 17.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "GERIATRIC_TRAUMA_GUIDELINE",
@@ -443,16 +373,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["Trauma patient age >= 65"],
+      "exclusion_criteria": ["Patient age < 65"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: geriatric patient (age >= 65).",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "age:>=:65"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if patient age < 65.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "GERIATRIC_HIP_FRACTURE_GUIDELINE",
@@ -462,16 +399,24 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["Geriatric trauma patient with hip fracture"],
+      "exclusion_criteria": ["Patient age < 65 or no hip fracture"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: geriatric patient (age >= 65) with hip fracture.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_geriatric_hip_fx_gate",
+            "age:>=:65"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "RADIOLOGY"],
+          "failure_consequence": "NOT_TRIGGERED if patient age < 65 or no hip fracture documented.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes", "Imaging reports"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "SCREENING_OF_THE_TRAUMA_PATIENT_FOR_ALCOHOL_ANDOR_DRUG_USE_SBIRT",
@@ -481,16 +426,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
+      "inclusion_criteria": ["All trauma patients"],
       "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: trauma patient.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_sbirt_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "ED_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if not a trauma patient.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "MENTAL_HEALTH_SCREENING_FOR_THE_TRAUMA_PATIENT",
@@ -500,16 +452,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
+      "inclusion_criteria": ["All trauma patients"],
       "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: trauma patient.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_sbirt_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "ED_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if not a trauma patient.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "EMERGENCY_RESUSCITATIVE_THORACOTOMY",
@@ -519,16 +478,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["Penetrating trauma with arrest or imminent arrest"],
+      "exclusion_criteria": ["Blunt mechanism without arrest criteria"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: resuscitative thoracotomy performed or criteria met.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_ert_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "OPERATIVE_NOTE", "ED_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if no thoracotomy criteria documented.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes", "Operative notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "TRAUMATIC_ARREST",
@@ -538,16 +504,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["Traumatic cardiac arrest"],
+      "exclusion_criteria": ["Non-traumatic cardiac arrest"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: traumatic cardiac arrest documented.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_traumatic_arrest_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "ED_NOTE", "NURSING_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if no traumatic arrest documented.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "DROWNING",
@@ -557,16 +530,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["Drowning or submersion mechanism"],
+      "exclusion_criteria": ["No drowning or submersion mechanism"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: drowning or submersion mechanism documented.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_drowning_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "ED_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if no drowning mechanism documented.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "MANAGEMENT_AND_TRIAGE_OF_BURNED_PATIENTS",
@@ -576,16 +556,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["Burn injury documented"],
+      "exclusion_criteria": ["No burn injury"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: burn injury documented.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_burn_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "ED_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if no burn injury documented.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "MANAGEMENT_OF_SOLID_ORGAN_INJURIES",
@@ -595,16 +582,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["Solid organ injury documented on imaging"],
+      "exclusion_criteria": ["No solid organ injury"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: solid organ injury documented.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_solid_organ_gate"
+          ],
+          "acceptable_evidence": ["RADIOLOGY", "TRAUMA_HP", "PHYSICIAN_NOTE", "OPERATIVE_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if no solid organ injury documented.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Imaging reports", "Operative notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "MANAGEMENT_OF_SEVERE_MUSCULOSKELETAL_INJURIES",
@@ -614,16 +608,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["Severe musculoskeletal injury (open fracture, compartment syndrome, crush, amputation, etc.)"],
+      "exclusion_criteria": ["Minor musculoskeletal injury without severity criteria"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: severe musculoskeletal injury documented.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_msk_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "RADIOLOGY", "OPERATIVE_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if no severe MSK injury documented.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes", "Imaging reports"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "MANAGEMENT_OF_NEUROSURGICAL_EMERGENCIES",
@@ -633,16 +634,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["Neurosurgical emergency requiring operative intervention or ICP monitoring"],
+      "exclusion_criteria": ["Non-operative intracranial injuries"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: neurosurgical emergency documented.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_neurosurg_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "RADIOLOGY", "OPERATIVE_NOTE", "CONSULT_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if no neurosurgical emergency documented.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes", "Imaging reports", "Operative notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "SPINAL_CLEARANCE_AND_SPINAL_INJURY_MANAGEMENT",
@@ -652,16 +660,23 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
+      "inclusion_criteria": ["Trauma patient requiring spinal assessment"],
       "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: spinal injury or clearance assessment documented.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_spinal_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "RADIOLOGY"],
+          "failure_consequence": "NOT_TRIGGERED if no spinal assessment documented.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Physician notes", "Imaging reports"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "MANAGEMENT_AND_STABILIZATION_OF_PELVIC_FRACTURES",
@@ -671,54 +686,63 @@
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
-      "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "inclusion_criteria": ["Pelvic fracture documented on imaging"],
+      "exclusion_criteria": ["No pelvic fracture"],
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: pelvic fracture documented.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_pelvic_fx_gate"
+          ],
+          "acceptable_evidence": ["RADIOLOGY", "TRAUMA_HP", "PHYSICIAN_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if no pelvic fracture documented.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Imaging reports", "Physician notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "MANAGEMENT_OF_THE_ORTHOPEDICNEUROLOGIC_SPLINT_ANDOR_BRACE",
       "name": "Management of the Orthopedic/Neurologic Splint and/or Brace",
       "version": "1.0.0",
       "status": "ACTIVE",
-      "protocol_class": "CLASS I",
+      "protocol_class": "CLASS II",
       "evaluation_mode": "CONTEXT_ONLY",
       "owning_service": "Deaconess Regional Trauma Center",
       "inclusion_criteria": [],
       "exclusion_criteria": [],
       "requirements": [],
       "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "RIB_FRACTURE_MANAGEMENT__2",
-      "name": "Rib Fracture Management",
+      "name": "Rib Fracture Management (Extended)",
       "version": "1.0.0",
       "status": "ACTIVE",
       "protocol_class": "CLASS I",
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [],
+      "inclusion_criteria": ["Documented rib fracture(s) confirmed on imaging"],
       "exclusion_criteria": [],
-      "requirements": [],
-      "references": [],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "requirements": [
+        {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: documented rib fracture(s) on imaging.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_rib_fx_gate"
+          ],
+          "acceptable_evidence": ["RADIOLOGY", "TRAUMA_HP", "PHYSICIAN_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if no rib fracture documented on imaging.",
+          "notes": null
+        }
+      ],
+      "references": ["Trauma H&P", "Imaging reports"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "MONITORING_BASE_DEFICIT",
@@ -738,34 +762,32 @@
       ],
       "requirements": [
         {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: Category I trauma patient.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_cat1_only_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "ED_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if patient is not Category I.",
+          "notes": null
+        },
+        {
           "id": "REQ_REQUIRED_DATA_ELEMENTS",
           "description": "Required data elements present for evaluation and compliance determination.",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Arterial or venous blood gas with base deficit value",
-            "Timing of blood gas draw relative to arrival",
-            "Documentation of Trauma Surgeon cancellation, if applicable"
+            "protocol_cat1_only_gate"
           ],
           "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Laboratory data (arterial or venous blood gas)"
+            "TRAUMA_HP", "PHYSICIAN_NOTE", "NURSING_NOTE", "LAB"
           ],
           "failure_consequence": "INDETERMINATE if required data elements are missing.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if Category I status is present and no base deficit is obtained | AND no explicit Trauma Surgeon cancellation is documented. | NOT TRIGGERED if patient is not Category I | AND no Trauma Surgeon designation exists."
+          "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Physician notes",
-        "Nursing documentation",
-        "Laboratory data (arterial or venous blood gas)"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Laboratory data"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "PENETRATING_CHEST_INJURY",
@@ -776,9 +798,7 @@
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
       "inclusion_criteria": [
-        "Patient with penetrating injury to the thorax,",
-        "defined as the region bounded by the clavicles superiorly",
-        "and the costal margins inferiorly"
+        "Patient with penetrating injury to the thorax"
       ],
       "exclusion_criteria": [
         "Blunt chest trauma",
@@ -786,67 +806,32 @@
       ],
       "requirements": [
         {
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: penetrating thoracic mechanism documented.",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_penetrating_chest_gate"
+          ],
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "ED_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if no penetrating thoracic mechanism documented.",
+          "notes": null
+        },
+        {
           "id": "REQ_REQUIRED_DATA_ELEMENTS",
           "description": "Required data elements present for evaluation and compliance determination.",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Mechanism confirming penetrating thoracic injury",
-            "Presence or absence of cardiac arrest",
-            "Presence or absence of signs of life (blood pressure, cardiac electrical activity, respiratory effort)",
-            "Vital signs documenting hemodynamic status",
-            "Respiratory status documentation",
-            "FAST examination result (if performed)",
-            "Chest tube output volumes with timing (if placed)",
-            "Chest imaging results (portable AP chest x-ray and/or CT chest)"
+            "protocol_penetrating_chest_gate"
           ],
           "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "EMS documentation",
-            "Imaging reports",
-            "Point-of-care ultrasound documentation",
-            "Operative notes"
+            "TRAUMA_HP", "PHYSICIAN_NOTE", "NURSING_NOTE", "RADIOLOGY", "OPERATIVE_NOTE"
           ],
           "failure_consequence": "INDETERMINATE if required data elements are missing.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if signs of life status is not documented | INDETERMINATE if chest tube output volumes or timing are unclear | INDETERMINATE if FAST result is not documented when indicated | NOT TRIGGERED if penetrating injury does not involve the thorax | NOT TRIGGERED if penetrating thoracic injury is documented without | hemodynamic instability, respiratory distress, tamponade, | massive hemothorax, or arrest criteria"
-        },
-        {
-          "id": "REQ_TIMING_CRITICAL",
-          "description": "Timing-critical elements met (first-pass placeholder; refine later).",
-          "requirement_type": "CONDITIONAL",
-          "trigger_conditions": [
-            "Determination of arrest and signs of life at presentation or during resuscitation",
-            "Immediate progression to left anterior thoracotomy in qualifying arrest scenarios",
-            "FAST exam performed contemporaneously when tamponade is suspected",
-            "Chest tube output thresholds assessed in real time"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "EMS documentation",
-            "Imaging reports",
-            "Point-of-care ultrasound documentation",
-            "Operative notes"
-          ],
-          "failure_consequence": "NON_COMPLIANT if timing-critical elements not met when applicable.",
           "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Physician notes",
-        "Nursing documentation",
-        "EMS documentation",
-        "Imaging reports",
-        "Point-of-care ultrasound documentation",
-        "Operative notes"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Imaging reports", "Operative notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "ROTEM_GUIDELINE",
@@ -867,83 +852,20 @@
       "requirements": [
         {
           "id": "REQ_TRIGGER_CRITERIA",
-          "description": "Trigger criteria satisfied per protocol definition (textual gates).",
+          "description": "Applicability gate: MTP activation or ED Blood Box use.",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Applicability Gate met"
+            "protocol_rotem_gate"
           ],
           "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Laboratory data (ROTEM results: EXTEM, FIBTEM)",
-            "Blood bank documentation"
+            "TRAUMA_HP", "PHYSICIAN_NOTE", "NURSING_NOTE", "LAB"
           ],
-          "failure_consequence": "INDETERMINATE if trigger data missing; NOT_TRIGGERED if criteria not met.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if Applicability Gate is met but ROTEM is not ordered | INDETERMINATE if specimen handling requirements are not met | INDETERMINATE if ROTEM parameters or timing are not documented | NOT TRIGGERED only when Applicability Gate is not met"
-        },
-        {
-          "id": "REQ_REQUIRED_DATA_ELEMENTS",
-          "description": "Required data elements present for evaluation and compliance determination.",
-          "requirement_type": "MANDATORY",
-          "trigger_conditions": [
-            "Documentation of MTP activation or ED Blood Box use",
-            "ROTEM trauma panel ordered (EXTEM and FIBTEM)",
-            "ROTEM parameters with values and timing:",
-            "\u2013 EXTEM CT (coagulation time)",
-            "\u2013 EXTEM A10",
-            "\u2013 FIBTEM A10",
-            "\u2013 EXTEM ML (maximum lysis)",
-            "Specimen collection documentation (blue top tube, hand-delivered to lab)"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Laboratory data (ROTEM results: EXTEM, FIBTEM)",
-            "Blood bank documentation"
-          ],
-          "failure_consequence": "INDETERMINATE if required data elements are missing.",
-          "notes": null
-        },
-        {
-          "id": "REQ_TIMING_CRITICAL",
-          "description": "Timing-critical elements met (first-pass placeholder; refine later).",
-          "requirement_type": "CONDITIONAL",
-          "trigger_conditions": [
-            "ROTEM ordered during active hemorrhagic resuscitation",
-            "ROTEM may be ordered at any point during MTP",
-            "Results viewable in real time for up to 60 minutes on Epic Dashboard",
-            "Treatment decisions guided by ROTEM values:",
-            "\u2013 EXTEM CT > 80 sec \u2192 FFP",
-            "\u2013 EXTEM A10 < 40 mm \u2192 evaluate FIBTEM A10",
-            "\u2013 FIBTEM A10 < 10 mm \u2192 Cryoprecipitate",
-            "\u2013 FIBTEM A10 \u2265 10 mm \u2192 Platelets",
-            "\u2013 EXTEM ML \u2265 15% with \u201cfish shape\u201d in EXTEM/FIBTEM \u2192 TXA",
-            "Repeat ROTEM if bleeding persists after targeted intervention"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Laboratory data (ROTEM results: EXTEM, FIBTEM)",
-            "Blood bank documentation"
-          ],
-          "failure_consequence": "NON_COMPLIANT if timing-critical elements not met when applicable.",
+          "failure_consequence": "NOT_TRIGGERED if no MTP or blood box activation.",
           "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Physician notes",
-        "Nursing documentation",
-        "Laboratory data (ROTEM results: EXTEM, FIBTEM)",
-        "Blood bank documentation"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Laboratory data", "Blood bank documentation"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "VASCULAR_INTERVENTION_GUIDELINE",
@@ -962,60 +884,21 @@
       ],
       "requirements": [
         {
-          "id": "REQ_REQUIRED_DATA_ELEMENTS",
-          "description": "Required data elements present for evaluation and compliance determination.",
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: hemorrhage with vascular intervention consideration.",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Blood pressure measurements (with confirmation of more than one reading)",
-            "Documentation of blood transfusion initiation",
-            "CT imaging demonstrating arterial extravasation or pseudoaneurysm",
-            "Determination of angioembolizable lesion",
-            "Trauma Surgeon or treating physician determination regarding need for intervention"
+            "protocol_vascular_intervention_gate"
           ],
           "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Imaging reports (CT angiography or contrast CT)",
-            "Interventional Radiology documentation"
+            "TRAUMA_HP", "PHYSICIAN_NOTE", "RADIOLOGY", "OPERATIVE_NOTE"
           ],
-          "failure_consequence": "INDETERMINATE if required data elements are missing.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if blood pressure readings are incomplete or not confirmed | INDETERMINATE if transfusion status is unclear | INDETERMINATE if imaging does not clearly demonstrate an angioembolizable lesion | NOT TRIGGERED if criteria for neither Category A nor Category B are met"
-        },
-        {
-          "id": "REQ_TIMING_CRITICAL",
-          "description": "Timing-critical elements met (first-pass placeholder; refine later).",
-          "requirement_type": "CONDITIONAL",
-          "trigger_conditions": [
-            "Category A \u2014 Vascular Emergency:",
-            "Angioembolization procedure must begin within 60 minutes of Trauma Vascular Emergency activation",
-            "Response time is tracked from request to arterial puncture",
-            "Category B \u2014 Vascular Intervention Consideration:",
-            "Timing of angioembolization is at the discretion of the surgeon if intervention is deemed necessary",
-            "Solid organ injuries should be evaluated in conjunction with the Management of Solid Organ Injuries guideline"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Imaging reports (CT angiography or contrast CT)",
-            "Interventional Radiology documentation"
-          ],
-          "failure_consequence": "NON_COMPLIANT if timing-critical elements not met when applicable.",
+          "failure_consequence": "NOT_TRIGGERED if no hemorrhage or vascular intervention criteria met.",
           "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Physician notes",
-        "Nursing documentation",
-        "Imaging reports (CT angiography or contrast CT)",
-        "Interventional Radiology documentation"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Imaging reports"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "SUSPECTED_HANGING_GUIDELINE",
@@ -1035,75 +918,20 @@
       "requirements": [
         {
           "id": "REQ_TRIGGER_CRITERIA",
-          "description": "Trigger criteria satisfied per protocol definition (textual gates).",
+          "description": "Applicability gate: hanging or strangulation mechanism documented.",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Applicability Gate met"
+            "protocol_hanging_gate"
           ],
           "acceptable_evidence": [
-            "Trauma H&P",
-            "Emergency Department physician notes",
-            "Nursing documentation",
-            "Imaging reports",
-            "EMS documentation (if available)"
+            "TRAUMA_HP", "PHYSICIAN_NOTE", "ED_NOTE", "NURSING_NOTE"
           ],
-          "failure_consequence": "INDETERMINATE if trigger data missing; NOT_TRIGGERED if criteria not met.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if hanging mechanism cannot be confirmed or excluded based on available documentation | NOT TRIGGERED only if Applicability Gate is not met"
-        },
-        {
-          "id": "REQ_REQUIRED_DATA_ELEMENTS",
-          "description": "Required data elements present for evaluation and compliance determination.",
-          "requirement_type": "MANDATORY",
-          "trigger_conditions": [
-            "History consistent with hanging mechanism",
-            "Physical examination findings of neck, airway, and neurologic status",
-            "Vital signs and oxygenation status",
-            "Imaging results obtained based on examination and history",
-            "Documentation identifying presence or absence of traumatic injury",
-            "Documentation identifying presence or absence of anoxic brain injury"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Emergency Department physician notes",
-            "Nursing documentation",
-            "Imaging reports",
-            "EMS documentation (if available)"
-          ],
-          "failure_consequence": "INDETERMINATE if required data elements are missing.",
-          "notes": null
-        },
-        {
-          "id": "REQ_TIMING_CRITICAL",
-          "description": "Timing-critical elements met (first-pass placeholder; refine later).",
-          "requirement_type": "CONDITIONAL",
-          "trigger_conditions": [
-            "Immediate airway and cervical spine assessment",
-            "Early neurologic evaluation for hypoxic or anoxic injury",
-            "Trauma activation initiated upon identification of hanging mechanism per activation criteria",
-            "Imaging obtained based on clinical findings (CT head, CT cervical spine, CTA neck as indicated)"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Emergency Department physician notes",
-            "Nursing documentation",
-            "Imaging reports",
-            "EMS documentation (if available)"
-          ],
-          "failure_consequence": "NON_COMPLIANT if timing-critical elements not met when applicable.",
+          "failure_consequence": "NOT_TRIGGERED if no hanging mechanism documented.",
           "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Emergency Department physician notes",
-        "Nursing documentation",
-        "Imaging reports",
-        "EMS documentation (if available)"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "EMS documentation"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "BLOOD_AND_BLOOD_PRODUCT_TRANSFUSION",
@@ -1125,85 +953,20 @@
       "requirements": [
         {
           "id": "REQ_TRIGGER_CRITERIA",
-          "description": "Trigger criteria satisfied per protocol definition (textual gates).",
+          "description": "Applicability gate: hemorrhage, transfusion, or MTP activation.",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Applicability Gate met"
+            "protocol_transfusion_gate"
           ],
           "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Blood Bank documentation",
-            "Laboratory data"
+            "TRAUMA_HP", "PHYSICIAN_NOTE", "NURSING_NOTE", "LAB", "MAR"
           ],
-          "failure_consequence": "INDETERMINATE if trigger data missing; NOT_TRIGGERED if criteria not met.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if transfusion status (administered vs anticipated) is not documented | INDETERMINATE if Blood Bank involvement cannot be confirmed when transfusion is suspected | NOT TRIGGERED only if no hemorrhage is present and no transfusion is administered or anticipated"
-        },
-        {
-          "id": "REQ_REQUIRED_DATA_ELEMENTS",
-          "description": "Required data elements present for evaluation and compliance determination.",
-          "requirement_type": "MANDATORY",
-          "trigger_conditions": [
-            "Documentation of blood product administration (PRBCs, plasma, platelets, cryoprecipitate)",
-            "Vital signs supporting hemorrhage or suspected hemorrhagic shock",
-            "Documentation of anticipated transfusion need (if blood not yet administered)",
-            "Documentation of MTP activation and Blood Bank notification (if applicable)",
-            "Timing of transfusion initiation relative to arrival",
-            "Laboratory data when obtained (type and cross, fibrinogen, ionized calcium, ROTEM if ordered)"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Blood Bank documentation",
-            "Laboratory data"
-          ],
-          "failure_consequence": "INDETERMINATE if required data elements are missing.",
-          "notes": null
-        },
-        {
-          "id": "REQ_TIMING_CRITICAL",
-          "description": "Timing-critical elements met (first-pass placeholder; refine later).",
-          "requirement_type": "CONDITIONAL",
-          "trigger_conditions": [
-            "Type and cross sent promptly when transfusion is anticipated",
-            "Emergency-release PRBCs available immediately for Category I activations",
-            "MTP initiated when massive transfusion is anticipated",
-            "Blood product availability benchmarks after Blood Bank receives sample:",
-            "\u2013 PRBCs (type and cross): ~45 minutes",
-            "\u2013 FFP: ~30 minutes",
-            "\u2013 Platelets: ~15 minutes",
-            "\u2013 Cryoprecipitate: ~20 minutes",
-            "During active transfusion:",
-            "\u2013 Blood products delivered per institutional algorithm",
-            "\u2013 TXA considered if bleeding onset < 3 hours",
-            "\u2013 Calcium supplementation recommended with ongoing transfusion",
-            "\u2013 PRBCs, plasma, and fluids warmed using approved devices",
-            "\u2013 Platelets and cryoprecipitate must not be warmed"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Blood Bank documentation",
-            "Laboratory data"
-          ],
-          "failure_consequence": "NON_COMPLIANT if timing-critical elements not met when applicable.",
+          "failure_consequence": "NOT_TRIGGERED if no transfusion or hemorrhage documented.",
           "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Physician notes",
-        "Nursing documentation",
-        "Blood Bank documentation",
-        "Laboratory data"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Blood bank documentation"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "HYPOTHERMIA_PREVENTION_AND_TREATMENT",
@@ -1222,74 +985,20 @@
       "requirements": [
         {
           "id": "REQ_TRIGGER_CRITERIA",
-          "description": "Trigger criteria satisfied per protocol definition (textual gates).",
+          "description": "Applicability gate: trauma patient (applies to all trauma patients).",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Applicability Gate met"
+            "protocol_hypothermia_gate"
           ],
           "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Anesthesia documentation (if operative)",
-            "Vital sign records"
+            "TRAUMA_HP", "PHYSICIAN_NOTE", "NURSING_NOTE"
           ],
-          "failure_consequence": "INDETERMINATE if trigger data missing; NOT_TRIGGERED if criteria not met.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if initial temperature is not documented | INDETERMINATE if timing of temperature measurement is unclear | INDETERMINATE if required rechecks or notifications are not documented | NOT TRIGGERED only if patient is not a trauma patient"
-        },
-        {
-          "id": "REQ_REQUIRED_DATA_ELEMENTS",
-          "description": "Required data elements present for evaluation and compliance determination.",
-          "requirement_type": "MANDATORY",
-          "trigger_conditions": [
-            "Initial temperature measurement with timestamp",
-            "Method of temperature measurement (core vs peripheral, if documented)",
-            "Serial temperature measurements",
-            "Documentation of warming measures applied",
-            "Documentation of Trauma Surgeon notification when thresholds are met",
-            "Documentation of repeat temperature at required intervals"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Anesthesia documentation (if operative)",
-            "Vital sign records"
-          ],
-          "failure_consequence": "INDETERMINATE if required data elements are missing.",
-          "notes": null
-        },
-        {
-          "id": "REQ_TIMING_CRITICAL",
-          "description": "Timing-critical elements met (first-pass placeholder; refine later).",
-          "requirement_type": "CONDITIONAL",
-          "trigger_conditions": [
-            "Initial temperature must be obtained within 30 minutes of arrival to the treatment room",
-            "Trauma room temperature maintained > 82\u00b0F",
-            "Operating room temperature warmed to 85\u00b0F for emergent or >1-hour trauma cases"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Anesthesia documentation (if operative)",
-            "Vital sign records"
-          ],
-          "failure_consequence": "NON_COMPLIANT if timing-critical elements not met when applicable.",
+          "failure_consequence": "NOT_TRIGGERED if not a trauma patient.",
           "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Physician notes",
-        "Nursing documentation",
-        "Anesthesia documentation (if operative)",
-        "Vital sign records"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Nursing documentation", "Vital sign records"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "LABORATORY_STUDIES_NEEDED_IN_TRAUMA_RESUSCITATION",
@@ -1300,8 +1009,7 @@
       "evaluation_mode": "EVALUABLE",
       "owning_service": "Deaconess Regional Trauma Center",
       "inclusion_criteria": [
-        "Trauma patient presenting for initial trauma evaluation or resuscitation",
-        "Includes Category I trauma activations, Category II activations, and trauma consultations managed under ED trauma workflow"
+        "Trauma patient presenting for initial trauma evaluation or resuscitation"
       ],
       "exclusion_criteria": [
         "Non-trauma admissions",
@@ -1310,65 +1018,27 @@
       "requirements": [
         {
           "id": "REQ_TRIGGER_CRITERIA",
-          "description": "Trigger criteria satisfied per protocol definition (textual gates).",
+          "description": "Applicability gate: trauma patient (applies to all trauma patients).",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Applicability Gate met"
+            "protocol_lab_studies_gate"
           ],
           "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Laboratory data",
-            "EMS documentation",
-            "Referring facility records (if transferred)"
+            "TRAUMA_HP", "PHYSICIAN_NOTE", "ED_NOTE"
           ],
-          "failure_consequence": "INDETERMINATE if trigger data missing; NOT_TRIGGERED if criteria not met.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if trauma activation level is not documented | INDETERMINATE if required laboratory studies are not obtained and no exclusion or prior results are documented | INDETERMINATE if age, driver status, or mental status is unclear when screening applies | NOT TRIGGERED only if patient is not a trauma patient"
-        },
-        {
-          "id": "REQ_REQUIRED_DATA_ELEMENTS",
-          "description": "Required data elements present for evaluation and compliance determination.",
-          "requirement_type": "MANDATORY",
-          "trigger_conditions": [
-            "Trauma activation level (Category I vs Category II / consult)",
-            "Anticipated operative intervention status",
-            "Mechanism of injury (including MVC with suspected driver status)",
-            "Patient age",
-            "Mental status assessment",
-            "Documentation of prior laboratory results from referring facility (if applicable)"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "Laboratory data",
-            "EMS documentation",
-            "Referring facility records (if transferred)"
-          ],
-          "failure_consequence": "INDETERMINATE if required data elements are missing.",
+          "failure_consequence": "NOT_TRIGGERED if not a trauma patient.",
           "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Physician notes",
-        "Nursing documentation",
-        "Laboratory data",
-        "EMS documentation",
-        "Referring facility records (if transferred)"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Laboratory data"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "TRANSFER_OF_THE_TRAUMA_PATIENT_TO_DEACONESS_MIDTOWN",
       "name": "Transfer of the Trauma Patient TO Deaconess Midtown",
       "version": "1.0.0",
       "status": "ACTIVE",
-      "protocol_class": "CLASS I",
+      "protocol_class": "CLASS II",
       "evaluation_mode": "CONTEXT_ONLY",
       "owning_service": "Deaconess Regional Trauma Center",
       "inclusion_criteria": [
@@ -1377,26 +1047,15 @@
       ],
       "exclusion_criteria": [],
       "requirements": [],
-      "references": [
-        "Transferring facility physician documentation",
-        "EMS / transport documentation",
-        "Call Center communication records",
-        "Transfer forms and accompanying medical records",
-        "Receiving physician documentation"
-      ],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "references": ["Transferring facility physician documentation", "EMS / transport documentation"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "TRANSFER_OF_THE_TRAUMA_PATIENT_FROM_DEACONESS_MIDTOWN",
       "name": "Transfer of the Trauma Patient FROM Deaconess Midtown",
       "version": "1.0.0",
       "status": "ACTIVE",
-      "protocol_class": "CLASS I",
+      "protocol_class": "CLASS II",
       "evaluation_mode": "CONTEXT_ONLY",
       "owning_service": "Deaconess Regional Trauma Center",
       "inclusion_criteria": [
@@ -1405,20 +1064,8 @@
       ],
       "exclusion_criteria": [],
       "requirements": [],
-      "references": [
-        "Trauma H&P",
-        "Emergency Department physician notes",
-        "Trauma Surgeon documentation",
-        "Specialty consult notes",
-        "EMS / transport documentation",
-        "Call Center / transfer documentation"
-      ],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "MANAGEMENT_AND_TRIAGE_OF_THE_OBSTETRICAL_TRAUMA_PATIENT",
@@ -1439,66 +1086,19 @@
       ],
       "requirements": [
         {
-          "id": "REQ_REQUIRED_DATA_ELEMENTS",
-          "description": "Required data elements present for evaluation and compliance determination.",
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: confirmed pregnancy >= 18 weeks.",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Confirmation of pregnancy",
-            "Estimated gestational age (\u2265 18 weeks)",
-            "Trauma activation status",
-            "Documentation indicating need for fetal heart monitoring",
-            "Documentation of obstetrical involvement or consultation",
-            "Trauma Surgeon assessment and disposition decision"
+            "protocol_ob_gate"
           ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Emergency Department physician notes",
-            "Nursing documentation",
-            "Call Center paging records",
-            "Obstetrical documentation (OB ED physician notes)"
-          ],
-          "failure_consequence": "INDETERMINATE if required data elements are missing.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if gestational age is not documented | INDETERMINATE if need for fetal monitoring or obstetrical involvement cannot be determined | NOT TRIGGERED if patient is pregnant but does not meet any trigger criteria"
-        },
-        {
-          "id": "REQ_TIMING_CRITICAL",
-          "description": "Timing-critical elements met (first-pass placeholder; refine later).",
-          "requirement_type": "CONDITIONAL",
-          "trigger_conditions": [
-            "Immediate Call Center notification to page the OB ED physician when a trauma activation involves a pregnant patient \u2265 18 weeks gestation",
-            "If fetal heart monitoring is required:",
-            "\u2013 Direct call to OB ED physician at 812-842-4149",
-            "\u2013 If no response within 5 minutes, call 812-842-4309",
-            "OB ED physician responsibilities upon notification:",
-            "\u2013 Contact ED for clinical details",
-            "\u2013 Deploy Maternal and Neonatal Team (including Neonatal Transporter)",
-            "\u2013 Notify the patient\u2019s Primary/Service OB Provider",
-            "Trauma Surgeon remains primary decision maker until care is formally relinquished",
-            "If no traumatic admission is required after Trauma Surgeon evaluation:",
-            "\u2013 Patient may be transferred to The Women\u2019s Hospital (TWH) for obstetrical care"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Emergency Department physician notes",
-            "Nursing documentation",
-            "Call Center paging records",
-            "Obstetrical documentation (OB ED physician notes)"
-          ],
-          "failure_consequence": "NON_COMPLIANT if timing-critical elements not met when applicable.",
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "ED_NOTE", "NURSING_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if patient is not pregnant.",
           "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Emergency Department physician notes",
-        "Nursing documentation",
-        "Call Center paging records",
-        "Obstetrical documentation (OB ED physician notes)"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Nursing documentation"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "AUTOPSY_IN_THE_TRAUMA_PATIENT",
@@ -1517,206 +1117,84 @@
       ],
       "requirements": [
         {
-          "id": "REQ_REQUIRED_DATA_ELEMENTS",
-          "description": "Required data elements present for evaluation and compliance determination.",
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: trauma patient death documented.",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Time of death",
-            "Time interval from admission to death",
-            "CT imaging status prior to death",
-            "Operative intervention status prior to death",
-            "Trauma Surgeon determination regarding expected vs unexpected death",
-            "Vanderburgh County Coroner (VCC) disposition",
-            "Organ donor status",
-            "Family consent for autopsy when required"
+            "protocol_death_gate"
           ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Trauma Surgeon documentation",
-            "Nursing documentation",
-            "EMS documentation",
-            "Imaging records",
-            "Operative records",
-            "Vanderburgh County Coroner communication records",
-            "Pathology documentation"
-          ],
-          "failure_consequence": "INDETERMINATE if required data elements are missing.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if: | \u2013 Cause of death cannot be determined from available documentation, or | \u2013 Imaging or operative status prior to death cannot be confirmed, or | \u2013 Coroner disposition is not documented | NOT TRIGGERED if death is expected and clearly attributable to documented injuries or comorbid conditions"
-        },
-        {
-          "id": "REQ_TIMING_CRITICAL",
-          "description": "Timing-critical elements met (first-pass placeholder; refine later).",
-          "requirement_type": "CONDITIONAL",
-          "trigger_conditions": [
-            "Upon identification of an unexpected trauma death:",
-            "\u2013 Trauma Surgeon advises RN that autopsy is requested",
-            "RN must notify Vanderburgh County Coroner (VCC) per Hospital P&P 50-14S",
-            "If patient is a potential organ donor:",
-            "\u2013 RN notifies VCC to coordinate with Indiana Donor Network (IDN)",
-            "If VCC accepts the case:",
-            "\u2013 VCC directs autopsy process",
-            "If VCC declines the case:",
-            "\u2013 RN informs VCC that Trauma Surgeon has requested autopsy",
-            "\u2013 RN notifies Trauma Surgeon of VCC declination",
-            "\u2013 Trauma Surgeon places autopsy order (verbal order acceptable)",
-            "\u2013 Family consent obtained per P&P 50-14S",
-            "\u2013 RN notifies VCC to proceed",
-            "\u2013 Trauma Services PI RN and Pathology are notified",
-            "Autopsy performed by VCC",
-            "Body released to mortuary upon completion"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Trauma Surgeon documentation",
-            "Nursing documentation",
-            "EMS documentation",
-            "Imaging records",
-            "Operative records",
-            "Vanderburgh County Coroner communication records",
-            "Pathology documentation"
-          ],
-          "failure_consequence": "NON_COMPLIANT if timing-critical elements not met when applicable.",
+          "acceptable_evidence": ["PHYSICIAN_NOTE", "NURSING_NOTE", "DISCHARGE"],
+          "failure_consequence": "NOT_TRIGGERED if patient did not die during admission.",
           "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Trauma Surgeon documentation",
-        "Nursing documentation",
-        "EMS documentation",
-        "Imaging records",
-        "Operative records",
-        "Vanderburgh County Coroner communication records",
-        "Pathology documentation"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Nursing documentation"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "REHABILITATIVE_SERVICES_AND_DISCHARGE_PLANNING_FOR_THE_TRAUMA_PATIENT",
       "name": "Rehabilitative Services and Discharge Planning for the Trauma Patient",
       "version": "1.0.0",
       "status": "ACTIVE",
-      "protocol_class": "CLASS I",
+      "protocol_class": "CLASS II",
       "evaluation_mode": "CONTEXT_ONLY",
       "owning_service": "Deaconess Regional Trauma Center",
       "inclusion_criteria": [
-        "Admitted trauma patient requiring inpatient care",
-        "Patient has injuries, precautions, functional limitations, or social factors that may impact mobility, self-care, cognition, or discharge planning"
+        "Admitted trauma patient requiring inpatient care"
       ],
       "exclusion_criteria": [],
       "requirements": [],
-      "references": [
-        "Trauma H&P",
-        "Physician notes",
-        "Nursing documentation",
-        "Physical Therapy documentation",
-        "Occupational Therapy documentation",
-        "Speech Therapy documentation",
-        "Physiatry documentation (if consulted)",
-        "Social Work documentation",
-        "Case Management documentation",
-        "Timing Expectations (Operational, Not Evaluative):",
-        "Rehabilitation assessment ideally within 48 hours of admission when indicated",
-        "Therapy consults placed once activity is approved",
-        "Social Work and Case Management engaged early for discharge planning"
-      ],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Physical Therapy documentation"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "TRAUMA_SURGEON_CONSULT",
       "name": "Trauma Surgeon Consult",
       "version": "1.0.0",
       "status": "ACTIVE",
-      "protocol_class": "CLASS I",
+      "protocol_class": "CLASS II",
       "evaluation_mode": "CONTEXT_ONLY",
       "owning_service": "Deaconess Regional Trauma Center",
       "inclusion_criteria": [
         "Injured patient with a traumatic mechanism",
-        "Patient does NOT meet Category I or Category II trauma activation criteria",
-        "Trauma Surgeon expertise is requested or provided via telephone consultation and/or in-person evaluation"
+        "Patient does NOT meet Category I or Category II trauma activation criteria"
       ],
       "exclusion_criteria": [],
       "requirements": [],
-      "references": [
-        "Emergency Department physician notes",
-        "Admitting physician documentation",
-        "Trauma Surgeon documentation",
-        "Nursing documentation",
-        "EPIC consult order (IP Consult to Trauma Services)",
-        "ESA Call Center or answering service records"
-      ],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "references": ["Emergency Department physician notes", "Trauma Surgeon documentation"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "RESUSCITATION_ROLE_ASSIGNMENTS",
       "name": "Resuscitation Role Assignments",
       "version": "1.0.0",
       "status": "ACTIVE",
-      "protocol_class": "CLASS I",
+      "protocol_class": "CLASS II",
       "evaluation_mode": "CONTEXT_ONLY",
       "owning_service": "Deaconess Regional Trauma Center",
       "inclusion_criteria": [
-        "Activated trauma resuscitation in the Emergency Department",
-        "Applies to Category I and Category II trauma activations only"
+        "Activated trauma resuscitation in the Emergency Department"
       ],
       "exclusion_criteria": [],
       "requirements": [],
-      "references": [
-        "Trauma H&P",
-        "Emergency Department physician notes",
-        "Nursing documentation",
-        "Trauma Flowsheet",
-        "Trauma Activation board",
-        "Call Center / paging records"
-      ],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Emergency Department physician notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "SPECIAL_CONSIDERATION_FOR_THE_MANAGEMENT_OF_THE_PEDIATRIC_TRAUMA_PATIENT",
       "name": "Special Consideration for the Management of the Pediatric Trauma Patient",
       "version": "1.0.0",
       "status": "ACTIVE",
-      "protocol_class": "CLASS I",
+      "protocol_class": "CLASS II",
       "evaluation_mode": "CONTEXT_ONLY",
       "owning_service": "Deaconess Regional Trauma Center",
       "inclusion_criteria": [
-        "Trauma patient \u2264 14 years of age",
-        "Patient has sustained or is suspected to have sustained a traumatic injury"
+        "Trauma patient \u2264 14 years of age"
       ],
       "exclusion_criteria": [],
       "requirements": [],
-      "references": [
-        "Trauma H&P",
-        "Emergency Department physician notes",
-        "Nursing documentation",
-        "Pediatric Intensivist consultation documentation",
-        "Imaging reports",
-        "Transfer documentation (if applicable)"
-      ],
-      "notes": {
-        "extraction_warnings": [
-          "Missing Trigger Criteria"
-        ],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Emergency Department physician notes"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "NONACCIDENTAL_TRAUMA_NAT_IN_THE_PEDIATRIC_PATIENT",
@@ -1736,167 +1214,19 @@
       ],
       "requirements": [
         {
-          "id": "REQ_REQUIRED_DATA_ELEMENTS",
-          "description": "Required data elements present for evaluation and compliance determination.",
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: pediatric patient (age <= 14).",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Patient age",
-            "Injury history and identity of historian",
-            "Developmental age assessment",
-            "Complete head-to-toe physical examination",
-            "Imaging results (neuroimaging, skeletal survey, abdominal imaging as indicated)",
-            "Laboratory studies (CBC, CMP, coagulation studies, etc.)",
-            "Social Work consultation documentation",
-            "CPS and law enforcement notification documentation when indicated"
+            "age:<=:14"
           ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Emergency Department physician notes",
-            "Nursing documentation",
-            "Imaging reports",
-            "Laboratory data",
-            "Social Work documentation",
-            "Pediatric Intensivist documentation",
-            "Ophthalmology documentation (if obtained)"
-          ],
-          "failure_consequence": "INDETERMINATE if required data elements are missing.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if history, examination, or imaging is incomplete | INDETERMINATE if Social Work or CPS involvement is not documented | NOT TRIGGERED if no suspicion indicators are identified after complete evaluation"
-        },
-        {
-          "id": "REQ_TIMING_CRITICAL",
-          "description": "Timing-critical elements met (first-pass placeholder; refine later).",
-          "requirement_type": "CONDITIONAL",
-          "trigger_conditions": [
-            "Immediate Social Work consultation upon suspicion of NAT",
-            "CPS and law enforcement notification per policy",
-            "Neuroimaging:",
-            "\u2013 Infants < 12 months: CT or MRI regardless of neurologic findings",
-            "\u2013 Children \u2265 12 months: CT if altered mental status or neurologic signs",
-            "Skeletal survey:",
-            "\u2013 All children < 3 years",
-            "\u2013 Follow-up survey at ~2 weeks when indicated",
-            "Ophthalmology evaluation obtained promptly when indicated",
-            "Medical photography performed as early as possible",
-            "Admission required for:",
-            "\u2013 Identified traumatic injury",
-            "\u2013 Ongoing NAT evaluation",
-            "\u2013 Safety concerns or CPS disagreement"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Emergency Department physician notes",
-            "Nursing documentation",
-            "Imaging reports",
-            "Laboratory data",
-            "Social Work documentation",
-            "Pediatric Intensivist documentation",
-            "Ophthalmology documentation (if obtained)"
-          ],
-          "failure_consequence": "NON_COMPLIANT if timing-critical elements not met when applicable.",
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if patient age > 14.",
           "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Emergency Department physician notes",
-        "Nursing documentation",
-        "Imaging reports",
-        "Laboratory data",
-        "Social Work documentation",
-        "Pediatric Intensivist documentation",
-        "Ophthalmology documentation (if obtained)"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
-    },
-    {
-      "protocol_id": "ROLE_OF_TRAUMA_SERVICES_IN_THE_ADMISSION_OR_CONSULTATION_OF_TRAUMA_PATIENTS",
-      "name": "Role of Trauma Services in the Admission or Consultation of Trauma Patients",
-      "version": "1.0.0",
-      "status": "ACTIVE",
-      "protocol_class": "CLASS I",
-      "evaluation_mode": "EVALUABLE",
-      "owning_service": "Deaconess Regional Trauma Center",
-      "inclusion_criteria": [
-        "Injured patient presenting to Deaconess Midtown Hospital",
-        "Patient requires a determination regarding Trauma Services admission versus Trauma Surgeon consultation"
-      ],
-      "exclusion_criteria": [
-        "Non-trauma admissions",
-        "Medical patients without injury related to a traumatic mechanism"
-      ],
-      "requirements": [
-        {
-          "id": "REQ_REQUIRED_DATA_ELEMENTS",
-          "description": "Required data elements present for evaluation and compliance determination.",
-          "requirement_type": "MANDATORY",
-          "trigger_conditions": [
-            "Trauma activation level (Category I, Category II, or none)",
-            "Patient age",
-            "Pregnancy status when applicable",
-            "Determination of Trauma Services admission versus consultation",
-            "Admission service and Trauma Center admission type (when applicable)",
-            "Documentation of Trauma Surgeon notification",
-            "Documentation of Trauma Surgeon response time",
-            "Physician-to-physician communication documentation for direct admissions",
-            "Documentation of Trauma Services sign-off and transfer of care (when applicable)"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Emergency Department physician notes",
-            "Trauma Surgeon documentation",
-            "Nursing documentation",
-            "EPIC consult order (IP Consult to Trauma Services)",
-            "ESA Call Center documentation"
-          ],
-          "failure_consequence": "INDETERMINATE if required data elements are missing.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if trauma activation level is not documented | INDETERMINATE if admission service or consultation timing is unclear | INDETERMINATE if Trauma Surgeon notification or response is not documented | NOT TRIGGERED if no traumatic injury is identified"
-        },
-        {
-          "id": "REQ_TIMING_CRITICAL",
-          "description": "Timing-critical elements met (first-pass placeholder; refine later).",
-          "requirement_type": "CONDITIONAL",
-          "trigger_conditions": [
-            "Category I and Category II activations:",
-            "\u2013 Trauma Services admission when inpatient admission is required",
-            "Trauma Surgeon consultation (non-activation):",
-            "\u2013 Phone call to ESA Call Center required",
-            "\u2013 EPIC consult order required",
-            "\u2013 ICU patient: Trauma Surgeon assessment within 1 hour of notification",
-            "\u2013 Non-ICU patient: Trauma Surgeon assessment within 6 hours of notification",
-            "Direct admissions:",
-            "\u2013 Injuries < 24 hours old should be admitted through the Emergency Department",
-            "\u2013 If bypassing the ED, the Admitting Physician must consult Trauma Services and speak directly with the Trauma Surgeon",
-            "Trauma Services sign-off:",
-            "\u2013 Trauma Surgeon must document transfer of care and identify receiving service",
-            "\u2013 Order placed if receiving service is not already involved"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Emergency Department physician notes",
-            "Trauma Surgeon documentation",
-            "Nursing documentation",
-            "EPIC consult order (IP Consult to Trauma Services)",
-            "ESA Call Center documentation"
-          ],
-          "failure_consequence": "NON_COMPLIANT if timing-critical elements not met when applicable.",
-          "notes": null
-        }
-      ],
-      "references": [
-        "Trauma H&P",
-        "Emergency Department physician notes",
-        "Trauma Surgeon documentation",
-        "Nursing documentation",
-        "EPIC consult order (IP Consult to Trauma Services)",
-        "ESA Call Center documentation"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Social Work documentation"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {
       "protocol_id": "MANAGEMENT_OF_TRANSMEDIASTINAL_GUNSHOT_WOUNDS",
@@ -1908,7 +1238,7 @@
       "owning_service": "Deaconess Regional Trauma Center",
       "inclusion_criteria": [
         "Trauma patient with penetrating gunshot wound",
-        "Trajectory suggests possible transmediastinal involvement (heart, great vessels, pulmonary hilar structures, tracheobronchial tree, or esophagus)"
+        "Trajectory suggests possible transmediastinal involvement"
       ],
       "exclusion_criteria": [
         "Penetrating injuries without mediastinal trajectory",
@@ -1916,77 +1246,19 @@
       ],
       "requirements": [
         {
-          "id": "REQ_REQUIRED_DATA_ELEMENTS",
-          "description": "Required data elements present for evaluation and compliance determination.",
+          "id": "REQ_TRIGGER_CRITERIA",
+          "description": "Applicability gate: gunshot wound documented.",
           "requirement_type": "MANDATORY",
           "trigger_conditions": [
-            "Mechanism confirming gunshot wound",
-            "Entry and exit wound locations (if present)",
-            "Determination of suspected transmediastinal trajectory",
-            "Presence or absence of cardiac arrest",
-            "Presence or absence of witnessed signs of life",
-            "Hemodynamic status (SBP, heart rate)",
-            "Chest imaging results (portable chest x-ray; CT chest with contrast when stable)",
-            "Findings suggesting pneumothorax, hemothorax, mediastinal widening, pericardial effusion, or pulse differential",
-            "Documentation of esophageal imaging when non-operative management is pursued"
+            "protocol_gsw_transmed_gate"
           ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "EMS documentation",
-            "Imaging reports (chest x-ray, CT chest with contrast)",
-            "Operative notes (if performed)"
-          ],
-          "failure_consequence": "INDETERMINATE if required data elements are missing.",
-          "notes": "Failure behavior (protocol text): INDETERMINATE if trajectory cannot be determined | INDETERMINATE if witnessed signs-of-life status is unclear in cardiac arrest | INDETERMINATE if hemodynamic status is not documented | NOT TRIGGERED if gunshot wound does not suggest mediastinal traversal"
-        },
-        {
-          "id": "REQ_TIMING_CRITICAL",
-          "description": "Timing-critical elements met (first-pass placeholder; refine later).",
-          "requirement_type": "CONDITIONAL",
-          "trigger_conditions": [
-            "Cardiac arrest with witnessed signs of life:",
-            "\u2013 Immediate emergent thoracotomy",
-            "\u2013 Consider right-sided thoracotomy for right-sided entry without exit; clamshell extension permitted",
-            "Hemodynamic instability:",
-            "\u2013 Immediate ATLS-directed resuscitation",
-            "\u2013 Large-bore IV access (one above and one below the diaphragm)",
-            "\u2013 Chest tube placement on side of entry wound",
-            "\u2013 Consider tension pneumothorax and pericardial tamponade",
-            "\u2013 Activate Massive Transfusion Protocol (MTP) and administer TXA as appropriate",
-            "Hemodynamically stable patients:",
-            "\u2013 Rapid diagnostic evaluation including chest x-ray",
-            "\u2013 CT chest with contrast when stable",
-            "\u2013 If mediastinal widening, supramediastinal enlargement, or radial pulse differential present \u2192 consider angiography",
-            "\u2013 Non-operatively managed patients require esophageal imaging (e.g., water-soluble swallow study)",
-            "All non-operatively managed patients:",
-            "\u2013 Admission required with follow-up imaging"
-          ],
-          "acceptable_evidence": [
-            "Trauma H&P",
-            "Physician notes",
-            "Nursing documentation",
-            "EMS documentation",
-            "Imaging reports (chest x-ray, CT chest with contrast)",
-            "Operative notes (if performed)"
-          ],
-          "failure_consequence": "NON_COMPLIANT if timing-critical elements not met when applicable.",
+          "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "ED_NOTE"],
+          "failure_consequence": "NOT_TRIGGERED if no gunshot wound documented.",
           "notes": null
         }
       ],
-      "references": [
-        "Trauma H&P",
-        "Physician notes",
-        "Nursing documentation",
-        "EMS documentation",
-        "Imaging reports (chest x-ray, CT chest with contrast)",
-        "Operative notes (if performed)"
-      ],
-      "notes": {
-        "extraction_warnings": [],
-        "raw_block_preserved": true
-      }
+      "references": ["Trauma H&P", "Physician notes", "Imaging reports"],
+      "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     }
   ]
 }

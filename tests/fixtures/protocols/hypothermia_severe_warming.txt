@@ -1,0 +1,32 @@
+PATIENT_ID: TEST_HYPO_EDGE_001
+ARRIVAL_TIME: 2026-01-21 01:00:00
+
+[TRAUMA_HP] 2026-01-21 01:05:00
+Category I trauma activation for 28-year-old male found down in snow.
+Mechanism: assault with blunt weapon followed by prolonged cold exposure.
+Patient found unresponsive in below-freezing conditions.
+BP 70/40, HR 45, RR 8.
+temp 28.5C.
+Severe hypothermia. Cardiopulmonary resuscitation initiated.
+Temperature measured within 5 minutes of arrival.
+
+[NURSING_NOTE] 2026-01-21 01:15:00
+Active warming initiated: Bair Hugger, warm IV fluids, warmed humidified oxygen.
+Repeat temperature at 01:15: 29.2C.
+
+[NURSING_NOTE] 2026-01-21 01:30:00
+Serial temperature recheck: 30.1C at 01:30.
+Warming measures continued aggressively.
+Trauma surgeon notified of temperature 28.5C on arrival - severe hypothermia.
+
+[NURSING_NOTE] 2026-01-21 02:00:00
+Temperature at 02:00: 32.4C.
+Patient regaining consciousness. Heart rate improving to 62.
+
+[NURSING_NOTE] 2026-01-21 02:30:00
+Repeat temperature at 02:30: 34.1C.
+Warming continued. Patient responsive to commands.
+
+[PHYSICIAN_NOTE] 2026-01-21 03:00:00
+Temperature now 35.5C. Patient stable and responsive.
+Hypothermia protocol followed. Serial temperatures documented per protocol.

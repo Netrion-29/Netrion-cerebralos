@@ -1,0 +1,28 @@
+PATIENT_ID: TEST_RIB2_001
+ARRIVAL_TIME: 2026-02-10 09:00:00
+
+[TRAUMA_HP] 2026-02-10 09:10:00
+Category II activation for 58-year-old male. Fall from ladder approximately
+10 feet. Impact to left chest wall. Left-sided chest pain.
+BP 128/76, HR 92, RR 24, GCS 15.
+Respiratory rate elevated at 24. Splinting with respirations.
+Pain assessment: 8/10 left chest wall.
+
+[IMAGING] 2026-02-10 09:30:00
+CT chest: 5 left-sided rib fractures (ribs 4 through 8).
+Rib fracture count: 5. Small left-sided pneumothorax.
+No flail segment identified.
+
+[NURSING_NOTE] 2026-02-10 09:45:00
+Pain score documented at 8/10. Pain management initiated.
+Incentive spirometry initiated. Spirometry: 750 mL baseline.
+Incentive spirometry goal set. Patient using device hourly.
+Respiratory rate monitored: RR 22. Cough clearance assessed: poor.
+Secretion clearance inadequate.
+
+[PHYSICIAN_NOTE] 2026-02-10 10:00:00
+5 rib fractures confirmed. Pain control plan initiated with
+multimodal analgesia including regional anesthesia consultation.
+Spirometry tracking initiated. Respiratory status monitored.
+Cough assessment: weak productive cough. Pulmonary toilet ongoing.
+Admitted for rib fracture management per protocol.

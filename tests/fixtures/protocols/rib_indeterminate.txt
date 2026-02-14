@@ -1,0 +1,15 @@
+PATIENT_ID: TEST_RIB_003
+ARRIVAL_TIME: 2026-01-21 14:00:00
+
+[TRAUMA_HP] 2026-01-21 14:15:00
+Category II trauma activation for 68-year-old male after ground-level fall.
+BP 140/85, HR 78, RR 22, GCS 15.
+Tenderness over right lateral chest wall.
+
+[IMAGING] 2026-01-21 14:45:00
+CT Chest: Fractures of right ribs 6 and 7 confirmed on imaging.
+No pneumothorax. No hemothorax.
+
+[PHYSICIAN_NOTE] 2026-01-21 15:00:00
+Rib fractures confirmed. Admit for pain management and monitoring.
+Will order incentive spirometry and formal pain assessment upon floor admission.

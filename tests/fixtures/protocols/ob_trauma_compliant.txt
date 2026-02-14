@@ -1,0 +1,25 @@
+PATIENT_ID: TEST_OB_001
+ARRIVAL_TIME: 2026-01-24 09:00:00
+
+[TRAUMA_HP] 2026-01-24 09:10:00
+Category I activation for 28-year-old female, restrained driver in MVC.
+Pregnant with gestational age 32 weeks. G2P1. Pregnancy confirmed.
+Trauma activation for pregnant trauma patient.
+BP 110/70, HR 100, RR 18, GCS 15.
+
+[NURSING_NOTE] 2026-01-24 09:20:00
+Fetal heart tones assessed. FHR 140, reactive.
+Continuous fetal monitoring initiated per protocol.
+OB ED physician paged by Call Center immediately upon arrival.
+
+[CONSULT_NOTE] 2026-01-24 09:35:00
+OB consultation obtained. Obstetrics notified and responded.
+Maternal and Neonatal Team deployed. Neonatal Transporter on standby.
+Primary OB provider notified.
+Estimated gestational age confirmed at 32 weeks.
+
+[PHYSICIAN_NOTE] 2026-01-24 09:50:00
+Trauma Surgeon assessment completed. Disposition decision made.
+No traumatic injury requiring surgical intervention.
+Patient hemodynamically stable. Transfer to Women's Hospital for continued
+obstetrical monitoring per trauma surgeon recommendation.

@@ -1,0 +1,22 @@
+PATIENT_ID: TEST_DVT_001
+ARRIVAL_TIME: 2026-01-15 08:30:00
+
+[PHYSICIAN_NOTE] 2026-01-15 10:00:00
+Patient admitted for chest pain. Developed left leg swelling and pain on hospital day 2.
+
+[IMAGING] 2026-01-17 14:30:00
+VENOUS DUPLEX LEFT LOWER EXTREMITY
+
+FINDINGS:
+Acute deep vein thrombosis involving the left popliteal and femoral veins.
+Echogenic thrombus with incomplete compressibility.
+
+IMPRESSION:
+Acute DVT left lower extremity.
+
+[PHYSICIAN_NOTE] 2026-01-17 15:00:00
+Patient diagnosed with acute DVT left leg. Started on anticoagulation with heparin drip.
+DVT developed during hospitalization, not present on arrival per nursing notes.
+
+[LAB] 2026-01-17 15:30:00
+D-dimer: 3500 ng/mL (elevated)

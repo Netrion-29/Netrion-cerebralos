@@ -1,0 +1,11 @@
+PATIENT_ID: TEST_RIB_EDGE_001
+ARRIVAL_TIME: 2026-01-21 06:00:00
+
+[TRAUMA_HP] 2026-01-21 06:10:00
+Trauma activation. Male patient.
+Left chest pain after fall.
+BP 128/76, HR 90, RR 24.
+
+[IMAGING] 2026-01-21 06:40:00
+CT Chest: Single left rib fracture, rib 8.
+No pneumothorax.

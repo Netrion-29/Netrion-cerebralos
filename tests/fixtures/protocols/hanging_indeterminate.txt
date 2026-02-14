@@ -1,0 +1,18 @@
+PATIENT_ID: TEST_HANG_003
+ARRIVAL_TIME: 2026-01-22 18:00:00
+
+[TRAUMA_HP] 2026-01-22 18:10:00
+Category I activation for 19-year-old female found unresponsive in closet.
+Ligature mark on neck consistent with hanging mechanism.
+Near-hanging confirmed. Strangulation by cord.
+BP 90/50, HR 130, RR 8, SpO2 78%, GCS 3.
+Intubated in field by EMS. Airway secured.
+
+[NURSING_NOTE] 2026-01-22 18:15:00
+Petechiae present above neck. Ligature mark circumferential.
+No imaging has been obtained yet. Patient hemodynamically unstable.
+
+[PHYSICIAN_NOTE] 2026-01-22 18:45:00
+Patient remains critical. Resuscitation ongoing.
+No CT imaging obtained due to hemodynamic instability.
+No assessment for anoxic brain injury documented.

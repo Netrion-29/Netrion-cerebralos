@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_MSK_002
+ARRIVAL_TIME: 2026-02-17 12:00:00
+
+[TRAUMA_HP] 2026-02-17 12:10:00
+Category III activation for 55-year-old female. Ground-level fall.
+Isolated left wrist injury. Minor mechanism.
+BP 134/82, HR 70, RR 14, GCS 15.
+Hemodynamically stable throughout evaluation.
+
+[IMAGING] 2026-02-17 12:30:00
+Left wrist x-ray: distal radius fracture, nondisplaced.
+No other injuries identified on survey.
+
+[PHYSICIAN_NOTE] 2026-02-17 12:50:00
+Isolated distal radius fracture. Splinted and discharged.
+No surgical urgency. Outpatient follow-up arranged.

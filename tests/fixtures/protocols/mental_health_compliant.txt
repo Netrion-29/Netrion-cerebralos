@@ -1,0 +1,21 @@
+PATIENT_ID: TEST_MENTAL_HEALTH_001
+ARRIVAL_TIME: 2026-02-16 14:00:00
+
+[TRAUMA_HP] 2026-02-16 14:10:00
+Category I activation for 32-year-old male. Intentional gunshot wound to abdomen.
+Assault victim. Trauma admission. Age 32.
+Intentional violent mechanism confirmed. Assaulted by known individual.
+BP 88/52, HR 128, RR 24, GCS 14.
+
+[NURSING_NOTE] 2026-02-16 14:30:00
+Patient alert and able to participate in assessment.
+Cognitive status: oriented, able to communicate clearly.
+Patient reports another person at scene died from same event.
+Fatality at scene documented per EMS report.
+
+[PHYSICIAN_NOTE] 2026-02-16 16:00:00
+Exploratory laparotomy performed. Bowel injuries repaired.
+Post-operative: hemodynamically stable.
+No spinal cord injury. No amputation.
+Mental health screening initiated during inpatient admission.
+Spiritual care consult placed. Psychosocial screening completed.

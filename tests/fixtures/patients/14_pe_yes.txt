@@ -1,0 +1,23 @@
+PATIENT_ID: TEST_PE_001
+ARRIVAL_TIME: 2026-02-01 09:00:00
+
+[PHYSICIAN_NOTE] 2026-02-01 09:30:00
+Patient admitted for hip fracture repair. Post-op day 2, developed acute shortness of breath and tachycardia.
+
+[IMAGING] 2026-02-03 14:00:00
+CT PULMONARY ANGIOGRAM (CTPA)
+
+FINDINGS:
+Filling defects consistent with acute pulmonary emboli in the right lower lobe segmental arteries.
+Right heart strain noted.
+
+IMPRESSION:
+Acute pulmonary embolism, right lower lobe.
+
+[PHYSICIAN_NOTE] 2026-02-03 15:00:00
+Acute PE diagnosed. Developed postoperatively during hospitalization.
+Started on therapeutic anticoagulation immediately.
+
+[LAB] 2026-02-03 14:30:00
+D-dimer: 4200 ng/mL (markedly elevated)
+Troponin: 0.08 ng/mL (mildly elevated, consistent with RV strain)

@@ -1,0 +1,8 @@
+PATIENT_ID: TEST_PEN_CHEST_003
+ARRIVAL_TIME: 2026-01-22 03:00:00
+
+[TRAUMA_HP] 2026-01-22 03:05:00
+Category I trauma activation for 28-year-old male, stab wound to left chest.
+Penetrating thoracic injury at 5th intercostal space, mid-axillary line.
+BP 100/65, HR 115, RR 26.
+Patient alert and speaking. Signs of life present.

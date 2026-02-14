@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_BCVI_002
+ARRIVAL_TIME: 2026-02-04 14:00:00
+
+[TRAUMA_HP] 2026-02-04 14:10:00
+Category III activation for 55-year-old female with isolated ankle injury
+after twisting mechanism on stairs. No head or torso involvement.
+BP 126/78, HR 74, RR 14, GCS 15.
+Alert and oriented. No complaints of dizziness or visual changes.
+
+[IMAGING] 2026-02-04 14:30:00
+Right ankle x-ray: lateral malleolus fracture, nondisplaced.
+No other imaging obtained.
+
+[PHYSICIAN_NOTE] 2026-02-04 14:50:00
+Isolated ankle fracture. Splinted. Orthopedic follow-up arranged.
+Discharged in stable condition.

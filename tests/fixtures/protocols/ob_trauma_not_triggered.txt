@@ -1,0 +1,10 @@
+PATIENT_ID: TEST_OB_002
+ARRIVAL_TIME: 2026-01-24 14:00:00
+
+[TRAUMA_HP] 2026-01-24 14:10:00
+Category II activation for 35-year-old male, bicycle vs pedestrian.
+Right ankle deformity. BP 132/80, HR 82, RR 16, GCS 15.
+
+[PHYSICIAN_NOTE] 2026-01-24 14:30:00
+Right ankle fracture confirmed on imaging.
+Splint applied. Orthopedic follow-up arranged. Discharge from ED.

@@ -1,0 +1,19 @@
+PATIENT_ID: TEST_DVT_ADULT_001
+ARRIVAL_TIME: 2026-02-11 08:00:00
+
+[TRAUMA_HP] 2026-02-11 08:10:00
+Category I trauma activation for 45-year-old male. MVC with multiple injuries.
+Trauma admission confirmed. Age 45.
+BP 108/68, HR 102, RR 20, GCS 15.
+No active bleeding on arrival. Bleeding status: controlled.
+Coagulation studies normal. INR 1.1. No prior anticoagulation.
+No intracranial hemorrhage suspected.
+
+[NURSING_NOTE] 2026-02-11 08:30:00
+Admitted to surgical ICU. Length of stay anticipated > 24 hours. Admitted.
+No planned surgery within 24 hours. No operative plan currently.
+
+[PHYSICIAN_NOTE] 2026-02-11 20:00:00
+DVT prophylaxis initiated. Enoxaparin 40 mg started at 12 hours post-arrival.
+Chemical DVT prophylaxis ordered per protocol.
+LOS > 24 hours confirmed. No contraindications to chemical prophylaxis.

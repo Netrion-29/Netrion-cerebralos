@@ -1,0 +1,13 @@
+PATIENT_ID: TEST_SPINAL_002
+ARRIVAL_TIME: 2026-02-19 15:00:00
+
+[TRAUMA_HP] 2026-02-19 15:10:00
+Category III activation for 45-year-old female. Isolated wrist injury
+after catching herself during a slip on wet floor. No axial loading.
+BP 128/78, HR 72, RR 14, GCS 15.
+Full range of motion. No tenderness to palpation on exam.
+Neurologically intact. Moving all extremities normally.
+
+[PHYSICIAN_NOTE] 2026-02-19 15:40:00
+Isolated left wrist contusion. No osseous injury on x-ray.
+Discharged with analgesics and follow-up instructions.

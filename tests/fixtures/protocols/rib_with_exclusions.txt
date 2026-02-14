@@ -1,0 +1,20 @@
+PATIENT_ID: TEST_RIB_EDGE_001
+ARRIVAL_TIME: 2026-01-21 16:00:00
+
+[TRAUMA_HP] 2026-01-21 16:10:00
+Category I trauma activation for 72-year-old male, pedestrian struck.
+BP 80/50, HR 140, RR 30, GCS 6.
+Active hemorrhage. Massive transfusion protocol activated.
+Severe traumatic brain injury with GCS 6.
+Rib fractures palpated on left chest wall.
+
+[IMAGING] 2026-01-21 16:30:00
+CT Chest/Abdomen/Pelvis: Fractures of left ribs 3, 4, 5, 6, 7.
+Left hemothorax. Splenic laceration grade IV.
+CT Head: Subdural hematoma with midline shift.
+
+[NURSING_NOTE] 2026-01-21 16:45:00
+Patient in hemorrhagic shock. Active resuscitation ongoing.
+Respiratory rate 30 breaths per minute.
+No incentive spirometry possible due to clinical status.
+Pain assessment: unable to assess, patient intubated and sedated.

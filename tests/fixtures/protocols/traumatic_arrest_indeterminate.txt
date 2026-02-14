@@ -1,0 +1,15 @@
+PATIENT_ID: TEST_TRAUMATIC_ARREST_003
+ARRIVAL_TIME: 2026-02-06 16:00:00
+
+[TRAUMA_HP] 2026-02-06 16:05:00
+Category I activation for 19-year-old male. Traumatic cardiac arrest.
+Found unresponsive after motorcycle collision. No pulse on arrival.
+Blunt trauma mechanism confirmed.
+
+[PHYSICIAN_NOTE] 2026-02-06 16:15:00
+Patient in traumatic arrest on arrival.
+EMS report not available. Pre-hospital data not provided.
+No field provider handoff documented.
+No rhythm strip attached to chart.
+No documentation of any procedures performed in field or on arrival.
+Team assembled. Evaluation pending complete clinical assessment.

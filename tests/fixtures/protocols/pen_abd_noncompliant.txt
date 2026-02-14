@@ -1,0 +1,19 @@
+PATIENT_ID: TEST_PEN_ABD_NC_001
+ARRIVAL_TIME: 2026-02-28 18:00:00
+
+[TRAUMA_HP] 2026-02-28 18:05:00
+Category I activation for 26-year-old male with penetrating abdominal injury.
+GSW to anterior abdomen. Hemodynamic instability on arrival.
+BP 76/42, HR 148, RR 30, GCS 14.
+Entry wound anterior abdominal wall. Peritoneal signs on exam.
+Wound location in left lower abdominal quadrant.
+
+[IMAGING] 2026-02-28 18:10:00
+No CT obtained. No FAST performed. Patient taken directly to OR.
+Operating room without imaging. No CT or FAST before surgery.
+Taken to OR without imaging evaluation.
+
+[OPERATIVE_NOTE] 2026-02-28 18:20:00
+Emergent laparotomy performed. Operative decision made.
+Bowel injuries identified and repaired.
+No pre-operative imaging obtained.

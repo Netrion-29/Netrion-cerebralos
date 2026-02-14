@@ -1,0 +1,14 @@
+PATIENT_ID: TEST_BLOOD_003
+ARRIVAL_TIME: 2026-01-23 22:00:00
+
+[TRAUMA_HP] 2026-01-23 22:10:00
+Category I activation for 35-year-old male, gunshot wound to abdomen.
+Hemorrhagic shock present. BP 80/50, HR 135, RR 28.
+Blood transfusion initiated. PRBCs and FFP given.
+Packed red blood cells administered via rapid infuser.
+
+[PHYSICIAN_NOTE] 2026-01-23 22:40:00
+Patient taken to OR emergently.
+No type and cross documentation found.
+No MTP documentation or blood bank notification recorded.
+No laboratory data obtained prior to OR.

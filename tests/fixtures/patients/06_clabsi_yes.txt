@@ -1,0 +1,17 @@
+PATIENT_ID: TEST_CLABSI_001
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[NURSING_NOTE] 2026-01-15 10:00:00
+Central venous catheter in place, right subclavian.
+CVL site clean and dry, no erythema.
+
+[LAB] 2026-01-19 08:00:00
+Blood culture positive for S. aureus.
+Bacteremia confirmed from peripheral draw.
+
+[PHYSICIAN_NOTE] 2026-01-19 10:00:00
+Patient febrile, temperature 39.1 C.
+Chills and rigors noted.
+Suspected central line-associated bloodstream infection.
+Blood culture positive, central line in place.
+Hypotension noted, blood pressure 85/52.

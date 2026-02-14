@@ -1,0 +1,15 @@
+PATIENT_ID: TEST_SPINAL_003
+ARRIVAL_TIME: 2026-02-19 20:00:00
+
+[TRAUMA_HP] 2026-02-19 20:10:00
+Category I activation for 22-year-old male. Blunt trauma from fall from height.
+Blunt mechanism confirmed. Back pain reported by patient.
+GCS 14. BP 108/68, HR 98, RR 20.
+
+[PHYSICIAN_NOTE] 2026-02-19 20:30:00
+Patient reports back pain. Unable to perform complete exam.
+No documented spine examination performed.
+No neurologic exam documented.
+No motor or sensory assessment completed.
+No imaging obtained of thoracolumbar spine.
+Patient too agitated for full evaluation. Pending re-assessment.

@@ -1,0 +1,17 @@
+PATIENT_ID: TEST_AKI_001
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[PHYSICIAN_NOTE] 2026-01-16 06:00:00
+Assessment: Patient developed acute kidney injury during hospitalization.
+AKI stage 3 diagnosed on hospital day 2.
+Creatinine rose to 4.8, greater than 3x baseline.
+Initiation of hemodialysis planned.
+
+[LAB] 2026-01-16 05:30:00
+Creatinine: 4.8 mg/dL (baseline 1.2)
+BUN: 62 mg/dL
+
+[PHYSICIAN_NOTE] 2026-01-16 14:00:00
+Renal replacement therapy initiated today.
+Started on continuous veno-venous hemofiltration.
+Oliguria noted with minimal urine output over past 12 hours.

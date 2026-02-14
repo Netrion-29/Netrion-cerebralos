@@ -1,0 +1,19 @@
+PATIENT_ID: TEST_TBI_EDGE_002
+ARRIVAL_TIME: 2026-01-21 12:00:00
+
+[TRAUMA_HP] 2026-01-21 12:10:00
+Category I trauma activation for 50-year-old female, fall from height (20 feet).
+Suspected traumatic brain injury.
+Primary survey: BP 110/70, HR 95, RR 18, GCS 12.
+Patient with scalp laceration and left pupil dilated.
+GCS assessed after adequate cardiopulmonary resuscitation: GCS 12.
+
+[TRAUMA_HP] 2026-01-21 12:45:00
+ADDENDUM to trauma H&P.
+Repeat GCS assessment: GCS 9. Patient deteriorating.
+Right pupil now also dilated. GCS reassessment after resuscitation shows decline.
+CT head shows bilateral subdural hematomas.
+
+[PHYSICIAN_NOTE] 2026-01-21 13:00:00
+Two H&P notes documented. GCS assessed post-resuscitation in both.
+GCS trending down from 12 to 9. Neurosurgery emergently consulted.

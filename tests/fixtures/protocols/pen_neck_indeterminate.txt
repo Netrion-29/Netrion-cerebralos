@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_PEN_NECK_003
+ARRIVAL_TIME: 2026-02-02 22:00:00
+
+[TRAUMA_HP] 2026-02-02 22:10:00
+Category I activation for 31-year-old male with penetrating neck wound.
+GSW to lateral neck. Wound to right side of neck.
+GCS 14. Patient agitated.
+
+[PHYSICIAN_NOTE] 2026-02-02 22:30:00
+Wound to right lateral neck noted.
+No documentation of platysma integrity.
+No platysma examination performed.
+No zone classification documented.
+No hemodynamic documentation.
+No imaging obtained.
+Patient taken for further assessment.

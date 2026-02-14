@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_PEN_NECK_002
+ARRIVAL_TIME: 2026-02-02 10:00:00
+
+[TRAUMA_HP] 2026-02-02 10:10:00
+Category III activation for 52-year-old female. Ground-level fall.
+Isolated right wrist deformity. No head or torso involvement.
+BP 138/86, HR 72, RR 14, GCS 15.
+No external wounds. No lacerations identified.
+
+[IMAGING] 2026-02-02 10:30:00
+Right wrist x-ray: distal radius fracture, nondisplaced.
+No other injuries identified.
+
+[PHYSICIAN_NOTE] 2026-02-02 10:50:00
+Closed reduction and splinting performed. Orthopedic follow-up arranged.
+Patient discharged in stable condition.

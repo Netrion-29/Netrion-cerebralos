@@ -1,0 +1,28 @@
+PATIENT_ID: TEST_MSK_001
+ARRIVAL_TIME: 2026-02-17 06:00:00
+
+[TRAUMA_HP] 2026-02-17 06:10:00
+Category I activation for 38-year-old male. Motorcycle collision.
+Hemodynamically unstable with unstable pelvic fracture.
+Pelvic ring instability confirmed on exam.
+BP 78/48, HR 138, RR 28, GCS 13.
+Hemodynamic instability documented. Hypotension persistent.
+Right femoral head dislocation identified. AVN risk present.
+Avascular necrosis risk documented for femoral head dislocation.
+
+[IMAGING] 2026-02-17 06:30:00
+CT pelvis: unstable pelvic ring disruption bilaterally.
+X-ray shows fracture and dislocation of right hip.
+CT confirms fracture pattern. Imaging confirming fracture.
+
+[NURSING_NOTE] 2026-02-17 06:20:00
+Pelvic binder applied. Massive transfusion initiated.
+Compartment checks initiated on bilateral lower extremities.
+No suspected compartment syndrome at this time.
+No vascular compromise with fracture documented distally.
+
+[OPERATIVE_NOTE] 2026-02-17 07:00:00
+Emergent right hip reduction performed. Reduction attempted successfully.
+Orthopedic surgery consulted and evaluated.
+Orthopedic assessment completed in trauma bay.
+External fixation of pelvis performed.

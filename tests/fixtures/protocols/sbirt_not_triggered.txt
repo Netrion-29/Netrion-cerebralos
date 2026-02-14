@@ -1,0 +1,11 @@
+PATIENT_ID: TEST_SBIRT_002
+ARRIVAL_TIME: 2026-02-15 10:00:00
+
+[TRAUMA_HP] 2026-02-15 10:10:00
+Category III activation for 8-year-old male. Bicycle fall.
+Age 8. Minor abrasions. No head injury.
+BP 100/65, HR 90, RR 18, GCS 15.
+
+[PHYSICIAN_NOTE] 2026-02-15 10:30:00
+Minor soft tissue injuries. Radiographs negative.
+Treated and released from ED with parental instructions.

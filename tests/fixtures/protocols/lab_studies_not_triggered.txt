@@ -1,0 +1,7 @@
+PATIENT_ID: TEST_LAB_002
+ARRIVAL_TIME: 2026-01-22 11:00:00
+
+[PHYSICIAN_NOTE] 2026-01-22 11:10:00
+Patient is a 65-year-old female presenting with hip pain.
+No activation called. Evaluated in ED as orthopedic consult.
+X-ray left hip shows femoral neck fracture. Admit to orthopedics.

@@ -1,0 +1,29 @@
+PATIENT_ID: TEST_SPINAL_001
+ARRIVAL_TIME: 2026-02-19 11:00:00
+
+[TRAUMA_HP] 2026-02-19 11:10:00
+Category I activation for 35-year-old male. High-speed MVC with rollover.
+Blunt trauma mechanism. Complaining of severe midline neck and back pain.
+Midline spinal pain documented. Midline tenderness on palpation.
+Neurologic deficit present: bilateral lower extremity weakness.
+Paresthesia in bilateral feet. Sensory loss below T10.
+Spine examination: spinous process step-off palpated at T11.
+Motor and sensory examination documented.
+BP 88/52, HR 110, RR 22, GCS 15.
+
+[IMAGING] 2026-02-19 11:30:00
+CT cervical spine: no acute fracture.
+CT thoracic spine: T11 burst fracture with retropulsed fragment.
+Spinal fracture identified on CT imaging. Spinal injury confirmed.
+CT lumbar spine: no additional fractures.
+
+[NURSING_NOTE] 2026-02-19 11:15:00
+Cervical collar applied on arrival. Spinal motion restriction maintained.
+C-collar in place. Log-roll precautions.
+Rectal tone assessed: decreased.
+
+[PHYSICIAN_NOTE] 2026-02-19 12:00:00
+T11 burst fracture with neurologic deficit (motor and sensory).
+Spinal cord injury suspected. Neurosurgery consulted.
+Cervical collar maintained pending complete evaluation.
+MRI spine ordered for further characterization.

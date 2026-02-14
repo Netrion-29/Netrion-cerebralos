@@ -1,0 +1,15 @@
+PATIENT_ID: TEST_DROWNING_003
+ARRIVAL_TIME: 2026-02-07 20:00:00
+
+[TRAUMA_HP] 2026-02-07 20:10:00
+Category I activation for 24-year-old male. Drowning event.
+Pulled from river after submersion. Found face down.
+Submersion time unknown. Unclear if traumatic mechanism involved.
+GCS 6 on arrival. Intubated in field.
+
+[PHYSICIAN_NOTE] 2026-02-07 20:30:00
+Submersion injury confirmed. Unclear circumstances of drowning.
+No trauma evaluation documented.
+No imaging obtained.
+No documentation of any associated traumatic injuries.
+Patient admitted to ICU for respiratory management.

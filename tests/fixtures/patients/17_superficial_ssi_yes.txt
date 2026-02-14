@@ -1,0 +1,15 @@
+PATIENT_ID: TEST_SUP_SSI_001
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[PHYSICIAN_NOTE] 2026-01-15 14:00:00
+Surgery performed — open reduction internal fixation of left femur fracture.
+Operative procedure completed without complications.
+
+[PHYSICIAN_NOTE] 2026-02-08 10:00:00
+Patient returned within 30 days of procedure.
+Wound erythema and swelling at incision site.
+Superficial incision site with purulent drainage from incision.
+Pain and tenderness around wound noted.
+Wound culture positive for S. aureus.
+Surgeon diagnosis of superficial SSI.
+Skin and subcutaneous tissue only involved.

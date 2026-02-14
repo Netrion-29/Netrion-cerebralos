@@ -1,0 +1,12 @@
+PATIENT_ID: TEST_NAT_003
+ARRIVAL_TIME: 2026-01-26 20:00:00
+
+[TRAUMA_HP] 2026-01-26 20:10:00
+18-month-old female brought by father. Non-accidental trauma suspected.
+NAT concern raised by nursing staff. Child abuse evaluation initiated.
+3-month-old history provided by father. Developmental age not assessed.
+
+[ED_NOTE] 2026-01-26 20:30:00
+Multiple bruises on face and trunk. Skull fracture on CT head.
+No skeletal survey obtained yet. No social work involvement documented.
+No CPS notification documented.

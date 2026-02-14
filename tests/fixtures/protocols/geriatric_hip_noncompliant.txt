@@ -1,0 +1,21 @@
+PATIENT_ID: TEST_GERIATRIC_HIP_NC_001
+ARRIVAL_TIME: 2026-02-22 06:00:00
+
+[TRAUMA_HP] 2026-02-22 06:10:00
+Category II activation for 80-year-old female. Ground-level fall.
+Age 80. Right hip pain and deformity.
+BP 148/88, HR 78, RR 16, GCS 15.
+
+[IMAGING] 2026-02-22 06:30:00
+AP pelvis x-ray: right intertrochanteric fracture confirmed.
+Hip fracture identified on imaging. Proximal femur fracture.
+Imaging confirms hip fracture.
+
+[PHYSICIAN_NOTE] 2026-02-22 07:00:00
+Orthopedic consultation obtained. Orthopedic assessment completed.
+Surgical intervention recommended. ORIF planned.
+
+[PHYSICIAN_NOTE] 2026-02-24 16:00:00
+Hospital day 3. Surgery delayed due to OR availability.
+Operative deferred. Surgery delayed beyond 48 hours from admission.
+Surgical intervention delayed. Patient still awaiting operative fixation.

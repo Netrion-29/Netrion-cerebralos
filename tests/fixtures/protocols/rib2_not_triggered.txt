@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_RIB2_002
+ARRIVAL_TIME: 2026-02-10 14:00:00
+
+[TRAUMA_HP] 2026-02-10 14:10:00
+Category III activation for 42-year-old female. Low-speed rear-end MVC.
+Mild cervical strain. No chest involvement. No thoracic complaints.
+BP 118/74, HR 72, RR 14, GCS 15.
+Full range of motion all extremities. Mild posterior midline tenderness.
+
+[IMAGING] 2026-02-10 14:30:00
+CT cervical spine: no fracture. Mild prevertebral soft tissue swelling.
+No thoracic imaging obtained or indicated.
+
+[PHYSICIAN_NOTE] 2026-02-10 14:50:00
+Isolated cervical strain. Cervical collar for comfort.
+Discharged with muscle relaxant and follow-up instructions.

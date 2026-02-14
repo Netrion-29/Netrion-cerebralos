@@ -1,0 +1,12 @@
+PATIENT_ID: TEST_GERIATRIC_002
+ARRIVAL_TIME: 2026-02-13 14:00:00
+
+[TRAUMA_HP] 2026-02-13 14:10:00
+Category III activation for 40-year-old male. Low-speed MVC.
+Age 40. Mild cervical strain. No fractures.
+BP 126/78, HR 74, RR 14, GCS 15.
+Healthy male. No relevant medical history.
+
+[PHYSICIAN_NOTE] 2026-02-13 14:40:00
+Isolated cervical strain. Discharged with analgesics.
+No inpatient admission required.

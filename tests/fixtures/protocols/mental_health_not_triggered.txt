@@ -1,0 +1,12 @@
+PATIENT_ID: TEST_MENTAL_HEALTH_002
+ARRIVAL_TIME: 2026-02-16 08:00:00
+
+[TRAUMA_HP] 2026-02-16 08:10:00
+Category III activation for 50-year-old female. Unwitnessed fall at home.
+Age 50. Tripped on carpet. Isolated right ankle injury.
+BP 132/84, HR 72, RR 14, GCS 15.
+Accidental mechanism. No third-party involvement.
+
+[PHYSICIAN_NOTE] 2026-02-16 08:40:00
+Right ankle fracture. Splinted. Discharged with follow-up.
+Accidental injury. No qualifying criteria for mental health protocol.

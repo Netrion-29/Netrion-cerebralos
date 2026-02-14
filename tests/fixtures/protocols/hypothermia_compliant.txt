@@ -1,0 +1,28 @@
+PATIENT_ID: TEST_HYPO_001
+ARRIVAL_TIME: 2026-01-21 02:00:00
+
+[TRAUMA_HP] 2026-01-21 02:10:00
+Category I trauma activation for 45-year-old male, pedestrian struck by vehicle.
+BP 95/60, HR 118, RR 24, GCS 13.
+Initial temperature 35.2°C (95.4°F) obtained via esophageal temperature probe.
+Temperature obtained within 15 minutes of arrival to treatment room.
+Patient hypothermic on arrival. Active warming initiated.
+
+[NURSING_NOTE] 2026-01-21 02:30:00
+Bair Hugger forced air warming device applied.
+Warmed IV fluids via fluid warmer administered.
+Warm blankets applied to extremities.
+Repeat temperature at 02:30: 35.5°C.
+
+[NURSING_NOTE] 2026-01-21 03:00:00
+Serial temperature recheck: Temp: 96.4 °F (35.8°C) at 03:00.
+Warming measures continued. Bair Hugger on high setting.
+Trauma surgeon notified of temperature trend improving.
+
+[NURSING_NOTE] 2026-01-21 03:30:00
+Repeat temperature at 03:30: Temp: 97.2 °F (36.2°C).
+Temperature now above 36°C threshold. Continue monitoring.
+
+[PHYSICIAN_NOTE] 2026-01-21 04:00:00
+Temperature stabilized above 36°C. Warming measures maintained.
+Serial temperature measurements documented per hypothermia protocol.

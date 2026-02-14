@@ -1,0 +1,18 @@
+PATIENT_ID: TEST_DVT_002
+ARRIVAL_TIME: 2026-01-20 12:00:00
+
+[PHYSICIAN_NOTE] 2026-01-20 12:30:00
+Patient admitted for pneumonia. Complained of right leg pain on day 3.
+
+[IMAGING] 2026-01-23 10:00:00
+VENOUS DUPLEX RIGHT LOWER EXTREMITY
+
+FINDINGS:
+Normal venous flow and compressibility throughout the right lower extremity.
+No evidence of deep vein thrombosis.
+
+IMPRESSION:
+Negative for DVT.
+
+[PHYSICIAN_NOTE] 2026-01-23 11:00:00
+Imaging negative for DVT. Leg pain likely musculoskeletal. Continue monitoring.

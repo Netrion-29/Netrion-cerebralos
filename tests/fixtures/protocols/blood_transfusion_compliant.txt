@@ -1,0 +1,25 @@
+PATIENT_ID: TEST_BLOOD_001
+ARRIVAL_TIME: 2026-01-23 06:00:00
+
+[TRAUMA_HP] 2026-01-23 06:10:00
+Category I activation for 42-year-old male, multiple stab wounds to torso.
+Hemorrhagic shock. BP 72/44, HR 140, RR 30. Tachycardic and hypotensive.
+Massive Transfusion Protocol activated. Blood bank notified.
+Emergency-release PRBCs administered immediately.
+Type and cross sent. Crossmatch pending.
+2 units packed red blood cells transfused.
+1 unit FFP administered.
+
+[LAB] 2026-01-23 06:20:00
+Type and cross collected and sent to blood bank.
+Fibrinogen: 180 mg/dL.
+Ionized calcium: 1.10 mmol/L.
+PT: 14.2 sec, INR: 1.2, PTT: 32 sec.
+
+[PHYSICIAN_NOTE] 2026-01-23 06:45:00
+Continued hemorrhage. MTP ongoing.
+4 additional units PRBCs and 2 FFP given per institutional algorithm.
+TXA administered within 2 hours of bleeding onset.
+Calcium supplementation given with ongoing transfusion.
+PRBCs and plasma warmed using approved blood warmer device.
+Bleeding controlled. Hemodynamics improving. BP now 98/64.

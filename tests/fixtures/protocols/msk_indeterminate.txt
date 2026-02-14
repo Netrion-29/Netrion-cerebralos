@@ -1,0 +1,20 @@
+PATIENT_ID: TEST_MSK_003
+ARRIVAL_TIME: 2026-02-17 20:00:00
+
+[TRAUMA_HP] 2026-02-17 20:10:00
+Category I activation for 28-year-old male. High-speed MVC.
+Unstable pelvic fracture on exam. Pelvic ring instability suspected.
+BP 82/50, HR 140, RR 30, GCS 14.
+Hemodynamically unstable. Hypotension on arrival.
+
+[IMAGING] 2026-02-17 20:30:00
+Pelvic x-ray obtained. No CT yet due to instability.
+Fracture type not fully characterized on plain film.
+
+[PHYSICIAN_NOTE] 2026-02-17 20:45:00
+Suspected severe orthopedic injury to pelvis.
+No compartment assessment documented.
+No AVN risk assessment performed.
+No vascular examination of extremities documented.
+No orthopedic evaluation obtained yet.
+Resuscitation ongoing. Pending stabilization for further workup.

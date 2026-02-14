@@ -57,3 +57,20 @@ rules/ntds/**/ntds_events_structured_*.py
 # Keep structured v1 JSON files tracked (do not ignore)
 !rules/ntds/**/ntds_events_structured_*_v1.json
 
+# Patient records (PHI) — NEVER commit
+cerebralos/Patients/
+
+# Important Info PDFs (local-only reference docs)
+cerebralos/Important Info/
+
+# Debug scripts (local dev only)
+debug_*.py
+test_*.py
+!tests/
+
+# Shortcut scripts (local only)
+shortcuts/
+
+# Claude Code local settings
+.claude/settings.local.json
+

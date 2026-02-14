@@ -1,0 +1,7 @@
+PATIENT_ID: TEST_BLUNT_ABD_003
+ARRIVAL_TIME: 2026-01-22 15:00:00
+
+[TRAUMA_HP] 2026-01-22 15:10:00
+Category II trauma activation for 35-year-old male, bicycle crash into barrier.
+Abdominal pain and left upper quadrant tenderness.
+BP 110/70, HR 95, RR 18, GCS 15.

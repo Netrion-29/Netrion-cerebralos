@@ -1,0 +1,12 @@
+PATIENT_ID: TEST_AKI_002
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[LAB] 2026-01-15 09:00:00
+Creatinine: 1.1 mg/dL
+BUN: 18 mg/dL
+GFR: 72 mL/min
+
+[PHYSICIAN_NOTE] 2026-01-15 10:00:00
+Renal function remains stable throughout hospitalization.
+Labs within normal limits. Patient tolerating diet well.
+Urine output adequate at 0.8 mL/kg/hr.

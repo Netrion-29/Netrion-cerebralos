@@ -1,0 +1,28 @@
+PATIENT_ID: TEST_PELVIC_001
+ARRIVAL_TIME: 2026-02-20 08:00:00
+
+[TRAUMA_HP] 2026-02-20 08:10:00
+Category I activation for 42-year-old male. Pedestrian struck at high speed.
+Pelvic fracture suspected on exam. Pelvic ring injury concern.
+BP 72/42, HR 145, RR 30, GCS 14.
+Hemodynamic instability documented. Hypotension refractory to fluids.
+Pelvic hemorrhage suspected source of shock.
+FAST positive for free fluid.
+
+[IMAGING] 2026-02-20 08:25:00
+Pelvic x-ray: pubic symphysis diastasis 3.5 cm.
+Unstable pelvic ring pattern confirmed.
+CT pelvis: bilateral sacroiliac joint widening >1 cm.
+Sacroiliac joint fracture-dislocation on right.
+Sacral fracture displaced. Pelvic CT confirms instability.
+No gross hematuria. No urologic injury identified on CT.
+
+[NURSING_NOTE] 2026-02-20 08:15:00
+Pelvic binder applied immediately upon arrival.
+Binder applied within 5 minutes of recognition of instability.
+Massive transfusion protocol activated.
+
+[OPERATIVE_NOTE] 2026-02-20 09:00:00
+Emergent angioembolization performed by interventional radiology.
+External fixation planned for definitive stabilization.
+Orthopedic surgery consulted and present in trauma bay.

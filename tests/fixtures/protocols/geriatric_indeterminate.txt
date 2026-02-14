@@ -1,0 +1,20 @@
+PATIENT_ID: TEST_GERIATRIC_003
+ARRIVAL_TIME: 2026-02-13 20:00:00
+
+[TRAUMA_HP] 2026-02-13 20:10:00
+Category II activation for 72-year-old female. Ground-level fall.
+Trauma admission. Age 72.
+BP 148/92, HR 78, RR 16, GCS 15.
+Left hip tenderness. Femur fracture confirmed on x-ray.
+
+[IMAGING] 2026-02-13 20:30:00
+Pelvis x-ray: left femoral neck fracture. Fracture confirmed on imaging.
+
+[PHYSICIAN_NOTE] 2026-02-13 21:00:00
+Qualifying injury present: long bone fracture (femur).
+No medication list obtained.
+No home medications documented.
+No cardiac assessment documented.
+No renal labs obtained. GFR unknown.
+No comorbidity documentation.
+Admitted pending further workup.

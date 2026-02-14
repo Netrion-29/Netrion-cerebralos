@@ -1,0 +1,12 @@
+PATIENT_ID: TEST_ROTEM_002
+ARRIVAL_TIME: 2026-01-20 10:00:00
+
+[TRAUMA_HP] 2026-01-20 10:10:00
+Category II activation for 55-year-old female, ground-level fall.
+BP 132/78, HR 82, RR 16, GCS 15. Hemodynamically stable.
+Left wrist deformity. No active bleeding noted.
+
+[PHYSICIAN_NOTE] 2026-01-20 10:30:00
+Distal radius fracture confirmed on imaging.
+No hemorrhagic resuscitation required. No blood products administered.
+Splint applied. Orthopedic follow-up arranged.

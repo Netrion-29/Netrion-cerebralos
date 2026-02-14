@@ -1,0 +1,12 @@
+PATIENT_ID: TEST_BURNS_002
+ARRIVAL_TIME: 2026-02-08 08:00:00
+
+[TRAUMA_HP] 2026-02-08 08:10:00
+Category II activation for 36-year-old male with isolated forearm laceration
+from broken glass. No fire exposure. No heat source contact.
+BP 124/78, HR 82, RR 14, GCS 15.
+Linear laceration to left forearm, 6 cm, clean edges.
+
+[PHYSICIAN_NOTE] 2026-02-08 08:30:00
+Wound irrigated and repaired with sutures. Tetanus updated.
+Neurovascular status intact distally. Discharged with follow-up.

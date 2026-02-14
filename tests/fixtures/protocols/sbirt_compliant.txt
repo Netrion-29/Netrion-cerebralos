@@ -1,0 +1,26 @@
+PATIENT_ID: TEST_SBIRT_001
+ARRIVAL_TIME: 2026-02-15 03:00:00
+
+[TRAUMA_HP] 2026-02-15 03:10:00
+Category I trauma activation for 28-year-old male. Single vehicle MVC.
+Trauma admission. Age 28. Alcohol on breath noted.
+BP 130/82, HR 92, RR 16, GCS 15.
+Screening for alcohol and substance use per protocol.
+Drug screening and alcohol screening initiated.
+
+[LAB] 2026-02-15 03:15:00
+ETOH: 185 mg/dL. Blood alcohol elevated.
+Urine drug screen positive for cannabinoids. UDS result documented.
+CBC, CMP within normal limits.
+
+[NURSING_NOTE] 2026-02-15 04:00:00
+AUDIT-C completed: score 7 (male). AUDIT-C documented.
+DAST-10 not performed (patient unable to cooperate initially).
+Patient admits to regular alcohol use.
+CIWA assessment ordered per protocol. CIWA initiated.
+
+[PHYSICIAN_NOTE] 2026-02-15 05:00:00
+SBIRT criteria met. Positive ETOH and positive UDS.
+AUDIT-C score 7 exceeds threshold.
+Brief intervention performed. Substance use screening completed.
+Care team consult placed for substance use counseling.

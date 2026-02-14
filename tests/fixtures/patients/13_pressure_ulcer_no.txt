@@ -1,0 +1,11 @@
+PATIENT_ID: TEST_PU_002
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[NURSING_NOTE] 2026-01-15 09:00:00
+Skin assessment completed on admission.
+Skin intact throughout. No areas of breakdown.
+Turn and reposition every 2 hours.
+
+[PHYSICIAN_NOTE] 2026-01-18 10:00:00
+Skin remains intact. No wounds identified.
+Patient mobilizing well with physical therapy.

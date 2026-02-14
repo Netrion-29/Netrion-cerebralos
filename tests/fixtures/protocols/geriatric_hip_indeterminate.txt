@@ -1,0 +1,19 @@
+PATIENT_ID: TEST_GERIATRIC_HIP_003
+ARRIVAL_TIME: 2026-02-14 18:00:00
+
+[TRAUMA_HP] 2026-02-14 18:10:00
+Category II activation for 75-year-old female. Ground-level fall.
+Age 75. Left hip tenderness. Unable to bear weight.
+BP 150/88, HR 80, RR 16, GCS 15.
+
+[IMAGING] 2026-02-14 18:30:00
+AP pelvis x-ray: suspected left hip fracture. Trochanteric fracture possible.
+Image quality suboptimal. Fracture type not definitively characterized.
+Hip fracture not confirmed definitively.
+
+[PHYSICIAN_NOTE] 2026-02-14 19:00:00
+Possible left hip fracture on x-ray but imaging inconclusive.
+No CT obtained for clarification.
+No orthopedic consultation obtained yet.
+No operative plan documented.
+Pending additional imaging and consultation.

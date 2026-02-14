@@ -1,0 +1,18 @@
+PATIENT_ID: TEST_PE_002
+ARRIVAL_TIME: 2026-02-05 11:00:00
+
+[PHYSICIAN_NOTE] 2026-02-05 11:30:00
+Patient admitted with acute chest pain. Rule out PE given risk factors.
+
+[IMAGING] 2026-02-05 15:00:00
+CT PULMONARY ANGIOGRAM (CTPA)
+
+FINDINGS:
+No filling defects identified in the pulmonary arterial tree.
+Pulmonary arteries opacify normally.
+
+IMPRESSION:
+Negative for pulmonary embolism.
+
+[PHYSICIAN_NOTE] 2026-02-05 16:00:00
+CTPA negative for PE. Chest pain likely musculoskeletal. Will observe overnight.

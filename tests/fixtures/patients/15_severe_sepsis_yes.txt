@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_SEPSIS_001
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[PHYSICIAN_NOTE] 2026-01-18 06:00:00
+Patient developed severe sepsis with organ dysfunction.
+Septic shock requiring vasopressor support.
+Source suspected to be pulmonary.
+
+[LAB] 2026-01-18 05:30:00
+Lactate elevated at 4.8 mmol/L.
+WBC 22.4. Blood cultures pending.
+
+[PHYSICIAN_NOTE] 2026-01-18 08:00:00
+Hypotension requiring norepinephrine infusion.
+MAP less than 65 mmHg without pressors.
+Multiple organ failure developing — renal and hepatic dysfunction.

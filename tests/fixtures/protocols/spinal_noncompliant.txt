@@ -1,0 +1,29 @@
+PATIENT_ID: TEST_SPINAL_NC_001
+ARRIVAL_TIME: 2026-02-26 09:00:00
+
+[TRAUMA_HP] 2026-02-26 09:10:00
+Category I activation for 30-year-old male. Blunt trauma from fall from height.
+Blunt mechanism confirmed. Severe back pain.
+Midline spinal pain documented. Midline tenderness at thoracolumbar junction.
+Neurologic deficit: bilateral lower extremity weakness.
+Paresthesia in feet. Motor and sensory examination documented.
+BP 100/62, HR 106, RR 20, GCS 15.
+
+[IMAGING] 2026-02-26 09:30:00
+CT thoracic spine: T12 compression fracture.
+Spinal fracture confirmed on CT imaging.
+CT lumbar spine: no additional fractures.
+
+[NURSING_NOTE] 2026-02-26 09:15:00
+Cervical collar applied initially. Spinal motion restriction initiated.
+
+[NURSING_NOTE] 2026-02-26 14:00:00
+Cervical collar removed by nursing staff for patient comfort.
+C-collar removed without physician order.
+Collar removed without clearance from physician.
+
+[PHYSICIAN_NOTE] 2026-02-26 15:00:00
+Patient noted to have cervical collar removed.
+Collar removal not ordered by physician team.
+Premature collar removal documented.
+Spine examination complete. Continued restriction recommended.

@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_PERIPH_VASC_002
+ARRIVAL_TIME: 2026-02-03 08:00:00
+
+[TRAUMA_HP] 2026-02-03 08:10:00
+Category II activation for 60-year-old female with isolated head laceration
+after ground-level fall at home. No loss of consciousness.
+BP 144/88, HR 68, RR 14, GCS 15.
+Scalp laceration repaired with staples. No other injuries.
+
+[IMAGING] 2026-02-03 08:30:00
+CT head without contrast: no intracranial abnormality.
+No cervical spine abnormality.
+
+[PHYSICIAN_NOTE] 2026-02-03 08:50:00
+Isolated scalp laceration. No other traumatic findings.
+Discharged with wound care instructions and follow-up.

@@ -1,0 +1,28 @@
+PATIENT_ID: TEST_PEN_NECK_001
+ARRIVAL_TIME: 2026-02-02 16:00:00
+
+[TRAUMA_HP] 2026-02-02 16:10:00
+Category I activation for 29-year-old male with penetrating neck injury.
+Stab wound to left anterior neck. Active hemorrhage from neck wound.
+Expanding cervical hematoma noted on arrival.
+BP 88/52, HR 130, RR 24, GCS 14.
+Hemodynamic shock attributable to neck injury.
+Airway intact but compromised due to expanding hematoma.
+
+[NURSING_NOTE] 2026-02-02 16:15:00
+Direct pressure applied to wound. Hemorrhage from neck controlled temporarily.
+Vitals trending: BP 85/50, HR 134.
+
+[PHYSICIAN_NOTE] 2026-02-02 16:25:00
+Exam: platysma violated. Injury classified as zone II based on wound location.
+Platysma integrity compromised. Zone classification confirmed.
+Neurologic examination intact. No focal deficit.
+Tracheal injury not identified on exam. Airway secure via OET.
+
+[IMAGING] 2026-02-02 16:35:00
+CT angiography neck obtained. CTA neck demonstrates vascular injury to
+left internal jugular vein. No carotid artery injury identified.
+
+[OPERATIVE_NOTE] 2026-02-02 17:00:00
+Operative intervention for neck exploration and repair.
+Taken to OR for surgical management of penetrating neck injury.

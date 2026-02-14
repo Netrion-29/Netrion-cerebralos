@@ -1,0 +1,24 @@
+PATIENT_ID: TEST_HANG_001
+ARRIVAL_TIME: 2026-01-22 02:00:00
+
+[TRAUMA_HP] 2026-01-22 02:10:00
+Category I activation for 24-year-old male found by family.
+History consistent with hanging. Ligature mark visible on neck.
+Near-hanging with strangulation mechanism confirmed.
+Airway assessment: patent, no stridor. Cervical spine immobilized.
+BP 100/60, HR 110, RR 20, SpO2 94% on room air, GCS 10.
+
+[NURSING_NOTE] 2026-01-22 02:15:00
+Neck exam: circumferential ligature mark present at mid-cervical level.
+Petechiae noted above the ligature line. No subcutaneous emphysema.
+Neurologic status: patient responsive but confused.
+
+[IMAGING] 2026-01-22 02:45:00
+CT head: No acute intracranial hemorrhage. No signs of anoxic brain injury.
+CT cervical spine: No fracture or subluxation.
+CTA neck: No vascular injury identified.
+
+[PHYSICIAN_NOTE] 2026-01-22 03:00:00
+Anoxic brain injury not identified on initial imaging.
+Airway secure and patent. Early neurologic evaluation completed.
+Admit to ICU for monitoring and serial neurologic assessments.

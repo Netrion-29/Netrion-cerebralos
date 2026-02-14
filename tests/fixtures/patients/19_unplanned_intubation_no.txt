@@ -1,0 +1,10 @@
+PATIENT_ID: TEST_INTUB_002
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[PHYSICIAN_NOTE] 2026-01-15 10:00:00
+Patient breathing comfortably on nasal cannula.
+Respiratory status stable throughout hospitalization.
+O2 saturation 97% on 2L nasal cannula.
+
+[DISCHARGE] 2026-01-18 14:00:00
+Patient discharged on room air. No respiratory complications.
