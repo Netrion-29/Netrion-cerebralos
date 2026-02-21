@@ -291,16 +291,24 @@ def compute_patient_box(pat: str) -> str:
 
     # ── DVT Prophylaxis v1 (informational) ──
     dvt = features.get("dvt_prophylaxis_v1", {})
-    dvt_first_ts = dvt.get("first_ts") or DNA
+    dvt_pharm_ts = dvt.get("pharm_first_ts") or DNA
+    dvt_mech_ts = dvt.get("mech_first_ts") or DNA
     dvt_delay = dvt.get("delay_hours")
     dvt_flag = dvt.get("delay_flag_24h")
     dvt_excluded = dvt.get("excluded_reason") or "none"
+    dvt_pharm_admin = dvt.get("pharm_admin_evidence_count", 0)
+    dvt_pharm_ambig = dvt.get("pharm_ambiguous_mention_count", 0)
+    dvt_mech_admin = dvt.get("mech_admin_evidence_count", 0)
     dvt_orders_only = dvt.get("orders_only_count", 0)
-    lines.append(f"  DVT Prophylaxis v1:")
-    lines.append(f"    dvt_first_ts: {dvt_first_ts}")
-    lines.append(f"    delay_hours: {dvt_delay if dvt_delay is not None else DNA}")
-    lines.append(f"    delay_flag_24h: {dvt_flag if dvt_flag is not None else DNA}")
+    lines.append(f"  DVT Prophylaxis v1 (chemical-only timing):")
+    lines.append(f"    pharm_first_ts (chemical): {dvt_pharm_ts}")
+    lines.append(f"    mech_first_ts (informational): {dvt_mech_ts}")
+    lines.append(f"    delay_hours (pharm): {dvt_delay if dvt_delay is not None else DNA}")
+    lines.append(f"    delay_flag_24h (pharm): {dvt_flag if dvt_flag is not None else DNA}")
     lines.append(f"    excluded_reason: {dvt_excluded}")
+    lines.append(f"    pharm_admin_evidence_count: {dvt_pharm_admin}")
+    lines.append(f"    pharm_ambiguous_mention_count: {dvt_pharm_ambig}")
+    lines.append(f"    mech_admin_evidence_count: {dvt_mech_admin}")
     lines.append(f"    orders_only_count: {dvt_orders_only}")
 
     lines.append("")
