@@ -69,16 +69,36 @@ _THERAPEUTIC_ANTICOAG_PATTERNS: list[re.Pattern[str]] = [
 # Admin evidence item types — we require these to confirm actual administration.
 _ADMIN_ITEM_TYPES = {"MAR"}
 
-# Order-only item types — used for mechanical prophylaxis (orders are
-# acceptable evidence for devices like SCDs, but NOT for pharma).
+# Order-only item types — NOT sufficient for mechanical prophylaxis.
+# Orders alone do not prove device was applied/in use.
 _ORDER_ITEM_TYPES = {"ORDER", "ORDERS"}
 
-# For mechanical, we also accept narrative physician/nursing notes that
-# describe SCDs being in use (e.g., "DVT Prophylaxis: SCDs").
+# Narrative physician/nursing notes that describe SCDs being in use
+# (e.g., "DVT Prophylaxis: SCDs").  These DO count as confirmed evidence.
 _NARRATIVE_ITEM_TYPES = {
     "PHYSICIAN_NOTE", "NURSING_NOTE", "CONSULT_NOTE",
     "PROGRESS_NOTE", "TRAUMA_HP", "ED_NOTE",
 }
+
+# Flowsheet entries — confirmed evidence for mechanical prophylaxis.
+_FLOWSHEET_ITEM_TYPES = {"FLOWSHEET"}
+
+# Confirmed mechanical evidence sources (admin + narrative + flowsheet).
+_MECH_CONFIRMED_ITEM_TYPES = _ADMIN_ITEM_TYPES | _NARRATIVE_ITEM_TYPES | _FLOWSHEET_ITEM_TYPES
+
+# Pattern: line contains an explicit order reference like "(Order 464653630)"
+# or "[NUR###]" bracketed nursing task IDs from order sets.
+_ORDER_REF_PATTERN = re.compile(
+    r"\(Order\s+\d+\)|\[NUR\d+\]", re.IGNORECASE,
+)
+
+# Explicit device-applied language — counts even on an order-typed line.
+_MECH_APPLIED_PATTERNS: list[re.Pattern[str]] = [
+    re.compile(r"\bSCDs?\s+(on|applied|in\s+place)\b", re.IGNORECASE),
+    re.compile(r"\bapplied\s+SCDs?\b", re.IGNORECASE),
+    re.compile(r"\bin\s+place\b.*\b(SCD|sequential|pneumatic)\b", re.IGNORECASE),
+    re.compile(r"\b(SCD|sequential|pneumatic).*\bin\s+place\b", re.IGNORECASE),
+]
 
 
 # ── Helpers ─────────────────────────────────────────────────────────
@@ -236,7 +256,8 @@ def extract_dvt_prophylaxis(
     days_map = days_json.get("days") or {}
 
     pharm_evidence: List[Dict[str, Any]] = []
-    mech_evidence: List[Dict[str, Any]] = []
+    mech_evidence: List[Dict[str, Any]] = []          # confirmed mech
+    mech_orders_only: List[Dict[str, Any]] = []        # orders-only (not counted)
     exclusion_evidence: List[Dict[str, Any]] = []
 
     for day_iso in sorted(days_map.keys()):
@@ -281,21 +302,37 @@ def extract_dvt_prophylaxis(
                     )
 
                 # ── Mechanical prophylaxis ──
-                # Accept MAR, orders, and narrative notes for mechanical
-                if item_type in (_ADMIN_ITEM_TYPES | _ORDER_ITEM_TYPES | _NARRATIVE_ITEM_TYPES):
+                # Confirmed sources: MAR admin, narrative notes, flowsheets,
+                # or explicit "SCDs on/applied" language.
+                # Orders alone → orders-only bucket (excluded).
+                if item_type in (_MECH_CONFIRMED_ITEM_TYPES | _ORDER_ITEM_TYPES):
                     _check_mech_line(
-                        line_stripped, item_dt, source_id, raw_line_id,
-                        mech_evidence,
+                        line_stripped, item_type, item_dt, source_id,
+                        raw_line_id,
+                        mech_evidence, mech_orders_only,
                     )
 
     # ── Filter by arrival time (ignore timestamps < arrival) ────
     if arrival_dt:
         pharm_evidence = _filter_after_arrival(pharm_evidence, arrival_dt)
         mech_evidence = _filter_after_arrival(mech_evidence, arrival_dt)
+        mech_orders_only = _filter_after_arrival(mech_orders_only, arrival_dt)
 
     # ── Deduplicate evidence by raw_line_id ─────────────────────
     pharm_evidence = _dedup_evidence(pharm_evidence)
     mech_evidence = _dedup_evidence(mech_evidence)
+    mech_orders_only = _dedup_evidence(mech_orders_only)
+    exclusion_evidence = _dedup_evidence(exclusion_evidence)
+
+    # ── Move orders-only mech into exclusion if no confirmed mech ──
+    # Orders-only entries always go to exclusion evidence for traceability.
+    for e in mech_orders_only:
+        exclusion_evidence.append({
+            "ts": e["ts"],
+            "raw_line_id": e["raw_line_id"],
+            "snippet": e["snippet"],
+            "reason": "ORDERS_ONLY_NO_ADMIN_EVIDENCE",
+        })
     exclusion_evidence = _dedup_evidence(exclusion_evidence)
 
     # ── Determine if therapeutic anticoagulation excludes patient ──
@@ -305,7 +342,7 @@ def extract_dvt_prophylaxis(
 
     # ── Compute timestamps ──────────────────────────────────────
     pharm_first_ts = _earliest_ts(pharm_evidence)
-    mech_first_ts = _earliest_ts(mech_evidence)
+    mech_first_ts = _earliest_ts(mech_evidence)   # confirmed only
 
     first_ts: Optional[str] = None
     if pharm_first_ts and mech_first_ts:
@@ -330,6 +367,10 @@ def extract_dvt_prophylaxis(
             delta = first_dt - arrival_dt
             delay_hours = round(delta.total_seconds() / 3600.0, 2)
             delay_flag_24h = delay_hours > 24.0
+    else:
+        # No confirmed evidence at all — check if orders-only existed
+        if mech_orders_only and not pharm_evidence:
+            excluded_reason = "ORDERS_ONLY_NO_ADMIN_EVIDENCE"
 
     # ── Build output contract ───────────────────────────────────
     return {
@@ -339,6 +380,7 @@ def extract_dvt_prophylaxis(
         "delay_hours": delay_hours,
         "delay_flag_24h": delay_flag_24h,
         "excluded_reason": excluded_reason,
+        "orders_only_count": len(mech_orders_only),
         "evidence": {
             "pharm": [
                 {"ts": e["ts"], "raw_line_id": e["raw_line_id"], "snippet": e["snippet"]}
@@ -398,20 +440,69 @@ def _check_pharm_line(
 
 def _check_mech_line(
     line: str,
+    item_type: str,
     item_dt: Optional[str],
     source_id: str,
     raw_line_id: str,
     mech_evidence: List[Dict[str, Any]],
+    mech_orders_only: List[Dict[str, Any]],
 ) -> None:
-    """Check a single line for mechanical prophylaxis."""
+    """Check a single line for mechanical prophylaxis.
+
+    Classifies matched lines as *confirmed* (→ mech_evidence) or
+    *orders-only* (→ mech_orders_only) based on source type and content.
+
+    Confirmed sources:
+      - MAR admin lines
+      - Narrative notes (nursing, physician, progress, etc.)
+      - Flowsheet entries
+      - Explicit "SCDs on / applied / in place" language (any source)
+
+    Orders-only:
+      - item_type is ORDER/ORDERS  **and**  no applied-language  **and**
+        line contains order reference pattern like "(Order ###)" or "[NUR###]"
+    """
+    matched = False
     for pat in _MECH_INCLUDE_PATTERNS:
         if pat.search(line):
-            mech_evidence.append({
-                "ts": item_dt,
-                "raw_line_id": raw_line_id,
-                "snippet": _snippet(line),
-            })
-            return  # one hit per line
+            matched = True
+            break
+    if not matched:
+        return
+
+    entry = {
+        "ts": item_dt,
+        "raw_line_id": raw_line_id,
+        "snippet": _snippet(line),
+    }
+
+    # ── Explicit applied-language overrides any source type ──
+    for ap in _MECH_APPLIED_PATTERNS:
+        if ap.search(line):
+            mech_evidence.append(entry)
+            return
+
+    # ── Order-reference in the line text → orders-only ──
+    # This check comes BEFORE item_type because order listings are often
+    # embedded inside PHYSICIAN_NOTE blocks.  The line content
+    # "(Order ###)" / "[NUR###]" is a stronger signal than item_type.
+    if _ORDER_REF_PATTERN.search(line):
+        mech_orders_only.append(entry)
+        return
+
+    # ── Order-typed item without inline ref → also orders-only ──
+    if item_type in _ORDER_ITEM_TYPES:
+        mech_orders_only.append(entry)
+        return
+
+    # ── Confirmed source types (narrative, MAR, flowsheet) ──
+    if item_type in _MECH_CONFIRMED_ITEM_TYPES:
+        mech_evidence.append(entry)
+        return
+
+    # Fallback: unknown source without order markers — treat as confirmed
+    # (fail-open for evidence traceability)
+    mech_evidence.append(entry)
 
 
 # ── Utility ─────────────────────────────────────────────────────────

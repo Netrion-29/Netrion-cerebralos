@@ -295,11 +295,13 @@ def compute_patient_box(pat: str) -> str:
     dvt_delay = dvt.get("delay_hours")
     dvt_flag = dvt.get("delay_flag_24h")
     dvt_excluded = dvt.get("excluded_reason") or "none"
+    dvt_orders_only = dvt.get("orders_only_count", 0)
     lines.append(f"  DVT Prophylaxis v1:")
     lines.append(f"    dvt_first_ts: {dvt_first_ts}")
     lines.append(f"    delay_hours: {dvt_delay if dvt_delay is not None else DNA}")
     lines.append(f"    delay_flag_24h: {dvt_flag if dvt_flag is not None else DNA}")
     lines.append(f"    excluded_reason: {dvt_excluded}")
+    lines.append(f"    orders_only_count: {dvt_orders_only}")
 
     lines.append("")
 
