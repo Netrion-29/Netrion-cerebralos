@@ -621,6 +621,43 @@ def main() -> int:
         print("  DATA NOT AVAILABLE (no timeline notes)")
     print()
 
+    # ── DVT Prophylaxis v1 QA ───────────────────────────────────
+    dvt = data.get("dvt_prophylaxis_v1", {})
+    print("DVT PROPHYLAXIS v1 QA (chemical-only timing):")
+    dvt_pharm_ts = dvt.get("pharm_first_ts") or "DATA NOT AVAILABLE"
+    dvt_mech_ts = dvt.get("mech_first_ts") or "DATA NOT AVAILABLE"
+    dvt_delay = dvt.get("delay_hours")
+    dvt_flag = dvt.get("delay_flag_24h")
+    dvt_excluded = dvt.get("excluded_reason") or "none"
+    pharm_ev = dvt.get("evidence", {}).get("pharm", [])
+    mech_ev = dvt.get("evidence", {}).get("mech", [])
+    excl_ev = dvt.get("evidence", {}).get("exclusion", [])
+    orders_only_count = dvt.get("orders_only_count", 0)
+    pharm_admin_count = dvt.get("pharm_admin_evidence_count", 0)
+    pharm_ambig_count = dvt.get("pharm_ambiguous_mention_count", 0)
+    mech_admin_count = dvt.get("mech_admin_evidence_count", 0)
+    print(f"  pharm_first_ts (chemical): {dvt_pharm_ts}")
+    print(f"  mech_first_ts (informational): {dvt_mech_ts}")
+    print(f"  delay_hours (pharm): {dvt_delay if dvt_delay is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  delay_flag_24h (pharm): {dvt_flag if dvt_flag is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  excluded_reason: {dvt_excluded}")
+    print(f"  pharm_admin_evidence_count: {pharm_admin_count}")
+    print(f"  pharm_ambiguous_mention_count: {pharm_ambig_count}")
+    print(f"  mech_admin_evidence_count: {mech_admin_count}")
+    print(f"  orders_only_count: {orders_only_count}")
+    print(f"  exclusion_count: {len(excl_ev)}")
+    if pharm_ev:
+        print("  pharm evidence (top 3):")
+        for ev in pharm_ev[:3]:
+            print(f"    [{ev.get('ts', 'no_ts')}] {ev.get('snippet', '')[:80]}")
+    if mech_ev:
+        print("  mech evidence (top 3, confirmed):")
+        for ev in mech_ev[:3]:
+            print(f"    [{ev.get('ts', 'no_ts')}] {ev.get('snippet', '')[:80]}")
+    if orders_only_count:
+        print(f"  NOTE: {orders_only_count} SCD order-only entries excluded (no admin evidence)")
+    print()
+
     print("=" * 60)
     return 0
 
