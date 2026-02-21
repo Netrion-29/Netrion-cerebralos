@@ -1,0 +1,220 @@
+{
+  "_comment": "GREEN CARD v1 H&P-centric extraction patterns. Items 1-6 of the deterministic extraction spec.",
+  "_version": "1.0.0",
+
+  "primary_survey": {
+    "_comment": "Primary Survey block extraction from chosen TRAUMA_HP.",
+    "header_patterns": [
+      "(?i)^\\s*Primary\\s+Survey\\s*[:\\-]?"
+    ],
+    "stop_patterns": [
+      "(?i)^\\s*(?:Secondary\\s+Survey|PMH|Past\\s+Medical|ROS|Review\\s+of\\s+Systems|Physical\\s+Exam|Examination|Assessment|Plan|Impression|Vital\\s+Signs|Medications|Meds|Orders|Allergies|Social\\s+History|Family\\s+History|Surgical\\s+History|HPI|History\\s+of\\s+Present|Chief\\s+Complaint)\\s*[:\\-]?"
+    ],
+    "abcde_patterns": {
+      "airway": "(?i)^\\s*Airway\\s*[:\\-]?\\s*(?P<val>.+)",
+      "breathing": "(?i)^\\s*Breathing\\s*[:\\-]?\\s*(?P<val>.+)",
+      "circulation": "(?i)^\\s*Circulation\\s*[:\\-]?\\s*(?P<val>.+)",
+      "disability": "(?i)^\\s*Disability\\s*[:\\-]?\\s*(?P<val>.+)",
+      "exposure": "(?i)^\\s*Exposure\\s*[:\\-]?\\s*(?P<val>.+)"
+    },
+    "gcs_patterns": [
+      "\\bGCS\\b\\s*(?:GCS\\s*)?(?:of\\s+|=\\s*|:\\s*)?(?P<gcs>\\d{1,2})\\s*(?P<intubated>[Tt])?\\b",
+      "\\bGlasgow\\s+Coma\\s+(?:Score|Scale)\\b\\s*(?:of\\s+|=\\s*|:\\s*)?(?P<gcs>\\d{1,2})\\s*(?P<intubated>[Tt])?\\b"
+    ],
+    "pupils_patterns": [
+      "(?i)\\bpupils?\\s*[:\\-]?\\s*(?P<val>[^,\\n]{3,60})",
+      "(?i)\\bPERRLA\\b",
+      "(?i)\\bpupils?\\s+(?:normal|equal|reactive|fixed|dilated|constricted|sluggish|brisk|round)\\b[^\\n]{0,60}"
+    ],
+    "fast_line_pattern": "(?i)^\\s*FAST\\s*[:\\-]?\\s*(?P<val>.*)",
+    "fast_positive_patterns": [
+      "(?i)\\b(?:positive|pos|free\\s*fluid|fluid\\s*(?:in|present))\\b"
+    ],
+    "fast_negative_patterns": [
+      "(?i)\\b(?:negative|neg|normal|no\\s*(?:free\\s*)?fluid)\\b"
+    ],
+    "fast_performed_yes_patterns": [
+      "(?i)\\b(?:Yes|positive|negative|neg|normal|performed|done|completed)\\b"
+    ],
+    "fast_performed_no_patterns": [
+      "(?i)^\\s*(?:No\\b|not\\s+(?:done|performed|indicated))"
+    ]
+  },
+
+  "admitting_md": {
+    "_comment": "Admitting/signing physician extraction from TRAUMA_HP top/bottom lines.",
+    "signer_patterns": [
+      {
+        "role": "COSIGNER",
+        "pattern": "(?i)Cosigned\\s+by\\s*[:\\-]?\\s*(?P<name>[A-Z][a-zA-Z\\-']+(?:[,\\s]+[A-Z][a-zA-Z\\-'.]*){0,4})[,\\s]+(?P<cred>MD|DO|PA(?:-C)?|NP|OTR|APRN|AGACNP|ACNP|FNP|DNP)"
+      },
+      {
+        "role": "SIGNER",
+        "pattern": "(?i)Electronically\\s+signed\\s+by\\s+(?P<name>[A-Z][a-zA-Z\\-']+(?:\\s+[A-Z][a-zA-Z\\-'.]*){0,4}),?\\s+(?P<cred>MD|DO|PA(?:-C)?|NP|APRN|AGACNP|ACNP|FNP|DNP)"
+      },
+      {
+        "role": "CONFIRMING_MD",
+        "pattern": "(?:confirmed|confirming|modified|amended|reviewed).*?\\n\\s*(?P<name>[A-Z][a-zA-Z]+(?:\\s+[A-Z][a-zA-Z.]*)*\\s+[A-Z][a-zA-Z]+),?\\s*(?P<cred>MD|DO)"
+      },
+      {
+        "role": "SIGNER",
+        "pattern": "(?i)Attending\\s*[:\\-]\\s*(?P<name>[A-Z][a-zA-Z\\-']+(?:[,\\s]+[A-Z][a-zA-Z\\-']*){0,3}(?:[,\\s]+(?:MD|DO|PA(?:-C)?|NP))?)"
+      },
+      {
+        "role": "AUTHOR",
+        "pattern": "(?i)Author\\s*[:\\-]\\s*(?P<name>[A-Z][a-zA-Z\\-']+(?:[,\\s]+[A-Z][a-zA-Z\\-']*){0,3}(?:[,\\s]+(?:MD|DO|PA(?:-C)?|NP))?)"
+      },
+      {
+        "role": "SIGNER",
+        "pattern": "(?i)Provider\\s*[:\\-]\\s*(?P<name>[A-Z][a-zA-Z\\-']+(?:[,\\s]+[A-Z][a-zA-Z\\-']*){0,3}(?:[,\\s]+(?:MD|DO|PA(?:-C)?|NP))?)"
+      }
+    ],
+    "bottom_md_pattern": "\\n\\s*(?P<name>[A-Z][a-zA-Z]+(?:\\s+[A-Z][a-zA-Z.]*)*\\s+[A-Z][a-zA-Z]+),?\\s+(?P<cred>MD|DO)\\s*(?:\\n|$)",
+    "top_author_pattern": "(?:Trauma\\s+H\\s*&?\\s*P|TRAUMA\\s+HP|Admission\\s+History\\s+and\\s+Physical)\\s*\\n(?:[^\\n]*\\n)?\\s*(?P<name>[A-Z][a-zA-Z]+(?:\\s+[A-Z][a-zA-Z.]*)*\\s+[A-Z][a-zA-Z]+),?\\s+(?P<cred>MD|DO|NP|PA(?:-C)?)",
+    "role_priority": ["COSIGNER", "CONFIRMING_MD", "SIGNER", "AUTHOR", "UNKNOWN"]
+  },
+
+  "anticoag_status": {
+    "_comment": "Anticoagulation status detection. YES/NO/UNKNOWN with hold/resume tracking.",
+    "explicit_yes_phrases": [
+      "(?i)\\bon\\s+(?:home\\s+)?(?:anticoagulat|blood\\s+thinner)",
+      "(?i)\\btaking\\s+(?:home\\s+)?(?:anticoagulat|blood\\s+thinner)",
+      "(?i)\\bhome\\s+(?:anticoagulat|blood\\s+thinner)",
+      "(?i)\\bon\\s+(?:eliquis|apixaban|xarelto|rivaroxaban|coumadin|warfarin|pradaxa|dabigatran|lovenox|enoxaparin|heparin|savaysa|edoxaban|plavix|clopidogrel|brilinta|ticagrelor)\\b"
+    ],
+    "explicit_no_phrases": [
+      "(?i)\\bnot\\s+on\\s+(?:any\\s+)?(?:anticoagulat|blood\\s+thinner)",
+      "(?i)\\bdenies\\s+(?:any\\s+)?(?:anticoagulat|blood\\s+thinner)",
+      "(?i)\\bno\\s+(?:home\\s+)?(?:anticoagulat|blood\\s+thinner)",
+      "(?i)\\bnot\\s+(?:taking|on)\\s+(?:any\\s+)?(?:anticoagulat|blood\\s+thinner|antiplatelet)"
+    ],
+    "hold_resume_patterns": [
+      "(?i)\\b(?:hold|held|stop|stopped|discontinue|dc|d/c)\\s+(?:home\\s+)?(?P<agent>eliquis|apixaban|xarelto|rivaroxaban|coumadin|warfarin|pradaxa|dabigatran|lovenox|enoxaparin|heparin|plavix|clopidogrel|brilinta|ticagrelor|aspirin|savaysa|edoxaban)\\b",
+      "(?i)\\b(?P<agent>eliquis|apixaban|xarelto|rivaroxaban|coumadin|warfarin|pradaxa|dabigatran|lovenox|enoxaparin|heparin|plavix|clopidogrel|brilinta|ticagrelor|aspirin|savaysa|edoxaban)\\s+(?:held|on\\s+hold|stopped|discontinued|dc|d/c)\\b",
+      "(?i)\\b(?:resume|restart|restarted|resumed)\\s+(?:home\\s+)?(?P<agent>eliquis|apixaban|xarelto|rivaroxaban|coumadin|warfarin|pradaxa|dabigatran|lovenox|enoxaparin|heparin|plavix|clopidogrel|brilinta|ticagrelor|aspirin|savaysa|edoxaban)\\b",
+      "(?i)\\b(?P<agent>eliquis|apixaban|xarelto|rivaroxaban|coumadin|warfarin|pradaxa|dabigatran|lovenox|enoxaparin|heparin|plavix|clopidogrel|brilinta|ticagrelor|aspirin|savaysa|edoxaban)\\s+(?:resumed|restarted)\\b",
+      "(?i)\\bhome\\s+meds\\s+resumed\\b.*(?P<agent>eliquis|apixaban|xarelto|rivaroxaban|coumadin|warfarin|pradaxa|dabigatran|plavix|clopidogrel|brilinta|aspirin)\\b"
+    ],
+    "pmh_hpi_scan_phrases": [
+      "(?i)\\bPMH\\s+(?:of|includes?)\\b",
+      "(?i)\\bhistory\\s+(?:of|significant\\s+for|notable\\s+for)\\b",
+      "(?i)\\bpast\\s+medical\\s+history\\b"
+    ]
+  },
+
+  "etoh": {
+    "_comment": "Alcohol level extraction from labs or H&P text.",
+    "lab_component_names": [
+      "Alcohol Serum",
+      "Ethanol",
+      "ETOH",
+      "Ethyl Alcohol",
+      "Blood Alcohol",
+      "Alcohol Level",
+      "Alcohol, Serum"
+    ],
+    "text_patterns": [
+      "(?i)\\b(?:Alcohol\\s+Serum|Ethanol|Ethyl\\s+Alcohol|Blood\\s+Alcohol|Alcohol\\s+Level)[\\t ]+(?P<date>\\d{1,2}/\\d{1,2}/\\d{2,4})[\\t ]+(?P<val>[<>]?\\s*\\d+(?:\\.\\d+)?)\\s*(?P<units>MG/DL|mg/dL|mg/dl)?",
+      "(?i)\\bETOH\\s*[:\\-=]\\s*(?P<val>[<>]?\\s*\\d+(?:\\.\\d+)?)\\s*(?P<units>MG/DL|mg/dL|mg/dl)?"
+    ]
+  },
+
+  "uds": {
+    "_comment": "Urine drug screen extraction.",
+    "panel_components": {
+      "thc": {
+        "names": ["THC", "Marijuana", "Cannabis", "THC Screen"],
+        "patterns": ["(?i)\\bTHC\\b[^\\n]*?(?P<result>POSITIVE|NEGATIVE|POS|NEG)\\b"]
+      },
+      "cocaine": {
+        "names": ["Cocaine", "Cocaine Screen", "Cocaine Screen, Urine"],
+        "patterns": ["(?i)\\bCocaine\\b[^\\n]*?(?P<result>POSITIVE|NEGATIVE|POS|NEG)\\b"]
+      },
+      "amphetamines": {
+        "names": ["Amphetamine", "Amphetamines", "Amphetamine/Methamph Screen", "Amphetamine/Methamph Screen, Urine"],
+        "patterns": ["(?i)\\bAmphetamine\\b[^\\n]*?(?P<result>POSITIVE|NEGATIVE|POS|NEG)\\b"]
+      },
+      "opiates": {
+        "names": ["Opiate", "Opiates", "Opiate Screen", "Opiate Screen, Urine"],
+        "patterns": ["(?i)\\bOpiate\\b[^\\n]*?(?P<result>POSITIVE|NEGATIVE|POS|NEG)\\b"]
+      },
+      "benzodiazepines": {
+        "names": ["Benzodiazepine", "Benzodiazepines", "Benzodiazepine Screen", "Benzodiazepine Screen, Urine"],
+        "patterns": ["(?i)\\bBenzodiazepin\\w*\\b[^\\n]*?(?P<result>POSITIVE|NEGATIVE|POS|NEG)\\b"]
+      },
+      "barbiturates": {
+        "names": ["Barbiturate", "Barbiturates", "Barbiturate Screen", "Barbiturate Screen, Urine"],
+        "patterns": ["(?i)\\bBarbiturate\\b[^\\n]*?(?P<result>POSITIVE|NEGATIVE|POS|NEG)\\b"]
+      },
+      "methadone": {
+        "names": ["Methadone", "Methadone Screen"],
+        "patterns": ["(?i)\\bMethadone\\b[^\\n]*?(?P<result>POSITIVE|NEGATIVE|POS|NEG)\\b"]
+      },
+      "fentanyl": {
+        "names": ["Fentanyl", "Fentanyl Screen"],
+        "patterns": ["(?i)\\bFentanyl\\b[^\\n]*?(?P<result>POSITIVE|NEGATIVE|POS|NEG)\\b"]
+      },
+      "pcp": {
+        "names": ["PCP", "Phencyclidine"],
+        "patterns": ["(?i)\\b(?:PCP|Phencyclidine)\\b[^\\n]*?(?P<result>POSITIVE|NEGATIVE|POS|NEG)\\b"]
+      }
+    },
+    "date_pattern": "(?P<date>\\d{1,2}/\\d{1,2}/\\d{2,4})"
+  },
+
+  "base_deficit": {
+    "_comment": "Base deficit extraction. Warning if category I and missing.",
+    "lab_component_names": [
+      "Base Deficit",
+      "Base Excess",
+      "BE",
+      "Base Deficit (Venous)",
+      "Base Deficit (Arterial)"
+    ],
+    "text_patterns": [
+      "(?i)\\bBase\\s+(?:Deficit|Excess)\\b[\\t ]+(?P<date>\\d{1,2}/\\d{1,2}/\\d{2,4})[\\t ]+(?P<val>[\\-]?\\d+(?:\\.\\d+)?)\\s*(?:\\(H\\)|\\(L\\))?",
+      "(?i)\\bBase\\s+(?:Deficit|Excess)\\b\\s*[:\\-=]\\s*(?P<val>[\\-]?\\d+(?:\\.\\d+)?)",
+      "(?i)(?:^|\\n)\\s*BE\\s*[:\\-=]\\s*(?P<val>[\\-]?\\d+(?:\\.\\d+)?)"
+    ],
+    "trauma_category_patterns": [
+      "(?i)\\bCategory\\s*(?:I|1)\\b(?!\\s*(?:I|1|2))",
+      "(?i)\\bTrauma\\s+Activation\\s*[:\\-]?\\s*Category\\s*(?:I|1)\\b",
+      "(?i)\\bCat(?:egory)?\\s*1\\s+(?:alert|activation|trauma)\\b"
+    ]
+  },
+
+  "inr": {
+    "_comment": "INR extraction for all patients.",
+    "lab_component_names": [
+      "INR",
+      "INR (PT)",
+      "PT/INR"
+    ],
+    "text_patterns": [
+      "(?i)\\bINR\\b[\\t ]+(?P<date>\\d{1,2}/\\d{1,2}/\\d{2,4})[\\t ]+(?P<val>\\d+(?:\\.\\d+)?)\\s*(?P<range>\\d+\\.\\d+\\s*[-\u2013]\\s*\\d+\\.\\d+)?",
+      "(?i)\\bINR\\b\\s*[:\\-=]\\s*(?P<val>\\d+(?:\\.\\d+)?)"
+    ]
+  },
+
+  "impression_plan": {
+    "_comment": "Impression/Plan extraction per day for drift tracking.",
+    "impression_headers": [
+      "(?i)^\\s*Impression\\s*[:\\-]",
+      "(?i)^\\s*Assessment\\s*[:\\-]"
+    ],
+    "plan_headers": [
+      "(?i)^\\s*Plan\\s*[:\\-]",
+      "(?i)^\\s*PLAN\\s*[:\\-]?"
+    ],
+    "stop_headers": [
+      "(?i)^\\s*(?:Signed|Electronically|Attending|Follow[\\-\\s]*up|Disposition|Discharge|Orders|Medications|Author|Provider|Cosigned)\\b"
+    ],
+    "relevant_doc_types": ["trauma_hp", "trauma_progress"],
+    "anticoag_agents_for_diff": [
+      "eliquis", "apixaban", "xarelto", "rivaroxaban", "coumadin", "warfarin",
+      "pradaxa", "dabigatran", "lovenox", "enoxaparin", "heparin",
+      "plavix", "clopidogrel", "brilinta", "ticagrelor", "aspirin",
+      "savaysa", "edoxaban"
+    ]
+  }
+}
