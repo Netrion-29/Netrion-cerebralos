@@ -1,0 +1,230 @@
+{
+  "_comment": "GREEN CARD v1 adjunct patterns. Deterministic, regex-based. No LLM, no ML.",
+  "_version": "1.0.0",
+
+  "spine_clearance": {
+    "_comment": "Spine clearance status detection. Prefer explicit clearance phrases over inference.",
+    "cleared_phrases": [
+      "(?i)\\bc[- ]?spine\\s+cleared\\b",
+      "(?i)\\bspine\\s+cleared\\b",
+      "(?i)\\bcollar\\s+cleared\\b",
+      "(?i)\\bc[- ]?collar\\s+cleared\\b",
+      "(?i)\\bokay\\s+to\\s+remove\\s+collar\\b",
+      "(?i)\\bcleared?\\s+(?:to\\s+)?remove\\s+(?:c[- ]?)?collar\\b",
+      "(?i)\\bremove\\s+(?:c[- ]?)?collar\\b",
+      "(?i)\\bcervical\\s+spine\\s+clear(?:ed)?\\b",
+      "(?i)\\bc[- ]?spine\\s+is\\s+clear(?:ed)?\\b",
+      "(?i)\\bspine\\s+precautions?\\s+(?:discontinued|d/?c|removed|lifted)\\b",
+      "(?i)\\bno\\s+acute\\s+fracture\\b.*\\b(?:clear|collar|remove)\\b"
+    ],
+    "not_cleared_phrases": [
+      "(?i)\\bcontinue\\s+(?:c[- ]?)?collar\\b",
+      "(?i)\\bmaintain\\s+(?:c[- ]?)?collar\\b",
+      "(?i)\\bc[- ]?collar\\s+(?:to\\s+)?remain\\b",
+      "(?i)\\bspine\\s+(?:not|has\\s+not\\s+been)\\s+cleared\\b",
+      "(?i)\\bnot\\s+(?:yet\\s+)?cleared\\b",
+      "(?i)\\bawait(?:ing)?\\s+(?:spine|c[- ]?spine)\\s+clearance\\b",
+      "(?i)\\bspine\\s+precautions?\\s+(?:continue|maintain|ongoing)\\b",
+      "(?i)\\bkeep\\s+(?:c[- ]?)?collar\\b"
+    ],
+    "imaging_markers": [
+      "(?i)\\bCT\\s+(?:of\\s+(?:the\\s+)?)?(?:CERVICAL|C[- ]?)\\s*SPINE\\b",
+      "(?i)\\bCT\\s+C[- ]?SPINE\\b",
+      "(?i)\\bMRI\\s+(?:of\\s+(?:the\\s+)?)?CERVICAL\\b",
+      "(?i)\\bCT\\s+CERVICAL\\b"
+    ],
+    "imaging_negative_results": [
+      "(?i)\\bno\\s+acute\\s+fracture\\b",
+      "(?i)\\bnegative\\s+for\\s+fracture\\b",
+      "(?i)\\bno\\s+malalignment\\b",
+      "(?i)\\bno\\s+acute\\s+cervical\\s+(?:spine\\s+)?(?:fracture|injury|abnormality)\\b",
+      "(?i)\\bno\\s+(?:evidence\\s+of\\s+)?(?:acute\\s+)?fracture\\s+or\\s+(?:malalignment|dislocation)\\b",
+      "(?i)\\bnormal\\s+(?:cervical|c[- ]?spine)\\b"
+    ],
+    "method_clinical": [
+      "(?i)\\bclinical(?:ly)?\\s+clear(?:ed)?\\b",
+      "(?i)\\bcleared\\s+(?:by\\s+)?(?:exam|clinical)\\b"
+    ],
+    "method_imaging": [
+      "(?i)\\bCT\\b",
+      "(?i)\\bMRI\\b",
+      "(?i)\\bx[- ]?ray\\b",
+      "(?i)\\bradiograph\\b"
+    ],
+    "spine_order_questions_block": {
+      "_comment": "Patterns for detecting Epic 'Order Questions' blocks with spine clearance data.",
+      "header_patterns": [
+        "^Order Questions\\b",
+        "^Question\\s+Answer\\b"
+      ],
+      "ordered_on_pattern": "Ordered On[\\s\\S]*?(\\d{1,2}/\\d{1,2}/\\d{2,4})\\s+(\\d{4})"
+    },
+    "spine_question_patterns": {
+      "cspine": "\\bCervical Spine Clearance\\b",
+      "tlspine": "\\bThoracic/?Spine Lumbar Clearance\\b|\\bThoracic Spine Clearance\\b|\\bLumbar Spine Clearance\\b"
+    },
+    "spine_answer_patterns": {
+      "yes": "^\\s*Yes\\s*$",
+      "no": "^\\s*No\\s*$",
+      "na_unknown": "^\\s*(N/?A|Unknown)\\s*$"
+    }
+  },
+
+  "dvt_prophylaxis": {
+    "_comment": "DVT/VTE prophylaxis order and administration detection.",
+    "agents": [
+      {"generic": "enoxaparin", "patterns": ["(?i)\\benoxaparin\\b", "(?i)\\blovenox\\b"]},
+      {"generic": "heparin", "patterns": ["(?i)\\bheparin\\b(?!\\s*(?:drip|infusion|gtt|protocol))"]},
+      {"generic": "fondaparinux", "patterns": ["(?i)\\bfondaparinux\\b", "(?i)\\barixtra\\b"]}
+    ],
+    "order_cues": [
+      "(?i)\\bstart\\s+(?:DVT|VTE|enoxaparin|lovenox|heparin|fondaparinux)\\b",
+      "(?i)\\bbegin\\s+(?:DVT|VTE|enoxaparin|lovenox|heparin|fondaparinux)\\b",
+      "(?i)\\bDVT\\s+proph(?:ylaxis)?\\b",
+      "(?i)\\bVTE\\s+proph(?:ylaxis)?\\b",
+      "(?i)\\bchemoprophylaxis\\b",
+      "(?i)\\bDVT\\s+(?:prevention|protocol)\\b",
+      "(?i)\\bSQ\\s+heparin\\b",
+      "(?i)\\bsubcutaneous\\s+heparin\\b",
+      "(?i)\\bSCD\\b(?!.*(?:sickle|anemia))"
+    ],
+    "admin_cues": [
+      "(?i)\\badministered\\b",
+      "(?i)\\bgiven\\b",
+      "(?i)\\bdose\\s+given\\b",
+      "(?i)\\bMAR\\b",
+      "(?i)\\bMedication\\s+Administration\\b",
+      "(?i)\\bfirst\\s+dose\\b",
+      "(?i)\\binject(?:ed|ion)\\b"
+    ],
+    "dose_pattern": "(?i)(\\d+(?:\\.\\d+)?\\s*(?:mg|units?|IU))",
+    "route_pattern": "(?i)\\b(SQ|SubQ|subcutaneous|SC|IM|IV|subcut)\\b"
+  },
+
+  "first_ed_temp": {
+    "_comment": "First ED/arrival temperature detection.",
+    "temp_patterns": [
+      "(?i)\\bTemp(?:erature)?\\s*[:\\-=]?\\s*(\\d{2,3}(?:\\.\\d{1,2})?)\\s*°?\\s*([CF])?\\b",
+      "(?i)\\bT\\s*[:\\-=]\\s*(\\d{2,3}(?:\\.\\d{1,2})?)\\s*°?\\s*([CF])?\\b",
+      "(?i)(\\d{2,3}\\.\\d{1,2})\\s*°\\s*([CF])\\b",
+      "(?i)\\bTemp\\s+(\\d{2,3}(?:\\.\\d{1,2})?)\\s*([CF])?\\b",
+      "(?i)\\btemperature\\s+(?:of\\s+|is\\s+|was\\s+)?(\\d{2,3}(?:\\.\\d{1,2})?)\\s*°?\\s*([CF])?\\b"
+    ],
+    "ed_context_patterns": [
+      "(?i)\\bED\\b",
+      "(?i)\\bemergency\\s+department\\b",
+      "(?i)\\btrauma\\s+bay\\b",
+      "(?i)\\binitial\\s+vitals?\\b",
+      "(?i)\\barrival\\s+vitals?\\b",
+      "(?i)\\bon\\s+arrival\\b",
+      "(?i)\\bupon\\s+(?:arrival|presentation)\\b",
+      "(?i)\\bpresentation\\b",
+      "(?i)\\btriage\\b",
+      "(?i)\\bprimary\\s+survey\\b",
+      "(?i)\\bvital\\s+signs?\\b"
+    ]
+  },
+
+  "gi_prophylaxis": {
+    "_comment": "GI prophylaxis (stress ulcer prophylaxis) detection. ORDER-ONLY – no admin/MAR tracking.",
+    "agents": [
+      {"generic": "pantoprazole", "patterns": ["(?i)\\bpantoprazole\\b", "(?i)\\bprotonix\\b"]},
+      {"generic": "omeprazole", "patterns": ["(?i)\\bomeprazole\\b", "(?i)\\bprilosec\\b"]},
+      {"generic": "famotidine", "patterns": ["(?i)\\bfamotidine\\b", "(?i)\\bpepcid\\b"]},
+      {"generic": "lansoprazole", "patterns": ["(?i)\\blansoprazole\\b", "(?i)\\bprevacid\\b"]},
+      {"generic": "esomeprazole", "patterns": ["(?i)\\besomeprazole\\b", "(?i)\\bnexium\\b"]},
+      {"generic": "ranitidine", "patterns": ["(?i)\\branitidine\\b", "(?i)\\bzantac\\b"]},
+      {"generic": "sucralfate", "patterns": ["(?i)\\bsucralfate\\b", "(?i)\\bcarafate\\b"]}
+    ],
+    "explicit_phrases": [
+      "(?i)\\bGI\\s+proph(?:ylaxis)?\\b",
+      "(?i)\\bstress\\s+ulcer\\s+proph(?:ylaxis)?\\b",
+      "(?i)\\bSUP\\b",
+      "(?i)\\bgastric\\s+proph(?:ylaxis)?\\b"
+    ],
+    "negative_phrases": [
+      "(?i)\\bno\\s+GI\\s+proph(?:ylaxis)?\\b",
+      "(?i)\\bhold\\s+GI\\s+proph(?:ylaxis)?\\b",
+      "(?i)\\bno\\s+stress\\s+ulcer\\s+proph(?:ylaxis)?\\b",
+      "(?i)\\bhold\\s+(?:PPI|protonix|pantoprazole|famotidine|pepcid)\\b"
+    ]
+  },
+
+  "tourniquet": {
+    "_comment": "Trauma tourniquet placement and removal detection. Prehospital/ED focus. Excludes surgical tourniquets used intra-operatively.",
+    "placed_phrases": [
+      "(?i)\\btourniquet\\s+(?:applied|placed|on|to)\\b",
+      "(?i)\\bTQ\\s+(?:applied|placed|on|to)\\b",
+      "(?i)\\bapplied\\s+(?:a\\s+)?(?:CAT\\s+)?tourniquet\\b",
+      "(?i)\\bplaced\\s+(?:a\\s+)?(?:CAT\\s+)?tourniquet\\b",
+      "(?i)\\btourniquet\\s+(?:was\\s+)?(?:applied|placed)\\b",
+      "(?i)\\bCAT\\s+tourniquet\\b",
+      "(?i)\\bcombat\\s+application\\s+tourniquet\\b",
+      "(?i)\\btourniquet\\s+in\\s+place\\b",
+      "(?i)\\btourniquet\\s+(?:is\\s+)?present\\b",
+      "(?i)\\bprehospital\\s+tourniquet\\b",
+      "(?i)\\bfield\\s+tourniquet\\b",
+      "(?i)\\bEMS\\s+(?:applied|placed)\\s+(?:a\\s+)?tourniquet\\b",
+      "(?i)\\btourniquet\\s+(?:by|per|from)\\s+(?:EMS|medic|paramedic|prehospital|field)\\b"
+    ],
+    "removed_phrases": [
+      "(?i)\\btourniquet\\s+(?:removed|released|taken\\s+off|off|discontinued|d/?c)\\b",
+      "(?i)\\bTQ\\s+(?:removed|released|taken\\s+off|off|discontinued|d/?c)\\b",
+      "(?i)\\bremoved?\\s+(?:the\\s+)?tourniquet\\b",
+      "(?i)\\breleased?\\s+(?:the\\s+)?tourniquet\\b",
+      "(?i)\\btourniquet\\s+(?:was\\s+)?(?:removed|released|taken\\s+off)\\b",
+      "(?i)\\btourniquet\\s+(?:converted|changed)\\s+to\\b"
+    ],
+    "location_patterns": [
+      "(?i)\\btourniquet\\s+(?:to|on|applied\\s+to|placed\\s+on)\\s+(?:the\\s+)?(?P<loc>(?:left|right|L|R)\\s*(?:upper|lower)?\\s*(?:extremity|arm|leg|thigh|forearm|UE|LE|LUE|RUE|LLE|RLE))",
+      "(?i)\\b(?P<loc>(?:left|right|L|R)\\s*(?:upper|lower)?\\s*(?:extremity|arm|leg|thigh|forearm|UE|LE))\\s+tourniquet\\b",
+      "(?i)\\bTQ\\s+(?:to|on)\\s+(?:the\\s+)?(?P<loc>(?:left|right|L|R)\\s*(?:upper|lower)?\\s*(?:extremity|arm|leg|thigh|forearm|UE|LE|LUE|RUE|LLE|RLE))"
+    ],
+    "time_patterns": [
+      "(?i)tourniquet\\s+(?:applied|placed|time|at)\\s*[:\\-]?\\s*(?P<time>\\d{4})\\b",
+      "(?i)TQ\\s+(?:applied|placed|time|at)\\s*[:\\-]?\\s*(?P<time>\\d{4})\\b",
+      "(?i)tourniquet\\s+time\\s*[:\\-]?\\s*(?P<time>\\d{1,2}:\\d{2}(?:\\s*(?:AM|PM))?)\\b",
+      "(?i)TQ\\s+time\\s*[:\\-]?\\s*(?P<time>\\d{1,2}:\\d{2}(?:\\s*(?:AM|PM))?)\\b",
+      "(?i)(?:applied|placed)\\s+(?:at|@)\\s+(?P<time>\\d{4})\\b",
+      "(?i)tourniquet\\s+(?:removed|released)\\s*(?:at|@)?\\s*(?P<time>\\d{4})\\b",
+      "(?i)TQ\\s+(?:removed|released)\\s*(?:at|@)?\\s*(?P<time>\\d{4})\\b"
+    ],
+    "surgical_exclusion_phrases": [
+      "(?i)\\btourniquet\\s+(?:was\\s+)?(?:released|deflated|let\\s+down)\\b.{0,80}\\b(?:hemostasis|cautery|Bovie|wound\\s+closure|irrigat|sutur)\\b",
+      "(?i)\\b(?:sterile|surgical)\\s+(?:field|prep|drape)\\b.{0,200}\\btourniquet\\b",
+      "(?i)\\btourniquet\\s+(?:inflated|set)\\s+(?:to|at)\\s+\\d+\\s*(?:mmHg|mm\\s*Hg)\\b",
+      "(?i)\\b(?:ORIF|arthroplasty|arthroscopy|surgery|procedure)\\b.{0,200}\\btourniquet\\b(?!.*(?:prehospital|EMS|field|scene|applied\\s+(?:by|per)\\s+(?:EMS|medic|paramedic)))"
+    ],
+    "no_tourniquet_phrases": [
+      "(?i)\\bno\\s+tourniquet\\b",
+      "(?i)\\btourniquet\\s+(?:not|was\\s+not)\\s+(?:applied|placed|used)\\b",
+      "(?i)\\bdenies\\s+tourniquet\\b",
+      "(?i)\\bwithout\\s+tourniquet\\b"
+    ]
+  },
+
+  "bowel_regimen": {
+    "_comment": "Bowel regimen / bowel protocol detection. ORDER-ONLY – no admin/MAR tracking.",
+    "agents": [
+      {"generic": "senna", "patterns": ["(?i)\\bsenna\\b", "(?i)\\bsennosides?\\b", "(?i)\\bsenokot\\b"]},
+      {"generic": "docusate", "patterns": ["(?i)\\bdocusate\\b", "(?i)\\bcolace\\b"]},
+      {"generic": "miralax", "patterns": ["(?i)\\bmiralax\\b", "(?i)\\bpolyethylene\\s+glycol\\b", "(?i)\\bPEG\\s*3350\\b"]},
+      {"generic": "bisacodyl", "patterns": ["(?i)\\bbisacodyl\\b", "(?i)\\bdulcolax\\b"]},
+      {"generic": "milk of magnesia", "patterns": ["(?i)\\bmilk\\s+of\\s+magnesia\\b", "(?i)\\bMOM\\b", "(?i)\\bmagnesium\\s+hydroxide\\b"]},
+      {"generic": "lactulose", "patterns": ["(?i)\\blactulose\\b"]},
+      {"generic": "methylnaltrexone", "patterns": ["(?i)\\bmethylnaltrexone\\b", "(?i)\\brelistor\\b"]},
+      {"generic": "naloxegol", "patterns": ["(?i)\\bnaloxegol\\b", "(?i)\\bmovantik\\b"]}
+    ],
+    "explicit_phrases": [
+      "(?i)\\bbowel\\s+regimen\\b",
+      "(?i)\\bbowel\\s+protocol\\b",
+      "(?i)\\bbowel\\s+(?:care|management|program)\\b",
+      "(?i)\\bconstipation\\s+(?:protocol|regimen|prophylaxis)\\b"
+    ],
+    "negative_phrases": [
+      "(?i)\\bno\\s+bowel\\s+(?:regimen|protocol|care)\\b",
+      "(?i)\\bhold\\s+bowel\\s+(?:regimen|protocol)\\b",
+      "(?i)\\bhold\\s+(?:senna|docusate|colace|miralax)\\b"
+    ]
+  }
+}
