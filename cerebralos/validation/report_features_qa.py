@@ -621,6 +621,33 @@ def main() -> int:
         print("  DATA NOT AVAILABLE (no timeline notes)")
     print()
 
+    # ── DVT Prophylaxis v1 QA ───────────────────────────────────
+    dvt = data.get("dvt_prophylaxis_v1", {})
+    print("DVT PROPHYLAXIS v1 QA:")
+    dvt_first_ts = dvt.get("first_ts") or "DATA NOT AVAILABLE"
+    dvt_delay = dvt.get("delay_hours")
+    dvt_flag = dvt.get("delay_flag_24h")
+    dvt_excluded = dvt.get("excluded_reason") or "none"
+    pharm_ev = dvt.get("evidence", {}).get("pharm", [])
+    mech_ev = dvt.get("evidence", {}).get("mech", [])
+    excl_ev = dvt.get("evidence", {}).get("exclusion", [])
+    print(f"  dvt_first_ts: {dvt_first_ts}")
+    print(f"  delay_hours: {dvt_delay if dvt_delay is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  delay_flag_24h: {dvt_flag if dvt_flag is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  excluded_reason: {dvt_excluded}")
+    print(f"  pharm_evidence_count: {len(pharm_ev)}")
+    print(f"  mech_evidence_count: {len(mech_ev)}")
+    print(f"  exclusion_count: {len(excl_ev)}")
+    if pharm_ev:
+        print("  pharm evidence (top 3):")
+        for ev in pharm_ev[:3]:
+            print(f"    [{ev.get('ts', 'no_ts')}] {ev.get('snippet', '')[:80]}")
+    if mech_ev:
+        print("  mech evidence (top 3):")
+        for ev in mech_ev[:3]:
+            print(f"    [{ev.get('ts', 'no_ts')}] {ev.get('snippet', '')[:80]}")
+    print()
+
     print("=" * 60)
     return 0
 

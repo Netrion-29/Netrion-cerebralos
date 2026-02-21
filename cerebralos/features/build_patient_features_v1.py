@@ -63,6 +63,7 @@ from cerebralos.features.vitals_daily import extract_vitals_for_day
 from cerebralos.features.gcs_daily import extract_gcs_for_day
 from cerebralos.features.labs_panel_daily import build_labs_panel_daily
 from cerebralos.features.vitals_canonical_v1 import build_canonical_vitals
+from cerebralos.features.dvt_prophylaxis_v1 import extract_dvt_prophylaxis
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -312,6 +313,13 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
             agg_vitals_qa["undated_vitals_count"] += vqa.get("vitals_readings_total", 0)
 
     max_gap = max((g["gap_days"] for g in evidence_gaps), default=0)
+
+    # ── DVT prophylaxis v1 (additive, cross-day) ────────────────
+    dvt_prophylaxis = extract_dvt_prophylaxis(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     return {
         "patient_id": meta.get("patient_id", "unknown"),
         "build": {
@@ -326,6 +334,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "vitals_canonical_v1": {
             "days": vitals_canonical_days,
         },
+        "dvt_prophylaxis_v1": dvt_prophylaxis,
         "vitals_qa": agg_vitals_qa,
         "warnings": combined_warnings,
         "warnings_summary": dict(sorted(warning_counter.items())),
