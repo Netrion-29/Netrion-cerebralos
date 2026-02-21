@@ -73,6 +73,14 @@ passes with:
 - Contract validator passes
 - v4 hashes printed
 
+### Baseline drift modes
+- **Normal** (`./scripts/gate_pr.sh`): compares sha256 of each patient's
+  `TRAUMA_DAILY_NOTES_v4.txt` against `scripts/baselines/v4_hashes_v1.json`.
+  Fails on any mismatch, missing patient, or missing baseline file.
+- **Update** (`./scripts/gate_pr.sh --update-baseline`): overwrites the
+  baseline JSON with current hashes, then runs regression. Use only after
+  intentional output changes have been reviewed and approved.
+
 ---
 
 ## 5) Default Regression Patients

@@ -44,4 +44,14 @@ passes.
 Default gate patients:
 Anna_Dennis, William_Simmons, Timothy_Cowan, Timothy_Nachtwey
 
+## Baseline drift checking
+- Normal mode (`./scripts/gate_pr.sh`): compares sha256 of each
+  patient's TRAUMA_DAILY_NOTES_v4.txt against persisted hashes in
+  `scripts/baselines/v4_hashes_v1.json`. FAILS on any mismatch,
+  missing patient, or missing baseline file.
+- Update mode (`./scripts/gate_pr.sh --update-baseline`): regenerates
+  the baseline JSON with current hashes, then continues to regression.
+  Use only after intentional output changes have been reviewed.
+- The baseline file is committed to the repo; drift is caught in CI.
+
 End.

@@ -200,6 +200,7 @@ def main() -> int:
 
     patient_id = data.get("patient_id", "unknown")
     days = data.get("days", {})
+    feats = data.get("features", {})
     day_keys = sorted(days.keys())
     has_undated = "__UNDATED__" in days
     dated_keys = [k for k in day_keys if k != "__UNDATED__"]
@@ -415,7 +416,7 @@ def main() -> int:
     print()
 
     # ── vitals: timestamp QA metrics ────────────────────────────
-    vqa = data.get("vitals_qa", {})
+    vqa = feats.get("vitals_qa", {})
     print("VITALS TIMESTAMP QA METRICS:")
     for k in ("vitals_readings_total", "vitals_readings_with_full_ts",
               "vitals_readings_missing_time", "vitals_readings_missing_date",
@@ -511,7 +512,7 @@ def main() -> int:
     print()
 
     # ── canonical vitals v1 QA ──────────────────────────────────
-    cv1 = data.get("vitals_canonical_v1", {})
+    cv1 = feats.get("vitals_canonical_v1", {})
     cv1_days = cv1.get("days", {})
     cv1_total_records = 0
     cv1_days_with_vitals = 0
@@ -622,7 +623,7 @@ def main() -> int:
     print()
 
     # ── DVT Prophylaxis v1 QA ───────────────────────────────────
-    dvt = data.get("dvt_prophylaxis_v1", {})
+    dvt = feats.get("dvt_prophylaxis_v1", {})
     print("DVT PROPHYLAXIS v1 QA (chemical-only timing):")
     dvt_pharm_ts = dvt.get("pharm_first_ts") or "DATA NOT AVAILABLE"
     dvt_mech_ts = dvt.get("mech_first_ts") or "DATA NOT AVAILABLE"
@@ -656,6 +657,67 @@ def main() -> int:
             print(f"    [{ev.get('ts', 'no_ts')}] {ev.get('snippet', '')[:80]}")
     if orders_only_count:
         print(f"  NOTE: {orders_only_count} SCD order-only entries excluded (no admin evidence)")
+    print()
+
+    # ── GI Prophylaxis v1 QA ────────────────────────────────────
+    gi = feats.get("gi_prophylaxis_v1", {})
+    print("GI PROPHYLAXIS v1 QA (first admin timing):")
+    gi_pharm_ts = gi.get("pharm_first_ts") or "DATA NOT AVAILABLE"
+    gi_delay = gi.get("delay_hours")
+    gi_flag = gi.get("delay_flag_48h")
+    gi_excluded = gi.get("excluded_reason") or "none"
+    gi_pharm_ev = gi.get("evidence", {}).get("pharm", [])
+    gi_excl_ev = gi.get("evidence", {}).get("exclusion", [])
+    gi_orders_only_count = gi.get("orders_only_count", 0)
+    gi_pharm_admin_count = gi.get("pharm_admin_evidence_count", 0)
+    gi_pharm_ambig_count = gi.get("pharm_ambiguous_mention_count", 0)
+    print(f"  pharm_first_ts: {gi_pharm_ts}")
+    print(f"  delay_hours: {gi_delay if gi_delay is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  delay_flag_48h: {gi_flag if gi_flag is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  excluded_reason: {gi_excluded}")
+    print(f"  pharm_admin_evidence_count: {gi_pharm_admin_count}")
+    print(f"  pharm_ambiguous_mention_count: {gi_pharm_ambig_count}")
+    print(f"  orders_only_count: {gi_orders_only_count}")
+    print(f"  exclusion_count: {len(gi_excl_ev)}")
+    if gi_pharm_ev:
+        print("  pharm evidence (top 3):")
+        for ev in gi_pharm_ev[:3]:
+            print(f"    [{ev.get('ts', 'no_ts')}] {ev.get('snippet', '')[:80]}")
+    if gi_orders_only_count:
+        print(f"  NOTE: {gi_orders_only_count} order-only entries excluded (no admin evidence)")
+    print()
+
+    # ── Base Deficit Monitoring v1 QA ───────────────────────────
+    bdm = feats.get("base_deficit_monitoring_v1", {})
+    print("BASE DEFICIT MONITORING v1 QA:")
+    bdm_init_ts = bdm.get("initial_bd_ts") or "DATA NOT AVAILABLE"
+    bdm_init_val = bdm.get("initial_bd_value")
+    bdm_init_src = bdm.get("initial_bd_source") or "unknown"
+    bdm_trigger = bdm.get("trigger_bd_gt4")
+    bdm_compliant = bdm.get("overall_compliant")
+    bdm_series = bdm.get("bd_series", [])
+    bdm_windows = bdm.get("monitoring_windows", [])
+    bdm_notes = bdm.get("notes", [])
+    bdm_nc = bdm.get("noncompliance_reasons", [])
+    print(f"  initial_bd_ts: {bdm_init_ts}")
+    print(f"  initial_bd_value: {bdm_init_val if bdm_init_val is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  initial_bd_source: {bdm_init_src}")
+    print(f"  trigger_bd_gt4: {bdm_trigger if bdm_trigger is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  overall_compliant: {bdm_compliant if bdm_compliant is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  bd_series_count: {len(bdm_series)}")
+    for w in bdm_windows:
+        phase = w.get("phase", "?")
+        mg = w.get("max_gap_hours")
+        mg_str = f"{mg:.1f}" if mg is not None else "N/A"
+        v_count = len(w.get("violations", []))
+        print(f"  window: {phase}  max_gap_hours={mg_str}  violations={v_count}  compliant={w.get('compliant')}")
+    if bdm_nc:
+        print(f"  noncompliance_reasons ({len(bdm_nc)}):")
+        for r in bdm_nc[:5]:
+            print(f"    - {r}")
+    if bdm_notes:
+        for n in bdm_notes:
+            print(f"  note: {n}")
     print()
 
     print("=" * 60)

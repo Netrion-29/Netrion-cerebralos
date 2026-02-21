@@ -64,6 +64,9 @@ from cerebralos.features.gcs_daily import extract_gcs_for_day
 from cerebralos.features.labs_panel_daily import build_labs_panel_daily
 from cerebralos.features.vitals_canonical_v1 import build_canonical_vitals
 from cerebralos.features.dvt_prophylaxis_v1 import extract_dvt_prophylaxis
+from cerebralos.features.gi_prophylaxis_v1 import extract_gi_prophylaxis
+from cerebralos.features.base_deficit_monitoring_v1 import extract_base_deficit_monitoring
+from cerebralos.features.category_activation_v1 import build_category_activation_v1
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -320,6 +323,33 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
 
+    # ── GI prophylaxis v1 (additive, cross-day) ─────────────────
+    gi_prophylaxis = extract_gi_prophylaxis(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
+    # ── Base deficit monitoring v1 (additive, cross-day) ────────
+    base_deficit_monitoring = extract_base_deficit_monitoring(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
+    # ── Category I Trauma Activation v1 (additive, patient-level) ─
+    category_activation = build_category_activation_v1(days_data)
+
+    # ── Assemble features dict (all feature modules live here) ──
+    features: Dict[str, Any] = {
+        "vitals_canonical_v1": {
+            "days": vitals_canonical_days,
+        },
+        "dvt_prophylaxis_v1": dvt_prophylaxis,
+        "gi_prophylaxis_v1": gi_prophylaxis,
+        "base_deficit_monitoring_v1": base_deficit_monitoring,
+        "category_activation_v1": category_activation,
+        "vitals_qa": agg_vitals_qa,
+    }
+
     return {
         "patient_id": meta.get("patient_id", "unknown"),
         "build": {
@@ -331,11 +361,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
             "max_gap_days": max_gap,
             "gaps": evidence_gaps,
         },
-        "vitals_canonical_v1": {
-            "days": vitals_canonical_days,
-        },
-        "dvt_prophylaxis_v1": dvt_prophylaxis,
-        "vitals_qa": agg_vitals_qa,
+        "features": features,
         "warnings": combined_warnings,
         "warnings_summary": dict(sorted(warning_counter.items())),
     }

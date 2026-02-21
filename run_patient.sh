@@ -14,6 +14,10 @@ echo "== Running patient: $PAT =="
 # Evidence
 python3 cerebralos/ingest/parse_patient_txt.py --in "data_raw/$PAT.txt"
 
+# Evidence raw_line_id validation (fail-fast — AGENTS §5)
+python3 cerebralos/validation/validate_evidence_raw_line_id.py \
+  --in "outputs/evidence/$PAT/patient_evidence_v1.json"
+
 # Timeline
 mkdir -p "outputs/timeline/$PAT"
 python3 cerebralos/timeline/build_patient_days.py \
@@ -25,6 +29,10 @@ mkdir -p "outputs/features/$PAT"
 python3 -m cerebralos.features.build_patient_features_v1 \
   --in "outputs/timeline/$PAT/patient_days_v1.json" \
   --out "outputs/features/$PAT/patient_features_v1.json"
+
+# Contract validation (fail-fast on schema drift)
+python3 cerebralos/validation/validate_patient_features_contract_v1.py \
+  --in "outputs/features/$PAT/patient_features_v1.json"
 
 # Render v3
 mkdir -p "outputs/reporting/$PAT"

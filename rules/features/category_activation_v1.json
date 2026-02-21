@@ -1,0 +1,29 @@
+{
+  "version": "v1",
+  "method": "fail_closed_regex_v1",
+  "include_category_i_activation": [
+    "\\btrauma\\b.*\\bactivation\\b.*\\b(category|cat)\\s*i\\b",
+    "\\b(category|cat)\\s*i\\b.*\\btrauma\\b.*\\bactivation\\b",
+    "\\b(category|cat)\\s*i\\b.*\\bactivation\\b",
+    "\\bactivation\\b.*\\b(category|cat)\\s*i\\b",
+    "\\btrauma\\s+activation\\b.*\\b(category|cat)\\s*i\\b"
+  ],
+  "exclude_context": [
+    "\\b(level|lvl)\\s*i\\b",
+    "\\btrauma\\s+center\\b",
+    "\\bpolicy\\b",
+    "\\bprotocol\\s+(document|manual|reference|overview|education)\\b",
+    "\\bguideline\\b",
+    "\\beducation\\b",
+    "\\bcriteria\\b",
+    "\\bdischarge\\b",
+    "\\bdischarge\\s+summary\\b",
+    "\\bhospital\\s+course\\b",
+    "\\bfinal\\s+(diagnos(is|es)|report)\\b",
+    "\\btransfer\\b"
+  ],
+  "ambiguous_block": [
+    "\\b(category|cat)\\s*i\\b.*\\b(category|cat)\\s*ii\\b",
+    "\\b(category|cat)\\s*ii\\b.*\\b(category|cat)\\s*i\\b"
+  ]
+}
