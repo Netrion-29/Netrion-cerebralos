@@ -126,6 +126,12 @@ Verify the push succeeded and note the branch name for tomorrow.
 
 ---
 
+## Planning docs
+
+- [Trauma Build-Forward Plan v1](roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md)
+
+---
+
 ## 7) Codex Audit Step (Required After Gate)
 
 After `./scripts/dev_start.sh` completes, paste this block into Codex:
