@@ -510,6 +510,41 @@ def main() -> int:
         print(f"    missing: {', '.join(present_but_missing)}")
     print()
 
+    # ── canonical vitals v1 QA ──────────────────────────────────
+    cv1 = data.get("vitals_canonical_v1", {})
+    cv1_days = cv1.get("days", {})
+    cv1_total_records = 0
+    cv1_days_with_vitals = 0
+    cv1_total_abnormal = 0
+    cv1_flag_counts: Counter = Counter()
+    cv1_missing_line_id = 0
+
+    for _cv_day, cv_day_data in cv1_days.items():
+        recs = cv_day_data.get("records", [])
+        cv1_total_records += len(recs)
+        if recs:
+            cv1_days_with_vitals += 1
+        cv1_total_abnormal += cv_day_data.get("abnormal_total", 0)
+        for rec in recs:
+            for flag in rec.get("abnormal_flags", []):
+                cv1_flag_counts[flag] += 1
+            if not rec.get("raw_line_id"):
+                cv1_missing_line_id += 1
+
+    print("CANONICAL VITALS v1 QA:")
+    print(f"  total_canonical_records: {cv1_total_records}")
+    print(f"  days_with_canonical_vitals: {cv1_days_with_vitals}/{len(day_keys)}")
+    print(f"  total_abnormal_flags: {cv1_total_abnormal}")
+    if cv1_flag_counts:
+        print("  top abnormal flag types:")
+        for flag, cnt in cv1_flag_counts.most_common(5):
+            print(f"    {flag}: {cnt}")
+    else:
+        print("  top abnormal flag types: (none)")
+    print(f"  records_missing_raw_line_id: {cv1_missing_line_id}"
+          + (" [OK]" if cv1_missing_line_id == 0 else " [FLAG]"))
+    print()
+
     # ── abnormal vitals counts (locked thresholds) ──────────────
     # Thresholds come from cerebralos.features.vitals_daily.ABNORMAL_THRESHOLDS
     # and are applied per-source via the enriched `abnormal` flag.

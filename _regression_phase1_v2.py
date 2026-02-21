@@ -278,6 +278,17 @@ def compute_patient_box(pat: str) -> str:
 
     lines.append("")
 
+    # ── Canonical Vitals v1 (informational) ──
+    cv1 = features.get("vitals_canonical_v1", {})
+    cv1_days = cv1.get("days", {})
+    cv1_record_count = sum(d.get("count", 0) for d in cv1_days.values())
+    cv1_abnormal_total = sum(d.get("abnormal_total", 0) for d in cv1_days.values())
+    lines.append(f"  Canonical Vitals v1:")
+    lines.append(f"    record_count: {cv1_record_count}")
+    lines.append(f"    abnormal_total: {cv1_abnormal_total}")
+
+    lines.append("")
+
     # ── Artifact Integrity ──
     lines.append(f"  Artifact Integrity:")
     current_hashes = {}

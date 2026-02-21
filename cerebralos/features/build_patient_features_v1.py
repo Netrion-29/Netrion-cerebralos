@@ -62,6 +62,7 @@ from cerebralos.features.services_daily import tag_services_daily
 from cerebralos.features.vitals_daily import extract_vitals_for_day
 from cerebralos.features.gcs_daily import extract_gcs_for_day
 from cerebralos.features.labs_panel_daily import build_labs_panel_daily
+from cerebralos.features.vitals_canonical_v1 import build_canonical_vitals
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -258,6 +259,20 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         dev_block = feature_days[day_iso].get("devices", {})
         feature_days[day_iso]["device_day_counts"] = dev_block.get("day_counts", {})
 
+    # ── canonical vitals v1 (additive, per-day) ─────────────────
+    vitals_canonical_days: Dict[str, Dict[str, Any]] = {}
+    for day_iso in sorted(feature_days.keys()):
+        day_vitals = feature_days[day_iso].get("vitals", {})
+        canonical_records = build_canonical_vitals(
+            day_vitals, arrival_ts=meta.get("arrival_datetime"),
+        )
+        abnormal_total = sum(r["abnormal_count"] for r in canonical_records)
+        vitals_canonical_days[day_iso] = {
+            "records": canonical_records,
+            "count": len(canonical_records),
+            "abnormal_total": abnormal_total,
+        }
+
     # ── evidence gap-day detection ───────────────────────────────
     evidence_gaps: List[Dict[str, Any]] = []
     if len(dated_keys) >= 2:
@@ -307,6 +322,9 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
             "gap_count": len(evidence_gaps),
             "max_gap_days": max_gap,
             "gaps": evidence_gaps,
+        },
+        "vitals_canonical_v1": {
+            "days": vitals_canonical_days,
         },
         "vitals_qa": agg_vitals_qa,
         "warnings": combined_warnings,
