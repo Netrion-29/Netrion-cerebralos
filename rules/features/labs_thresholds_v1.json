@@ -1,0 +1,11 @@
+{
+  "_comment": "Big-change thresholds for lab components. 'abs' = absolute delta. null means no threshold defined.",
+  "_default": {"abs": null},
+  "Creatinine": {"abs": 0.3},
+  "Hgb": {"abs": 2.0},
+  "Hemoglobin": {"abs": 2.0},
+  "WBC": {"abs": 5.0},
+  "INR": {"abs": 0.5},
+  "Platelets": {"abs": 50.0},
+  "Lactate": {"abs": 2.0}
+}

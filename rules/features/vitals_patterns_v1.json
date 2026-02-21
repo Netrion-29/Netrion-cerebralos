@@ -1,0 +1,111 @@
+{
+  "_comment": "Vitals extraction patterns for CerebralOS features. Deterministic regex, no inference.",
+  "_version": "1.0.0",
+
+  "_format_notes": [
+    "Format A — flowsheet table: 'Date and Time\\tTemp\\tPulse\\tResp\\tBP\\tSpO2\\tWeight\\tUser' followed by data rows like '12/11/25 1216\\t98 °F (36.7 °C)\\t68\\t18\\t149/89 (Abnormal)\\t97 %\\t--\\tSH'",
+    "Format B — Visit Vitals block: 'BP\\t128/61' etc. on separate lines",
+    "Format C — inline narrative: 'Vitals: Blood pressure 132/88, pulse 118, temperature 98 °F ..., resp. rate 20, SpO2 100%.'",
+    "Format D — discharge/summary: 'Temp: 98 °F (36.7 °C)\\tBP: 139/74\\tPulse: 66\\tResp: 18\\tSpO2: 96 %'",
+    "Format E — ED Triage Vitals: header row with Temp/Temp src/Pulse/Resp/BP/SpO2, then data row"
+  ],
+
+  "flowsheet_table": {
+    "_comment": "Detect the nursing flowsheet header; subsequent rows are tab-delimited data.",
+    "header_pattern": "^Date and Time\\tTemp\\tPulse\\tResp\\tBP\\tSpO2",
+    "row_pattern": "^(\\d{1,2}/\\d{1,2}/\\d{2,4})\\s+(\\d{4})\\t(.+?)\\t(\\d+(?:\\s*\\(Abnormal\\))?)\\t(\\d+)\\t(!?\\s*\\(\\!\\)\\s*)?([\\d]+/[\\d]+(?:\\s*\\(Abnormal\\))?)\\s*\\t([\\d]+(?:\\.\\d+)?)\\s*%?",
+    "date_format": "%m/%d/%y %H%M"
+  },
+
+  "ed_triage_table": {
+    "_comment": "ED Triage Vitals block: header line, then column headers, then data row.",
+    "header_pattern": "(?i)ED\\s+Triage\\s+Vitals\\s*\\[([^\\]]+)\\]",
+    "col_header_pattern": "^Temp\\tTemp\\s+src\\tPulse\\tResp\\tBP\\tSpO2"
+  },
+
+  "visit_vitals_block": {
+    "_comment": "Visit Vitals block: 'BP\\t128/61' style lines.",
+    "header_pattern": "(?i)^\\s*Visit\\s+Vitals\\s*$"
+  },
+
+  "inline_vitals": {
+    "_comment": "Inline narrative vitals: 'Vitals: blood pressure X/Y, pulse Z, ...'",
+    "trigger_pattern": "(?i)(?:^|\\b)Vitals\\s*:"
+  },
+
+  "discharge_inline": {
+    "_comment": "Discharge summary inline: 'Temp: 98 °F ... BP: 139/74 ...'",
+    "trigger_pattern": "(?i)^\\s*Temp:\\s*[\\d]+(?:\\.\\d+)?\\s*°?\\s*F.*BP:\\s*\\d+/\\d+"
+  },
+
+  "metric_patterns": {
+    "_comment": "Per-metric extraction patterns used across inline/block formats. Each returns named groups.",
+
+    "temp_f": {
+      "patterns": [
+        "(?i)(?:temperature|temp)\\s*(?:src)?\\s*:?\\s*(?:\\(!\\)\\s*)?([\\d]+(?:\\.\\d+)?)\\s*°?\\s*F",
+        "(?i)(?:^|\\t)([\\d]+(?:\\.\\d+)?)\\s*°\\s*F\\s*\\("
+      ],
+      "guardrails": {
+        "min": 85.0,
+        "max": 115.0
+      }
+    },
+
+    "hr": {
+      "patterns": [
+        "(?i)(?:pulse|heart\\s*rate|HR)\\s*(?:\\(!\\)\\s*)?:?\\s*(?:\\(!\\)\\s*)?([\\d]+)",
+        "(?i)(?:^|\\t)(?:\\(!\\)\\s*)?([\\d]+)(?:\\s*\\(Abnormal\\))?\\s*(?:\\t|$)"
+      ],
+      "guardrails": {
+        "min": 20,
+        "max": 300
+      }
+    },
+
+    "rr": {
+      "patterns": [
+        "(?i)(?:resp(?:\\.|iratory)?\\s*(?:rate)?|RR|Resp)\\s*:?\\s*([\\d]+)",
+        "(?i)(?:^|\\t)([\\d]+)\\s*(?:\\t|$)"
+      ],
+      "guardrails": {
+        "min": 4,
+        "max": 60
+      }
+    },
+
+    "spo2": {
+      "patterns": [
+        "(?i)SpO2\\s*:?\\s*([\\d]+(?:\\.\\d+)?)\\s*%?",
+        "(?i)O2\\s*sat\\s*:?\\s*([\\d]+(?:\\.\\d+)?)\\s*%?"
+      ],
+      "guardrails": {
+        "min": 50,
+        "max": 100
+      }
+    },
+
+    "bp": {
+      "patterns": [
+        "(?i)(?:blood\\s*pressure|BP)\\s*(?:\\(!\\)\\s*)?:?\\s*(?:\\(!\\)\\s*)?([\\d]+)\\s*/\\s*([\\d]+)",
+        "(?i)(?:^|\\t)(?:\\(!\\)\\s*)?([\\d]+)\\s*/\\s*([\\d]+)(?:\\s*\\(Abnormal\\))?"
+      ],
+      "guardrails": {
+        "sbp_min": 40,
+        "sbp_max": 300,
+        "dbp_min": 20,
+        "dbp_max": 200
+      }
+    }
+  },
+
+  "negative_context": {
+    "_comment": "Patterns that indicate a number is NOT a vital sign (lab values, med doses, etc).",
+    "exclude_line_patterns": [
+      "(?i)\\b(?:mg|mcg|mEq|units?|grams?|mL)\\s*/\\s*(?:kg|hr|min|dose|tablet)",
+      "(?i)(?:Component|Result|Reference|Normal)\\s*\\t",
+      "(?i)\\bcreatinine|bilirubin|albumin|glucose|potassium|sodium|chloride|calcium|magnesium|phosph|platelet|wbc|rbc|hgb|hct|inr\\b",
+      "(?i)\\bmedication|dose|route|frequency|ordered\\b.*\\t"
+    ]
+  }
+}

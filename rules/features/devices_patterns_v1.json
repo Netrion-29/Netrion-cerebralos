@@ -1,0 +1,110 @@
+{
+  "_comment": "Tri-state device detection patterns. PRESENT if any 'present' match, else NOT_PRESENT if any 'absent' match, else UNKNOWN.",
+  "_carry_forward": {
+    "max_carry_forward_days": 7,
+    "_comment": "Maximum number of consecutive UNKNOWN days to infer PRESENT from last known PRESENT. After this window, reverts to UNKNOWN unless reaffirmed."
+  },
+  "foley": {
+    "present": [
+      "\\bfoley\\b",
+      "\\burinary catheter\\b",
+      "\\bindwelling catheter\\b",
+      "\\burethral catheter\\b",
+      "\\bcondom cath(eter)?\\b",
+      "\\bexternal catheter\\b",
+      "\\bsuprapubic catheter\\b",
+      "\\bsuprapubic tube\\b"
+    ],
+    "absent": [
+      "\\bfoley removed\\b",
+      "\\bremove foley\\b",
+      "\\bdiscontinue foley\\b",
+      "\\bno foley\\b",
+      "\\bwithout foley\\b",
+      "\\bcatheter removed\\b",
+      "\\bdiscontinue.*catheter\\b"
+    ]
+  },
+  "central_line": {
+    "present": [
+      "\\bcentral line\\b",
+      "\\bcvc\\b",
+      "\\bpicc\\b",
+      "\\bcordis\\b",
+      "\\btriple lumen\\b",
+      "\\bcentral venous\\b",
+      "\\bsubclavian.{0,6}(line|catheter)\\b",
+      "\\binternal jugular.{0,6}(line|catheter)\\b",
+      "\\b(right|left|r\\.?|l\\.?)\\s*IJ\\b",
+      "\\bport-a-cath\\b",
+      "\\bvascular access device\\b"
+    ],
+    "absent": [
+      "\\bcentral line removed\\b",
+      "\\bremove (the )?picc\\b",
+      "\\bpicc removed\\b",
+      "\\bno central line\\b",
+      "\\bwithout central line\\b",
+      "\\bline removed\\b",
+      "\\bremoval vascular access\\b"
+    ]
+  },
+  "ett_vent": {
+    "present": [
+      "\\bett\\b",
+      "\\bintubat(ed|ion)\\b",
+      "\\bmechanical ventilation\\b",
+      "\\bon vent\\b",
+      "\\bventilator\\b",
+      "\\btrach(eostomy)?\\b",
+      "\\bendotracheal\\b",
+      "\\bventilated\\b",
+      "\\bvent settings\\b",
+      "\\bventilator mode\\b",
+      "\\btidal volume\\b"
+    ],
+    "absent": [
+      "\\bextubat(ed|ion)\\b",
+      "\\boff vent\\b",
+      "\\bbreathing spontaneously\\b",
+      "\\bdo not intubate\\b",
+      "\\bdo not resuscitate/intubate\\b",
+      "\\bDNR.{0,5}DNI\\b",
+      "\\bno intubation\\b",
+      "\\btrach removed\\b",
+      "\\bdecannulat(ed|ion)\\b"
+    ]
+  },
+  "chest_tube": {
+    "present": [
+      "\\bchest tube\\b",
+      "\\bct to suction\\b",
+      "\\bthoracostomy\\b",
+      "\\bblake drain\\b",
+      "\\bpleural drain\\b"
+    ],
+    "absent": [
+      "\\bchest tube removed\\b",
+      "\\bremove chest tube\\b",
+      "\\bno chest tube\\b",
+      "\\bwithout chest tube\\b",
+      "\\bblake.{0,6}removed\\b"
+    ]
+  },
+  "drain": {
+    "present": [
+      "\\b(jp|jackson[- ]pratt|blake|hemovac)\\b",
+      "\\b(surgical )?drain(s)?\\b",
+      "\\bwound vac\\b",
+      "\\bnegative pressure wound therapy\\b",
+      "\\bprevena\\b"
+    ],
+    "absent": [
+      "\\bdrain removed\\b",
+      "\\bremove (the )?jp\\b",
+      "\\bno drains\\b",
+      "\\bwithout drains\\b",
+      "\\bwound vac (removal|removed|discontinued)\\b"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "_comment": "Service and note-kind detection patterns. First match wins for note_kind.",
+  "services": {
+    "ortho": ["\\borthop(ae)?edics?\\b", "\\bortho\\b"],
+    "neurosurg": ["\\bneurosurgery\\b", "\\bneurosurg\\b"],
+    "trauma": ["\\btrauma\\b"],
+    "critical_care": ["\\bcritical care\\b", "\\bicu\\b", "\\bsicu\\b"],
+    "vascular": ["\\bvascular\\b"],
+    "cardiology": ["\\bcardiology\\b"],
+    "anesthesia": ["\\banesthesia\\b"],
+    "ir": ["\\binterventional radiology\\b", "\\bir consult\\b"]
+  },
+  "note_kinds": {
+    "consult": ["\\bconsult\\b"],
+    "progress": ["\\bprogress note\\b"],
+    "op_note": ["\\boperative note\\b", "\\bop note\\b"],
+    "h&p": ["\\bh&p\\b", "\\bhistory of present illness\\b", "\\bhpi:\\b"],
+    "discharge": ["\\bdischarge\\b"]
+  }
+}

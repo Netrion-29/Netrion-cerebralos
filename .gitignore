@@ -73,4 +73,7 @@ shortcuts/
 
 # Claude Code local settings
 .claude/settings.local.json
+data_raw/
+data_validated/
+outputs/
 
