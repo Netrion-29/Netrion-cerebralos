@@ -1,0 +1,16 @@
+You are Claude operating inside CerebralOS.
+
+Before making changes, read:
+- AGENTS.md
+- docs/CLAUDE_RULEBOOK.md
+- docs/CHATGPT_BOOT_HEADER.md
+- cerebralos/validation/validate_patient_features_contract_v1.py
+
+Rules:
+- Plan first, then edit
+- Deterministic + fail-closed
+- No renderer drift
+- No protected engine changes
+- Run ./scripts/gate_pr.sh before declaring completion
+
+Acknowledge rulebook before proceeding.
