@@ -751,6 +751,37 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── FAST Exam v1 QA ────────────────────────────────────────
+    fast = feats.get("fast_exam_v1", {})
+    print("FAST EXAM v1 QA:")
+    fast_performed = fast.get("fast_performed") or "DATA NOT AVAILABLE"
+    fast_result = fast.get("fast_result")
+    fast_ts = fast.get("fast_ts") or "DATA NOT AVAILABLE"
+    fast_source = fast.get("fast_source") or "DATA NOT AVAILABLE"
+    fast_rule = fast.get("fast_source_rule_id") or "none"
+    fast_raw = fast.get("fast_raw_text") or "DATA NOT AVAILABLE"
+    fast_evidence = fast.get("evidence", [])
+    fast_notes = fast.get("notes", [])
+    fast_warns = fast.get("warnings", [])
+    print(f"  fast_performed: {fast_performed}")
+    print(f"  fast_result: {fast_result if fast_result is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  fast_ts: {fast_ts}")
+    print(f"  fast_source: {fast_source}")
+    print(f"  fast_source_rule_id: {fast_rule}")
+    print(f"  fast_raw_text: {fast_raw}")
+    print(f"  evidence_count: {len(fast_evidence)}")
+    if fast_evidence:
+        for ev in fast_evidence[:3]:
+            print(f"    [{ev.get('ts', 'no_ts')}] {ev.get('snippet', '')[:80]}")
+    if fast_warns:
+        print(f"  warnings ({len(fast_warns)}):")
+        for w in fast_warns[:5]:
+            print(f"    - {w}")
+    if fast_notes:
+        for n in fast_notes:
+            print(f"  note: {n}")
+    print()
+
     print("=" * 60)
     return 0
 

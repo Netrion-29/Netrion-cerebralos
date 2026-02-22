@@ -46,6 +46,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "gi_prophylaxis_v1",
     "base_deficit_monitoring_v1",
     "inr_normalization_v1",
+    "fast_exam_v1",
     "category_activation_v1",
     "vitals_qa",
 })
@@ -162,6 +163,22 @@ def _check_evidence_line_ids(
                     errors.append(
                         f"INR_SERIES_MISSING_RAW_LINE_ID: "
                         f"{inr_missing} inr_series entry(ies) without raw_line_id"
+                    )
+
+        # ── fast_exam_v1: top-level raw_line_id ──
+        if feat_key == "fast_exam_v1":
+            # fast_exam_v1 has a top-level raw_line_id when FAST is found
+            # and evidence[] entries must also have raw_line_id.
+            fast_evidence = feat_val.get("evidence", [])
+            if isinstance(fast_evidence, list):
+                fast_missing = sum(
+                    1 for e in fast_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if fast_missing > 0:
+                    errors.append(
+                        f"FAST_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{fast_missing} evidence entry(ies) without raw_line_id"
                     )
 
         # ── vitals_canonical_v1.days.<date>.records[] ──
