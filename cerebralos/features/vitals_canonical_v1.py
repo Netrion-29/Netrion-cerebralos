@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import hashlib
 from collections import defaultdict
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 # ── Contract v1 abnormal thresholds (locked) ───────────────────────
@@ -246,3 +247,150 @@ def build_canonical_vitals(
     records.sort(key=lambda r: (r["ts"] or "", r["source"] or "", r["raw_line_id"]))
 
     return records
+
+
+# ── Arrival vitals selector ─────────────────────────────────────────
+
+# Source-priority tiers for arrival selection (lower = higher priority).
+_ARRIVAL_SOURCE_PRIORITY: Dict[str, int] = {
+    "TRAUMA_HP":    0,
+    "ED_NOTE":      1,
+    "FLOWSHEET":    2,
+}
+
+# Maximum time-window (minutes) per source tier.
+_ARRIVAL_WINDOW_MINUTES: Dict[str, int] = {
+    "TRAUMA_HP":    30,
+    "ED_NOTE":      60,
+    "FLOWSHEET":    15,
+}
+
+
+def _parse_ts(ts_str: Optional[str]) -> Optional[datetime]:
+    """Parse an ISO-ish timestamp string to datetime. Returns None on failure."""
+    if not ts_str:
+        return None
+    for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S",
+                "%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M"):
+        try:
+            return datetime.strptime(ts_str, fmt)
+        except ValueError:
+            continue
+    return None
+
+
+def select_arrival_vitals(
+    records: List[Dict[str, Any]],
+    arrival_ts: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Deterministic arrival vitals selector per contract §4.
+
+    Hierarchy (first match wins):
+      1. TRAUMA_HP record within 30 min of arrival
+      2. ED_NOTE (triage) record within 60 min of arrival
+      3. First FLOWSHEET record within 15 min of arrival
+      4. DATA NOT AVAILABLE
+
+    Tie-breaking within a tier: earliest timestamp, then lowest raw_line_id.
+
+    Parameters
+    ----------
+    records : list[dict]
+        Canonical vital records for the arrival day.
+    arrival_ts : str, optional
+        Arrival datetime string (ISO or "YYYY-MM-DD HH:MM:SS").
+
+    Returns
+    -------
+    dict
+        Selected arrival vitals with ``selector_rule``, ``selector_source``,
+        and all metric fields, or a DATA NOT AVAILABLE stub.
+    """
+    arrival_dt = _parse_ts(arrival_ts)
+
+    # Filter records that have at least one non-null metric
+    _METRIC_KEYS = ("sbp", "dbp", "map", "hr", "rr", "spo2", "temp_f", "temp_c")
+    viable = [r for r in records if any(r.get(m) is not None for m in _METRIC_KEYS)]
+
+    if not viable:
+        return _arrival_stub("no_viable_records")
+
+    # Evaluate each priority tier in order
+    for source_type in ("TRAUMA_HP", "ED_NOTE", "FLOWSHEET"):
+        priority = _ARRIVAL_SOURCE_PRIORITY[source_type]
+        window_min = _ARRIVAL_WINDOW_MINUTES[source_type]
+
+        candidates = [r for r in viable if r.get("source") == source_type]
+        if not candidates:
+            continue
+
+        # Apply time-window filter when arrival_dt is available
+        if arrival_dt is not None:
+            window_delta = timedelta(minutes=window_min)
+            filtered = []
+            for r in candidates:
+                r_dt = _parse_ts(r.get("ts"))
+                if r_dt is None:
+                    continue  # fail-closed: no ts → skip
+                delta = r_dt - arrival_dt
+                if timedelta(0) <= delta <= window_delta:
+                    filtered.append(r)
+            candidates = filtered
+
+        if not candidates:
+            continue
+
+        # Tie-break: earliest ts, then lowest raw_line_id
+        candidates.sort(key=lambda r: (r.get("ts") or "", r.get("raw_line_id") or ""))
+        selected = candidates[0]
+
+        return _arrival_selected(selected, source_type, priority)
+
+    return _arrival_stub("no_qualifying_record")
+
+
+def _arrival_selected(record: Dict[str, Any], source_type: str, priority: int) -> Dict[str, Any]:
+    """Build arrival vitals result from a selected canonical record."""
+    return {
+        "status": "selected",
+        "selector_rule": f"tier_{priority}_{source_type}",
+        "selector_source": source_type,
+        "ts": record.get("ts"),
+        "day": record.get("day"),
+        "raw_line_id": record.get("raw_line_id"),
+        "confidence": record.get("confidence"),
+        "sbp": record.get("sbp"),
+        "dbp": record.get("dbp"),
+        "map": record.get("map"),
+        "hr": record.get("hr"),
+        "rr": record.get("rr"),
+        "spo2": record.get("spo2"),
+        "temp_c": record.get("temp_c"),
+        "temp_f": record.get("temp_f"),
+        "abnormal_flags": record.get("abnormal_flags", []),
+        "abnormal_count": record.get("abnormal_count", 0),
+    }
+
+
+def _arrival_stub(reason: str) -> Dict[str, Any]:
+    """Build DATA NOT AVAILABLE stub for arrival vitals."""
+    return {
+        "status": "DATA NOT AVAILABLE",
+        "selector_rule": reason,
+        "selector_source": None,
+        "ts": None,
+        "day": None,
+        "raw_line_id": None,
+        "confidence": None,
+        "sbp": None,
+        "dbp": None,
+        "map": None,
+        "hr": None,
+        "rr": None,
+        "spo2": None,
+        "temp_c": None,
+        "temp_f": None,
+        "abnormal_flags": [],
+        "abnormal_count": 0,
+    }
