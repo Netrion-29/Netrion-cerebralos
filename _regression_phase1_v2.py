@@ -337,6 +337,8 @@ def compute_patient_box(pat: str) -> str:
     # ── Base Deficit Monitoring v1 (informational) ──
     bdm = feats.get("base_deficit_monitoring_v1", {})
     bdm_init_val = bdm.get("initial_bd_value")
+    bdm_init_src = bdm.get("initial_bd_source", "unknown")
+    bdm_cat1_valid = bdm.get("category1_bd_validated")
     bdm_trigger = bdm.get("trigger_bd_gt4")
     bdm_compliant = bdm.get("overall_compliant")
     bdm_windows = bdm.get("monitoring_windows", [])
@@ -350,6 +352,8 @@ def compute_patient_box(pat: str) -> str:
     bdm_notes = bdm.get("notes", [])
     lines.append(f"  Base Deficit Monitoring v1:")
     lines.append(f"    initial_bd_value: {bdm_init_val if bdm_init_val is not None else DNA}")
+    lines.append(f"    initial_bd_source: {bdm_init_src}")
+    lines.append(f"    category1_bd_validated: {bdm_cat1_valid if bdm_cat1_valid is not None else DNA}")
     lines.append(f"    trigger_bd_gt4: {bdm_trigger if bdm_trigger is not None else DNA}")
     lines.append(f"    overall_compliant: {bdm_compliant if bdm_compliant is not None else DNA}")
     lines.append(f"    max_gap_hours: {f'{bdm_max_gap:.1f}' if bdm_max_gap is not None else DNA}")
@@ -357,6 +361,19 @@ def compute_patient_box(pat: str) -> str:
     if bdm_notes:
         for _bn in bdm_notes:
             lines.append(f"    note: {_bn}")
+
+    lines.append("")
+
+    # ── INR Normalization v1 (informational) ──
+    inr = feats.get("inr_normalization_v1", {})
+    inr_init_val = inr.get("initial_inr_value")
+    inr_count = inr.get("inr_count", 0)
+    inr_warns = inr.get("parse_warnings", [])
+    lines.append(f"  INR Normalization v1:")
+    lines.append(f"    initial_inr_value: {inr_init_val if inr_init_val is not None else DNA}")
+    lines.append(f"    inr_count: {inr_count}")
+    if inr_warns:
+        lines.append(f"    parse_warnings: {len(inr_warns)}")
 
     lines.append("")
 

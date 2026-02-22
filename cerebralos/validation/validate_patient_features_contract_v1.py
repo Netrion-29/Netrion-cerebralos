@@ -45,6 +45,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "dvt_prophylaxis_v1",
     "gi_prophylaxis_v1",
     "base_deficit_monitoring_v1",
+    "inr_normalization_v1",
     "category_activation_v1",
     "vitals_qa",
 })
@@ -147,6 +148,20 @@ def _check_evidence_line_ids(
                     errors.append(
                         f"BD_SERIES_MISSING_RAW_LINE_ID: "
                         f"{bd_missing} bd_series entry(ies) without raw_line_id"
+                    )
+
+        # ── inr_normalization_v1.inr_series[] ──
+        if feat_key == "inr_normalization_v1":
+            inr_series = feat_val.get("inr_series", [])
+            if isinstance(inr_series, list):
+                inr_missing = sum(
+                    1 for e in inr_series
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if inr_missing > 0:
+                    errors.append(
+                        f"INR_SERIES_MISSING_RAW_LINE_ID: "
+                        f"{inr_missing} inr_series entry(ies) without raw_line_id"
                     )
 
         # ── vitals_canonical_v1.days.<date>.records[] ──

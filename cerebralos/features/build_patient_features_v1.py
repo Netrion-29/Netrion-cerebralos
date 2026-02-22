@@ -66,6 +66,7 @@ from cerebralos.features.vitals_canonical_v1 import build_canonical_vitals, sele
 from cerebralos.features.dvt_prophylaxis_v1 import extract_dvt_prophylaxis
 from cerebralos.features.gi_prophylaxis_v1 import extract_gi_prophylaxis
 from cerebralos.features.base_deficit_monitoring_v1 import extract_base_deficit_monitoring
+from cerebralos.features.inr_normalization_v1 import extract_inr_normalization
 from cerebralos.features.category_activation_v1 import build_category_activation_v1
 
 
@@ -344,6 +345,11 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
 
+    # ── INR normalization v1 (additive, cross-day) ──────────────
+    inr_normalization = extract_inr_normalization(
+        {"days": feature_days},  # pat_features subset
+    )
+
     # ── Category I Trauma Activation v1 (additive, patient-level) ─
     category_activation = build_category_activation_v1(days_data)
 
@@ -356,6 +362,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "dvt_prophylaxis_v1": dvt_prophylaxis,
         "gi_prophylaxis_v1": gi_prophylaxis,
         "base_deficit_monitoring_v1": base_deficit_monitoring,
+        "inr_normalization_v1": inr_normalization,
         "category_activation_v1": category_activation,
         "vitals_qa": agg_vitals_qa,
     }

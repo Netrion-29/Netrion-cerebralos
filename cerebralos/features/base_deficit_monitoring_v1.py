@@ -392,11 +392,19 @@ def extract_base_deficit_monitoring(
             if max_gap_hours is None or wg > max_gap_hours:
                 max_gap_hours = wg
 
+    # ── Step 6: Category I BD validation (arterial source check) ──
+    cat1_bd_validated, validation_failure_reason = _validate_category1_bd(
+        initial, bd_series,
+    )
+
     return {
         "initial_bd_ts": initial["ts"],
         "initial_bd_value": initial["value"],
         "initial_bd_source": initial["specimen"],
         "initial_bd_raw_line_id": initial["raw_line_id"],
+
+        "category1_bd_validated": cat1_bd_validated,
+        "validation_failure_reason": validation_failure_reason,
 
         "trigger_bd_gt4": trigger_bd_gt4,
         "first_trigger_ts": first_trigger_ts,
@@ -409,6 +417,50 @@ def extract_base_deficit_monitoring(
         "noncompliance_reasons": noncompliance_reasons,
         "notes": notes,
     }
+
+
+# ── Category I BD arterial source validation ───────────────────────
+
+
+def _validate_category1_bd(
+    initial: Dict[str, Any],
+    bd_series: List[Dict[str, Any]],
+) -> Tuple[bool, Optional[str]]:
+    """
+    Validate the initial BD for Category I arterial source.
+
+    Returns (validated: bool, failure_reason: str | None).
+
+    Rules (deterministic, fail-closed):
+      - If no BD values found → (False, "no BD values found")
+      - If initial BD source is "arterial" → (True, None)
+      - If initial BD source is "venous" →
+            (False, "initial BD drawn from venous source (VBG)")
+      - If initial BD source is "unknown" →
+            (False, "specimen source not confirmed arterial; "
+             "cannot validate as ABG")
+
+    Also check the full series: if ANY entry is arterial, note in reason.
+    """
+    source = initial.get("specimen", "unknown")
+
+    if source == "arterial":
+        return True, None
+
+    # Not arterial — check if any later specimen is arterial
+    any_arterial = any(e["specimen"] == "arterial" for e in bd_series)
+
+    if source == "venous":
+        reason = "initial BD drawn from venous source (VBG)"
+        if any_arterial:
+            reason += "; later arterial BD exists in series"
+        return False, reason
+
+    # source == "unknown"
+    reason = "specimen source not confirmed arterial; cannot validate as ABG"
+    if any_arterial:
+        reason += "; later arterial BD exists in series"
+    return False, reason
 
 
 # ── Window builder ──────────────────────────────────────────────────
@@ -641,6 +693,9 @@ def _empty_result(note: str) -> Dict[str, Any]:
         "initial_bd_value": None,
         "initial_bd_source": "unknown",
         "initial_bd_raw_line_id": None,
+
+        "category1_bd_validated": False,
+        "validation_failure_reason": note,
 
         "trigger_bd_gt4": None,
         "first_trigger_ts": None,

@@ -693,6 +693,8 @@ def main() -> int:
     bdm_init_ts = bdm.get("initial_bd_ts") or "DATA NOT AVAILABLE"
     bdm_init_val = bdm.get("initial_bd_value")
     bdm_init_src = bdm.get("initial_bd_source") or "unknown"
+    bdm_cat1_valid = bdm.get("category1_bd_validated")
+    bdm_valid_reason = bdm.get("validation_failure_reason")
     bdm_trigger = bdm.get("trigger_bd_gt4")
     bdm_compliant = bdm.get("overall_compliant")
     bdm_series = bdm.get("bd_series", [])
@@ -702,6 +704,9 @@ def main() -> int:
     print(f"  initial_bd_ts: {bdm_init_ts}")
     print(f"  initial_bd_value: {bdm_init_val if bdm_init_val is not None else 'DATA NOT AVAILABLE'}")
     print(f"  initial_bd_source: {bdm_init_src}")
+    print(f"  category1_bd_validated: {bdm_cat1_valid if bdm_cat1_valid is not None else 'DATA NOT AVAILABLE'}")
+    if bdm_valid_reason:
+        print(f"  validation_failure_reason: {bdm_valid_reason}")
     print(f"  trigger_bd_gt4: {bdm_trigger if bdm_trigger is not None else 'DATA NOT AVAILABLE'}")
     print(f"  overall_compliant: {bdm_compliant if bdm_compliant is not None else 'DATA NOT AVAILABLE'}")
     print(f"  bd_series_count: {len(bdm_series)}")
@@ -717,6 +722,32 @@ def main() -> int:
             print(f"    - {r}")
     if bdm_notes:
         for n in bdm_notes:
+            print(f"  note: {n}")
+    print()
+
+    # ── INR Normalization v1 QA ─────────────────────────────────
+    inr = feats.get("inr_normalization_v1", {})
+    print("INR NORMALIZATION v1 QA:")
+    inr_init_ts = inr.get("initial_inr_ts") or "DATA NOT AVAILABLE"
+    inr_init_val = inr.get("initial_inr_value")
+    inr_count = inr.get("inr_count", 0)
+    inr_series = inr.get("inr_series", [])
+    inr_warns = inr.get("parse_warnings", [])
+    inr_notes = inr.get("notes", [])
+    print(f"  initial_inr_ts: {inr_init_ts}")
+    print(f"  initial_inr_value: {inr_init_val if inr_init_val is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  initial_inr_source_lab: {inr.get('initial_inr_source_lab') or 'DATA NOT AVAILABLE'}")
+    print(f"  inr_count: {inr_count}")
+    if inr_series:
+        print("  inr_series (first 3):")
+        for e in inr_series[:3]:
+            print(f"    [{e.get('ts', 'no_ts')}] value={e.get('inr_value')} lab={e.get('source_lab')}")
+    if inr_warns:
+        print(f"  parse_warnings ({len(inr_warns)}):")
+        for w in inr_warns[:5]:
+            print(f"    - {w}")
+    if inr_notes:
+        for n in inr_notes:
             print(f"  note: {n}")
     print()
 

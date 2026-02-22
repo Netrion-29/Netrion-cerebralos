@@ -17,6 +17,9 @@
     "initial_bd_source": "arterial|venous|unknown",
     "initial_bd_raw_line_id": "..." | null,
 
+    "category1_bd_validated": boolean,
+    "validation_failure_reason": string | null,
+
     "trigger_bd_gt4": boolean | null,
     "first_trigger_ts": "ISO" | null,
 
@@ -71,6 +74,16 @@
 - **venous**: explicit VBG / "venous" context on the same line.
 - **unknown**: no explicit specimen context.
 - Do NOT infer arterial from timing alone.
+
+### Category I BD Validation (Arterial Source Check)
+- `category1_bd_validated = true` only when `initial_bd_source == "arterial"`.
+- `category1_bd_validated = false` when source is "venous" or "unknown".
+- `validation_failure_reason` is a deterministic string explaining why validation failed:
+  - No BD values: mirrors the DATA NOT AVAILABLE note.
+  - Venous source: `"initial BD drawn from venous source (VBG)"`.
+  - Unknown source: `"specimen source not confirmed arterial; cannot validate as ABG"`.
+  - If a later arterial BD exists in the series, this is appended to the reason.
+- Fail-closed: if source cannot be confirmed arterial, the BD is NOT validated.
 
 ### Trigger
 - Activates if **any** BD value > 4 (per Deaconess protocol).
