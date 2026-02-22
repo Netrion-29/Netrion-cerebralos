@@ -90,4 +90,32 @@ William_Simmons
 Timothy_Cowan
 Timothy_Nachtwey
 
+---
+
+## 6) raw_line_id Format Policy
+
+Every stored evidence item and every feature-layer evidence entry
+must include a non-empty `raw_line_id`. Two formats are currently
+in use:
+
+| Layer           | Format                                    | Example                            |
+|-----------------|-------------------------------------------|------------------------------------|
+| Layer 0 (evidence) | `L{line_start}-L{line_end}`            | `L42-L47`                          |
+| Feature layer      | `sha256(source_id|dt|preview)[:16]`    | `a3f8c01b7e2d4916`                 |
+
+**Rules:**
+
+1. Both formats are acceptable provided they are **deterministic**
+   and **traceable** back to the source evidence.
+2. A given layer must use exactly one format consistently.
+3. `raw_line_id` must never be empty, null, or omitted.
+4. Any change to the derivation formula requires a version bump to
+   the corresponding contract document.
+
+**Future normalization (doc note — no code changes):**
+A future PR may unify both layers to a single format (likely the
+line-range format `L{start}-L{end}`) for simpler cross-layer audit
+tracing. This will be tracked as a Tier 3 hardening task. Until then,
+both formats coexist.
+
 End of rulebook.

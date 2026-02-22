@@ -48,7 +48,15 @@
 > git status
 > ./scripts/gate_pr.sh
 > ```
-> Paste the gate output and a short summary back.
+> Always include this exact `Return:` block at the end of the prompt:
+> ```
+> Return:
+> 1) Claude SUMMARY (files changed + why)
+> 2) Terminal output tail (include baseline drift check block + final gate line)
+> 3) git diff --name-only
+> 4) git status --short
+> 5) Any blockers/open questions
+> ```
 
 ---
 
@@ -146,3 +154,19 @@ After `./scripts/dev_start.sh` completes, paste this block into Codex:
 > 5) If clean, give commit message and exact git commands.
 
 If `codex_handoff.md` contains placeholders, treat as FAIL and re-run the gate.
+
+---
+
+## 8) Standard Claude Return Block
+
+Use this in every Codex→Claude prompt so handoffs are consistent and
+review-ready:
+
+```text
+Return:
+1) Claude SUMMARY (files changed + why)
+2) Terminal output tail (include baseline drift check block + final gate line)
+3) git diff --name-only
+4) git status --short
+5) Any blockers/open questions
+```

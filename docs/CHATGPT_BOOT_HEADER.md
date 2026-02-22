@@ -26,7 +26,11 @@
 2. Do NOT change v3/v4 renderer outputs unless explicitly planned.
 3. Do NOT modify NTDS engine (`cerebralos/ntds_logic/engine.py`) unless explicitly planned.
 4. Do NOT modify protocol engine (`cerebralos/protocol_engine/engine.py`) unless explicitly planned.
-5. Every evidence item stored must include `raw_line_id` (SHA-256[:16]).
+5. Every evidence item stored must include `raw_line_id`.
+   - Layer-0 evidence format: `L{line_start}-L{line_end}` (line-range).
+   - Feature-layer format: `sha256(source_id|dt|preview)[:16]` (hash).
+   - Both are acceptable if deterministic and traceable.
+   - See `docs/CODEX_RULEBOOK.md` §6 for full policy.
 6. No scope creep — each PR must state what it changes and what it does NOT change.
 
 ## Canonical Pipeline
