@@ -27,6 +27,7 @@ Codex must not assume context outside repo files.
 6. No scope creep.
 
 If a change affects schema:
+
 - update contract docs
 - update validators
 - update consumers
@@ -49,6 +50,7 @@ build, patient_id, days, evidence_gaps, features, warnings, warnings_summary
 All feature modules MUST live only under top-level "features" dict.
 
 Forbidden:
+
 - dvt_prophylaxis_v1 at top-level
 - gi_prophylaxis_v1 at top-level
 - base_deficit_monitoring_v1 at top-level
@@ -68,12 +70,14 @@ Codex may not declare work complete until:
 ./scripts/gate_pr.sh
 
 passes with:
+
 - Deterministic: True
 - Zero unintended artifact drift: True
 - Contract validator passes
 - v4 hashes printed
 
 ### Baseline drift modes
+
 - **Normal** (`./scripts/gate_pr.sh`): compares sha256 of each patient's
   `TRAUMA_DAILY_NOTES_v4.txt` against `scripts/baselines/v4_hashes_v1.json`.
   Fails on any mismatch, missing patient, or missing baseline file.
@@ -101,7 +105,7 @@ in use:
 | Layer           | Format                                    | Example                            |
 |-----------------|-------------------------------------------|------------------------------------|
 | Layer 0 (evidence) | `L{line_start}-L{line_end}`            | `L42-L47`                          |
-| Feature layer      | `sha256(source_id|dt|preview)[:16]`    | `a3f8c01b7e2d4916`                 |
+| Feature layer      | `sha256(source_id\|dt\|preview)[:16]`  | `a3f8c01b7e2d4916`                 |
 
 **Rules:**
 

@@ -4,7 +4,8 @@
 
 1. Open VS Code in repo root (`~/NetrionSystems/netrion-cerebralos`).
 2. Run:
-   ```
+
+   ```bash
    ./scripts/dev_start.sh
    ```
 3. Copy or open `outputs/audit/codex_handoff.md`.
@@ -26,6 +27,7 @@
 > Goal for this session: `<ONE-LINE GOAL>`
 >
 > Propose:
+>
 > 1. Allowed files to modify
 > 2. Exact terminal commands for Claude to run
 > 3. Expected outputs / acceptance criteria
@@ -43,13 +45,16 @@
 > Goal for this session: `<ONE-LINE GOAL>`
 >
 > Implement the changes, then run:
-> ```
+>
+> ```bash
 > cd ~/NetrionSystems/netrion-cerebralos
 > git status
 > ./scripts/gate_pr.sh
 > ```
+>
 > Always include this exact `Return:` block at the end of the prompt:
-> ```
+>
+> ```text
 > Return:
 > 1) Claude SUMMARY (files changed + why)
 > 2) Terminal output tail (include baseline drift check block + final gate line)
@@ -69,6 +74,7 @@ git status
 ```
 
 Gate must exit 0 with:
+
 - All v4 baseline hashes: MATCH
 - Regression: PASS
 - Zero unintended artifact drift: True
@@ -78,10 +84,12 @@ Gate must exit 0 with:
 ## 4) When to use `--update-baseline`
 
 Use **only** when:
+
 - An intentional, reviewed change alters v4 report output.
 - You have confirmed the new output is correct.
 
 When you do:
+
 ```bash
 ./scripts/gate_pr.sh --update-baseline
 ```
@@ -89,7 +97,7 @@ When you do:
 **Required**: include an explicit note in the commit message explaining
 why the baseline changed, e.g.:
 
-```
+```text
 feat: add GI prophylaxis section to v4 report
 
 Baseline updated: v4 output now includes GI prophylaxis rows.
@@ -104,7 +112,7 @@ Never use `--update-baseline` to silence an unexpected mismatch.
 After Claude completes work and the gate passes, paste **exactly** this
 back to Codex:
 
-```
+```text
 ## Claude summary
 <2-5 bullet points: what changed, what was verified>
 
@@ -147,6 +155,7 @@ After `./scripts/dev_start.sh` completes, paste this block into Codex:
 > Review `outputs/audit/codex_handoff.md`.
 >
 > Do the following:
+>
 > 1) Verify changes obey AGENTS.md constraints.
 > 2) Confirm no renderer/NTDS/protocol drift.
 > 3) Confirm baseline gate behavior matches spec.

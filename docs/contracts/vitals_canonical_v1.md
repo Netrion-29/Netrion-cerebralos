@@ -133,7 +133,7 @@ Every canonical vital record **must** map to exactly one non-empty
 In the current implementation, canonical vitals use a **sha256-based**
 `raw_line_id`:
 
-```
+```text
 sha256(f"{source_id}|{dt}|{preview}")[:16]
 ```
 
@@ -151,7 +151,7 @@ policy across layers.
 
 Each day's canonical vitals are stored under:
 
-```
+```text
 features.vitals_canonical_v1.days.<YYYY-MM-DD>
 ```
 
@@ -171,7 +171,7 @@ With structure:
 
 Records within a day are sorted by:
 
-```
+```text
 (ts or "", source or "", raw_line_id)
 ```
 

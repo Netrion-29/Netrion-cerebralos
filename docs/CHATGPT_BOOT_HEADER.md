@@ -7,7 +7,7 @@
 ## Project
 
 | Key | Value |
-|---|---|
+| --- | --- |
 | Project | Netrion CerebralOS |
 | Repo path | `~/NetrionSystems/netrion-cerebralos` |
 | Primary branch | `main` |
@@ -35,7 +35,7 @@
 
 ## Canonical Pipeline
 
-```
+```text
 data_raw/$PAT.txt
 → cerebralos/ingest/parse_patient_txt.py          → outputs/evidence/$PAT/patient_evidence_v1.json
 → cerebralos/timeline/build_patient_days.py        → outputs/timeline/$PAT/patient_days_v1.json
@@ -50,7 +50,7 @@ Entry point: `./run_patient.sh $PAT`
 
 **Allowed top-level keys (exactly):**
 
-```
+```text
 build, patient_id, days, evidence_gaps, features, warnings, warnings_summary
 ```
 
@@ -101,7 +101,7 @@ python3 cerebralos/validation/validate_patient_features_contract_v1.py \
 ## Key Test Patients
 
 | Patient | Notes |
-|---|---|
+| --- | --- |
 | Anna_Dennis | Baseline regression patient (determinism anchor) |
 | William_Simmons | Abnormal vitals alignment patient |
 | Timothy_Cowan | BD monitoring, device carry-forward |
@@ -110,7 +110,7 @@ python3 cerebralos/validation/validate_patient_features_contract_v1.py \
 ## Rules / Config Files
 
 | Path | Purpose |
-|---|---|
+| --- | --- |
 | `rules/features/*.json` | Feature extraction configs (thresholds, patterns) |
 | `rules/ntds/*.json` | NTDS event definitions |
 | `rules/protocols/*.json` | Protocol definitions |
@@ -118,7 +118,7 @@ python3 cerebralos/validation/validate_patient_features_contract_v1.py \
 
 ## Directory Layout (Key Paths)
 
-```
+```text
 cerebralos/
   features/          ← Layer 2: per-day + cross-day feature extraction
   ingest/            ← Layer 0: raw text → evidence JSON
