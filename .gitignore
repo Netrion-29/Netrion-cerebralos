@@ -67,6 +67,7 @@ cerebralos/Important Info/
 debug_*.py
 test_*.py
 !tests/
+!tests/test_*.py
 
 # Shortcut scripts (local only)
 shortcuts/

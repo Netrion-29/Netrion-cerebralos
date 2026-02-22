@@ -62,7 +62,7 @@ from cerebralos.features.services_daily import tag_services_daily
 from cerebralos.features.vitals_daily import extract_vitals_for_day
 from cerebralos.features.gcs_daily import extract_gcs_for_day
 from cerebralos.features.labs_panel_daily import build_labs_panel_daily
-from cerebralos.features.vitals_canonical_v1 import build_canonical_vitals
+from cerebralos.features.vitals_canonical_v1 import build_canonical_vitals, select_arrival_vitals
 from cerebralos.features.dvt_prophylaxis_v1 import extract_dvt_prophylaxis
 from cerebralos.features.gi_prophylaxis_v1 import extract_gi_prophylaxis
 from cerebralos.features.base_deficit_monitoring_v1 import extract_base_deficit_monitoring
@@ -277,6 +277,15 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
             "abnormal_total": abnormal_total,
         }
 
+    # ── arrival vitals selector (deterministic hierarchy) ───────
+    arrival_ts_str = meta.get("arrival_datetime")
+    arrival_day_iso = arrival_ts_str[:10] if arrival_ts_str else None
+    arrival_day_records = (
+        vitals_canonical_days.get(arrival_day_iso, {}).get("records", [])
+        if arrival_day_iso else []
+    )
+    arrival_vitals = select_arrival_vitals(arrival_day_records, arrival_ts_str)
+
     # ── evidence gap-day detection ───────────────────────────────
     evidence_gaps: List[Dict[str, Any]] = []
     if len(dated_keys) >= 2:
@@ -342,6 +351,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
     features: Dict[str, Any] = {
         "vitals_canonical_v1": {
             "days": vitals_canonical_days,
+            "arrival_vitals": arrival_vitals,
         },
         "dvt_prophylaxis_v1": dvt_prophylaxis,
         "gi_prophylaxis_v1": gi_prophylaxis,

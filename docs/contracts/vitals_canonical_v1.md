@@ -93,17 +93,56 @@ Enforced by: `CANONICAL_ABNORMAL_THRESHOLDS` dict in
 
 ---
 
-## 4. Arrival Selector Rules (Draft — Not Yet Implemented)
+## 4. Arrival Selector Rules (Implemented)
 
-Arrival vital selection hierarchy (planned):
+Deterministic, fail-closed arrival vitals selector.
+Implemented in `select_arrival_vitals()` in
+`cerebralos/features/vitals_canonical_v1.py`.
 
-1. TRAUMA_HP Primary Survey vitals within 30 min of arrival
-2. ED triage vitals
-3. First FLOWSHEET within 15 minutes
-4. Otherwise: DATA NOT AVAILABLE
+### 4.1 Hierarchy
 
-This selector must be deterministic and unit-tested before activation.
-See Tier 0.3 in `docs/roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md`.
+| Priority | Source       | Window                | Rule Label           |
+|----------|--------------|-----------------------|----------------------|
+| Tier 0   | TRAUMA_HP    | ≤ 30 min post-arrival | `tier_0_TRAUMA_HP`   |
+| Tier 1   | ED_NOTE      | ≤ 60 min post-arrival | `tier_1_ED_NOTE`     |
+| Tier 2   | FLOWSHEET    | ≤ 15 min post-arrival | `tier_2_FLOWSHEET`   |
+| Else     | —            | —                     | DATA NOT AVAILABLE   |
+
+### 4.2 Selection Rules
+
+1. Records must have **at least one non-null** metric value to be viable.
+2. Time window is measured as `record_ts − arrival_ts`; delta must be
+   `>= 0` (at or after arrival) and `<= window` (inclusive boundary).
+3. If `arrival_ts` is unavailable (None), time-window filtering is
+   skipped; source-hierarchy ordering still applies.
+4. Within a tier, ties are broken by **(earliest ts, lowest raw_line_id)**.
+5. First qualifying tier wins — lower tiers are never evaluated.
+
+### 4.3 Output Schema
+
+| Key               | Type           | Notes                                |
+|-------------------|----------------|--------------------------------------|
+| `status`          | str            | `"selected"` or `"DATA NOT AVAILABLE"` |
+| `selector_rule`   | str            | e.g. `"tier_0_TRAUMA_HP"`           |
+| `selector_source` | str \| None    | Source type or None for stubs        |
+| `ts`              | str \| None    | Timestamp of selected record         |
+| `day`             | str \| None    | Day of selected record               |
+| `raw_line_id`     | str \| None    | Provenance of selected record        |
+| `confidence`      | int \| None    | Confidence score or None             |
+| `sbp` … `temp_f`  | float \| None  | All metric fields carried through    |
+| `abnormal_flags`  | list[str]      | Flags from selected record           |
+| `abnormal_count`  | int            | Count from selected record           |
+
+### 4.4 Integration
+
+Result is stored at `features.vitals_canonical_v1.arrival_vitals` in
+`patient_features_v1.json`. Computed once per patient from the arrival
+day's canonical records.
+
+### 4.5 Test Coverage
+
+19 unit tests in `tests/test_arrival_vitals.py` covering all tiers,
+tie-breaking, edge cases, null handling, and output schema completeness.
 
 ---
 
