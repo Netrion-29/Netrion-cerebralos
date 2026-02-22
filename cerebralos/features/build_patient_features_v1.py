@@ -67,6 +67,7 @@ from cerebralos.features.dvt_prophylaxis_v1 import extract_dvt_prophylaxis
 from cerebralos.features.gi_prophylaxis_v1 import extract_gi_prophylaxis
 from cerebralos.features.base_deficit_monitoring_v1 import extract_base_deficit_monitoring
 from cerebralos.features.inr_normalization_v1 import extract_inr_normalization
+from cerebralos.features.fast_exam_v1 import extract_fast_exam
 from cerebralos.features.category_activation_v1 import build_category_activation_v1
 
 
@@ -350,6 +351,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         {"days": feature_days},  # pat_features subset
     )
 
+    # ── FAST exam v1 (additive, patient-level) ─────────────────
+    fast_exam = extract_fast_exam(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     # ── Category I Trauma Activation v1 (additive, patient-level) ─
     category_activation = build_category_activation_v1(days_data)
 
@@ -363,6 +370,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "gi_prophylaxis_v1": gi_prophylaxis,
         "base_deficit_monitoring_v1": base_deficit_monitoring,
         "inr_normalization_v1": inr_normalization,
+        "fast_exam_v1": fast_exam,
         "category_activation_v1": category_activation,
         "vitals_qa": agg_vitals_qa,
     }
