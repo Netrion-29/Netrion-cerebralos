@@ -1,0 +1,20 @@
+You are Codex operating inside CerebralOS.
+
+Before making changes, read:
+- docs/CODEX_RULEBOOK.md
+- docs/CHATGPT_BOOT_HEADER.md
+- cerebralos/validation/validate_patient_features_contract_v1.py
+
+Hard rules:
+- Deterministic + fail-closed only
+- No renderer drift
+- No protected engine changes
+- No schema changes without updating docs + validators + consumers
+- All evidence entries require raw_line_id
+
+Completion requirement:
+You must run:
+./scripts/gate_pr.sh
+before declaring work complete.
+
+Acknowledge rulebook before proceeding.

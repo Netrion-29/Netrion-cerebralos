@@ -112,6 +112,7 @@ def compute_patient_box(pat: str) -> str:
         return "\n".join(lines)
 
     days = features.get("days", {})
+    feats = features.get("features", {})
     day_keys = sorted(k for k in days if k != "__UNDATED__")
 
     # ── Arrival GCS (v4 render) ──
@@ -279,7 +280,7 @@ def compute_patient_box(pat: str) -> str:
     lines.append("")
 
     # ── Canonical Vitals v1 (informational) ──
-    cv1 = features.get("vitals_canonical_v1", {})
+    cv1 = feats.get("vitals_canonical_v1", {})
     cv1_days = cv1.get("days", {})
     cv1_record_count = sum(d.get("count", 0) for d in cv1_days.values())
     cv1_abnormal_total = sum(d.get("abnormal_total", 0) for d in cv1_days.values())
@@ -290,7 +291,7 @@ def compute_patient_box(pat: str) -> str:
     lines.append("")
 
     # ── DVT Prophylaxis v1 (informational) ──
-    dvt = features.get("dvt_prophylaxis_v1", {})
+    dvt = feats.get("dvt_prophylaxis_v1", {})
     dvt_pharm_ts = dvt.get("pharm_first_ts") or DNA
     dvt_mech_ts = dvt.get("mech_first_ts") or DNA
     dvt_delay = dvt.get("delay_hours")
@@ -310,6 +311,52 @@ def compute_patient_box(pat: str) -> str:
     lines.append(f"    pharm_ambiguous_mention_count: {dvt_pharm_ambig}")
     lines.append(f"    mech_admin_evidence_count: {dvt_mech_admin}")
     lines.append(f"    orders_only_count: {dvt_orders_only}")
+
+    lines.append("")
+
+    # ── GI Prophylaxis v1 (informational) ──
+    gi = feats.get("gi_prophylaxis_v1", {})
+    gi_pharm_ts = gi.get("pharm_first_ts") or DNA
+    gi_delay = gi.get("delay_hours")
+    gi_flag = gi.get("delay_flag_48h")
+    gi_excluded = gi.get("excluded_reason") or "none"
+    gi_pharm_admin = gi.get("pharm_admin_evidence_count", 0)
+    gi_pharm_ambig = gi.get("pharm_ambiguous_mention_count", 0)
+    gi_orders_only = gi.get("orders_only_count", 0)
+    lines.append(f"  GI Prophylaxis v1 (first admin timing):")
+    lines.append(f"    pharm_first_ts: {gi_pharm_ts}")
+    lines.append(f"    delay_hours: {gi_delay if gi_delay is not None else DNA}")
+    lines.append(f"    delay_flag_48h: {gi_flag if gi_flag is not None else DNA}")
+    lines.append(f"    excluded_reason: {gi_excluded}")
+    lines.append(f"    pharm_admin_evidence_count: {gi_pharm_admin}")
+    lines.append(f"    pharm_ambiguous_mention_count: {gi_pharm_ambig}")
+    lines.append(f"    orders_only_count: {gi_orders_only}")
+
+    lines.append("")
+
+    # ── Base Deficit Monitoring v1 (informational) ──
+    bdm = feats.get("base_deficit_monitoring_v1", {})
+    bdm_init_val = bdm.get("initial_bd_value")
+    bdm_trigger = bdm.get("trigger_bd_gt4")
+    bdm_compliant = bdm.get("overall_compliant")
+    bdm_windows = bdm.get("monitoring_windows", [])
+    bdm_max_gap = None
+    for _bw in bdm_windows:
+        _bwg = _bw.get("max_gap_hours")
+        if _bwg is not None:
+            if bdm_max_gap is None or _bwg > bdm_max_gap:
+                bdm_max_gap = _bwg
+    bdm_violations = sum(len(_bw.get("violations", [])) for _bw in bdm_windows)
+    bdm_notes = bdm.get("notes", [])
+    lines.append(f"  Base Deficit Monitoring v1:")
+    lines.append(f"    initial_bd_value: {bdm_init_val if bdm_init_val is not None else DNA}")
+    lines.append(f"    trigger_bd_gt4: {bdm_trigger if bdm_trigger is not None else DNA}")
+    lines.append(f"    overall_compliant: {bdm_compliant if bdm_compliant is not None else DNA}")
+    lines.append(f"    max_gap_hours: {f'{bdm_max_gap:.1f}' if bdm_max_gap is not None else DNA}")
+    lines.append(f"    violations_count: {bdm_violations}")
+    if bdm_notes:
+        for _bn in bdm_notes:
+            lines.append(f"    note: {_bn}")
 
     lines.append("")
 

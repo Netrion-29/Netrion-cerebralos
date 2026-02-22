@@ -704,6 +704,13 @@ def _parse_items(lines, arrival_dt_str=None):
     return items
 
 
+def _item_with_raw_line_id(item: EvidenceItem) -> dict:
+    """Serialize an EvidenceItem and stamp raw_line_id (AGENTS §5)."""
+    d = asdict(item)
+    d["raw_line_id"] = f"L{item.line_start}-L{item.line_end}"
+    return d
+
+
 def _build_evidence_object(src_path, patient_slug):
     _reset_ts_counts()  # fresh counters per patient
     lines = _read_lines(src_path)
@@ -738,7 +745,7 @@ def _build_evidence_object(src_path, patient_slug):
             "timezone": "America/Chicago",
         },
         "header": header,  # full header KV (auditable)
-        "items": [asdict(it) for it in items],
+        "items": [_item_with_raw_line_id(it) for it in items],
         # Keep raw lines available for debugging without rereading file.
         "raw": {
             "first_50_lines": lines[:50],

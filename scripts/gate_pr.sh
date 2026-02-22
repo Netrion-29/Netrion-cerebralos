@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+# ── Audit output directory ──────────────────────────────────
+GATE_LOG="outputs/audit/last_gate_output.txt"
+HANDOFF_FILE="outputs/audit/codex_handoff.md"
+mkdir -p outputs/audit
+
+# ── gate_body: all original gate logic lives here ───────────
+gate_body() {
+set -euo pipefail   # re-enable inside function/subshell (pipeline runs in subshell)
+
+BASELINE_FILE="scripts/baselines/v4_hashes_v1.json"
+UPDATE_BASELINE=0
+ARGS=()
+
+for arg in "$@"; do
+  if [ "$arg" = "--update-baseline" ]; then
+    UPDATE_BASELINE=1
+  else
+    ARGS+=("$arg")
+  fi
+done
+
+if [ "${#ARGS[@]}" -gt 0 ]; then
+  PATS=("${ARGS[@]}")
+else
+  PATS=("Anna_Dennis" "William_Simmons" "Timothy_Cowan" "Timothy_Nachtwey")
+fi
+
+echo "=============================================="
+echo "CerebralOS PR Gate"
+echo "Repo: $(pwd)"
+echo "Baseline file: $BASELINE_FILE"
+if [ "$UPDATE_BASELINE" -eq 1 ]; then
+  echo "Mode: update baseline"
+else
+  echo "Mode: validate against baseline"
+fi
+echo "=============================================="
+
+TMP_HASHES="$(mktemp)"
+trap 'rm -f "$TMP_HASHES"' EXIT
+
+for PAT in "${PATS[@]}"; do
+  echo
+  echo "---- Running pipeline for: $PAT ----"
+  ./run_patient.sh "$PAT"
+
+  echo "---- v4 hash: $PAT ----"
+  HASH="$(shasum -a 256 "outputs/reporting/$PAT/TRAUMA_DAILY_NOTES_v4.txt" | awk '{print $1}')"
+  echo "$HASH  outputs/reporting/$PAT/TRAUMA_DAILY_NOTES_v4.txt"
+  printf '%s %s\n' "$PAT" "$HASH" >> "$TMP_HASHES"
+done
+
+echo
+echo "---- Baseline drift check ----"
+python3 - "$BASELINE_FILE" "$TMP_HASHES" "$UPDATE_BASELINE" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+baseline_path = Path(sys.argv[1])
+current_path = Path(sys.argv[2])
+update_baseline = sys.argv[3] == "1"
+
+current = {}
+for line in current_path.read_text(encoding="utf-8").splitlines():
+    pat, sha = line.strip().split()
+    current[pat] = sha
+
+if update_baseline:
+    baseline_path.parent.mkdir(parents=True, exist_ok=True)
+    baseline_path.write_text(
+        json.dumps(current, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    print(f"Updated baseline: {baseline_path}")
+    sys.exit(0)
+
+if not baseline_path.is_file():
+    print(f"ERROR: baseline file not found: {baseline_path}")
+    print("Run: ./scripts/gate_pr.sh --update-baseline")
+    sys.exit(1)
+
+baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+ok = True
+all_pats = sorted(set(list(current) + list(baseline)))
+for pat in all_pats:
+    cur = current.get(pat)
+    base = baseline.get(pat)
+    if cur is None:
+        print(f"MISSING in current run: {pat} (expected by baseline)")
+        ok = False
+    elif base is None:
+        print(f"MISSING in baseline: {pat} (present in current run)")
+        ok = False
+    elif base != cur:
+        print(f"MISMATCH {pat}: baseline={base} current={cur}")
+        ok = False
+    else:
+        print(f"MATCH   {pat}: {cur}")
+
+if not ok:
+    sys.exit(1)
+
+print("No v4 drift relative to stored baseline.")
+PY
+
+echo
+echo "---- Running regression ----"
+python3 _regression_phase1_v2.py
+
+echo
+echo "Gate complete."
+
+}  # end gate_body
+
+# ── Run gate, tee to log, preserve exit code ────────────────
+# pipefail (set at top) ensures PIPESTATUS[0] reflects gate_body's
+# real exit code.  We disable -e for this one pipeline so that a
+# gate failure doesn't abort before we can capture the RC and
+# generate the handoff artifact.
+set +e
+gate_body "$@" 2>&1 | tee "$GATE_LOG"
+GATE_RC="${PIPESTATUS[0]}"
+set -e
+
+# ── Generate Codex handoff artifact (must not mask gate RC) ─
+if [ "$GATE_RC" -eq 0 ]; then
+  ./scripts/make_codex_handoff.sh "$GATE_LOG" pass || echo "WARNING: handoff generation failed (gate still PASSED)"
+else
+  ./scripts/make_codex_handoff.sh "$GATE_LOG" fail || echo "WARNING: handoff generation failed (gate FAILED)"
+fi
+
+exit "$GATE_RC"
