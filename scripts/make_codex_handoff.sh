@@ -14,16 +14,46 @@ mkdir -p "$OUTDIR"
 
 # ── Gather data ─────────────────────────────────────────────
 GIT_STATUS="$(git status 2>&1)"
-FILES_TRACKED="$(git diff --name-status HEAD 2>/dev/null || echo '(unable to diff against HEAD)')"
+BRANCH="$(git branch --show-current 2>/dev/null || echo 'unknown')"
+
+# Branch diff vs origin/main — the authoritative changeset for PR review.
+# Falls back to HEAD-only diff if origin/main is unavailable (e.g. shallow clone).
+if git rev-parse --verify origin/main >/dev/null 2>&1; then
+  FILES_BRANCH="$(git diff --name-status origin/main...HEAD 2>/dev/null || true)"
+  DIFF_BASIS="origin/main...HEAD"
+else
+  FILES_BRANCH="$(git diff --name-status HEAD 2>/dev/null || true)"
+  DIFF_BASIS="HEAD (fallback — origin/main not available)"
+fi
+
+# Uncommitted working-tree changes (staged + unstaged vs HEAD)
+FILES_WIP="$(git diff --name-status HEAD 2>/dev/null || true)"
+
+# Untracked files
 FILES_UNTRACKED="$(git ls-files --others --exclude-standard 2>/dev/null || true)"
-FILES_CHANGED="${FILES_TRACKED}"
+
+# Combine branch diff + WIP + untracked for the full picture.
+# Branch diff is the primary section; WIP/untracked are appended if non-empty.
+FILES_CHANGED="${FILES_BRANCH}"
+if [ -n "$FILES_WIP" ]; then
+  FILES_CHANGED="${FILES_CHANGED}
+# uncommitted (working tree vs HEAD):
+${FILES_WIP}"
+fi
 if [ -n "$FILES_UNTRACKED" ]; then
-  # Label untracked files with '?' prefix (like git status --short)
   UNTRACKED_LABELED="$(echo "$FILES_UNTRACKED" | sed 's/^/?\t/')"
   FILES_CHANGED="${FILES_CHANGED}
+# untracked:
 ${UNTRACKED_LABELED}"
 fi
-BRANCH="$(git branch --show-current 2>/dev/null || echo 'unknown')"
+
+# For no-go zone checks, use the branch diff as the primary source
+# (catches committed changes that the old HEAD-only diff missed).
+NOGO_CHECK_LIST="${FILES_BRANCH}"
+if [ -n "$FILES_WIP" ]; then
+  NOGO_CHECK_LIST="${NOGO_CHECK_LIST}
+${FILES_WIP}"
+fi
 
 # Gate output: tail for summary section
 if [ -f "$GATE_FILE" ]; then
@@ -56,7 +86,7 @@ NOGO_FILES=(
 )
 NOGO_SECTION=""
 for f in "${NOGO_FILES[@]}"; do
-  if echo "$FILES_CHANGED" | grep -qF "$f"; then
+  if echo "$NOGO_CHECK_LIST" | grep -qF "$f"; then
     NOGO_SECTION="${NOGO_SECTION}  - ${f}: **YES — CHANGED** (review required)\n"
   else
     NOGO_SECTION="${NOGO_SECTION}  - ${f}: NO (unchanged)\n"
@@ -72,7 +102,7 @@ cat > "$OUTFILE" <<EOF
 
 ---
 
-## Files changed (git diff --name-status HEAD)
+## Files changed (${DIFF_BASIS})
 
 \`\`\`
 ${FILES_CHANGED}
