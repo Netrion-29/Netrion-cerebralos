@@ -8,6 +8,7 @@ Extracts temp_f, hr, rr, spo2, sbp, dbp, map from:
   - Visit Vitals blocks
   - Inline narrative vitals strings
   - Discharge/summary inline vitals
+  - Tabular note-internal vitals (fallback — horizontal, vertical, vital-signs block)
 
 Output per day::
 
@@ -483,7 +484,7 @@ def _parse_visit_vitals_block(
 
 
 # ═════════════════════════════════════════════════════════════════════
-#  Tabular note-internal vitals detection (fail-closed)
+#  Tabular note-internal vitals parsing (fallback)
 # ═════════════════════════════════════════════════════════════════════
 
 # Pattern: multiple timestamps like "12/18/25 0730" on separate lines
@@ -492,93 +493,337 @@ _RE_TABULAR_TS_LINE = re.compile(
     r"^\s*(\d{1,2}/\d{1,2}/\d{2,4})\s+(\d{4})\s*$"
 )
 
-# Pattern: a row of tab or multi-space separated numeric values (BP, HR, etc.)
-_RE_TABULAR_VALUE_ROW = re.compile(
-    r"^\s*(?:\d+(?:\.\d+)?(?:\s*/\s*\d+)?[\s\t]+){2,}"
+# Pattern: vital label at start of a line (colon-delimited)
+_RE_TABULAR_VITAL_LABEL = re.compile(
+    r"(?i)^\s*(BP|Pulse|Temp|Resp|SpO2)\s*:"
 )
 
-# Pattern: column header lines like "BP", "Pulse", "Temp", etc.
-_RE_TABULAR_VITAL_HEADER = re.compile(
-    r"(?i)(?:^|\t)(?:BP|Pulse|Temp|Resp|SpO2|HR|RR|SBP|DBP|MAP|O2\s*Sat)",
+# Non-vital label lines to skip inside tabular blocks
+_RE_TABULAR_SKIP_LABEL = re.compile(
+    r"(?i)^\s*(TempSrc|Weight|Height|BMI|Ht|Wt|O2\s*(?:Flow|Device|Sat)"
+    r"|PainAssessment)\s*:?"
+)
+
+# "Vital Signs:" header for single-value-per-line blocks
+_RE_VITAL_SIGNS_HEADER = re.compile(
+    r"(?i)^\s*(?:\d+\.\s*)?Vital\s+Signs?\s*(?:on\s+discharge\s*)?:\s*$"
 )
 
 
-def _detect_tabular_note_vitals(
+def _extract_metric_from_cell(
+    label: str,
+    cell: str,
+    guardrails: Dict[str, Dict[str, Any]],
+) -> List[Tuple[str, float]]:
+    """Extract metric readings from a single tabular cell.
+
+    Returns list of (metric_name, value) tuples.
+    BP yields (sbp, dbp, map).  Empty / malformed → [].
+    """
+    cell = cell.strip()
+    if not cell:
+        return []
+    # Strip (!) abnormal marker
+    cell = re.sub(r"\(\s*!?\s*\)", "", cell).strip()
+    if not cell:
+        return []
+
+    label_lower = label.lower()
+    results: List[Tuple[str, float]] = []
+
+    if label_lower == "bp":
+        m = re.search(r"(\d+)\s*/\s*(\d+)", cell)
+        if m:
+            sbp = float(m.group(1))
+            dbp = float(m.group(2))
+            g = guardrails.get("bp", {})
+            if (_in_range(sbp, g.get("sbp_min", 40), g.get("sbp_max", 300)) and
+                    _in_range(dbp, g.get("dbp_min", 20), g.get("dbp_max", 200))):
+                results.append(("sbp", sbp))
+                results.append(("dbp", dbp))
+                results.append(("map", _compute_map(sbp, dbp)))
+
+    elif label_lower in ("pulse", "hr"):
+        m = re.search(r"(\d+)", cell)
+        if m:
+            val = float(m.group(1))
+            g = guardrails.get("hr", {})
+            if _in_range(val, g.get("min", 20), g.get("max", 300)):
+                results.append(("hr", val))
+
+    elif label_lower == "temp":
+        m = re.search(r"([\d]+(?:\.\d+)?)\s*°?\s*F", cell)
+        if m:
+            val = float(m.group(1))
+            g = guardrails.get("temp_f", {})
+            if _in_range(val, g.get("min", 85), g.get("max", 115)):
+                results.append(("temp_f", val))
+
+    elif label_lower in ("resp", "rr"):
+        m = re.search(r"(\d+)", cell)
+        if m:
+            val = float(m.group(1))
+            g = guardrails.get("rr", {})
+            if _in_range(val, g.get("min", 4), g.get("max", 60)):
+                results.append(("rr", val))
+
+    elif label_lower == "spo2":
+        m = re.search(r"(\d+(?:\.\d+)?)\s*%?", cell)
+        if m:
+            val = float(m.group(1))
+            g = guardrails.get("spo2", {})
+            if _in_range(val, g.get("min", 50), g.get("max", 100)):
+                results.append(("spo2", val))
+
+    return results
+
+
+def _parse_tabular_note_vitals(
     text: str,
     day_iso: str,
+    item_dt: Optional[str],
     source_id: Any,
-) -> List[Dict[str, Any]]:
-    """
-    Detect note-internal vitals tables that have timestamps on separate lines
-    followed by vital value rows.
+    guardrails: Dict[str, Dict[str, Any]],
+    time_missing: bool = False,
+) -> Tuple[List[_VitalReading], List[Dict[str, Any]]]:
+    """Parse note-internal tabular vitals.
 
-    Returns a list of QA gap records (not actual readings).
-    Marked TABULAR_NOTE_VITALS_UNSUPPORTED for fail-closed handling.
+    Handles three sub-formats:
+      A) Horizontal tabular — tab-separated timestamp header + label rows
+      B) Vertical tabular   — consecutive timestamp lines + label/value groups
+      C) Vital Signs block  — 'Vital Signs:' header + key: value per line
+
+    Returns
+    -------
+    (readings, remaining_gaps)
+        readings       : parsed vitals with source_type="TABULAR"
+        remaining_gaps : blocks detected but not parseable (fail-closed)
     """
+    readings: List[_VitalReading] = []
     gaps: List[Dict[str, Any]] = []
     lines = text.split("\n")
+    parsed_set: set = set()  # line indices consumed by a sub-parser
 
-    # Scan for clusters of timestamp lines (2+ consecutive ts-like lines)
+    # ── A) Horizontal tabular ─────────────────────────────────────
     i = 0
     while i < len(lines):
-        ts_cluster = []
+        line = lines[i]
+        tab_parts = line.split("\t")
+        if len(tab_parts) >= 3:
+            col_ts: List[Tuple[int, Optional[str]]] = []
+            for ci, part in enumerate(tab_parts):
+                p = part.strip()
+                if re.match(r"^\d{1,2}/\d{1,2}/\d{2,4}\s+\d{4}$", p):
+                    col_ts.append((ci, _parse_dt_flowsheet(p, day_iso)))
+
+            valid_ts = [(ci, dt) for ci, dt in col_ts if dt is not None]
+            if len(valid_ts) >= 2:
+                parsed_set.add(i)
+                blk: List[_VitalReading] = []
+                j = i + 1
+                while j < min(i + 25, len(lines)):
+                    row = lines[j]
+                    rp = row.split("\t")
+                    first = (rp[0] if rp else "").strip()
+                    label_m = _RE_TABULAR_VITAL_LABEL.match(first)
+                    if label_m:
+                        label = label_m.group(1)
+                        parsed_set.add(j)
+                        for ci, dt_iso in col_ts:
+                            if dt_iso is None or not dt_iso.startswith(day_iso):
+                                continue
+                            if ci < len(rp):
+                                for mk, mv in _extract_metric_from_cell(
+                                    label, rp[ci], guardrails
+                                ):
+                                    blk.append({
+                                        "metric": mk, "value": mv,
+                                        "dt": dt_iso,
+                                        "source_type": "TABULAR",
+                                        "source_id": source_id,
+                                        "line_preview": row.strip()[:200],
+                                    })
+                        j += 1
+                    elif _RE_TABULAR_SKIP_LABEL.match(first):
+                        parsed_set.add(j)
+                        j += 1
+                    elif row.strip() == "":
+                        j += 1
+                    else:
+                        break
+
+                if blk:
+                    readings.extend(blk)
+                else:
+                    ts_samples = [tab_parts[ci].strip()
+                                  for ci, _ in valid_ts[:5]]
+                    gaps.append({
+                        "gap_type": "TABULAR_NOTE_VITALS_UNSUPPORTED",
+                        "source_id": source_id,
+                        "timestamp_count": len(valid_ts),
+                        "timestamp_samples": ts_samples,
+                        "day_iso": day_iso,
+                        "line_range": str(i + 1),
+                        "preview": line.strip()[:200],
+                    })
+                i = j
+                continue
+
+        i += 1
+
+    # ── B) Vertical tabular ───────────────────────────────────────
+    i = 0
+    while i < len(lines):
+        if i in parsed_set:
+            i += 1
+            continue
+
+        ts_cluster: List[Tuple[int, str, Optional[str]]] = []
         j = i
-        while j < len(lines):
+        while j < len(lines) and j not in parsed_set:
             m = _RE_TABULAR_TS_LINE.match(lines[j])
             if m:
-                ts_cluster.append((j, lines[j].strip()))
+                raw_ts = lines[j].strip()
+                ts_cluster.append(
+                    (j, raw_ts, _parse_dt_flowsheet(raw_ts, day_iso))
+                )
                 j += 1
             else:
                 break
 
         if len(ts_cluster) >= 2:
-            # Check if rows after the cluster contain vitals-like data
-            has_vital_context = False
-            scan_end = min(j + 20, len(lines))
-            for k in range(j, scan_end):
+            for ts_idx, _, _ in ts_cluster:
+                parsed_set.add(ts_idx)
+            num_ts = len(ts_cluster)
+            blk = []
+            scan_end = min(j + num_ts * 12 + 20, len(lines))
+
+            k = j
+            while k < scan_end:
                 ln = lines[k].strip()
-                if _RE_TABULAR_VITAL_HEADER.search(ln) or _RE_TABULAR_VALUE_ROW.match(ln):
-                    has_vital_context = True
-                    break
-                if re.search(r"(?i)(BP|blood\s*press|pulse|temp|resp|SpO2|heart\s*rate)", ln):
-                    has_vital_context = True
-                    break
+                if not ln:
+                    k += 1
+                    continue
 
-            if has_vital_context:
-                ts_samples = [c[1] for c in ts_cluster[:5]]
-                gaps.append({
-                    "gap_type": "TABULAR_NOTE_VITALS_UNSUPPORTED",
-                    "source_id": source_id,
-                    "timestamp_count": len(ts_cluster),
-                    "timestamp_samples": ts_samples,
-                    "day_iso": day_iso,
-                    "line_range": f"{ts_cluster[0][0]+1}-{ts_cluster[-1][0]+1}",
-                    "preview": "; ".join(ts_samples[:3]),
-                })
+                label_m = _RE_TABULAR_VITAL_LABEL.match(ln)
+                if label_m:
+                    label = label_m.group(1)
+                    parsed_set.add(k)
+                    for offset in range(num_ts):
+                        val_idx = k + 1 + offset
+                        if val_idx >= len(lines):
+                            break
+                        val_line = lines[val_idx].strip()
+                        parsed_set.add(val_idx)
+                        # Safety: stop if value line is another label
+                        if (_RE_TABULAR_VITAL_LABEL.match(val_line) or
+                                _RE_TABULAR_SKIP_LABEL.match(val_line)):
+                            break
+                        if not val_line:
+                            continue
 
-            i = j
+                        _, _, dt_iso = ts_cluster[offset]
+                        if dt_iso is None or not dt_iso.startswith(day_iso):
+                            continue
+
+                        for mk, mv in _extract_metric_from_cell(
+                            label, val_line, guardrails
+                        ):
+                            blk.append({
+                                "metric": mk, "value": mv,
+                                "dt": dt_iso,
+                                "source_type": "TABULAR",
+                                "source_id": source_id,
+                                "line_preview": f"{label}: {val_line}"[:200],
+                            })
+
+                    k += 1 + num_ts
+                    continue
+
+                if _RE_TABULAR_SKIP_LABEL.match(ln):
+                    parsed_set.add(k)
+                    for si in range(k + 1, min(k + 1 + num_ts, len(lines))):
+                        parsed_set.add(si)
+                    k += 1 + num_ts
+                    continue
+
+                if blk:
+                    break  # end of block after finding readings
+                k += 1
+
+            if blk:
+                readings.extend(blk)
+            else:
+                ctx = "\n".join(
+                    lines[max(0, j - 2):min(len(lines), j + 20)]
+                )
+                if re.search(
+                    r"(?i)(BP|blood\s*press|pulse|temp|resp|SpO2"
+                    r"|heart\s*rate)", ctx,
+                ):
+                    ts_samples = [c[1] for c in ts_cluster[:5]]
+                    gaps.append({
+                        "gap_type": "TABULAR_NOTE_VITALS_UNSUPPORTED",
+                        "source_id": source_id,
+                        "timestamp_count": num_ts,
+                        "timestamp_samples": ts_samples,
+                        "day_iso": day_iso,
+                        "line_range": (
+                            f"{ts_cluster[0][0]+1}-"
+                            f"{ts_cluster[-1][0]+1}"
+                        ),
+                        "preview": "; ".join(ts_samples[:3]),
+                    })
+
+            i = k if k > j else j
         else:
-            i += 1
+            i = j if j > i else i + 1
 
-    # Also detect tab-separated timestamp header rows
-    for idx, line in enumerate(lines):
-        tab_parts = line.split("\t")
-        ts_parts = [p.strip() for p in tab_parts
-                     if re.match(r"^\d{1,2}/\d{1,2}/\d{2,4}\s+\d{4}$", p.strip())]
-        if len(ts_parts) >= 3:
-            context_window = "\n".join(lines[max(0, idx-2):min(len(lines), idx+10)])
-            if re.search(r"(?i)(BP|blood\s*press|pulse|temp|resp|SpO2|heart\s*rate|vital)", context_window):
-                gaps.append({
-                    "gap_type": "TABULAR_NOTE_VITALS_UNSUPPORTED",
-                    "source_id": source_id,
-                    "timestamp_count": len(ts_parts),
-                    "timestamp_samples": ts_parts[:5],
-                    "day_iso": day_iso,
-                    "line_range": str(idx + 1),
-                    "preview": line.strip()[:200],
-                })
+    # ── C) Vital Signs block ──────────────────────────────────────
+    dt_iso_c = item_dt if item_dt and item_dt.startswith(day_iso) else None
+    for i, line in enumerate(lines):
+        if i in parsed_set:
+            continue
+        if not _RE_VITAL_SIGNS_HEADER.match(line):
+            continue
+        if dt_iso_c is None:
+            continue
 
-    return gaps
+        for j in range(i + 1, min(i + 12, len(lines))):
+            if j in parsed_set:
+                continue
+            ln = lines[j].strip()
+            if not ln:
+                continue
+
+            m = re.match(
+                r"(?i)^(BP|Pulse|Temp|Resp|SpO2)\s*:\s*(.+)", ln
+            )
+            if m:
+                label, value_str = m.group(1), m.group(2)
+                parsed_set.add(j)
+                for mk, mv in _extract_metric_from_cell(
+                    label, value_str, guardrails
+                ):
+                    r_entry: _VitalReading = {
+                        "metric": mk, "value": mv,
+                        "dt": dt_iso_c,
+                        "source_type": "TABULAR",
+                        "source_id": source_id,
+                        "line_preview": ln[:200],
+                    }
+                    if time_missing:
+                        r_entry["time_missing"] = True
+                    readings.append(r_entry)
+            elif re.match(
+                r"(?i)^\s*(TempSrc|Weight|Height|BMI|Temp\s*\(|"
+                r"O2\s|Hunger|Housing)", ln
+            ):
+                continue
+            else:
+                break
+
+    return readings, gaps
 
 
 def _parse_inline_vitals(
@@ -750,7 +995,7 @@ def _dedup_readings(readings: List[_VitalReading]) -> List[_VitalReading]:
 
     Prefer FLOWSHEET > ED_TRIAGE > VISIT_VITALS > INLINE source.
     """
-    _PRIORITY = {"FLOWSHEET": 0, "ED_TRIAGE": 1, "VISIT_VITALS": 2, "INLINE": 3}
+    _PRIORITY = {"FLOWSHEET": 0, "ED_TRIAGE": 1, "VISIT_VITALS": 2, "TABULAR": 3, "INLINE": 4}
     seen: Dict[Tuple[str, Optional[str], float], _VitalReading] = {}
     for r in readings:
         key = (r["metric"], r.get("dt"), r["value"])
@@ -807,6 +1052,7 @@ def extract_vitals_for_day(
             continue
 
     all_readings: List[_VitalReading] = []
+    tabular_vitals_gaps: List[Dict[str, Any]] = []
     has_evidence = len(items) > 0
 
     for item in items:
@@ -847,15 +1093,16 @@ def extract_vitals_for_day(
                 r["time_missing"] = True
         all_readings.extend(in_readings)
 
-    # ── 5. Detect tabular note-internal vitals (fail-closed) ──
-    tabular_vitals_gaps: List[Dict[str, Any]] = []
-    for item in items:
-        text = (item.get("payload") or {}).get("text", "")
-        if not text:
-            continue
-        source_id = item.get("source_id")
-        gaps = _detect_tabular_note_vitals(text, day_iso, source_id)
-        tabular_vitals_gaps.extend(gaps)
+        # 5. Tabular note vitals — fallback parse + gap detect
+        tab_readings, tab_gaps = _parse_tabular_note_vitals(
+            text, day_iso, item_dt, source_id, guardrails,
+            time_missing=item_time_missing,
+        )
+        if item_time_missing:
+            for r in tab_readings:
+                r["time_missing"] = True
+        all_readings.extend(tab_readings)
+        tabular_vitals_gaps.extend(tab_gaps)
 
     # Deduplicate
     all_readings = _dedup_readings(all_readings)
