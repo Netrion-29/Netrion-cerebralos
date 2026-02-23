@@ -68,6 +68,7 @@ from cerebralos.features.gi_prophylaxis_v1 import extract_gi_prophylaxis
 from cerebralos.features.base_deficit_monitoring_v1 import extract_base_deficit_monitoring
 from cerebralos.features.inr_normalization_v1 import extract_inr_normalization
 from cerebralos.features.fast_exam_v1 import extract_fast_exam
+from cerebralos.features.etoh_uds_v1 import extract_etoh_uds
 from cerebralos.features.category_activation_v1 import build_category_activation_v1
 
 
@@ -357,6 +358,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
 
+    # ── ETOH + UDS v1 (additive, patient-level) ────────────────
+    etoh_uds = extract_etoh_uds(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     # ── Category I Trauma Activation v1 (additive, patient-level) ─
     category_activation = build_category_activation_v1(days_data)
 
@@ -371,6 +378,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "base_deficit_monitoring_v1": base_deficit_monitoring,
         "inr_normalization_v1": inr_normalization,
         "fast_exam_v1": fast_exam,
+        "etoh_uds_v1": etoh_uds,
         "category_activation_v1": category_activation,
         "vitals_qa": agg_vitals_qa,
     }
