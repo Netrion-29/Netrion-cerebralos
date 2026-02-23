@@ -47,6 +47,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "base_deficit_monitoring_v1",
     "inr_normalization_v1",
     "fast_exam_v1",
+    "etoh_uds_v1",
     "category_activation_v1",
     "vitals_qa",
 })
@@ -179,6 +180,20 @@ def _check_evidence_line_ids(
                     errors.append(
                         f"FAST_EVIDENCE_MISSING_RAW_LINE_ID: "
                         f"{fast_missing} evidence entry(ies) without raw_line_id"
+                    )
+
+        # ── etoh_uds_v1: evidence[] raw_line_id ──
+        if feat_key == "etoh_uds_v1":
+            eu_evidence = feat_val.get("evidence", [])
+            if isinstance(eu_evidence, list):
+                eu_missing = sum(
+                    1 for e in eu_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if eu_missing > 0:
+                    errors.append(
+                        f"ETOH_UDS_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{eu_missing} evidence entry(ies) without raw_line_id"
                     )
 
         # ── vitals_canonical_v1.days.<date>.records[] ──

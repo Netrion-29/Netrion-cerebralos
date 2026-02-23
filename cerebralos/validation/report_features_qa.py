@@ -782,6 +782,54 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── ETOH + UDS v1 QA ───────────────────────────────────────
+    eu = feats.get("etoh_uds_v1", {})
+    print("ETOH + UDS v1 QA:")
+    eu_etoh_val = eu.get("etoh_value")
+    eu_etoh_raw = eu.get("etoh_value_raw")
+    eu_etoh_ts = eu.get("etoh_ts") or "DATA NOT AVAILABLE"
+    eu_etoh_ts_val = eu.get("etoh_ts_validation") or "DATA NOT AVAILABLE"
+    eu_etoh_rule = eu.get("etoh_source_rule_id") or "none"
+    print(f"  etoh_value: {eu_etoh_val if eu_etoh_val is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  etoh_value_raw: {eu_etoh_raw if eu_etoh_raw is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  etoh_ts: {eu_etoh_ts}")
+    print(f"  etoh_ts_validation: {eu_etoh_ts_val}")
+    print(f"  etoh_source_rule_id: {eu_etoh_rule}")
+
+    eu_uds_perf = eu.get("uds_performed") or "DATA NOT AVAILABLE"
+    eu_uds_ts = eu.get("uds_ts") or "DATA NOT AVAILABLE"
+    eu_uds_ts_val = eu.get("uds_ts_validation") or "DATA NOT AVAILABLE"
+    eu_uds_rule = eu.get("uds_source_rule_id") or "none"
+    eu_uds_panel = eu.get("uds_panel")
+    print(f"  uds_performed: {eu_uds_perf}")
+    print(f"  uds_ts: {eu_uds_ts}")
+    print(f"  uds_ts_validation: {eu_uds_ts_val}")
+    print(f"  uds_source_rule_id: {eu_uds_rule}")
+    if eu_uds_panel and isinstance(eu_uds_panel, dict):
+        print("  uds_panel:")
+        for analyte in ("thc", "cocaine", "opiates", "benzodiazepines",
+                        "barbiturates", "amphetamines", "phencyclidine"):
+            val = eu_uds_panel.get(analyte)
+            print(f"    {analyte}: {val if val is not None else 'DATA NOT AVAILABLE'}")
+    else:
+        print("  uds_panel: DATA NOT AVAILABLE")
+
+    eu_evidence = eu.get("evidence", [])
+    eu_warns = eu.get("warnings", [])
+    eu_notes = eu.get("notes", [])
+    print(f"  evidence_count: {len(eu_evidence)}")
+    if eu_evidence:
+        for ev in eu_evidence[:5]:
+            print(f"    [{ev.get('ts', 'no_ts')}] {ev.get('snippet', '')[:80]}")
+    if eu_warns:
+        print(f"  warnings ({len(eu_warns)}):")
+        for w in eu_warns[:5]:
+            print(f"    - {w}")
+    if eu_notes:
+        for n in eu_notes:
+            print(f"  note: {n}")
+    print()
+
     print("=" * 60)
     return 0
 
