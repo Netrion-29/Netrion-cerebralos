@@ -864,6 +864,38 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Neuro Trigger v1 QA ─────────────────────────────────────
+    nt = feats.get("neuro_trigger_v1", {})
+    print("NEURO TRIGGER v1 QA:")
+    nt_triggered = nt.get("neuro_triggered") or "DATA NOT AVAILABLE"
+    nt_rule = nt.get("trigger_rule_id") or "none"
+    nt_ts = nt.get("trigger_ts") or "DATA NOT AVAILABLE"
+    nt_inputs = nt.get("trigger_inputs") or {}
+    nt_evidence = nt.get("evidence", [])
+    nt_notes = nt.get("notes", [])
+    nt_warns = nt.get("warnings", [])
+    print(f"  neuro_triggered: {nt_triggered}")
+    print(f"  trigger_rule_id: {nt_rule}")
+    print(f"  trigger_ts: {nt_ts}")
+    if nt_inputs:
+        print(f"  trigger_inputs: GCS={nt_inputs.get('arrival_gcs_value')}, "
+              f"source={nt_inputs.get('arrival_gcs_source')}, "
+              f"rule={nt_inputs.get('arrival_gcs_source_rule_id')}, "
+              f"intubated={nt_inputs.get('arrival_gcs_intubated')}")
+    print(f"  evidence_count: {len(nt_evidence)}")
+    if nt_evidence:
+        for ev in nt_evidence[:5]:
+            print(f"    [{ev.get('ts', 'no_ts')}] ({ev.get('role', '?')}) "
+                  f"{ev.get('snippet', '')[:80]}")
+    if nt_warns:
+        print(f"  warnings ({len(nt_warns)}):")
+        for w in nt_warns[:5]:
+            print(f"    - {w}")
+    if nt_notes:
+        for n in nt_notes:
+            print(f"  note: {n}")
+    print()
+
     # ── Impression/Plan Drift v1 QA ─────────────────────────────
     ipd = feats.get("impression_plan_drift_v1", {})
     print("IMPRESSION/PLAN DRIFT v1 QA:")
