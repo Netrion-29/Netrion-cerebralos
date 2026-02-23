@@ -73,6 +73,7 @@ from cerebralos.features.impression_plan_drift_v1 import extract_impression_plan
 from cerebralos.features.category_activation_v1 import build_category_activation_v1
 from cerebralos.features.shock_trigger_v1 import extract_shock_trigger
 from cerebralos.features.neuro_trigger_v1 import extract_neuro_trigger
+from cerebralos.features.age_extraction_v1 import extract_patient_age
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -404,6 +405,10 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         arrival_ts=arrival_ts_str,
     )
     features["neuro_trigger_v1"] = neuro_trigger
+
+    # ── Age extraction v1 (patient metadata from timeline text) ──
+    age_extraction = extract_patient_age(days_data)
+    features["age_extraction_v1"] = age_extraction
 
     return {
         "patient_id": meta.get("patient_id", "unknown"),
