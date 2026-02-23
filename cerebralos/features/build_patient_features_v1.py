@@ -71,6 +71,7 @@ from cerebralos.features.fast_exam_v1 import extract_fast_exam
 from cerebralos.features.etoh_uds_v1 import extract_etoh_uds
 from cerebralos.features.impression_plan_drift_v1 import extract_impression_plan_drift
 from cerebralos.features.category_activation_v1 import build_category_activation_v1
+from cerebralos.features.shock_trigger_v1 import extract_shock_trigger
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -390,6 +391,11 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "category_activation_v1": category_activation,
         "vitals_qa": agg_vitals_qa,
     }
+
+    # ── Shock trigger v1 (must run AFTER features dict is assembled
+    #    because it consumes arrival_vitals + base_deficit_monitoring) ──
+    shock_trigger = extract_shock_trigger(features)
+    features["shock_trigger_v1"] = shock_trigger
 
     return {
         "patient_id": meta.get("patient_id", "unknown"),
