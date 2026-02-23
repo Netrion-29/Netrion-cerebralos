@@ -55,6 +55,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "age_extraction_v1",
     "mechanism_region_v1",
     "radiology_findings_v1",
+    "sbirt_screening_v1",
     "vitals_qa",
 })
 
@@ -286,6 +287,20 @@ def _check_evidence_line_ids(
                     errors.append(
                         f"MECHANISM_REGION_EVIDENCE_MISSING_RAW_LINE_ID: "
                         f"{mr_missing} evidence entry(ies) without raw_line_id"
+                    )
+
+        # ── sbirt_screening_v1: evidence[] raw_line_id ──
+        if feat_key == "sbirt_screening_v1":
+            sb_evidence = feat_val.get("evidence", [])
+            if isinstance(sb_evidence, list):
+                sb_missing = sum(
+                    1 for e in sb_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if sb_missing > 0:
+                    errors.append(
+                        f"SBIRT_SCREENING_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{sb_missing} evidence entry(ies) without raw_line_id"
                     )
 
         # ── radiology_findings_v1: evidence[] raw_line_id ──

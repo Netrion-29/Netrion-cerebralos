@@ -76,6 +76,7 @@ from cerebralos.features.neuro_trigger_v1 import extract_neuro_trigger
 from cerebralos.features.age_extraction_v1 import extract_patient_age
 from cerebralos.features.mechanism_region_v1 import extract_mechanism_region
 from cerebralos.features.radiology_findings_v1 import extract_radiology_findings
+from cerebralos.features.sbirt_screening_v1 import extract_sbirt_screening
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -391,6 +392,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
 
+    # ── SBIRT Screening v1 (additive, patient-level) ──
+    sbirt_screening = extract_sbirt_screening(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     # ── Assemble features dict (all feature modules live here) ──
     features: Dict[str, Any] = {
         "vitals_canonical_v1": {
@@ -407,6 +414,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "category_activation_v1": category_activation,
         "mechanism_region_v1": mechanism_region,
         "radiology_findings_v1": radiology_findings,
+        "sbirt_screening_v1": sbirt_screening,
         "vitals_qa": agg_vitals_qa,
     }
 
