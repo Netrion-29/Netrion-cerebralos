@@ -69,6 +69,7 @@ from cerebralos.features.base_deficit_monitoring_v1 import extract_base_deficit_
 from cerebralos.features.inr_normalization_v1 import extract_inr_normalization
 from cerebralos.features.fast_exam_v1 import extract_fast_exam
 from cerebralos.features.etoh_uds_v1 import extract_etoh_uds
+from cerebralos.features.impression_plan_drift_v1 import extract_impression_plan_drift
 from cerebralos.features.category_activation_v1 import build_category_activation_v1
 
 
@@ -364,6 +365,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
 
+    # ── Impression/Plan drift v1 (additive, cross-day) ─────────
+    impression_plan_drift = extract_impression_plan_drift(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     # ── Category I Trauma Activation v1 (additive, patient-level) ─
     category_activation = build_category_activation_v1(days_data)
 
@@ -379,6 +386,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "inr_normalization_v1": inr_normalization,
         "fast_exam_v1": fast_exam,
         "etoh_uds_v1": etoh_uds,
+        "impression_plan_drift_v1": impression_plan_drift,
         "category_activation_v1": category_activation,
         "vitals_qa": agg_vitals_qa,
     }
