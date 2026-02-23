@@ -830,6 +830,40 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Impression/Plan Drift v1 QA ─────────────────────────────
+    ipd = feats.get("impression_plan_drift_v1", {})
+    print("IMPRESSION/PLAN DRIFT v1 QA:")
+    ipd_detected = ipd.get("drift_detected")
+    ipd_days_compared = ipd.get("days_compared_count", 0)
+    ipd_days_with = ipd.get("days_with_impression_count", 0)
+    ipd_events = ipd.get("drift_events", [])
+    ipd_evidence = ipd.get("evidence", [])
+    ipd_notes = ipd.get("notes", [])
+    ipd_warns = ipd.get("warnings", [])
+    print(f"  drift_detected: {ipd_detected if ipd_detected is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  days_with_impression_count: {ipd_days_with}")
+    print(f"  days_compared_count: {ipd_days_compared}")
+    print(f"  drift_event_count: {len(ipd_events)}")
+    print(f"  evidence_count: {len(ipd_evidence)}")
+    if ipd_events:
+        print("  drift events:")
+        for ev in ipd_events:
+            added = len(ev.get("added_items", []))
+            removed = len(ev.get("removed_items", []))
+            persisted = ev.get("persisted_count", 0)
+            ratio = ev.get("drift_ratio", 0)
+            print(f"    {ev.get('prev_date', '?')}->{ev.get('date', '?')}: "
+                  f"added={added} removed={removed} "
+                  f"persisted={persisted} ratio={ratio:.4f}")
+    if ipd_warns:
+        print(f"  warnings ({len(ipd_warns)}):")
+        for w in ipd_warns[:5]:
+            print(f"    - {w}")
+    if ipd_notes:
+        for n in ipd_notes:
+            print(f"  note: {n}")
+    print()
+
     print("=" * 60)
     return 0
 

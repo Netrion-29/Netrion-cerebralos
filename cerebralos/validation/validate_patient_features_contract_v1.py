@@ -48,6 +48,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "inr_normalization_v1",
     "fast_exam_v1",
     "etoh_uds_v1",
+    "impression_plan_drift_v1",
     "category_activation_v1",
     "vitals_qa",
 })
@@ -195,6 +196,36 @@ def _check_evidence_line_ids(
                         f"ETOH_UDS_EVIDENCE_MISSING_RAW_LINE_ID: "
                         f"{eu_missing} evidence entry(ies) without raw_line_id"
                     )
+
+        # ── impression_plan_drift_v1: evidence[] + drift_events[].evidence[] ──
+        if feat_key == "impression_plan_drift_v1":
+            ipd_evidence = feat_val.get("evidence", [])
+            if isinstance(ipd_evidence, list):
+                ipd_missing = sum(
+                    1 for e in ipd_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if ipd_missing > 0:
+                    errors.append(
+                        f"IMPRESSION_PLAN_DRIFT_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{ipd_missing} evidence entry(ies) without raw_line_id"
+                    )
+            # Also check evidence within drift_events
+            for de in feat_val.get("drift_events", []):
+                if not isinstance(de, dict):
+                    continue
+                de_ev = de.get("evidence", [])
+                if isinstance(de_ev, list):
+                    de_missing = sum(
+                        1 for e in de_ev
+                        if isinstance(e, dict) and "raw_line_id" not in e
+                    )
+                    if de_missing > 0:
+                        errors.append(
+                            f"IMPRESSION_PLAN_DRIFT_EVENT_EVIDENCE_MISSING_RAW_LINE_ID: "
+                            f"drift_event {de.get('date', '?')} has "
+                            f"{de_missing} evidence entry(ies) without raw_line_id"
+                        )
 
         # ── vitals_canonical_v1.days.<date>.records[] ──
         if feat_key == "vitals_canonical_v1":
