@@ -74,6 +74,7 @@ from cerebralos.features.category_activation_v1 import build_category_activation
 from cerebralos.features.shock_trigger_v1 import extract_shock_trigger
 from cerebralos.features.neuro_trigger_v1 import extract_neuro_trigger
 from cerebralos.features.age_extraction_v1 import extract_patient_age
+from cerebralos.features.mechanism_region_v1 import extract_mechanism_region
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -377,6 +378,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
     # ── Category I Trauma Activation v1 (additive, patient-level) ─
     category_activation = build_category_activation_v1(days_data)
 
+    # ── Mechanism + Body Region v1 (additive, patient-level) ──
+    mechanism_region = extract_mechanism_region(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     # ── Assemble features dict (all feature modules live here) ──
     features: Dict[str, Any] = {
         "vitals_canonical_v1": {
@@ -391,6 +398,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "etoh_uds_v1": etoh_uds,
         "impression_plan_drift_v1": impression_plan_drift,
         "category_activation_v1": category_activation,
+        "mechanism_region_v1": mechanism_region,
         "vitals_qa": agg_vitals_qa,
     }
 

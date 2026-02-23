@@ -926,6 +926,47 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Mechanism + Body Region v1 QA ───────────────────────────
+    mr = feats.get("mechanism_region_v1", {})
+    print("MECHANISM + BODY REGION v1 QA:")
+    mr_mech_present = mr.get("mechanism_present") or "DATA NOT AVAILABLE"
+    mr_mech_primary = mr.get("mechanism_primary") or "none"
+    mr_mech_labels = mr.get("mechanism_labels", [])
+    mr_penetrating = mr.get("penetrating_mechanism")
+    mr_region_present = mr.get("body_region_present") or "DATA NOT AVAILABLE"
+    mr_region_labels = mr.get("body_region_labels", [])
+    mr_rule = mr.get("source_rule_id") or "none"
+    mr_evidence = mr.get("evidence", [])
+    mr_notes = mr.get("notes", [])
+    mr_warns = mr.get("warnings", [])
+    print(f"  mechanism_present: {mr_mech_present}")
+    print(f"  mechanism_primary: {mr_mech_primary}")
+    print(f"  mechanism_labels: {mr_mech_labels}")
+    print(f"  penetrating_mechanism: {mr_penetrating if mr_penetrating is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  body_region_present: {mr_region_present}")
+    print(f"  body_region_labels: {mr_region_labels}")
+    print(f"  source_rule_id: {mr_rule}")
+    print(f"  evidence_count: {len(mr_evidence)}")
+    if mr_evidence:
+        mech_ev = [e for e in mr_evidence if e.get("role") == "mechanism"]
+        region_ev = [e for e in mr_evidence if e.get("role") == "body_region"]
+        if mech_ev:
+            print(f"  mechanism evidence ({len(mech_ev)}):")
+            for ev in mech_ev[:5]:
+                print(f"    [{ev.get('label', '?')}] {ev.get('snippet', '')[:80]}")
+        if region_ev:
+            print(f"  body_region evidence ({len(region_ev)}):")
+            for ev in region_ev[:5]:
+                print(f"    [{ev.get('label', '?')}] {ev.get('snippet', '')[:80]}")
+    if mr_warns:
+        print(f"  warnings ({len(mr_warns)}):")
+        for w in mr_warns[:5]:
+            print(f"    - {w}")
+    if mr_notes:
+        for n in mr_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     # ── Impression/Plan Drift v1 QA ─────────────────────────────
     ipd = feats.get("impression_plan_drift_v1", {})
     print("IMPRESSION/PLAN DRIFT v1 QA:")
