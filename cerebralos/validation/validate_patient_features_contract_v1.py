@@ -53,6 +53,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "shock_trigger_v1",
     "neuro_trigger_v1",
     "age_extraction_v1",
+    "mechanism_region_v1",
     "vitals_qa",
 })
 
@@ -270,6 +271,20 @@ def _check_evidence_line_ids(
                     errors.append(
                         f"AGE_EXTRACTION_EVIDENCE_MISSING_RAW_LINE_ID: "
                         f"{ae_missing} evidence entry(ies) without raw_line_id"
+                    )
+
+        # ── mechanism_region_v1: evidence[] raw_line_id ──
+        if feat_key == "mechanism_region_v1":
+            mr_evidence = feat_val.get("evidence", [])
+            if isinstance(mr_evidence, list):
+                mr_missing = sum(
+                    1 for e in mr_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if mr_missing > 0:
+                    errors.append(
+                        f"MECHANISM_REGION_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{mr_missing} evidence entry(ies) without raw_line_id"
                     )
 
         # ── vitals_canonical_v1.days.<date>.records[] ──
