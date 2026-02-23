@@ -1,0 +1,300 @@
+{
+  "_comment": "GREEN CARD v1 extraction patterns. Deterministic, regex-based. No LLM, no ML.",
+  "_version": "1.0.0",
+
+  "doc_type_detection": {
+    "_comment": "Regexes applied to item kind + first ~800 chars of text. Trauma H&P uses tiered matching.",
+    "trauma_hp": {
+      "kind_exact": ["TRAUMA_HP"],
+      "tier1_any": [
+        "(?i)\\bTRAUMA\\s+HISTORY\\s+AND\\s+PHYSICAL\\b",
+        "(?i)\\bTRAUMA\\s+H\\s*&\\s*P\\b",
+        "(?i)\\bTRAUMA\\s+H\\s+AND\\s+P\\b",
+        "(?i)\\bTRAUMA\\s*-\\s*HISTORY\\s+AND\\s+PHYSICAL\\b"
+      ],
+      "tier2_all": {
+        "_comment": "Require BOTH a trauma service indicator near the top AND an HPI header.",
+        "near_top_any": [
+          "(?i)\\bTrauma\\s+Service\\b",
+          "(?i)\\bTrauma\\s+Activation\\b",
+          "(?i)\\bTrauma\\s+Consult\\b",
+          "(?i)\\bTrauma\\s+Surgery\\b",
+          "(?i)\\bTrauma\\s+Team\\b",
+          "(?i)\\bTrauma\\s+admit\\b"
+        ],
+        "must_have_any": [
+          "(?i)\\bHISTORY\\s+OF\\s+PRESENT\\s+ILLNESS\\b",
+          "(?i)\\bHPI\\s*[:\\-]"
+        ]
+      },
+      "tier3_all": {
+        "_comment": "Evansville Surgical Associates trauma admit phrasing (surgeon H&P).",
+        "near_top_any": [
+          "(?i)\\bEvansville\\s+Surgical\\s+Associates\\b",
+          "(?i)\\bESA\\b"
+        ],
+        "must_have_any": [
+          "(?i)\\bH\\s*&\\s*P\\b",
+          "(?i)\\bHistory\\s+and\\s+Physical\\b"
+        ],
+        "must_have_context": [
+          "(?i)\\bTrauma\\b"
+        ]
+      },
+      "text_patterns": [
+        "(?i)\\bTRAUMA\\s+HISTORY\\s+AND\\s+PHYSICAL\\b",
+        "(?i)\\bTRAUMA\\s+H\\s*&\\s*P\\b",
+        "(?i)\\bTRAUMA\\s+H\\s+AND\\s+P\\b",
+        "(?i)\\bTRAUMA\\s*-\\s*HISTORY\\s+AND\\s+PHYSICAL\\b"
+      ]
+    },
+    "discharge_summary": {
+      "kind_exact": ["DISCHARGE"],
+      "text_patterns": [
+        "(?i)\\bDischarge Summary\\b",
+        "(?i)\\bDischarge diagnosis\\b",
+        "(?i)\\bDischarge Disposition\\b",
+        "(?i)\\bHospital Course\\b"
+      ]
+    },
+    "ed_note": {
+      "kind_exact": [],
+      "text_patterns": [
+        "(?i)\\bED Provider\\b",
+        "(?i)\\bEmergency Department\\b.*\\bNote\\b",
+        "(?i)\\bED Note\\b",
+        "(?i)\\bEmergency Medicine\\b.*\\bH&P\\b"
+      ]
+    },
+    "trauma_progress": {
+      "kind_exact": [],
+      "text_patterns": [
+        "(?i)\\bTrauma Progress Note\\b",
+        "(?i)\\bTrauma.*Progress\\b",
+        "(?i)\\bTrauma Service.*Note\\b",
+        "(?i)\\bTrauma Daily Note\\b"
+      ]
+    },
+    "consult_note": {
+      "kind_exact": ["CONSULT_NOTE", "CONSULT"],
+      "text_patterns": [
+        "(?i)\\bConsult(?:ation)?\\s+Note\\b",
+        "(?i)\\bconsult(?:ation)?\\s+for\\b",
+        "(?i)\\bReason for Consult\\b"
+      ]
+    },
+    "op_note": {
+      "kind_exact": ["PROCEDURE", "OPERATIVE_NOTE", "PROCEDURE_NOTE"],
+      "text_patterns": [
+        "(?i)\\bOperative Note\\b",
+        "(?i)\\bOp Note\\b",
+        "(?i)\\bProcedure Note\\b",
+        "(?i)\\bSurgical Report\\b",
+        "(?i)\\bProcedure:\\b"
+      ]
+    },
+    "imaging": {
+      "kind_exact": ["RADIOLOGY"],
+      "text_patterns": [
+        "(?i)\\bRadiology\\b",
+        "(?i)\\bImaging\\b",
+        "(?i)\\bCT\\s",
+        "(?i)\\bMRI\\b",
+        "(?i)\\bX-?ray\\b",
+        "(?i)\\bFINDINGS\\b.*\\bIMPRESSION\\b"
+      ]
+    }
+  },
+
+  "doc_type_priority": {
+    "trauma_hp": 1,
+    "ed_note": 2,
+    "trauma_progress": 3,
+    "consult_note": 4,
+    "op_note": 4,
+    "imaging": 5,
+    "other": 8,
+    "discharge_summary": 9
+  },
+
+  "admitting_service": {
+    "trauma": [
+      "(?i)\\bTrauma Service\\b",
+      "(?i)\\bTrauma admit\\b",
+      "(?i)\\bAdmit to Trauma\\b",
+      "(?i)\\bTrauma H\\s*&\\s*P\\b",
+      "(?i)\\bAdmitting.*Trauma\\b",
+      "(?i)\\bTrauma Surgery\\b",
+      "(?i)\\badmitted.*trauma\\s+service\\b"
+    ],
+    "dcg": [
+      "(?i)\\bDeaconess Care Group\\b",
+      "\\bDCG\\b",
+      "(?i)\\bHospitalist\\b",
+      "(?i)\\bMedicine Service\\b",
+      "(?i)\\bAdmit.*Medicine\\b",
+      "(?i)\\badmitted.*hospitalist\\b",
+      "(?i)\\badmitted.*medicine\\b"
+    ],
+    "esa": [
+      "(?i)\\bEvansville Surgical Associates\\b",
+      "\\bESA\\b"
+    ]
+  },
+
+  "pmh_section_headers": [
+    "(?i)^\\s*Past Medical History\\b",
+    "(?i)^\\s*PMH\\b",
+    "(?i)^\\s*Medical History\\b",
+    "(?i)^\\s*PAST MEDICAL HISTORY\\b",
+    "(?i)^\\s*Significant Medical History\\b"
+  ],
+
+  "hpi_section_headers": [
+    "(?i)^\\s*(?:HISTORY OF PRESENT ILLNESS|HPI)\\s*[:\\-]?",
+    "(?i)^\\s*H\\.?P\\.?I\\.?\\s*[:\\-]?"
+  ],
+
+  "hpi_stop_headers": [
+    "(?i)^\\s*(?:Past Medical History|PMH|PAST MEDICAL HISTORY)\\b",
+    "(?i)^\\s*(?:Past Surgical History|PSH|PAST SURGICAL HISTORY)\\b",
+    "(?i)^\\s*(?:Medications|Home Medications|MEDICATIONS)\\b",
+    "(?i)^\\s*(?:Allergies|ALLERGIES)\\b",
+    "(?i)^\\s*(?:Review of Systems|ROS|REVIEW OF SYSTEMS)\\b",
+    "(?i)^\\s*(?:Physical Exam|PHYSICAL EXAM|Examination)\\b",
+    "(?i)^\\s*(?:Assessment|ASSESSMENT)\\b",
+    "(?i)^\\s*(?:Plan|PLAN)\\b",
+    "(?i)^\\s*(?:Imaging|IMAGING|Labs|LABS|Radiology)\\b",
+    "(?i)^\\s*(?:Social History|SOCIAL HISTORY)\\b",
+    "(?i)^\\s*(?:Family History|FAMILY HISTORY)\\b",
+    "(?i)^\\s*(?:Primary Survey|Secondary Survey|SECONDARY SURVEY|PRIMARY SURVEY)\\b",
+    "(?i)^\\s*(?:Vital Signs|VITAL SIGNS)\\b",
+    "(?i)^\\s*Meds\\s*[:\\-]"
+  ],
+
+  "home_meds_section_headers": [
+    "(?i)\\bHome Medications\\b",
+    "(?i)\\bMeds prior to admission\\b",
+    "(?i)\\bMedication reconciliation\\b",
+    "(?i)\\bMedications on Admission\\b",
+    "(?i)\\bPre-?admission Medications\\b",
+    "(?i)\\bHome Meds\\b",
+    "(?i)\\bOutpatient Medications\\b",
+    "(?i)\\bMedication(?:s)? Prior\\b",
+    "(?i)\\bCurrent Outpatient Medications\\b",
+    "(?i)^\\s*Meds\\s*:\\s*$"
+  ],
+
+  "anticoagulant_keywords": {
+    "_comment": "Explicit anticoagulant/antiplatelet med names. Generic (brand).",
+    "anticoagulants": [
+      "(?i)\\bwarfarin\\b",
+      "(?i)\\bcoumadin\\b",
+      "(?i)\\bapixaban\\b",
+      "(?i)\\beliquis\\b",
+      "(?i)\\brivaroxaban\\b",
+      "(?i)\\bxarelto\\b",
+      "(?i)\\bdabigatran\\b",
+      "(?i)\\bpradaxa\\b",
+      "(?i)\\bedoxaban\\b",
+      "(?i)\\bsavaysa\\b",
+      "(?i)\\bheparin\\b",
+      "(?i)\\benoxaparin\\b",
+      "(?i)\\blovenox\\b"
+    ],
+    "antiplatelets": [
+      "(?i)\\bclopidogrel\\b",
+      "(?i)\\bplavix\\b",
+      "(?i)\\bprasugrel\\b",
+      "(?i)\\beffient\\b",
+      "(?i)\\bticagrelor\\b",
+      "(?i)\\bbrilinta\\b",
+      "(?i)\\baspirin\\b"
+    ]
+  },
+
+  "moi_patterns": [
+    {"label": "MVC", "patterns": ["(?i)\\bMVC\\b", "(?i)\\bmotor vehicle collision\\b", "(?i)\\bmotor vehicle crash\\b"]},
+    {"label": "MVA", "patterns": ["(?i)\\bMVA\\b", "(?i)\\bmotor vehicle accident\\b"]},
+    {"label": "Fall", "patterns": ["(?i)\\bfall\\b", "(?i)\\bfell\\b", "(?i)\\bground level fall\\b", "(?i)\\bGLF\\b"]},
+    {"label": "Assault", "patterns": ["(?i)\\bassault\\b", "(?i)\\battack\\b", "(?i)\\baltercation\\b"]},
+    {"label": "GSW", "patterns": ["(?i)\\bGSW\\b", "(?i)\\bgunshot wound\\b", "(?i)\\bgunshot\\b"]},
+    {"label": "Stab wound", "patterns": ["(?i)\\bstab\\b", "(?i)\\bstab wound\\b", "(?i)\\bpenetrating\\b"]},
+    {"label": "Pedestrian struck", "patterns": ["(?i)\\bpedestrian\\b.*\\b(struck|vs|hit|auto)\\b", "(?i)\\bauto.*pedestrian\\b"]},
+    {"label": "Motorcycle", "patterns": ["(?i)\\bmotorcycle\\b", "(?i)\\bMCC\\b"]},
+    {"label": "ATV", "patterns": ["(?i)\\bATV\\b", "(?i)\\ball[- ]?terrain\\b"]},
+    {"label": "Bicycle", "patterns": ["(?i)\\bbicycle\\b", "(?i)\\bbike\\b.*\\b(crash|accident|collision)\\b"]},
+    {"label": "Burn", "patterns": ["(?i)\\bburn\\b", "(?i)\\bthermal\\s+injury\\b"]},
+    {"label": "Crush", "patterns": ["(?i)\\bcrush\\b.*\\b(injury|injuries)\\b"]},
+    {"label": "Industrial/Farm", "patterns": ["(?i)\\bauger\\b", "(?i)\\bgrain\\s*(bin|elevator)\\b", "(?i)\\bmachinery\\b", "(?i)\\bindustrial\\b"]},
+    {"label": "Struck by object", "patterns": ["(?i)\\bstruck\\s+by\\b", "(?i)\\bhit\\s+by\\b"]}
+  ],
+
+  "injuries_section_headers": [
+    "(?i)^\\s*Assessment\\b",
+    "(?i)^\\s*Diagnos[ei]s\\s*[:\\-]?\\s*$",
+    "(?i)^\\s*Injuries\\b",
+    "(?i)^\\s*Problem List\\b",
+    "(?i)^\\s*Impression\\b",
+    "(?i)^\\s*Assessment/Plan\\b",
+    "(?i)^\\s*A/P\\b",
+    "(?i)^\\s*Final Diagnos[ei]s\\b",
+    "(?i)^\\s*Discharge Diagnos[ei]s\\b",
+    "(?i)^\\s*Injury List\\b"
+  ],
+
+  "procedure_markers": [
+    "(?i)\\bProcedure:\\b",
+    "(?i)\\bOperative Note\\b",
+    "(?i)\\bOR:\\b",
+    "(?i)\\bExternal fixator\\b",
+    "(?i)\\bChest tube\\b",
+    "(?i)\\bIntubation\\b",
+    "(?i)\\bCentral line\\b",
+    "(?i)\\bCraniotomy\\b",
+    "(?i)\\bLaminectomy\\b",
+    "(?i)\\bORIF\\b",
+    "(?i)\\bOpen reduction\\b",
+    "(?i)\\bClosed reduction\\b",
+    "(?i)\\bEmbolization\\b",
+    "(?i)\\bAngiography\\b",
+    "(?i)\\bBronchoscopy\\b",
+    "(?i)\\bTracheostomy\\b",
+    "(?i)\\bLaparotomy\\b",
+    "(?i)\\bThoracotomy\\b",
+    "(?i)\\bICP monitor\\b",
+    "(?i)\\bArterial line\\b",
+    "(?i)\\bA-line\\b",
+    "(?i)\\bPICC\\s+line\\b",
+    "(?i)\\bSplint\\b",
+    "(?i)\\bDebridement\\b",
+    "(?i)\\bSkin graft\\b",
+    "(?i)\\bI&D\\b",
+    "(?i)\\bWound VAC\\b",
+    "(?i)\\bCVC\\b"
+  ],
+
+  "consultant_services": {
+    "_comment": "Reuses services_patterns_v1 tags + supplementary consult header patterns.",
+    "services": [
+      {"tag": "ortho", "patterns": ["(?i)\\borthop(?:ae)?edics?\\b", "(?i)\\bortho\\b", "(?i)\\borthopaedic\\b"]},
+      {"tag": "neurosurg", "patterns": ["(?i)\\bneurosurgery\\b", "(?i)\\bneurosurg\\b"]},
+      {"tag": "trauma", "patterns": ["(?i)\\btrauma\\b"]},
+      {"tag": "vascular", "patterns": ["(?i)\\bvascular\\b"]},
+      {"tag": "ir", "patterns": ["(?i)\\binterventional radiology\\b", "(?i)\\bIR\\s+consult\\b"]},
+      {"tag": "cardiology", "patterns": ["(?i)\\bcardiology\\b", "(?i)\\bcardiologist\\b"]},
+      {"tag": "pulmonology", "patterns": ["(?i)\\bpulmonology\\b", "(?i)\\bpulmonologist\\b"]},
+      {"tag": "critical_care", "patterns": ["(?i)\\bcritical care\\b", "(?i)\\bICU\\b", "(?i)\\bSICU\\b"]},
+      {"tag": "general_surgery", "patterns": ["(?i)\\bgeneral surg(?:ery|ical|eon)\\b"]},
+      {"tag": "anesthesia", "patterns": ["(?i)\\banesthesi(?:a|ology|ologist)\\b"]},
+      {"tag": "nephrology", "patterns": ["(?i)\\bnephrology\\b", "(?i)\\bnephrologist\\b"]},
+      {"tag": "infectious_disease", "patterns": ["(?i)\\binfectious disease\\b", "(?i)\\bID consult\\b"]},
+      {"tag": "gastroenterology", "patterns": ["(?i)\\bgastroenterology\\b", "(?i)\\bGI consult\\b"]},
+      {"tag": "plastic_surgery", "patterns": ["(?i)\\bplastic surg(?:ery|ical|eon)\\b"]},
+      {"tag": "physical_therapy", "patterns": ["(?i)\\bphysical therap(?:y|ist)\\b", "(?i)\\bPT eval\\b"]},
+      {"tag": "occupational_therapy", "patterns": ["(?i)\\boccupational therap(?:y|ist)\\b", "(?i)\\bOT eval\\b"]},
+      {"tag": "social_work", "patterns": ["(?i)\\bsocial work(?:er)?\\b", "(?i)\\bcase manag(?:er|ement)\\b"]},
+      {"tag": "pain_management", "patterns": ["(?i)\\bpain manage(?:ment)?\\b", "(?i)\\bpain service\\b"]}
+    ]
+  }
+}
