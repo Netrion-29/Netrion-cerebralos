@@ -14,6 +14,25 @@
 | Language | Python 3.12+, bash |
 | Date format | ISO-8601 everywhere |
 
+## Quick Chat Starter
+
+> Paste this as the **first message** in any new ChatGPT / Codex chat:
+
+```text
+CEREBRALOS MODE: Architect/Reviewer only. Roadmap-first.
+You decide scope/triage (current PR vs doc note vs future fix track).
+Claude executes code changes.
+Give detailed step-by-step terminal + GitHub UI instructions.
+
+At chat start, first determine current roadmap status from
+docs/roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md, current branch,
+merged PR state, and repo diffs before recommending next work.
+
+If side-track findings appear (NTDS/protocol/archive audits),
+triage them: current PR vs doc-only note vs future dedicated
+fix track, and explain why.
+```
+
 ## Execution Model
 
 - **ChatGPT** designs architecture + produces copy/paste instructions.
@@ -97,6 +116,16 @@ python3 _regression_phase1_v2.py
 python3 cerebralos/validation/validate_patient_features_contract_v1.py \
   --in outputs/features/$PAT/patient_features_v1.json
 ```
+
+## Side-Track Audit Triage
+
+When an audit or review surfaces findings outside the active PR's scope:
+
+1. **Current roadmap PR** — only if the finding is squarely within the stated goal.
+2. **Separate doc-only note** (`docs/audits/`) — default for useful findings that are out-of-scope.
+3. **Future dedicated fix track** — required when protected engines/rules (NTDS, protocol, renderers) are involved, unless explicitly approved.
+
+Codex must explain the triage decision and preserve useful findings in-repo so they are not lost between sessions.
 
 ## Key Test Patients
 

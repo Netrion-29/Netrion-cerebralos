@@ -96,7 +96,23 @@ Timothy_Nachtwey
 
 ---
 
-## 6) raw_line_id Format Policy
+## 6) Side-Track Audit Triage
+
+When an audit or review surfaces findings outside the active PR's scope,
+Codex must triage each finding into exactly one track:
+
+1. **Current PR** — only if the finding falls squarely within the PR's stated goal.
+2. **Doc-only note** — default for useful but out-of-scope findings. Write to `docs/audits/<topic>.md`.
+3. **Future fix track** — required when protected engines/rules (NTDS engine, protocol engine, renderers) are involved, unless the operator explicitly approves an in-PR fix.
+
+Codex must:
+- State the triage decision and reasoning.
+- Preserve useful findings in-repo (`docs/audits/`) so they survive across sessions.
+- Never derail the active roadmap sequence to address a side-track finding.
+
+---
+
+## 7) raw_line_id Format Policy
 
 Every stored evidence item and every feature-layer evidence entry
 must include a non-empty `raw_line_id`. Two formats are currently
