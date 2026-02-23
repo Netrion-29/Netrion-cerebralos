@@ -138,4 +138,38 @@ line-range format `L{start}-L{end}`) for simpler cross-layer audit
 tracing. This will be tracked as a Tier 3 hardening task. Until then,
 both formats coexist.
 
+---
+
+## 8) CEREBRALOS PREFLIGHT FIRST
+
+Shortcut phrase: `CEREBRALOS PREFLIGHT FIRST`
+
+Before giving merge, branch cleanup, or PR creation/retarget/rebase
+guidance, Codex must request or verify the output of these commands:
+
+### Preflight (merge / cleanup / what-is-open)
+
+```bash
+cd ~/NetrionSystems/netrion-cerebralos
+git checkout main
+git fetch origin
+gh pr list --state open
+git status --short
+```
+
+### Branch PR preflight (before staging / commit / push)
+
+```bash
+git rev-parse --abbrev-ref HEAD
+git status --short
+git diff --name-only origin/main...HEAD
+git diff --name-only
+git diff --cached --name-only
+```
+
+Pre-existing untracked local files (e.g., `tests/test_negation.py`,
+`tests/test_ntds_events.py`, `tests/test_ntds_simple.py`) may appear
+in `git status`. Distinguish these from PR scope — do not stage or
+include them unless they belong to the current PR.
+
 End of rulebook.

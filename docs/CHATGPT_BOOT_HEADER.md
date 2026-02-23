@@ -20,6 +20,8 @@
 
 ```text
 CEREBRALOS MODE: Architect/Reviewer only. Roadmap-first.
+CEREBRALOS PREFLIGHT FIRST — always run preflight before merge,
+cleanup, PR, or rebase guidance.
 You decide scope/triage (current PR vs doc note vs future fix track).
 Claude executes code changes.
 Give detailed step-by-step terminal + GitHub UI instructions.
@@ -116,6 +118,41 @@ python3 _regression_phase1_v2.py
 python3 cerebralos/validation/validate_patient_features_contract_v1.py \
   --in outputs/features/$PAT/patient_features_v1.json
 ```
+
+## CEREBRALOS PREFLIGHT FIRST
+
+> **Shortcut phrase: `CEREBRALOS PREFLIGHT FIRST`**
+>
+> Run these commands before giving merge, branch cleanup, or
+> PR creation/retarget/rebase guidance.
+
+### Preflight (merge / cleanup / what-is-open)
+
+```bash
+cd ~/NetrionSystems/netrion-cerebralos
+git checkout main
+git fetch origin
+gh pr list --state open
+git status --short
+```
+
+### Branch PR preflight (before staging / commit / push)
+
+```bash
+git rev-parse --abbrev-ref HEAD
+git status --short
+git diff --name-only origin/main...HEAD
+git diff --name-only
+git diff --cached --name-only
+```
+
+> **Note:** Pre-existing untracked local files (e.g.,
+> `tests/test_negation.py`, `tests/test_ntds_events.py`,
+> `tests/test_ntds_simple.py`) may appear in `git status`.
+> Distinguish these local-only files from PR scope — do not
+> stage or include them unless they belong to the current PR.
+
+---
 
 ## Side-Track Audit Triage
 
