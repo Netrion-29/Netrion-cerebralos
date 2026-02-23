@@ -1038,6 +1038,84 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── SBIRT Screening v1 QA ──────────────────────────────────
+    sb = feats.get("sbirt_screening_v1", {})
+    print("SBIRT SCREENING v1 QA:")
+    sb_present = sb.get("sbirt_screening_present") or "DATA NOT AVAILABLE"
+    sb_evidence = sb.get("evidence", [])
+    sb_notes = sb.get("notes", [])
+    sb_warns = sb.get("warnings", [])
+    print(f"  sbirt_screening_present: {sb_present}")
+    sb_instruments = sb.get("instruments_detected", [])
+    if sb_instruments:
+        print(f"  instruments_detected: {', '.join(sb_instruments)}")
+
+    # AUDIT-C
+    sb_audit = sb.get("audit_c", {})
+    if sb_audit:
+        print(f"  audit_c:")
+        print(f"    explicit_score: {sb_audit.get('explicit_score')}")
+        print(f"    responses_present: {sb_audit.get('responses_present')}")
+        print(f"    completion_status: {sb_audit.get('completion_status')}")
+        sb_audit_resp = sb_audit.get("responses", [])
+        if sb_audit_resp:
+            for r in sb_audit_resp[:5]:
+                print(f"    response: q={r.get('question','?')[:40]} "
+                      f"a={r.get('answer','?')[:30]}")
+    else:
+        print("  audit_c: null")
+
+    # DAST-10
+    sb_dast = sb.get("dast_10", {})
+    if sb_dast:
+        print(f"  dast_10:")
+        print(f"    explicit_score: {sb_dast.get('explicit_score')}")
+        print(f"    responses_present: {sb_dast.get('responses_present')}")
+        print(f"    completion_status: {sb_dast.get('completion_status')}")
+        sb_dast_resp = sb_dast.get("responses", [])
+        if sb_dast_resp:
+            for r in sb_dast_resp[:5]:
+                print(f"    response: q={r.get('question','?')[:40]} "
+                      f"a={r.get('answer','?')[:30]}")
+    else:
+        print("  dast_10: null")
+
+    # CAGE
+    sb_cage = sb.get("cage", {})
+    if sb_cage:
+        print(f"  cage:")
+        print(f"    explicit_score: {sb_cage.get('explicit_score')}")
+        print(f"    responses_present: {sb_cage.get('responses_present')}")
+        print(f"    completion_status: {sb_cage.get('completion_status')}")
+    else:
+        print("  cage: null")
+
+    # Flowsheet responses
+    sb_flow = sb.get("flowsheet_responses", [])
+    if sb_flow:
+        print(f"  flowsheet_responses: {len(sb_flow)} entries")
+        for fr in sb_flow[:5]:
+            print(f"    q={fr.get('question','?')[:40]} a={fr.get('answer','?')[:20]}")
+
+    # Refusal / Admission
+    print(f"  refusal_documented: {sb.get('refusal_documented', False)}")
+    print(f"  substance_use_admission_documented: "
+          f"{sb.get('substance_use_admission_documented', False)}")
+
+    print(f"  evidence_count: {len(sb_evidence)}")
+    if sb_evidence:
+        for ev in sb_evidence[:5]:
+            print(f"    [{ev.get('ts', 'no_ts')}] ({ev.get('role', '?')}/{ev.get('label', '?')}) "
+                  f"{ev.get('snippet', '')[:80]}")
+    if sb_warns:
+        print(f"  warnings ({len(sb_warns)}):")
+        for w in sb_warns[:5]:
+            print(f"    - {w}")
+    if sb_notes:
+        for n in sb_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     # ── Impression/Plan Drift v1 QA ─────────────────────────────
     ipd = feats.get("impression_plan_drift_v1", {})
     print("IMPRESSION/PLAN DRIFT v1 QA:")
