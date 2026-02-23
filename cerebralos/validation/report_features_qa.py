@@ -896,6 +896,36 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Age Extraction v1 QA ───────────────────────────────────
+    ae = feats.get("age_extraction_v1", {})
+    print("AGE EXTRACTION v1 QA:")
+    ae_avail = ae.get("age_available") or "DATA NOT AVAILABLE"
+    ae_years = ae.get("age_years")
+    ae_rule = ae.get("age_source_rule_id") or "none"
+    ae_src = ae.get("age_source_text") or "DATA NOT AVAILABLE"
+    ae_dob = ae.get("dob_iso") or "none"
+    ae_evidence = ae.get("evidence", [])
+    ae_notes = ae.get("notes", [])
+    ae_warns = ae.get("warnings", [])
+    print(f"  age_available: {ae_avail}")
+    print(f"  age_years: {ae_years if ae_years is not None else 'DATA NOT AVAILABLE'}")
+    print(f"  age_source_rule_id: {ae_rule}")
+    print(f"  age_source_text: {ae_src}")
+    print(f"  dob_iso: {ae_dob}")
+    print(f"  evidence_count: {len(ae_evidence)}")
+    if ae_evidence:
+        for ev in ae_evidence[:3]:
+            print(f"    [{ev.get('ts', 'no_ts')}] ({ev.get('role', '?')}) "
+                  f"{ev.get('snippet', '')[:80]}")
+    if ae_warns:
+        print(f"  warnings ({len(ae_warns)}):")
+        for w in ae_warns[:5]:
+            print(f"    - {w}")
+    if ae_notes:
+        for n in ae_notes:
+            print(f"  note: {n}")
+    print()
+
     # ── Impression/Plan Drift v1 QA ─────────────────────────────
     ipd = feats.get("impression_plan_drift_v1", {})
     print("IMPRESSION/PLAN DRIFT v1 QA:")
