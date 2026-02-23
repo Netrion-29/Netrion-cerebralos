@@ -72,6 +72,7 @@ from cerebralos.features.etoh_uds_v1 import extract_etoh_uds
 from cerebralos.features.impression_plan_drift_v1 import extract_impression_plan_drift
 from cerebralos.features.category_activation_v1 import build_category_activation_v1
 from cerebralos.features.shock_trigger_v1 import extract_shock_trigger
+from cerebralos.features.neuro_trigger_v1 import extract_neuro_trigger
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -396,6 +397,13 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
     #    because it consumes arrival_vitals + base_deficit_monitoring) ──
     shock_trigger = extract_shock_trigger(features)
     features["shock_trigger_v1"] = shock_trigger
+
+    # ── Neuro trigger v1 (consumes per-day gcs_daily from feature_days) ──
+    neuro_trigger = extract_neuro_trigger(
+        feature_days,
+        arrival_ts=arrival_ts_str,
+    )
+    features["neuro_trigger_v1"] = neuro_trigger
 
     return {
         "patient_id": meta.get("patient_id", "unknown"),

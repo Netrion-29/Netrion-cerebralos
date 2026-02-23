@@ -51,6 +51,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "impression_plan_drift_v1",
     "category_activation_v1",
     "shock_trigger_v1",
+    "neuro_trigger_v1",
     "vitals_qa",
 })
 
@@ -240,6 +241,20 @@ def _check_evidence_line_ids(
                     errors.append(
                         f"SHOCK_TRIGGER_EVIDENCE_MISSING_RAW_LINE_ID: "
                         f"{st_missing} evidence entry(ies) without raw_line_id"
+                    )
+
+        # ── neuro_trigger_v1: evidence[] raw_line_id ──
+        if feat_key == "neuro_trigger_v1":
+            nt_evidence = feat_val.get("evidence", [])
+            if isinstance(nt_evidence, list):
+                nt_missing = sum(
+                    1 for e in nt_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if nt_missing > 0:
+                    errors.append(
+                        f"NEURO_TRIGGER_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{nt_missing} evidence entry(ies) without raw_line_id"
                     )
 
         # ── vitals_canonical_v1.days.<date>.records[] ──
