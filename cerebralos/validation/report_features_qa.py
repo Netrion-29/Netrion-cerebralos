@@ -967,6 +967,77 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Radiology Findings v1 QA ────────────────────────────────
+    rf = feats.get("radiology_findings_v1", {})
+    print("RADIOLOGY FINDINGS v1 QA:")
+    rf_present = rf.get("findings_present") or "DATA NOT AVAILABLE"
+    rf_labels = rf.get("findings_labels", [])
+    rf_rule = rf.get("source_rule_id") or "none"
+    rf_evidence = rf.get("evidence", [])
+    rf_notes = rf.get("notes", [])
+    rf_warns = rf.get("warnings", [])
+    print(f"  findings_present: {rf_present}")
+    print(f"  findings_labels: {rf_labels}")
+    print(f"  source_rule_id: {rf_rule}")
+
+    # Pneumothorax
+    rf_ptx = rf.get("pneumothorax")
+    if rf_ptx:
+        print(f"  pneumothorax: present={rf_ptx.get('present')} subtype={rf_ptx.get('subtype')}")
+
+    # Hemothorax
+    rf_htx = rf.get("hemothorax")
+    if rf_htx:
+        print(f"  hemothorax: present={rf_htx.get('present')} qualifier={rf_htx.get('qualifier')}")
+
+    # Rib fracture
+    rf_rib = rf.get("rib_fracture")
+    if rf_rib:
+        print(f"  rib_fracture: present={rf_rib.get('present')} count={rf_rib.get('count')} ribs={rf_rib.get('rib_numbers')}")
+
+    # Flail chest
+    rf_flail = rf.get("flail_chest")
+    if rf_flail:
+        print(f"  flail_chest: present={rf_flail.get('present')}")
+
+    # Solid organ injuries
+    rf_soi = rf.get("solid_organ_injuries", [])
+    if rf_soi:
+        print(f"  solid_organ_injuries ({len(rf_soi)}):")
+        for soi in rf_soi:
+            print(f"    {soi.get('organ')}: grade={soi.get('grade')}")
+
+    # Intracranial hemorrhage
+    rf_ich = rf.get("intracranial_hemorrhage", [])
+    if rf_ich:
+        print(f"  intracranial_hemorrhage ({len(rf_ich)}):")
+        for ich in rf_ich:
+            print(f"    subtype={ich.get('subtype')}")
+
+    # Pelvic fracture
+    rf_pelvic = rf.get("pelvic_fracture")
+    if rf_pelvic:
+        print(f"  pelvic_fracture: present={rf_pelvic.get('present')}")
+
+    # Spinal fracture
+    rf_spinal = rf.get("spinal_fracture")
+    if rf_spinal:
+        print(f"  spinal_fracture: present={rf_spinal.get('present')} level={rf_spinal.get('level')}")
+
+    print(f"  evidence_count: {len(rf_evidence)}")
+    if rf_evidence:
+        for ev in rf_evidence[:5]:
+            print(f"    [{ev.get('ts', 'no_ts')}] ({ev.get('role', '?')}/{ev.get('label', '?')}) "
+                  f"{ev.get('snippet', '')[:80]}")
+    if rf_warns:
+        print(f"  warnings ({len(rf_warns)}):")
+        for w in rf_warns[:5]:
+            print(f"    - {w}")
+    if rf_notes:
+        for n in rf_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     # ── Impression/Plan Drift v1 QA ─────────────────────────────
     ipd = feats.get("impression_plan_drift_v1", {})
     print("IMPRESSION/PLAN DRIFT v1 QA:")
