@@ -50,6 +50,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "etoh_uds_v1",
     "impression_plan_drift_v1",
     "category_activation_v1",
+    "shock_trigger_v1",
     "vitals_qa",
 })
 
@@ -226,6 +227,20 @@ def _check_evidence_line_ids(
                             f"drift_event {de.get('date', '?')} has "
                             f"{de_missing} evidence entry(ies) without raw_line_id"
                         )
+
+        # ── shock_trigger_v1: evidence[] raw_line_id ──
+        if feat_key == "shock_trigger_v1":
+            st_evidence = feat_val.get("evidence", [])
+            if isinstance(st_evidence, list):
+                st_missing = sum(
+                    1 for e in st_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if st_missing > 0:
+                    errors.append(
+                        f"SHOCK_TRIGGER_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{st_missing} evidence entry(ies) without raw_line_id"
+                    )
 
         # ── vitals_canonical_v1.days.<date>.records[] ──
         if feat_key == "vitals_canonical_v1":

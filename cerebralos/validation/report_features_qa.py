@@ -830,6 +830,40 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Shock Trigger v1 QA ─────────────────────────────────────
+    st = feats.get("shock_trigger_v1", {})
+    print("SHOCK TRIGGER v1 QA:")
+    st_triggered = st.get("shock_triggered") or "DATA NOT AVAILABLE"
+    st_rule = st.get("trigger_rule_id") or "none"
+    st_ts = st.get("trigger_ts") or "DATA NOT AVAILABLE"
+    st_type = st.get("shock_type") or "none"
+    st_vitals = st.get("trigger_vitals") or {}
+    st_evidence = st.get("evidence", [])
+    st_notes = st.get("notes", [])
+    st_warns = st.get("warnings", [])
+    print(f"  shock_triggered: {st_triggered}")
+    print(f"  trigger_rule_id: {st_rule}")
+    print(f"  trigger_ts: {st_ts}")
+    print(f"  shock_type: {st_type}")
+    if st_vitals:
+        print(f"  trigger_vitals: SBP={st_vitals.get('sbp')}, "
+              f"MAP={st_vitals.get('map')}, "
+              f"BD={st_vitals.get('bd_value')}, "
+              f"specimen={st_vitals.get('bd_specimen')}")
+    print(f"  evidence_count: {len(st_evidence)}")
+    if st_evidence:
+        for ev in st_evidence[:5]:
+            print(f"    [{ev.get('ts', 'no_ts')}] ({ev.get('role', '?')}) "
+                  f"{ev.get('snippet', '')[:80]}")
+    if st_warns:
+        print(f"  warnings ({len(st_warns)}):")
+        for w in st_warns[:5]:
+            print(f"    - {w}")
+    if st_notes:
+        for n in st_notes:
+            print(f"  note: {n}")
+    print()
+
     # ── Impression/Plan Drift v1 QA ─────────────────────────────
     ipd = feats.get("impression_plan_drift_v1", {})
     print("IMPRESSION/PLAN DRIFT v1 QA:")
