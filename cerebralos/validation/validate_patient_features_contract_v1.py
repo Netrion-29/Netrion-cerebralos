@@ -56,6 +56,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "mechanism_region_v1",
     "radiology_findings_v1",
     "sbirt_screening_v1",
+    "hemodynamic_instability_pattern_v1",
     "vitals_qa",
 })
 
@@ -301,6 +302,20 @@ def _check_evidence_line_ids(
                     errors.append(
                         f"SBIRT_SCREENING_EVIDENCE_MISSING_RAW_LINE_ID: "
                         f"{sb_missing} evidence entry(ies) without raw_line_id"
+                    )
+
+        # ── hemodynamic_instability_pattern_v1: evidence[] raw_line_id ──
+        if feat_key == "hemodynamic_instability_pattern_v1":
+            hip_evidence = feat_val.get("evidence", [])
+            if isinstance(hip_evidence, list):
+                hip_missing = sum(
+                    1 for e in hip_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if hip_missing > 0:
+                    errors.append(
+                        f"HEMODYNAMIC_INSTABILITY_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{hip_missing} evidence entry(ies) without raw_line_id"
                     )
 
         # ── radiology_findings_v1: evidence[] raw_line_id ──
