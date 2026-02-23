@@ -1150,6 +1150,58 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Hemodynamic Instability Pattern v1 QA ──────────────────
+    hip = feats.get("hemodynamic_instability_pattern_v1", {})
+    print("HEMODYNAMIC INSTABILITY PATTERN v1 QA:")
+    hip_present = hip.get("pattern_present") or "DATA NOT AVAILABLE"
+    hip_patterns = hip.get("patterns_detected", [])
+    hip_total_abnormal = hip.get("total_abnormal_readings", 0)
+    hip_total_vitals = hip.get("total_vitals_readings", 0)
+    hip_rule = hip.get("source_rule_id") or "none"
+    hip_evidence = hip.get("evidence", [])
+    hip_notes = hip.get("notes", [])
+    hip_warns = hip.get("warnings", [])
+    print(f"  pattern_present: {hip_present}")
+    print(f"  patterns_detected: {hip_patterns}")
+    print(f"  total_abnormal_readings: {hip_total_abnormal}")
+    print(f"  total_vitals_readings: {hip_total_vitals}")
+    print(f"  source_rule_id: {hip_rule}")
+
+    # Hypotension sub-pattern
+    hip_hypo = hip.get("hypotension_pattern", {})
+    if hip_hypo:
+        print(f"  hypotension_pattern: detected={hip_hypo.get('detected')} "
+              f"count={hip_hypo.get('reading_count')} "
+              f"days={hip_hypo.get('days_affected')}")
+
+    # MAP low sub-pattern
+    hip_map = hip.get("map_low_pattern", {})
+    if hip_map:
+        print(f"  map_low_pattern: detected={hip_map.get('detected')} "
+              f"count={hip_map.get('reading_count')} "
+              f"days={hip_map.get('days_affected')}")
+
+    # Tachycardia sub-pattern
+    hip_tachy = hip.get("tachycardia_pattern", {})
+    if hip_tachy:
+        print(f"  tachycardia_pattern: detected={hip_tachy.get('detected')} "
+              f"count={hip_tachy.get('reading_count')} "
+              f"days={hip_tachy.get('days_affected')}")
+
+    print(f"  evidence_count: {len(hip_evidence)}")
+    if hip_evidence:
+        for ev in hip_evidence[:8]:
+            print(f"    [{ev.get('ts', 'no_ts')}] ({ev.get('pattern', '?')}) "
+                  f"{ev.get('snippet', '')[:80]}")
+    if hip_warns:
+        print(f"  warnings ({len(hip_warns)}):")
+        for w in hip_warns[:5]:
+            print(f"    - {w}")
+    if hip_notes:
+        for n in hip_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     print("=" * 60)
     return 0
 

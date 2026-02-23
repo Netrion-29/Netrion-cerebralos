@@ -77,6 +77,7 @@ from cerebralos.features.age_extraction_v1 import extract_patient_age
 from cerebralos.features.mechanism_region_v1 import extract_mechanism_region
 from cerebralos.features.radiology_findings_v1 import extract_radiology_findings
 from cerebralos.features.sbirt_screening_v1 import extract_sbirt_screening
+from cerebralos.features.hemodynamic_instability_pattern_v1 import extract_hemodynamic_instability_pattern
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -422,6 +423,10 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
     #    because it consumes arrival_vitals + base_deficit_monitoring) ──
     shock_trigger = extract_shock_trigger(features)
     features["shock_trigger_v1"] = shock_trigger
+
+    # ── Hemodynamic instability pattern v1 (consumes vitals_canonical_v1.days) ──
+    hemodynamic_instability = extract_hemodynamic_instability_pattern(features)
+    features["hemodynamic_instability_pattern_v1"] = hemodynamic_instability
 
     # ── Neuro trigger v1 (consumes per-day gcs_daily from feature_days) ──
     neuro_trigger = extract_neuro_trigger(
