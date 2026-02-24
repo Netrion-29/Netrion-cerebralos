@@ -62,6 +62,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "anticoag_context_v1",
     "pmh_social_allergies_v1",
     "adt_transfer_timeline_v1",
+    "procedure_operatives_v1",
     "vitals_qa",
 })
 
@@ -445,6 +446,31 @@ def _check_evidence_line_ids(
                             f"PMH_SOCIAL_ALLERGIES_{list_key.upper()}_MISSING_RAW_LINE_ID: "
                             f"{entry_missing} {list_key} entry(ies) without raw_line_id"
                         )
+
+        # ── procedure_operatives_v1: evidence[] + events[] raw_line_id ──
+        if feat_key == "procedure_operatives_v1":
+            po_evidence = feat_val.get("evidence", [])
+            if isinstance(po_evidence, list):
+                po_ev_missing = sum(
+                    1 for e in po_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if po_ev_missing > 0:
+                    errors.append(
+                        f"PROCEDURE_OPERATIVES_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{po_ev_missing} evidence entry(ies) without raw_line_id"
+                    )
+            po_events = feat_val.get("events", [])
+            if isinstance(po_events, list):
+                po_evt_missing = sum(
+                    1 for e in po_events
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if po_evt_missing > 0:
+                    errors.append(
+                        f"PROCEDURE_OPERATIVES_EVENTS_MISSING_RAW_LINE_ID: "
+                        f"{po_evt_missing} event(s) without raw_line_id"
+                    )
 
         # ── vitals_canonical_v1.days.<date>.records[] ──
         if feat_key == "vitals_canonical_v1":

@@ -1441,6 +1441,40 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Procedure / Operative Events v1 QA ───────────────────────
+    proc = feats.get("procedure_operatives_v1", {})
+    print("PROCEDURE / OPERATIVE EVENTS v1 QA:")
+    print(f"  procedure_event_count: {proc.get('procedure_event_count', 0)}")
+    print(f"  operative_event_count: {proc.get('operative_event_count', 0)}")
+    print(f"  anesthesia_event_count: {proc.get('anesthesia_event_count', 0)}")
+    cats = proc.get("categories_present", [])
+    print(f"  categories_present: {', '.join(cats) if cats else 'none'}")
+    proc_events = proc.get("events", [])
+    if proc_events:
+        print(f"  events ({len(proc_events)}):")
+        for ev in proc_events[:25]:
+            label = ev.get("label") or "(no label)"
+            ts = ev.get("ts") or "?"
+            kind = ev.get("source_kind", "?")
+            cat = ev.get("category", "?")
+            status = ev.get("status", "")
+            ms_count = len(ev.get("milestones", []))
+            ms_str = f" milestones={ms_count}" if ms_count else ""
+            st_str = f" status={status}" if status else ""
+            print(f"    {ts:20s} {kind:28s} [{cat:18s}] {label[:60]}{st_str}{ms_str}")
+    proc_evidence = proc.get("evidence", [])
+    print(f"  evidence_count: {len(proc_evidence)}")
+    proc_warns = proc.get("warnings", [])
+    if proc_warns:
+        print(f"  warnings ({len(proc_warns)}):")
+        for w in proc_warns[:5]:
+            print(f"    - {w}")
+    proc_notes = proc.get("notes", [])
+    if proc_notes:
+        for n in proc_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     print("=" * 60)
     return 0
 
