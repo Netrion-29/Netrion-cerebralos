@@ -81,6 +81,7 @@ from cerebralos.features.hemodynamic_instability_pattern_v1 import extract_hemod
 from cerebralos.features.note_sections_v1 import extract_note_sections
 from cerebralos.features.incentive_spirometry_v1 import extract_incentive_spirometry
 from cerebralos.features.anticoag_context_v1 import extract_anticoag_context
+from cerebralos.features.pmh_social_allergies_v1 import extract_pmh_social_allergies
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -420,6 +421,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
 
+    # ── PMH / Social / Allergies v1 (additive, patient-level) ──
+    pmh_social_allergies = extract_pmh_social_allergies(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     # ── Assemble features dict (all feature modules live here) ──
     features: Dict[str, Any] = {
         "vitals_canonical_v1": {
@@ -440,6 +447,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "note_sections_v1": note_sections,
         "incentive_spirometry_v1": incentive_spirometry,
         "anticoag_context_v1": anticoag_context,
+        "pmh_social_allergies_v1": pmh_social_allergies,
         "vitals_qa": agg_vitals_qa,
     }
 
