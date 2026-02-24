@@ -1150,6 +1150,53 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Note Sections v1 QA ────────────────────────────────────
+    ns = feats.get("note_sections_v1", {})
+    print("NOTE SECTIONS v1 QA:")
+    ns_present = ns.get("sections_present")
+    if ns_present is None:
+        ns_present = "DATA NOT AVAILABLE"
+    ns_src = ns.get("source_type") or "none"
+    ns_rule = ns.get("source_rule_id") or "none"
+    ns_ts = ns.get("source_ts") or "none"
+    print(f"  sections_present: {ns_present}")
+    print(f"  source_type: {ns_src}")
+    print(f"  source_rule_id: {ns_rule}")
+    print(f"  source_ts: {ns_ts}")
+
+    for sec_name in ("hpi", "primary_survey", "secondary_survey", "impression", "plan"):
+        sec = ns.get(sec_name, {})
+        sec_present = sec.get("present", False)
+        sec_lines = sec.get("line_count", 0)
+        sec_text_len = len(sec.get("text") or "")
+        label = f"  {sec_name}: present={sec_present}  lines={sec_lines}  chars={sec_text_len}"
+        print(label)
+        if sec_name == "primary_survey" and sec_present:
+            fields = sec.get("fields", {})
+            for fld in ("airway", "breathing", "circulation", "disability", "exposure", "fast"):
+                fval = fields.get(fld)
+                if fval:
+                    print(f"    {fld}: {fval[:80]}")
+                else:
+                    print(f"    {fld}: null")
+
+    ns_evidence = ns.get("evidence", [])
+    print(f"  evidence_count: {len(ns_evidence)}")
+    if ns_evidence:
+        for ev in ns_evidence[:6]:
+            print(f"    [{ev.get('section', '?')}] {ev.get('snippet', '')[:80]}")
+
+    ns_warns = ns.get("warnings", [])
+    ns_notes = ns.get("notes", [])
+    if ns_warns:
+        print(f"  warnings ({len(ns_warns)}):")
+        for w in ns_warns[:5]:
+            print(f"    - {w}")
+    if ns_notes:
+        for n in ns_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     # ── Hemodynamic Instability Pattern v1 QA ──────────────────
     hip = feats.get("hemodynamic_instability_pattern_v1", {})
     print("HEMODYNAMIC INSTABILITY PATTERN v1 QA:")

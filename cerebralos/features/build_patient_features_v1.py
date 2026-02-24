@@ -78,6 +78,7 @@ from cerebralos.features.mechanism_region_v1 import extract_mechanism_region
 from cerebralos.features.radiology_findings_v1 import extract_radiology_findings
 from cerebralos.features.sbirt_screening_v1 import extract_sbirt_screening
 from cerebralos.features.hemodynamic_instability_pattern_v1 import extract_hemodynamic_instability_pattern
+from cerebralos.features.note_sections_v1 import extract_note_sections
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -399,6 +400,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
 
+    # ── Note Sections v1 (additive, patient-level) ──
+    note_sections = extract_note_sections(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     # ── Assemble features dict (all feature modules live here) ──
     features: Dict[str, Any] = {
         "vitals_canonical_v1": {
@@ -416,6 +423,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "mechanism_region_v1": mechanism_region,
         "radiology_findings_v1": radiology_findings,
         "sbirt_screening_v1": sbirt_screening,
+        "note_sections_v1": note_sections,
         "vitals_qa": agg_vitals_qa,
     }
 
