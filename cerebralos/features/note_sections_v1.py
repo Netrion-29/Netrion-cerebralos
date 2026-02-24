@@ -248,8 +248,12 @@ def _is_inside_radiographs(text: str, impression_match_start: int) -> bool:
     # Plan, Labs) between Radiographs and this match, which would close the
     # Radiographs block.
     between = text[last_rad.end(): impression_match_start]
+    # Only look for section headers that are genuinely *different* from
+    # Impression itself.  Radiological sub-impressions (IMPRESSION: or
+    # Impression:) that appear inside a multi-study Radiographs block
+    # must NOT be treated as closing headers.
     closing = re.search(
-        r"^(?:\s*)(?:Impression|Secondary\s+Survey|Plan|Labs)\s*:",
+        r"^(?:\s*)(?:Secondary\s+Survey|Plan|Labs|Assessment|Disposition)\s*:",
         between,
         re.IGNORECASE | re.MULTILINE,
     )

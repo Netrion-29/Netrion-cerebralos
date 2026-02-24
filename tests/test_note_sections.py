@@ -253,6 +253,64 @@ Plan:
         assert result["impression"]["present"] is False
         assert result["plan"]["present"] is True
 
+    def test_multi_study_radiographs_with_title_case_sub_impressions(self):
+        """Radiographs block with both ALL-CAPS and Title Case sub-impressions.
+
+        Reproduces the William_Simmons pattern: multiple imaging studies
+        inside a single Radiographs block, each with their own impression
+        line (some Title Case, some ALL CAPS).  The clinical Impression
+        appears after the Labs section and must NOT capture radiological
+        or lab content.
+        """
+        text = """\
+HPI: 86 yo male s/p fall.
+Primary Survey:
+            Airway: Patent
+            Disability: GCS 15
+Secondary Survey:
+Head: No lacerations
+Radiographs:  CT HEAD WO CONTRAST
+Result Date: 12/17/2025
+INDICATION: Trauma.
+IMPRESSION: No acute intracranial injury or skull fracture.
+
+XR SHOULDER LEFT 2 VIEWS
+Result Date: 12/17/2025
+History: Left shoulder pain.
+
+Impression:  No acute fracture or dislocation
+
+CT PELVIS WO CONTRAST
+Result Date: 12/17/2025
+IMPRESSION: 1. Acute comminuted fracture of the left inferior pubic ramus.
+
+Labs:
+Component Date Value
+WBC 12/17/2025 9.2
+Hemoglobin 12/17/2025 12.5
+
+Impression:  86 yo male s/p fall with
+- Acute comminuted fracture of the left inferior pubic ramus.
+- PMH of Afib, CAD
+Plan:
+1. Orthopedic consult
+2. Pain control
+"""
+        item = _make_item(text)
+        result = extract_note_sections({"days": {}}, _make_days([item]))
+        assert result["impression"]["present"] is True
+        imp = result["impression"]["text"]
+        # Must contain the clinical impression
+        assert "86 yo male" in imp
+        assert "Acute comminuted fracture" in imp
+        # Must NOT contain radiological sub-impressions or lab data
+        assert "No acute intracranial" not in imp
+        assert "No acute fracture or dislocation" not in imp
+        assert "WBC" not in imp
+        assert "Hemoglobin" not in imp
+        # Line count should be reasonable (not 300+)
+        assert result["impression"]["line_count"] <= 10
+
 
 class TestFallbackSource:
     """ED_NOTE used when TRAUMA_HP has no sections."""
