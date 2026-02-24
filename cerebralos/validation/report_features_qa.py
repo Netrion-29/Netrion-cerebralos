@@ -993,7 +993,7 @@ def main() -> int:
     # Rib fracture
     rf_rib = rf.get("rib_fracture")
     if rf_rib:
-        print(f"  rib_fracture: present={rf_rib.get('present')} count={rf_rib.get('count')} ribs={rf_rib.get('rib_numbers')}")
+        print(f"  rib_fracture: present={rf_rib.get('present')} count={rf_rib.get('count')} ribs={rf_rib.get('rib_numbers')} laterality={rf_rib.get('laterality')}")
 
     # Flail chest
     rf_flail = rf.get("flail_chest")

@@ -32,6 +32,7 @@ from cerebralos.features.radiology_findings_v1 import (
     _is_negated,
     _is_chronic,
     _parse_rib_numbers,
+    _parse_rib_laterality,
     _grade_to_string,
     extract_radiology_findings,
 )
@@ -686,3 +687,175 @@ class TestRibNumberParsing:
     def test_no_numbers(self):
         nums = _parse_rib_numbers("several rib fractures")
         assert nums is None
+
+    # ── Ordinal-suffix range tests (v2) ────────────────────────
+    def test_ordinal_suffix_range(self):
+        """'5th-7th' should expand to 5, 6, 7."""
+        nums = _parse_rib_numbers("right 5th-7th ribs")
+        assert nums is not None
+        assert nums == ["5", "6", "7"]
+
+    def test_ordinal_suffix_range_ninth_tenth(self):
+        """'9th-10th' should expand to 9, 10."""
+        nums = _parse_rib_numbers("posterior right 9th-10th ribs")
+        assert nums is not None
+        assert "9" in nums and "10" in nums
+
+    def test_partial_suffix_range(self):
+        """'5-7th' (partial suffix) should expand to 5, 6, 7."""
+        nums = _parse_rib_numbers("right 5-7th rib fxs")
+        assert nums is not None
+        assert nums == ["5", "6", "7"]
+
+    def test_to_range_separator(self):
+        """'5th to 7th' should expand to 5, 6, 7."""
+        nums = _parse_rib_numbers("right 5th to 7th ribs")
+        assert nums is not None
+        assert nums == ["5", "6", "7"]
+
+    def test_through_range_separator(self):
+        """'5th through 7th' should expand to 5, 6, 7."""
+        nums = _parse_rib_numbers("right 5th through 7th ribs")
+        assert nums is not None
+        assert nums == ["5", "6", "7"]
+
+    def test_comma_separated_ordinal_ranges(self):
+        """'5th-7th, 9th-10th' should expand to 5,6,7,9,10."""
+        nums = _parse_rib_numbers("rib fractures, 5th-7th, 9th-10th")
+        assert nums is not None
+        assert nums == ["5", "6", "7", "9", "10"]
+
+    def test_mixed_ordinal_word_and_numeric(self):
+        """'ninth and 10th' should produce 9, 10."""
+        nums = _parse_rib_numbers("posterior right ninth and 10th ribs")
+        assert nums is not None
+        assert "9" in nums and "10" in nums
+
+    def test_ronald_bittner_impression(self):
+        """Real-world IMPRESSION from Ronald Bittner:
+        'right 5th-7th and ninth and 10th ribs' → 5,6,7,9,10"""
+        text = "right 5th-7th and ninth and 10th ribs"
+        nums = _parse_rib_numbers(text)
+        assert nums is not None
+        assert nums == ["5", "6", "7", "9", "10"]
+
+
+# ── Test: Rib laterality parsing ───────────────────────────────────
+
+class TestRibLateralityParsing:
+    def test_right(self):
+        assert _parse_rib_laterality("right 5th-7th ribs") == "right"
+
+    def test_left(self):
+        assert _parse_rib_laterality("left rib fractures 4-7") == "left"
+
+    def test_bilateral(self):
+        assert _parse_rib_laterality("bilateral rib fractures") == "bilateral"
+
+    def test_no_laterality(self):
+        assert _parse_rib_laterality("rib fractures 4-7") is None
+
+
+# ── Test: Laterality in full pipeline ──────────────────────────────
+
+class TestRibFractureLaterality:
+    def test_laterality_in_output(self):
+        result = _run_single_radiology(
+            "IMPRESSION: Right-sided rib fractures."
+        )
+        assert result["rib_fracture"]["present"] is True
+        assert result["rib_fracture"]["laterality"] == "right"
+
+    def test_left_laterality(self):
+        result = _run_single_radiology(
+            "IMPRESSION: Left rib fractures 4-7."
+        )
+        assert result["rib_fracture"]["laterality"] == "left"
+
+
+# ── Test: Solid organ grade-after-injury patterns ──────────────────
+
+class TestSolidOrganGradePatterns:
+    def test_grade_before_organ(self):
+        result = _run_single_radiology(
+            "IMPRESSION: Grade III splenic laceration."
+        )
+        assert result["solid_organ_injuries"][0]["grade"] == "3"
+
+    def test_grade_after_injury(self):
+        result = _run_single_radiology(
+            "IMPRESSION: Splenic laceration, grade 3."
+        )
+        assert "spleen_injury" in result["findings_labels"]
+        assert result["solid_organ_injuries"][0]["grade"] == "3"
+
+    def test_aast_grade(self):
+        result = _run_single_radiology(
+            "IMPRESSION: Liver laceration, AAST grade II."
+        )
+        assert "liver_injury" in result["findings_labels"]
+        assert result["solid_organ_injuries"][0]["grade"] == "2"
+
+    def test_grade_before_injury_arabic(self):
+        result = _run_single_radiology(
+            "IMPRESSION: Grade 4 liver laceration."
+        )
+        assert result["solid_organ_injuries"][0]["grade"] == "4"
+
+
+# ── Test: Ronald Bittner real-world (v2) ───────────────────────────
+
+class TestRonaldBittner:
+    def test_impression_ordinal_ranges(self):
+        """Ronald Bittner IMPRESSION: 'Acute, minimally displaced fractures
+        in the right 5th-7th and ninth and 10th ribs.'"""
+        text = (
+            "IMPRESSION: 1. Diffuse idiopathic skeletal hyperostosis with "
+            "extension distraction fracture through the T8 vertebral body, "
+            "possible mechanical instability. "
+            "2. Acute, minimally displaced fractures in the right 5th-7th "
+            "and ninth and 10th ribs."
+        )
+        result = _run_single_radiology(text)
+        assert result["findings_present"] == "yes"
+        assert "rib_fracture" in result["findings_labels"]
+        assert "spinal_fracture" in result["findings_labels"]
+        rf = result["rib_fracture"]
+        assert rf["present"] is True
+        nums = rf["rib_numbers"]
+        assert nums is not None
+        assert nums == ["5", "6", "7", "9", "10"]
+        assert rf["count"] == 5
+        assert rf["laterality"] == "right"
+
+    def test_findings_section_ribs(self):
+        """Ronald Bittner FINDINGS with ordinal-suffix ranges."""
+        text = (
+            "FINDINGS: CHEST: Bones: There are acute, minimally displaced "
+            "fractures in the right 5th-7th ribs. There are also acute, "
+            "minimally displaced fractures in the posterior right ninth and "
+            "10th ribs."
+        )
+        result = _run_single_radiology(text)
+        assert "rib_fracture" in result["findings_labels"]
+        rf = result["rib_fracture"]
+        nums = rf["rib_numbers"]
+        assert nums is not None
+        # Should get at least 5,6,7 from the first mention
+        assert "5" in nums and "6" in nums and "7" in nums
+
+    def test_summary_line_comma_ranges(self):
+        """'Right sided rib fractures, 5th-7th, 9th-10th'"""
+        text = "Right sided rib fractures, 5th-7th, 9th-10th"
+        days_data = _make_days_data({
+            "2025-12-18": [_make_trauma_hp_item(text)]
+        })
+        result = extract_radiology_findings({"days": {}}, days_data)
+        assert result["findings_present"] == "yes"
+        rf = result["rib_fracture"]
+        assert rf is not None
+        nums = rf["rib_numbers"]
+        assert nums is not None
+        assert nums == ["5", "6", "7", "9", "10"]
+        assert rf["count"] == 5
+        assert rf["laterality"] == "right"

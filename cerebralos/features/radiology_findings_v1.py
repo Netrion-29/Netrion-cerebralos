@@ -127,12 +127,14 @@ RE_HEMOTHORAX_QUALIFIER = re.compile(
 )
 
 # --- Rib fracture ---
+# Positional/laterality modifiers can appear in any order before "ribs"
+_RIB_MOD = r"(?:(?:posterior|lateral|anterior|right|left|bilateral)\s+)*"
 RE_RIB_FRACTURE = re.compile(
     r"\b(?:rib\s+fracture|rib\s+fx|fractured?\s+rib|rib\s+fractures"
-    r"|fracture[sd]?\s+(?:of\s+)?(?:the\s+)?(?:(?:posterior|lateral|anterior)\s+)?(?:right|left|bilateral)?\s*ribs?"
-    r"|fracture[sd]?\s+(?:of\s+)?(?:the\s+)?(?:posterior|lateral|anterior)\s+"
-    r"(?:right|left)?\s*(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth|\d+(?:st|nd|rd|th)?)"
-    r"(?:[,\s]+(?:and\s+)?(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth|\d+(?:st|nd|rd|th)?))*\s*ribs?)\b",
+    r"|fracture[sd]?\s+(?:(?:of|in)\s+)?(?:the\s+)?" + _RIB_MOD + r"ribs?"
+    r"|fracture[sd]?\s+(?:(?:of|in)\s+)?(?:the\s+)?" + _RIB_MOD
+    + r"(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth|\d+(?:st|nd|rd|th)?)"
+    r"(?:[,\s\-\u2013]+(?:and\s+|to\s+|through\s+)?(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth|\d+(?:st|nd|rd|th)?))*\s*ribs?)\b",
     re.IGNORECASE,
 )
 # Also catch patterns like "right 1, 3, 4, 6, 7 rib fractures"
@@ -167,7 +169,8 @@ RE_LIVER_INJURY = re.compile(
     re.IGNORECASE,
 )
 RE_LIVER_GRADE = re.compile(
-    r"\b(?:grade|gr\.?)\s*([IViv]+|\d+)\s*(?:liver|hepatic)?\s*(?:laceration|injury|contusion)?\b",
+    r"\b(?:(?:AAST\s+)?(?:grade|gr\.?)\s*([IViv]+|\d+)"   # grade before organ
+    r"|(?:laceration|injury|contusion|hematoma),?\s*(?:AAST\s+)?(?:grade|gr\.?)\s*([IViv]+|\d+))\b",  # grade after injury
     re.IGNORECASE,
 )
 # Spleen
@@ -177,17 +180,20 @@ RE_SPLEEN_INJURY = re.compile(
     re.IGNORECASE,
 )
 RE_SPLEEN_GRADE = re.compile(
-    r"\b(?:grade|gr\.?)\s*([IViv]+|\d+)\s*(?:spleen|splenic)?\s*(?:laceration|injury|contusion)?\b",
+    r"\b(?:(?:AAST\s+)?(?:grade|gr\.?)\s*([IViv]+|\d+)"   # grade before organ
+    r"|(?:laceration|injury|contusion|hematoma),?\s*(?:AAST\s+)?(?:grade|gr\.?)\s*([IViv]+|\d+))\b",  # grade after injury
     re.IGNORECASE,
 )
 # Kidney
+# Kidney — NOTE: "kidney injury" excluded (ambiguous with AKI medical diagnosis)
 RE_KIDNEY_INJURY = re.compile(
-    r"\b(?:kidney|renal)\s+(?:laceration|injury|contusion|hematoma|fracture|avulsion)\b"
+    r"\b(?:kidney|renal)\s+(?:laceration|contusion|hematoma|fracture|avulsion)\b"
     r"|\blaceration\s+(?:of\s+)?(?:the\s+)?kidney\b",
     re.IGNORECASE,
 )
 RE_KIDNEY_GRADE = re.compile(
-    r"\b(?:grade|gr\.?)\s*([IViv]+|\d+)\s*(?:kidney|renal)?\s*(?:laceration|injury|contusion)?\b",
+    r"\b(?:(?:AAST\s+)?(?:grade|gr\.?)\s*([IViv]+|\d+)"   # grade before organ
+    r"|(?:laceration|injury|contusion|hematoma),?\s*(?:AAST\s+)?(?:grade|gr\.?)\s*([IViv]+|\d+))\b",  # grade after injury
     re.IGNORECASE,
 )
 
@@ -222,10 +228,11 @@ RE_HIP_FRACTURE = re.compile(
 # --- Spinal fracture ---
 RE_SPINAL_FRACTURE = re.compile(
     r"\b(?:spinal\s+fracture|spine\s+fracture|vertebral?\s+(?:body\s+)?fracture"
-    r"|fracture[sd]?\s+(?:of\s+)?(?:the\s+)?(?:spine|vertebra[le]?|vertebral\s+body)"
+    r"|(?:distraction|extension|flexion|compression|burst)\s+fracture"
+    r"|fracture[sd]?\s+(?:(?:of|in|through)\s+)?(?:the\s+)?(?:spine|vertebra[le]?|vertebral\s+body)"
     r"|compression\s+fracture|burst\s+fracture"
-    r"|(?:C[1-7]|T\d{1,2}|L[1-5]|S[1-5])\s+(?:vertebral\s+body\s+)?fracture"
-    r"|fracture\s+(?:of\s+)?(?:the\s+)?(?:C[1-7]|T\d{1,2}|L[1-5]|S[1-5])(?:\s+vertebral\s+body)?)\b",
+    r"|(?:C[1-7]|T\d{1,2}|L[1-5]|S[1-5])\s+(?:vertebral\s+body\s+)?(?:distraction\s+|compression\s+|burst\s+)?fracture"
+    r"|fracture\s+(?:(?:of|in|through)\s+)?(?:the\s+)?(?:C[1-7]|T\d{1,2}|L[1-5]|S[1-5])(?:\s+vertebral\s+body)?)\b",
     re.IGNORECASE,
 )
 # Extract spinal level (e.g., "S4", "L1", "T5-T6")
@@ -315,9 +322,25 @@ def _is_chronic(text: str, match_start: int, match_end: int) -> bool:
     return False
 
 
+# Laterality pattern — "right", "left", "bilateral" near rib context
+RE_RIB_LATERALITY = re.compile(
+    r"\b(right|left|bilateral)\b",
+    re.IGNORECASE,
+)
+
+
 def _parse_rib_numbers(text: str) -> Optional[List[str]]:
     """
     Extract explicit rib numbers from text near a rib fracture mention.
+
+    Handles:
+      - Bare numeric ranges: "4-7" → [4,5,6,7]
+      - Ordinal-suffix ranges: "5th-7th", "9th-10th" → [5,6,7], [9,10]
+      - Partial-suffix ranges: "5-7th", "9-10th" → [5,6,7], [9,10]
+      - Word range separators: "5th to 7th", "5th through 7th"
+      - Comma-separated values: "1, 3, 4, 6, 7"
+      - Ordinal words: "first", "ninth" etc.
+      - Mixed ordinal word + suffix: "ninth and 10th"
 
     Returns a sorted list of rib number strings, or None if not deterministic.
     """
@@ -330,20 +353,25 @@ def _parse_rib_numbers(text: str) -> Optional[List[str]]:
 
     numbers: List[int] = []
 
-    # Try numeric patterns: "4-7", "1, 3, 4, 6, 7"
-    # Pattern: digit sequences that may be ranges or comma-separated
-    num_matches = re.findall(r"(\d+)\s*[-–]\s*(\d+)", text)
+    # Try numeric / ordinal-suffix ranges:
+    #   "4-7", "5th-7th", "5-7th", "5th to 7th", "5th through 7th"
+    _RE_RIB_RANGE = re.compile(
+        r"(\d+)(?:st|nd|rd|th)?\s*(?:[-–]|\bto\b|\bthrough\b)\s*(\d+)(?:st|nd|rd|th)?",
+        re.IGNORECASE,
+    )
+    num_matches = _RE_RIB_RANGE.findall(text)
     for start, end in num_matches:
         s, e = int(start), int(end)
         if 1 <= s <= 12 and 1 <= e <= 12 and s <= e:
             numbers.extend(range(s, e + 1))
 
-    # Individual digits near "rib" context
-    simple_nums = re.findall(r"\b(\d{1,2})\b", text)
+    # Individual digits near "rib" context (skip those already captured)
+    # Must handle ordinal suffixes: "10th" → 10
+    # Exclude list markers like "2." via negative lookahead
+    simple_nums = re.findall(r"\b(\d{1,2})(?:st|nd|rd|th)?\b(?!\.)", text)
     for n_str in simple_nums:
         n = int(n_str)
         if 1 <= n <= 12:
-            # Avoid numbers already captured in ranges
             if n not in numbers:
                 numbers.append(n)
 
@@ -358,6 +386,18 @@ def _parse_rib_numbers(text: str) -> Optional[List[str]]:
         return None
 
     return sorted(set(str(n) for n in numbers), key=lambda x: int(x))
+
+
+def _parse_rib_laterality(text: str) -> Optional[str]:
+    """
+    Extract laterality from text near a rib fracture mention.
+
+    Returns "right", "left", "bilateral", or None.
+    """
+    m = RE_RIB_LATERALITY.search(text)
+    if m:
+        return m.group(1).lower()
+    return None
 
 
 def _grade_to_string(raw: str) -> Optional[str]:
@@ -510,11 +550,15 @@ def _extract_findings_from_text(
         if rib_numbers and count is None:
             count = len(rib_numbers)
 
+        # Extract laterality
+        laterality = _parse_rib_laterality(rib_context)
+
         raw_id = _add_evidence("finding", "rib_fracture", m, scan_text)
         categories["rib_fracture"] = {
             "present": True,
             "count": count,
             "rib_numbers": rib_numbers,
+            "laterality": laterality,
             "raw_line_id": raw_id,
         }
 
@@ -547,7 +591,11 @@ def _extract_findings_from_text(
             grade_window = scan_text[max(0, m.start() - 60):m.end() + 60]
             m_grade = grade_re.search(grade_window)
             if m_grade:
-                grade = _grade_to_string(m_grade.group(1))
+                # grade regex has two groups: group(1) for grade-before,
+                # group(2) for grade-after-injury.  Use whichever matched.
+                raw_grade = m_grade.group(1) or m_grade.group(2)
+                if raw_grade:
+                    grade = _grade_to_string(raw_grade)
             raw_id = _add_evidence("finding", f"{organ_label}_injury", m, scan_text)
             categories.setdefault("solid_organ_injuries", []).append({
                 "organ": organ_label,
