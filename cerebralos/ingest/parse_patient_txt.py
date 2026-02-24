@@ -199,6 +199,48 @@ RE_ADMIN_ROW_ACTION_TIME = re.compile(
 
 
 # ============================================================
+# New-format (Date of Service) -- regex and mapping
+# ============================================================
+
+# Date of Service boundary: "Date of Service: MM/DD/YY HHMM"
+# NOTE: must NOT match "Date of Service:  M/D/YYYY" (embedded in note bodies,
+#       extra space, 4-digit year, no military time).
+RE_DOS_BOUNDARY = re.compile(
+    r"^Date of Service:\s+(\d{1,2}/\d{1,2}/\d{2})\s+(\d{4})\s*$"
+)
+
+# Note-category label (3 lines above DoS boundary) → evidence KIND
+_NOTE_CATEGORY_MAP: Dict[str, str] = {
+    "H&P":                                  "TRAUMA_HP",
+    "Progress Notes":                       "PHYSICIAN_NOTE",
+    "Consults":                             "CONSULT_NOTE",
+    "ED Provider Notes":                    "ED_NOTE",
+    "ED Notes":                             "ED_NURSING",
+    "Plan of Care":                         "CASE_MGMT",
+    "Op Note":                              "OP_NOTE",
+    "Triage Assessment":                    "TRIAGE",
+    "Discharge Summary":                    "DISCHARGE_SUMMARY",
+    "Procedures":                           "PROCEDURE",
+    "Pre-Procedure Note":                   "PRE_PROCEDURE",
+    "Significant Event":                    "SIGNIFICANT_EVENT",
+    "Anesthesia Follow Up Evaluation":      "ANESTHESIA_FOLLOWUP",
+    "Anesthesia Postprocedure Evaluation":  "ANESTHESIA_POSTPROCEDURE",
+    "Anesthesia Procedure Notes":           "ANESTHESIA_PROCEDURE",
+    "Anesthesia Preprocedure Evaluation":   "ANESTHESIA_PREPROCEDURE",
+    "Anesthesia Consult":                   "ANESTHESIA_CONSULT",
+}
+
+# Radiology study name prefixes for backward scan
+_RAD_STUDY_PREFIXES = (
+    "CT ", "XR ", "US ", "MR ", "MRI ", "PET ", "DEXA ",
+    "FL ", "NM ", "FLUORO ", "DSA ", "IR ",
+)
+
+# Chronological results-summary timestamp: "MM/DD/YY HH:MM" (colon, standalone)
+RE_RESULTS_TS = re.compile(r"^(\d{2}/\d{2}/\d{2})\s+(\d{2}:\d{2})$")
+
+
+# ============================================================
 # Timestamp parsing helpers
 # ============================================================
 
@@ -612,7 +654,381 @@ def _extract_header(lines, scan_limit=400):
 
 
 # ============================================================
-# Core parser
+# Format detection
+# ============================================================
+
+def _detect_format(lines, scan_limit=500):
+    """Return 'bracket' (old) or 'dos' (new Date-of-Service) or 'unknown'."""
+    for line in lines[:scan_limit]:
+        if RE_BLOCK_STANDARD.match(line):
+            return "bracket"
+    for line in lines[:scan_limit]:
+        if RE_DOS_BOUNDARY.match(line.strip()):
+            return "dos"
+    return "unknown"
+
+
+# ============================================================
+# New-format header extraction
+# ============================================================
+
+def _extract_header_dos(lines):
+    """
+    Extract metadata from new-format (Date of Service) files.
+    Line 1: patient name, Line 2: "NN year old male/female", Line 3: DOB.
+    ADT Events table: first 'Admission' row → ARRIVAL_TIME.
+    """
+    header: Dict[str, str] = {}
+    # Line 1: patient name
+    if len(lines) >= 1 and lines[0].strip():
+        header["PATIENT_NAME"] = lines[0].strip()
+    # Line 2: age/sex  ("67 year old male")
+    if len(lines) >= 2:
+        m = re.match(r"(\d+)\s+year\s+old\s+(\w+)", lines[1].strip(), re.IGNORECASE)
+        if m:
+            header["AGE"] = m.group(1)
+            header["SEX"] = m.group(2).capitalize()
+    # Line 3: DOB
+    if len(lines) >= 3 and re.match(r"\d{1,2}/\d{1,2}/\d{4}", lines[2].strip()):
+        header["DOB"] = lines[2].strip()
+    # ADT Events: first "Admission" row → ARRIVAL_TIME
+    adt_re = re.compile(r"^(\d{1,2}/\d{1,2}/\d{2})\s+(\d{4})\s+")
+    for line in lines[:60]:
+        if "Admission" in line:
+            m = adt_re.match(line.strip())
+            if m:
+                ts = _parse_dt_slash_hhmm(m.group(1), m.group(2))
+                if ts:
+                    header["ARRIVAL_TIME"] = ts
+            break
+    return header
+
+
+# ============================================================
+# New-format item parsing (DoS boundaries + supplemental)
+# ============================================================
+
+def _parse_items_dos(lines, arrival_dt_str=None):
+    """
+    Parse new-format files:
+    1. Date-of-Service boundaries → clinical note items
+    2. Supplemental sections → RADIOLOGY / LAB / MAR items
+
+    The last clinical note's body is trimmed to exclude supplemental data
+    so that vitals/labs are not duplicated from note bodies.
+    """
+    items: List[EvidenceItem] = []
+
+    # ── Phase 1: locate all DoS boundaries ──────────────────
+    boundaries: List[Tuple[int, Optional[str], str]] = []
+    for i, line in enumerate(lines):
+        m = RE_DOS_BOUNDARY.match(line.strip())
+        if m:
+            dos_dt = _parse_dt_slash_hhmm(m.group(1), m.group(2))
+            if dos_dt:
+                _ts_count("MM/DD/YY HHMM (DoS header)")
+            cat_line = lines[i - 3].strip() if i >= 3 else ""
+            cat_clean = re.sub(
+                r"\s+(This note has been|The patient can).*$", "", cat_line,
+            ).strip()
+            kind = _NOTE_CATEGORY_MAP.get(cat_clean, "NOTE")
+            boundaries.append((i, dos_dt, kind))
+
+    if not boundaries:
+        return items
+
+    # ── Phase 2: create clinical-note items ─────────────────
+    for b_idx, (dos_idx, dos_dt, kind) in enumerate(boundaries):
+        body_start = dos_idx + 1
+        if b_idx + 1 < len(boundaries):
+            # End 7 lines before next DoS (skip provider header block)
+            body_end = max(body_start, boundaries[b_idx + 1][0] - 7)
+        else:
+            # Last note: extend to EOF initially; Phase 4 may trim.
+            body_end = len(lines)
+
+        text = "\n".join(lines[body_start:body_end]).strip("\n")
+        warns: List[str] = []
+        if dos_dt is None:
+            warns.append("ts_missing")
+
+        items.append(
+            EvidenceItem(
+                idx=len(items),
+                kind=kind,
+                datetime=dos_dt,
+                line_start=dos_idx + 1,   # 1-based
+                line_end=body_end,
+                text=text,
+                warnings=tuple(warns),
+                header_dt=dos_dt,
+            )
+        )
+
+    # ── Phase 3: supplemental items (RADIOLOGY / LAB / MAR) ─
+    last_dos_idx = boundaries[-1][0]
+    supp_items = _parse_supplemental_dos(
+        lines, last_dos_idx, arrival_dt_str, start_idx=len(items),
+    )
+
+    # ── Phase 4: trim last note body if supplemental overlaps ─
+    if supp_items and items:
+        first_supp_line = min(it.line_start for it in supp_items)
+        last_note = items[-1]
+        if first_supp_line <= last_note.line_end:
+            trim_end = first_supp_line - 1   # 1-based line before supp
+            trimmed_text = "\n".join(
+                lines[last_note.line_start - 1 : max(0, trim_end - 1)]
+            ).strip("\n")
+            items[-1] = EvidenceItem(
+                idx=last_note.idx,
+                kind=last_note.kind,
+                datetime=last_note.datetime,
+                line_start=last_note.line_start,
+                line_end=max(last_note.line_start, trim_end),
+                text=trimmed_text,
+                warnings=last_note.warnings,
+                header_dt=last_note.header_dt,
+            )
+
+    items.extend(supp_items)
+    return items
+
+
+def _parse_supplemental_dos(lines, last_dos_idx, arrival_dt_str, start_idx=0):
+    """
+    Parse supplemental sections after the last clinical note for:
+      - RADIOLOGY reports ("Narrative & Impression" blocks)
+      - LAB results ("Specimen Collected:" pages + chronological summary)
+      - MAR records ("All Administrations of" sections)
+    """
+    items: List[EvidenceItem] = []
+    idx = start_idx
+    n = len(lines)
+    scan_start = last_dos_idx + 1
+    claimed: set = set()  # line indices already assigned to an item
+
+    # ── RADIOLOGY: "Narrative & Impression" blocks ──────────
+    for i in range(scan_start, n):
+        if lines[i].strip() != "Narrative & Impression":
+            continue
+        if i in claimed:
+            continue
+
+        # Backwards scan for study name (CT / XR / US / MR …)
+        study_name = ""
+        study_line = i
+        for j in range(i - 1, max(scan_start, i - 30), -1):
+            sl = lines[j].strip()
+            if any(sl.upper().startswith(p) for p in _RAD_STUDY_PREFIXES):
+                study_name = sl.split("Order:")[0].strip()
+                study_line = j
+                break
+
+        # Forward scan: collect until end-of-report markers
+        report_end = i + 1
+        for j in range(i + 1, min(n, i + 500)):
+            rl = lines[j].strip()
+            if rl in (
+                "Reading Physician Information",
+                "Signing Physician Information",
+                "Imaging Information",
+            ):
+                report_end = j
+                break
+            if rl.startswith("Exam Ended:"):
+                report_end = j + 1
+                break
+            report_end = j + 1
+
+        report_text = (
+            (study_name + "\n" if study_name else "")
+            + "\n".join(lines[i + 1 : report_end]).strip()
+        )
+
+        # Timestamp: prefer Exam Ended, then Final result date
+        rad_dt: Optional[str] = None
+        for j in range(i, report_end):
+            m = RE_EXAM_ENDED.search(lines[j])
+            if m:
+                rad_dt = _parse_dt_slash_colon(m.group(1), m.group(2))
+                if rad_dt:
+                    _ts_count("MM/DD/YY HH:MM (Exam Ended)")
+                    break
+        if rad_dt is None:
+            for j in range(max(scan_start, study_line - 10), report_end):
+                m = RE_FINAL_RESULT_DATE.search(lines[j])
+                if m:
+                    rad_dt = _date_only_iso(m.group("date"))
+                    if rad_dt:
+                        _ts_count("Final result date (RADIOLOGY)")
+                        break
+
+        warns: List[str] = []
+        if rad_dt is None:
+            _ts_fail()
+            warns.append("ts_missing")
+        elif "00:00:00" in rad_dt:
+            warns.append("time_defaulted_0000")
+
+        items.append(
+            EvidenceItem(
+                idx=idx, kind="RADIOLOGY", datetime=rad_dt,
+                line_start=study_line + 1, line_end=report_end,
+                text=report_text, warnings=tuple(warns), header_dt=rad_dt,
+            )
+        )
+        idx += 1
+        for j in range(study_line, report_end):
+            claimed.add(j)
+
+    # ── LAB: "Specimen Collected:" pages ────────────────────
+    for i in range(scan_start, n):
+        stripped = lines[i].strip()
+        if "Specimen Collected:" not in stripped:
+            continue
+        if i in claimed:
+            continue
+
+        # Backward: find start of this lab result block
+        lab_start = i
+        for j in range(i - 1, max(scan_start, i - 100), -1):
+            sl = lines[j].strip()
+            if j in claimed:
+                lab_start = j + 1
+                break
+            if sl.startswith("Contains abnormal") or "(Order" in sl or sl == "Component":
+                lab_start = j
+                break
+
+        lab_end = i + 1  # include Specimen Collected line
+        lab_text = "\n".join(lines[lab_start:lab_end]).strip()
+
+        # Timestamp from "Specimen Collected: MM/DD/YY HH:MM CST"
+        lab_dt: Optional[str] = None
+        m = re.search(
+            r"Specimen Collected:\s*(\d{1,2}/\d{1,2}/\d{2,4})\s+(\d{1,2}:\d{2})",
+            stripped,
+        )
+        if m:
+            lab_dt = _parse_dt_slash_colon(m.group(1), m.group(2))
+            if lab_dt:
+                _ts_count("MM/DD/YY HH:MM (Specimen Collected)")
+
+        warns = []
+        if lab_dt is None:
+            _ts_fail()
+            warns.append("ts_missing")
+
+        items.append(
+            EvidenceItem(
+                idx=idx, kind="LAB", datetime=lab_dt,
+                line_start=lab_start + 1, line_end=lab_end,
+                text=lab_text, warnings=tuple(warns), header_dt=lab_dt,
+            )
+        )
+        idx += 1
+        for j in range(lab_start, lab_end):
+            claimed.add(j)
+
+    # ── LAB: chronological results-summary groups ───────────
+    # Standalone "MM/DD/YY HH:MM" lines followed by lab values.
+    # These may repeat 2-3 times (different views); deduplicate.
+    seen_lab_ts: set = set()
+    for i in range(scan_start, n):
+        if i in claimed:
+            continue
+        stripped = lines[i].strip()
+        m = RE_RESULTS_TS.match(stripped)
+        if not m:
+            continue
+
+        ts = _parse_dt_slash_colon(m.group(1), m.group(2))
+        if ts is None or ts in seen_lab_ts:
+            continue
+
+        # Collect subsequent non-blank lines until next timestamp or blank gap
+        has_lab_value = False
+        group_end = i + 1
+        for j in range(i + 1, min(n, i + 50)):
+            jl = lines[j].strip()
+            if jl == "":
+                group_end = j
+                break
+            if RE_RESULTS_TS.match(jl):
+                group_end = j
+                break
+            # Distinguish lab values from radiology refs (": Rpt")
+            if ": Rpt" not in jl and ":" in jl:
+                has_lab_value = True
+            group_end = j + 1
+
+        if not has_lab_value:
+            continue  # skip radiology-reference-only groups
+
+        seen_lab_ts.add(ts)
+        lab_text = "\n".join(lines[i:group_end]).strip()
+
+        items.append(
+            EvidenceItem(
+                idx=idx, kind="LAB", datetime=ts,
+                line_start=i + 1, line_end=group_end,
+                text=lab_text, warnings=(), header_dt=ts,
+            )
+        )
+        _ts_count("MM/DD/YY HH:MM (results summary)")
+        idx += 1
+        for j in range(i, group_end):
+            claimed.add(j)
+
+    # ── MAR: "All Administrations of" blocks ────────────────
+    admin_indices = []
+    for i in range(scan_start, n):
+        if lines[i].strip().startswith("All Administrations of") and i not in claimed:
+            admin_indices.append(i)
+
+    for ai, mar_start in enumerate(admin_indices):
+        mar_end = min(n, mar_start + 200)
+        for j in range(mar_start + 1, min(n, mar_start + 200)):
+            sl = lines[j].strip()
+            if sl.startswith("All Administrations of") or sl.startswith("Warnings Override"):
+                mar_end = j
+                break
+
+        mar_text = "\n".join(lines[mar_start:mar_end]).strip()
+
+        # Timestamp from admin record lines
+        mar_dt: Optional[str] = None
+        for j in range(mar_start, mar_end):
+            m = RE_ADMIN_ROW_ACTION_TIME.search(lines[j])
+            if m:
+                ts_str = m.group(1).strip()
+                parts = ts_str.split()
+                if len(parts) >= 2:
+                    mar_dt = _parse_dt_slash_hhmm(parts[0], parts[1][:4])
+                    if mar_dt:
+                        _ts_count("MM/DD/YY HHMM (MAR admin)")
+                        break
+
+        warns = []
+        if mar_dt is None:
+            _ts_fail()
+            warns.append("ts_missing")
+
+        items.append(
+            EvidenceItem(
+                idx=idx, kind="MAR", datetime=mar_dt,
+                line_start=mar_start + 1, line_end=mar_end,
+                text=mar_text, warnings=tuple(warns), header_dt=mar_dt,
+            )
+        )
+        idx += 1
+
+    return items
+
+
+# ============================================================
+# Core parser (bracket format)
 # ============================================================
 
 def _parse_items(lines, arrival_dt_str=None):
@@ -716,11 +1132,16 @@ def _build_evidence_object(src_path, patient_slug):
     lines = _read_lines(src_path)
     raw_text = "\n".join(lines)
 
-    header = _extract_header(lines)
+    fmt = _detect_format(lines)
 
-    # Arrival datetime needed for suspicious-header detection
-    arrival_dt = header.get("ARRIVAL_TIME")
-    items = _parse_items(lines, arrival_dt_str=arrival_dt)
+    if fmt == "dos":
+        header = _extract_header_dos(lines)
+        arrival_dt = header.get("ARRIVAL_TIME")
+        items = _parse_items_dos(lines, arrival_dt_str=arrival_dt)
+    else:
+        header = _extract_header(lines)
+        arrival_dt = header.get("ARRIVAL_TIME")
+        items = _parse_items(lines, arrival_dt_str=arrival_dt)
 
     # Strictly "no inference": only set these meta fields if explicit header exists
     patient_id = header.get("PATIENT_ID")

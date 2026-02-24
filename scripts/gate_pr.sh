@@ -27,7 +27,7 @@ done
 if [ "${#ARGS[@]}" -gt 0 ]; then
   PATS=("${ARGS[@]}")
 else
-  PATS=("Anna_Dennis" "William_Simmons" "Timothy_Cowan" "Timothy_Nachtwey")
+  PATS=("Anna_Dennis" "William Simmons" "Timothy_Cowan" "Timothy_Nachtwey")
 fi
 
 echo "=============================================="
@@ -45,14 +45,15 @@ TMP_HASHES="$(mktemp)"
 trap 'rm -f "$TMP_HASHES"' EXIT
 
 for PAT in "${PATS[@]}"; do
+  SLUG="${PAT// /_}"
   echo
-  echo "---- Running pipeline for: $PAT ----"
+  echo "---- Running pipeline for: $PAT (slug: $SLUG) ----"
   ./run_patient.sh "$PAT"
 
-  echo "---- v4 hash: $PAT ----"
-  HASH="$(shasum -a 256 "outputs/reporting/$PAT/TRAUMA_DAILY_NOTES_v4.txt" | awk '{print $1}')"
-  echo "$HASH  outputs/reporting/$PAT/TRAUMA_DAILY_NOTES_v4.txt"
-  printf '%s %s\n' "$PAT" "$HASH" >> "$TMP_HASHES"
+  echo "---- v4 hash: $SLUG ----"
+  HASH="$(shasum -a 256 "outputs/reporting/$SLUG/TRAUMA_DAILY_NOTES_v4.txt" | awk '{print $1}')"
+  echo "$HASH  outputs/reporting/$SLUG/TRAUMA_DAILY_NOTES_v4.txt"
+  printf '%s %s\n' "$SLUG" "$HASH" >> "$TMP_HASHES"
 done
 
 echo
