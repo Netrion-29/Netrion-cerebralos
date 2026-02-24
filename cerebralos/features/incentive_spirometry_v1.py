@@ -56,6 +56,8 @@ _SOURCE_TYPES = frozenset({
     "RADIOLOGY",
     "CASE_MGMT",
     "REMOVED",
+    "RT_ORDER",
+    "IS_FLOWSHEET",
 })
 
 # ── Regex patterns ──────────────────────────────────────────────────

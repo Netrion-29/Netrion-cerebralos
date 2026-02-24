@@ -197,6 +197,27 @@ RE_ADMIN_ROW_ACTION_TIME = re.compile(
     r".*?(\d{1,2}/\d{1,2}/\d{2,4}\s+\d{4})",
     re.IGNORECASE)
 
+# ── Supplemental: RT/IS order and flowsheet detection ──────
+
+# IS order detail page header:
+#   "INCENTIVE SPIROMETER Q2H While awake [RT16] (Order 466185479)"
+RE_IS_ORDER_PAGE = re.compile(
+    r"^INCENTIVE\s+SPIROMETER\b.*\[RT\d+\]\s*\(Order\s+\d+\)",
+    re.IGNORECASE,
+)
+
+# IS flowsheet header: standalone "Incentive Spirometry"
+RE_IS_FLOWSHEET_HDR = re.compile(
+    r"^Incentive\s+Spirometry\s*$",
+    re.IGNORECASE,
+)
+
+# IS flowsheet data row prefix: "MM/DD HHMM"
+RE_IS_FLOWSHEET_ROW = re.compile(r"^\d{2}/\d{2}\s+\d{4}\b")
+
+# Order page date field: "Date: M/D/YYYY"
+RE_ORDER_PAGE_DATE = re.compile(r"Date:\s*(\d{1,2}/\d{1,2}/\d{4})")
+
 
 # ============================================================
 # New-format (Date of Service) -- regex and mapping
@@ -347,6 +368,28 @@ def _parse_date_ampm_hybrid(date_str, time_str):
         return dt.strftime("%Y-%m-%d %H:%M:%S")
     except ValueError:
         return None
+
+
+def _resolve_flowsheet_year(mm_dd, arrival_dt_str):
+    """Resolve year for a MM/DD flowsheet date using arrival context.
+
+    Flowsheet rows have MM/DD without year.  If the flowsheet month is
+    earlier than the arrival month the data must be in the next calendar
+    year (e.g. admission 12/29/2025 → flowsheet 01/07 → 2026).
+    """
+    if not arrival_dt_str:
+        return None
+    try:
+        arr = datetime.strptime(arrival_dt_str[:10], "%Y-%m-%d")
+    except ValueError:
+        return None
+    try:
+        month = int(mm_dd[:2])
+    except (ValueError, IndexError):
+        return None
+    if month < arr.month:
+        return arr.year + 1
+    return arr.year
 
 
 # ============================================================
@@ -801,6 +844,8 @@ def _parse_supplemental_dos(lines, last_dos_idx, arrival_dt_str, start_idx=0):
       - RADIOLOGY reports ("Narrative & Impression" blocks)
       - LAB results ("Specimen Collected:" pages + chronological summary)
       - MAR records ("All Administrations of" sections)
+      - RT_ORDER: IS order detail pages ("INCENTIVE SPIROMETER ... [RTnn]")
+      - IS_FLOWSHEET: Incentive Spirometry flowsheet data (tabular)
     """
     items: List[EvidenceItem] = []
     idx = start_idx
@@ -1023,6 +1068,116 @@ def _parse_supplemental_dos(lines, last_dos_idx, arrival_dt_str, start_idx=0):
             )
         )
         idx += 1
+
+    # ── RT_ORDER: IS order detail pages ───────────────────────
+    for i in range(scan_start, n):
+        stripped = lines[i].strip()
+        if i in claimed:
+            continue
+        if not RE_IS_ORDER_PAGE.match(stripped):
+            continue
+
+        block_start = i
+        block_end = min(n, i + 120)
+        for j in range(i + 1, min(n, i + 120)):
+            jl = lines[j].strip()
+            if jl == "Link to Procedure Log":
+                block_end = j
+                break
+            # Safety: stop at next IS order header
+            if j > i + 5 and RE_IS_ORDER_PAGE.match(jl):
+                block_end = j
+                break
+
+        block_text = "\n".join(lines[block_start:block_end]).strip()
+
+        # Timestamp from "Date: MM/DD/YYYY" in the block header area
+        rt_dt: Optional[str] = None
+        for j in range(block_start, min(block_end, block_start + 20)):
+            dm = RE_ORDER_PAGE_DATE.search(lines[j])
+            if dm:
+                rt_dt = _date_only_iso(dm.group(1))
+                if rt_dt:
+                    _ts_count("M/D/YYYY (RT_ORDER Date)")
+                    break
+
+        warns: List[str] = []
+        if rt_dt is None:
+            _ts_fail()
+            warns.append("ts_missing")
+        elif "00:00:00" in rt_dt:
+            warns.append("time_defaulted_0000")
+
+        items.append(
+            EvidenceItem(
+                idx=idx, kind="RT_ORDER", datetime=rt_dt,
+                line_start=block_start + 1, line_end=block_end,
+                text=block_text, warnings=tuple(warns), header_dt=rt_dt,
+            )
+        )
+        idx += 1
+        for j in range(block_start, block_end):
+            claimed.add(j)
+
+    # ── IS_FLOWSHEET: Incentive Spirometry flowsheet data ─────
+    for i in range(scan_start, n):
+        stripped = lines[i].strip()
+        if i in claimed:
+            continue
+        if not RE_IS_FLOWSHEET_HDR.match(stripped):
+            continue
+
+        block_start = i
+        block_end = i + 1
+        found_col_header = False
+
+        for j in range(i + 1, min(n, i + 500)):
+            jl = lines[j].strip()
+            # Section boundary: next flowsheet group
+            if re.match(r"^(?:Intake|Output)\b", jl, re.IGNORECASE):
+                break
+            if jl.startswith(("Height and Weight", "Emesis Documentation")):
+                break
+            if "**" in jl:
+                found_col_header = True
+            block_end = j + 1
+
+        if not found_col_header:
+            continue  # Not real flowsheet data
+
+        block_text = "\n".join(lines[block_start:block_end]).strip()
+
+        # Timestamp: first data row (most recent), resolve year
+        fs_dt: Optional[str] = None
+        for j in range(block_start, block_end):
+            dm = RE_IS_FLOWSHEET_ROW.match(lines[j].strip())
+            if dm:
+                row_str = lines[j].strip()
+                mm_dd = row_str[:5]   # "01/07"
+                hhmm = row_str[6:10]  # "1401"
+                year = _resolve_flowsheet_year(mm_dd, arrival_dt_str)
+                if year:
+                    date_str = "{}/{:02d}".format(mm_dd, year % 100)
+                    fs_dt = _parse_dt_slash_hhmm(date_str, hhmm)
+                    if fs_dt:
+                        _ts_count("MM/DD HHMM (IS_FLOWSHEET row)")
+                        break
+
+        warns = []
+        if fs_dt is None:
+            _ts_fail()
+            warns.append("ts_missing")
+
+        items.append(
+            EvidenceItem(
+                idx=idx, kind="IS_FLOWSHEET", datetime=fs_dt,
+                line_start=block_start + 1, line_end=block_end,
+                text=block_text, warnings=tuple(warns), header_dt=fs_dt,
+            )
+        )
+        idx += 1
+        for j in range(block_start, block_end):
+            claimed.add(j)
 
     return items
 
