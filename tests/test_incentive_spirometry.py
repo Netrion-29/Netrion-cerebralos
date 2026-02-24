@@ -373,3 +373,186 @@ class TestMixedContent:
         assert result["is_mentioned"] == "yes"
         assert result["mention_count"] >= 2  # IS mention + pulm hygiene
         assert result["order_count"] >= 1
+
+
+class TestRTOrderStatusCapture:
+    """Test that IS order status is captured from RT_ORDER blocks
+    where the Status line is far from the header match."""
+
+    def test_status_captured_rt_order_block(self):
+        """Reproduce Michael_Dougan RT_ORDER block layout: ~500 chars of
+        demographics between header and 'Order: NNN\\nStatus: ...'."""
+        text = (
+            "INCENTIVE SPIROMETER Q2H While awake [RT16] (Order 466185479)\n"
+            "Respiratory Care\n"
+            "Discontinued\n"
+            "Date: 12/29/2025\tDepartment: Ortho Neuro Trauma Care Center\t"
+            "Released By: Wolf, Emily K, RN (auto-released)\t"
+            "Authorizing: Buettner, Austin Mark, PA-C\n"
+            "\n"
+            "Patient Demographics\n"
+            "\n"
+            "Patient Name\n"
+            "Dougan, Michael E\tLegal Sex\n"
+            "Male\tDOB\n"
+            "10/7/1958\tAddress (Temporary)\n"
+            "1020 W VINE ST\n"
+            "PRINCETON IN 47670\tContact Numbers (Temporary)\n"
+            "812-385-5348\n"
+            "\n"
+            "INCENTIVE SPIROMETER\n"
+            "Order: 466185479 \n"
+            "Status:  Discontinued (Patient Discharge)  \n"
+        )
+        days_data = _make_days({
+            "2025-12-29": [("RT_ORDER", text)],
+        })
+        result = extract_incentive_spirometry({}, days_data)
+
+        assert result["order_count"] >= 1
+        order = result["orders"][0]
+        assert order["order_number"] == "466185479"
+        assert order.get("status") == "Discontinued (Patient Discharge)"
+
+    def test_status_captured_multiple_orders(self):
+        """Two orders in same item, each with a distant Status line."""
+        text = (
+            "INCENTIVE SPIROMETER Q2H While awake [RT16] (Order 100001)\n"
+            "Respiratory Care\n"
+            "Discontinued\n"
+            "Date: 12/29/2025\tDepartment: Unit A\n"
+            "\n"
+            "Patient Demographics\n"
+            "\n"
+            "Patient Name\n"
+            "Test, Patient\tLegal Sex\nMale\tDOB\n01/01/1970\n"
+            "\n"
+            "INCENTIVE SPIROMETER\n"
+            "Order: 100001 \n"
+            "Status:  Discontinued (Duplicate)  \n"
+            "\n"
+            "INCENTIVE SPIROMETER Q1H While awake [RT16] (Order 100002)\n"
+            "Respiratory Care\n"
+            "Active\n"
+            "Date: 12/31/2025\tDepartment: Unit B\n"
+            "\n"
+            "Patient Demographics\n"
+            "\n"
+            "Patient Name\n"
+            "Test, Patient\tLegal Sex\nMale\tDOB\n01/01/1970\n"
+            "\n"
+            "INCENTIVE SPIROMETER\n"
+            "Order: 100002 \n"
+            "Status:  Active  \n"
+        )
+        days_data = _make_days({
+            "2025-12-29": [("RT_ORDER", text)],
+        })
+        result = extract_incentive_spirometry({}, days_data)
+
+        assert result["order_count"] >= 2
+        statuses = {
+            o["order_number"]: o.get("status")
+            for o in result["orders"]
+        }
+        assert statuses["100001"] == "Discontinued (Duplicate)"
+        assert statuses["100002"] == "Active"
+
+    def test_status_fallback_proximity(self):
+        """When no 'Order: NNN' block exists, fallback proximity search
+        should still find a nearby Status line."""
+        text = (
+            "INCENTIVE SPIROMETER Q2H While awake [RT16] (Order 999999)\n"
+            "Respiratory Care\n"
+            "Status: Active\n"
+        )
+        days_data = _make_days({
+            "2025-12-29": [("PHYSICIAN_NOTE", text)],
+        })
+        result = extract_incentive_spirometry({}, days_data)
+
+        assert result["order_count"] >= 1
+        assert result["orders"][0].get("status") == "Active"
+
+
+class TestMultiLineFlowsheet:
+    """Test multi-line flowsheet format where values appear on the
+    line *after* the timestamp."""
+
+    def test_multiline_recommendation_only(self):
+        """Ronald_Bittner line-73401 pattern: single 'Assessment
+        Recommendation **' column, values on separate lines."""
+        text = (
+            "Incentive Spirometry\n"
+            "Assessment Recommendation **\n"
+            "01/27 1635\t\n"
+            "Continue present therapy\n"
+            "01/27 1632\t\n"
+            "Continue present therapy\n"
+            "01/27 0950\t\n"
+            "Continue present therapy\n"
+            "Intake (ml)\n"
+        )
+        days_data = _make_days({
+            "2026-01-27": [("IS_FLOWSHEET", text)],
+        })
+        result = extract_incentive_spirometry({}, days_data)
+
+        assert result["is_mentioned"] == "yes"
+        assert result["measurement_count"] == 3
+        for m in result["measurements"]:
+            assert m["assessment_recommendation"] == "Continue present therapy"
+            assert "raw_line_id" in m
+
+    def test_multiline_no_trailing_tab(self):
+        """Timestamp-only line with NO trailing tab (after strip)."""
+        text = (
+            "Incentive Spirometry\n"
+            "Assessment Recommendation **\n"
+            "01/25 2226\n"
+            "Continue present therapy\n"
+            "Intake (ml)\n"
+        )
+        days_data = _make_days({
+            "2026-01-25": [("IS_FLOWSHEET", text)],
+        })
+        result = extract_incentive_spirometry({}, days_data)
+
+        assert result["measurement_count"] == 1
+        assert result["measurements"][0]["assessment_recommendation"] == (
+            "Continue present therapy"
+        )
+
+    def test_inline_values_still_work(self):
+        """Inline (same-line) format must continue to work unchanged."""
+        text = (
+            "Incentive Spirometry\n"
+            "Assessment Recommendation **\n"
+            "01/27 1635\tContinue present therapy\n"
+            "01/27 0950\tContinue present therapy\n"
+            "Intake (ml)\n"
+        )
+        days_data = _make_days({
+            "2026-01-27": [("IS_FLOWSHEET", text)],
+        })
+        result = extract_incentive_spirometry({}, days_data)
+
+        assert result["measurement_count"] == 2
+
+    def test_multiline_with_blank_lines(self):
+        """Blank lines between timestamp and continuation should be
+        tolerated."""
+        text = (
+            "Incentive Spirometry\n"
+            "Assessment Recommendation **\n"
+            "01/26 1019\t\n"
+            "\n"
+            "Continue present therapy\n"
+            "Intake (ml)\n"
+        )
+        days_data = _make_days({
+            "2026-01-26": [("IS_FLOWSHEET", text)],
+        })
+        result = extract_incentive_spirometry({}, days_data)
+
+        assert result["measurement_count"] == 1

@@ -154,9 +154,11 @@ RE_FLOWSHEET_COL_HEADER = re.compile(
     re.IGNORECASE,
 )
 
-# Flowsheet data row: MM/DD HHMM followed by tab-delimited values
+# Flowsheet data row: MM/DD HHMM followed by tab-delimited values.
+# The value portion is optional to support multi-line flowsheet format
+# where values appear on the line *after* the timestamp.
 RE_FLOWSHEET_DATA_ROW = re.compile(
-    r"^(\d{2}/\d{2})\s+(\d{4})\s+(.*)$",
+    r"^(\d{2}/\d{2})\s+(\d{4})(?:\s+(.*))?$",
     re.MULTILINE,
 )
 
@@ -267,9 +269,11 @@ def _parse_flowsheet_block(
         re.IGNORECASE,
     )
 
-    for line in data_lines:
-        stripped = line.strip()
+    idx = 0
+    while idx < len(data_lines):
+        stripped = data_lines[idx].strip()
         if not stripped:
+            idx += 1
             continue
 
         # Stop at section boundary
@@ -278,13 +282,40 @@ def _parse_flowsheet_block(
 
         row_match = RE_FLOWSHEET_DATA_ROW.match(stripped)
         if not row_match:
-            # Could be a continuation line (e.g., "Continue present therapy")
-            # or a recommendation-only line — skip
+            # Non-data, non-timestamp continuation line outside a
+            # timestamp context — skip.
+            idx += 1
             continue
 
         date_part = row_match.group(1)  # MM/DD
         time_part = row_match.group(2)  # HHMM
-        values_str = row_match.group(3)  # rest of data
+        values_str = row_match.group(3) or ""  # rest of data (may be None)
+
+        # ── Multi-line flowsheet support ──────────────────────
+        # Some flowsheets put values on lines *after* the timestamp
+        # (e.g., "01/27 1635\n Continue present therapy").  When the
+        # inline values are empty, peek ahead and collect continuation
+        # lines until the next timestamp row or section boundary.
+        if not values_str.strip():
+            continuation_parts: List[str] = []
+            peek = idx + 1
+            while peek < len(data_lines):
+                peek_stripped = data_lines[peek].strip()
+                if not peek_stripped:
+                    peek += 1
+                    continue
+                # Stop if next line is a new data row or section boundary
+                if RE_FLOWSHEET_DATA_ROW.match(peek_stripped):
+                    break
+                if stop_patterns.match(peek_stripped):
+                    break
+                continuation_parts.append(peek_stripped)
+                peek += 1
+            if continuation_parts:
+                values_str = "\t".join(continuation_parts)
+            idx = peek  # skip past consumed continuation lines
+        else:
+            idx += 1
 
         measurement = _parse_data_row(
             date_part, time_part, values_str, col_names,
@@ -578,16 +609,34 @@ def _scan_item(
             "source_type": source_type,
         }
 
-        # Try to find status for this order
+        # Try to find status for this order.
+        # In RT_ORDER blocks the "Order: NNN\nStatus: ..." section can
+        # appear 500-700+ chars after the header match (patient
+        # demographics are interleaved).  Search for the paired
+        # Order/Status block anywhere in the text first, then fall back
+        # to a wider proximity window.
         order_num = m.group(4)
         if order_num:
-            # Look for "Status:" after the order line
-            status_search_start = m.end()
-            status_search_end = min(len(text), status_search_start + 500)
-            status_block = text[status_search_start:status_search_end]
-            status_match = RE_IS_ORDER_STATUS.search(status_block)
-            if status_match:
-                order["status"] = status_match.group(1).strip()
+            # Primary: locate "Order: <num>\nStatus: ..." anywhere
+            _status_pair_pat = (
+                r"Order:\s*" + re.escape(order_num)
+                + r"\s*\n\s*Status:\s*(\S.+?)(?:\s*$)"
+            )
+            pair_match = re.search(
+                _status_pair_pat, text, re.IGNORECASE | re.MULTILINE,
+            )
+            if pair_match:
+                order["status"] = pair_match.group(1).strip()
+            else:
+                # Fallback: proximity search (wider window)
+                status_search_start = m.end()
+                status_search_end = min(
+                    len(text), status_search_start + 1500,
+                )
+                status_block = text[status_search_start:status_search_end]
+                status_match = RE_IS_ORDER_STATUS.search(status_block)
+                if status_match:
+                    order["status"] = status_match.group(1).strip()
 
         orders.append(order)
         evidence.append({
