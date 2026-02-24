@@ -59,6 +59,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "hemodynamic_instability_pattern_v1",
     "note_sections_v1",
     "incentive_spirometry_v1",
+    "anticoag_context_v1",
     "vitals_qa",
 })
 
@@ -361,6 +362,34 @@ def _check_evidence_line_ids(
                         f"INCENTIVE_SPIROMETRY_EVIDENCE_MISSING_RAW_LINE_ID: "
                         f"{is_missing} evidence entry(ies) without raw_line_id"
                     )
+
+        # ── anticoag_context_v1: evidence[] raw_line_id ──
+        if feat_key == "anticoag_context_v1":
+            ac_evidence = feat_val.get("evidence", [])
+            if isinstance(ac_evidence, list):
+                ac_missing = sum(
+                    1 for e in ac_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if ac_missing > 0:
+                    errors.append(
+                        f"ANTICOAG_CONTEXT_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{ac_missing} evidence entry(ies) without raw_line_id"
+                    )
+
+            # Also check home_anticoagulants[] and home_antiplatelets[]
+            for list_key in ("home_anticoagulants", "home_antiplatelets"):
+                entries = feat_val.get(list_key, [])
+                if isinstance(entries, list):
+                    entry_missing = sum(
+                        1 for e in entries
+                        if isinstance(e, dict) and "raw_line_id" not in e
+                    )
+                    if entry_missing > 0:
+                        errors.append(
+                            f"ANTICOAG_CONTEXT_{list_key.upper()}_MISSING_RAW_LINE_ID: "
+                            f"{entry_missing} {list_key} entry(ies) without raw_line_id"
+                        )
 
         # ── vitals_canonical_v1.days.<date>.records[] ──
         if feat_key == "vitals_canonical_v1":

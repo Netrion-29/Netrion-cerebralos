@@ -1308,6 +1308,50 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Anticoagulation Context v1 QA ──────────────────────────
+    ac = feats.get("anticoag_context_v1", {})
+    print("ANTICOAG CONTEXT v1 QA:")
+    ac_present = ac.get("anticoag_present") or "DATA NOT AVAILABLE"
+    ap_present = ac.get("antiplatelet_present") or "DATA NOT AVAILABLE"
+    ac_count = ac.get("anticoag_count", 0)
+    ap_count = ac.get("antiplatelet_count", 0)
+    ac_rule = ac.get("source_rule_id") or "none"
+    ac_evidence = ac.get("evidence", [])
+    ac_notes = ac.get("notes", [])
+    ac_warns = ac.get("warnings", [])
+    print(f"  anticoag_present: {ac_present}")
+    print(f"  antiplatelet_present: {ap_present}")
+    print(f"  home_anticoagulants: {ac_count}")
+    print(f"  home_antiplatelets: {ap_count}")
+    print(f"  source_rule_id: {ac_rule}")
+
+    # List home anticoagulants
+    for drug in ac.get("home_anticoagulants", []):
+        disc_flag = " [DISCONTINUED]" if drug.get("discontinued") else ""
+        print(f"    anticoag: {drug.get('normalized_name', '?')} "
+              f"({drug.get('class', '?')}){disc_flag}"
+              f"{' dose=' + drug['dose'] if drug.get('dose') else ''}")
+
+    # List home antiplatelets
+    for drug in ac.get("home_antiplatelets", []):
+        disc_flag = " [DISCONTINUED]" if drug.get("discontinued") else ""
+        print(f"    antiplatelet: {drug.get('normalized_name', '?')} "
+              f"({drug.get('class', '?')}){disc_flag}"
+              f"{' dose=' + drug['dose'] if drug.get('dose') else ''}")
+
+    print(f"  evidence_count: {len(ac_evidence)}")
+    if ac_evidence:
+        for ev in ac_evidence[:8]:
+            print(f"    [{ev.get('role', '?')}] {ev.get('snippet', '')[:80]}")
+    if ac_warns:
+        print(f"  warnings ({len(ac_warns)}):")
+        for w in ac_warns[:5]:
+            print(f"    - {w}")
+    if ac_notes:
+        for n in ac_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     print("=" * 60)
     return 0
 
