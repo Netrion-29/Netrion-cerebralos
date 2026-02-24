@@ -83,6 +83,7 @@ from cerebralos.features.incentive_spirometry_v1 import extract_incentive_spirom
 from cerebralos.features.anticoag_context_v1 import extract_anticoag_context
 from cerebralos.features.pmh_social_allergies_v1 import extract_pmh_social_allergies
 from cerebralos.features.adt_transfer_timeline_v1 import extract_adt_transfer_timeline
+from cerebralos.features.procedure_operatives_v1 import extract_procedure_operatives
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -434,6 +435,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
 
+    # ── Procedure / Operative Events v1 (additive, patient-level) ──
+    procedure_operatives = extract_procedure_operatives(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     # ── Assemble features dict (all feature modules live here) ──
     features: Dict[str, Any] = {
         "vitals_canonical_v1": {
@@ -456,6 +463,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "anticoag_context_v1": anticoag_context,
         "pmh_social_allergies_v1": pmh_social_allergies,
         "adt_transfer_timeline_v1": adt_transfer_timeline,
+        "procedure_operatives_v1": procedure_operatives,
         "vitals_qa": agg_vitals_qa,
     }
 
