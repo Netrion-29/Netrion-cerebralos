@@ -1352,6 +1352,62 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── PMH / Social / Allergies v1 QA ────────────────────────
+    psa = feats.get("pmh_social_allergies_v1", {})
+    print("PMH / SOCIAL / ALLERGIES v1 QA:")
+    psa_pmh_count = psa.get("pmh_count", 0)
+    psa_allergy_count = psa.get("allergy_count", 0)
+    psa_allergy_status = psa.get("allergy_status") or "DATA NOT AVAILABLE"
+    psa_social = psa.get("social_history", {})
+    psa_rule = psa.get("source_rule_id") or "none"
+    psa_evidence = psa.get("evidence", [])
+    psa_notes = psa.get("notes", [])
+    psa_warns = psa.get("warnings", [])
+    print(f"  pmh_count: {psa_pmh_count}")
+    print(f"  allergy_status: {psa_allergy_status}")
+    print(f"  allergy_count: {psa_allergy_count}")
+    print(f"  source_rule_id: {psa_rule}")
+
+    # List PMH items
+    for item in psa.get("pmh_items", [])[:15]:
+        sub = f" ({item['sub_comment']})" if item.get('sub_comment') else ''
+        print(f"    pmh: {item.get('label', '?')}{sub}")
+    if psa_pmh_count > 15:
+        print(f"    ... and {psa_pmh_count - 15} more")
+
+    # List allergies
+    for item in psa.get("allergies", [])[:10]:
+        rxn = f" -> {item['reaction']}" if item.get('reaction') else ''
+        print(f"    allergy: {item.get('allergen', '?')}{rxn}")
+
+    # Social history
+    if psa_social:
+        print(f"  social_history:")
+        for k in sorted(psa_social.keys()):
+            v = psa_social[k]
+            if isinstance(v, dict):
+                parts = [f"{v.get('status', '?')}"]
+                if v.get("types"):
+                    parts.append(f"types={v['types']}")
+                if v.get("comment"):
+                    parts.append(f"comment={v['comment']}")
+                print(f"    {k}: {', '.join(parts)}")
+            else:
+                print(f"    {k}: {v}")
+
+    print(f"  evidence_count: {len(psa_evidence)}")
+    if psa_evidence:
+        for ev in psa_evidence[:8]:
+            print(f"    [{ev.get('role', '?')}] {ev.get('snippet', '')[:80]}")
+    if psa_warns:
+        print(f"  warnings ({len(psa_warns)}):")
+        for w in psa_warns[:5]:
+            print(f"    - {w}")
+    if psa_notes:
+        for n in psa_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     print("=" * 60)
     return 0
 

@@ -60,6 +60,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "note_sections_v1",
     "incentive_spirometry_v1",
     "anticoag_context_v1",
+    "pmh_social_allergies_v1",
     "vitals_qa",
 })
 
@@ -388,6 +389,34 @@ def _check_evidence_line_ids(
                     if entry_missing > 0:
                         errors.append(
                             f"ANTICOAG_CONTEXT_{list_key.upper()}_MISSING_RAW_LINE_ID: "
+                            f"{entry_missing} {list_key} entry(ies) without raw_line_id"
+                        )
+
+        # ── pmh_social_allergies_v1: evidence[] raw_line_id ──
+        if feat_key == "pmh_social_allergies_v1":
+            psa_evidence = feat_val.get("evidence", [])
+            if isinstance(psa_evidence, list):
+                psa_missing = sum(
+                    1 for e in psa_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if psa_missing > 0:
+                    errors.append(
+                        f"PMH_SOCIAL_ALLERGIES_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{psa_missing} evidence entry(ies) without raw_line_id"
+                    )
+
+            # Also check pmh_items[] and allergies[]
+            for list_key in ("pmh_items", "allergies"):
+                entries = feat_val.get(list_key, [])
+                if isinstance(entries, list):
+                    entry_missing = sum(
+                        1 for e in entries
+                        if isinstance(e, dict) and "raw_line_id" not in e
+                    )
+                    if entry_missing > 0:
+                        errors.append(
+                            f"PMH_SOCIAL_ALLERGIES_{list_key.upper()}_MISSING_RAW_LINE_ID: "
                             f"{entry_missing} {list_key} entry(ies) without raw_line_id"
                         )
 
