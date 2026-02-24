@@ -851,14 +851,16 @@ class TestRealPatientFlowsheet:
         assert answers["alcohol_history"] == "No"
 
     def test_william_simmons_present(self):
+        """William_Simmons new-format file has no SBIRT flowsheet data."""
         days = _load_days("William_Simmons")
         result = extract_sbirt_screening({}, days)
-        assert result["sbirt_screening_present"] == "yes"
+        assert result["sbirt_screening_present"] == "DATA NOT AVAILABLE"
 
     def test_william_simmons_flowsheet_responses(self):
+        """No flowsheet responses expected for this new-format patient."""
         days = _load_days("William_Simmons")
         result = extract_sbirt_screening({}, days)
-        assert len(result["flowsheet_responses"]) == 4
+        assert len(result["flowsheet_responses"]) == 0
 
     def test_timothy_cowan_present(self):
         days = _load_days("Timothy_Cowan")
