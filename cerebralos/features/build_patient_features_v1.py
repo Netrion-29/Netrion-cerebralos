@@ -82,6 +82,7 @@ from cerebralos.features.note_sections_v1 import extract_note_sections
 from cerebralos.features.incentive_spirometry_v1 import extract_incentive_spirometry
 from cerebralos.features.anticoag_context_v1 import extract_anticoag_context
 from cerebralos.features.pmh_social_allergies_v1 import extract_pmh_social_allergies
+from cerebralos.features.adt_transfer_timeline_v1 import extract_adt_transfer_timeline
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -427,6 +428,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
 
+    # ── ADT Transfer Timeline v1 (additive, patient-level) ──
+    adt_transfer_timeline = extract_adt_transfer_timeline(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     # ── Assemble features dict (all feature modules live here) ──
     features: Dict[str, Any] = {
         "vitals_canonical_v1": {
@@ -448,6 +455,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "incentive_spirometry_v1": incentive_spirometry,
         "anticoag_context_v1": anticoag_context,
         "pmh_social_allergies_v1": pmh_social_allergies,
+        "adt_transfer_timeline_v1": adt_transfer_timeline,
         "vitals_qa": agg_vitals_qa,
     }
 
@@ -507,6 +515,21 @@ def main() -> int:
 
     with open(in_path, encoding="utf-8", errors="replace") as f:
         days_data = json.load(f)
+
+    # ── Inject raw_header_lines from evidence JSON (for ADT extraction) ──
+    # Derive evidence path: timeline/<slug>/patient_days_v1.json
+    #                    →  evidence/<slug>/patient_evidence_v1.json
+    slug = in_path.parent.name
+    evidence_path = in_path.parent.parent.parent / "evidence" / slug / "patient_evidence_v1.json"
+    if evidence_path.is_file():
+        try:
+            with open(evidence_path, encoding="utf-8", errors="replace") as ef:
+                ev_data = json.load(ef)
+            raw_header = (ev_data.get("raw") or {}).get("first_50_lines", [])
+            if raw_header:
+                days_data.setdefault("meta", {})["raw_header_lines"] = raw_header
+        except (json.JSONDecodeError, OSError):
+            pass  # fail-closed: no header lines available
 
     features = build_patient_features(days_data)
 

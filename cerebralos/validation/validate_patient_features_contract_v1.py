@@ -61,6 +61,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "incentive_spirometry_v1",
     "anticoag_context_v1",
     "pmh_social_allergies_v1",
+    "adt_transfer_timeline_v1",
     "vitals_qa",
 })
 
@@ -391,6 +392,31 @@ def _check_evidence_line_ids(
                             f"ANTICOAG_CONTEXT_{list_key.upper()}_MISSING_RAW_LINE_ID: "
                             f"{entry_missing} {list_key} entry(ies) without raw_line_id"
                         )
+
+        # ── adt_transfer_timeline_v1: evidence[] + events[] raw_line_id ──
+        if feat_key == "adt_transfer_timeline_v1":
+            adt_evidence = feat_val.get("evidence", [])
+            if isinstance(adt_evidence, list):
+                adt_missing = sum(
+                    1 for e in adt_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if adt_missing > 0:
+                    errors.append(
+                        f"ADT_TRANSFER_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{adt_missing} evidence entry(ies) without raw_line_id"
+                    )
+            adt_events = feat_val.get("events", [])
+            if isinstance(adt_events, list):
+                evt_missing = sum(
+                    1 for e in adt_events
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if evt_missing > 0:
+                    errors.append(
+                        f"ADT_TRANSFER_EVENTS_MISSING_RAW_LINE_ID: "
+                        f"{evt_missing} event(s) without raw_line_id"
+                    )
 
         # ── pmh_social_allergies_v1: evidence[] raw_line_id ──
         if feat_key == "pmh_social_allergies_v1":
