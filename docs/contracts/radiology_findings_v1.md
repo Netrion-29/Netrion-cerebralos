@@ -47,6 +47,7 @@ or protocol logic.
     "present": true,
     "count": <int> | null,
     "rib_numbers": ["1", "3", "4", ...] | null,
+    "laterality": "right" | "left" | "bilateral" | null,
     "raw_line_id": "<sha256-16>"
   } | null,
 
@@ -117,7 +118,7 @@ merge by organ/subtype dedup).
 |---|---|---|
 | Pneumothorax | subtype: tension/open/occult/simple/small/large/moderate | subtype=null if not explicitly stated |
 | Hemothorax | qualifier: massive/retained/large/small/moderate | qualifier=null if not explicit |
-| Rib fracture | count, rib_numbers | count/numbers=null if not deterministic |
+| Rib fracture | count, rib_numbers, laterality | count/numbers/laterality=null if not deterministic |
 | Flail chest | presence only | — |
 | Solid organ (liver/spleen/kidney) | grade (1-5) | grade=null if not explicit |
 | Intracranial hemorrhage | subtype: edh/sdh/sah/ich/ivh/unspecified | only subtype labels explicitly documented |
