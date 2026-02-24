@@ -58,6 +58,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "sbirt_screening_v1",
     "hemodynamic_instability_pattern_v1",
     "note_sections_v1",
+    "incentive_spirometry_v1",
     "vitals_qa",
 })
 
@@ -345,6 +346,20 @@ def _check_evidence_line_ids(
                     errors.append(
                         f"NOTE_SECTIONS_EVIDENCE_MISSING_RAW_LINE_ID: "
                         f"{ns_missing} evidence entry(ies) without raw_line_id"
+                    )
+
+        # ── incentive_spirometry_v1: evidence[] raw_line_id ──
+        if feat_key == "incentive_spirometry_v1":
+            is_evidence = feat_val.get("evidence", [])
+            if isinstance(is_evidence, list):
+                is_missing = sum(
+                    1 for e in is_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if is_missing > 0:
+                    errors.append(
+                        f"INCENTIVE_SPIROMETRY_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{is_missing} evidence entry(ies) without raw_line_id"
                     )
 
         # ── vitals_canonical_v1.days.<date>.records[] ──

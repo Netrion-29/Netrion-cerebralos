@@ -79,6 +79,7 @@ from cerebralos.features.radiology_findings_v1 import extract_radiology_findings
 from cerebralos.features.sbirt_screening_v1 import extract_sbirt_screening
 from cerebralos.features.hemodynamic_instability_pattern_v1 import extract_hemodynamic_instability_pattern
 from cerebralos.features.note_sections_v1 import extract_note_sections
+from cerebralos.features.incentive_spirometry_v1 import extract_incentive_spirometry
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -406,6 +407,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
 
+    # ── Incentive Spirometry v1 (additive, patient-level) ──
+    incentive_spirometry = extract_incentive_spirometry(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     # ── Assemble features dict (all feature modules live here) ──
     features: Dict[str, Any] = {
         "vitals_canonical_v1": {
@@ -424,6 +431,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "radiology_findings_v1": radiology_findings,
         "sbirt_screening_v1": sbirt_screening,
         "note_sections_v1": note_sections,
+        "incentive_spirometry_v1": incentive_spirometry,
         "vitals_qa": agg_vitals_qa,
     }
 

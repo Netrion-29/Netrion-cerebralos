@@ -1197,6 +1197,65 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Incentive Spirometry v1 QA ────────────────────────────
+    isp = feats.get("incentive_spirometry_v1", {})
+    print("INCENTIVE SPIROMETRY v1 QA:")
+    isp_mentioned = isp.get("is_mentioned") or "DATA NOT AVAILABLE"
+    isp_value = isp.get("is_value_present", "no")
+    isp_mention_count = isp.get("mention_count", 0)
+    isp_order_count = isp.get("order_count", 0)
+    isp_meas_count = isp.get("measurement_count", 0)
+    isp_goals = isp.get("goals", [])
+    isp_evidence = isp.get("evidence", [])
+    isp_notes = isp.get("notes", [])
+    isp_warns = isp.get("warnings", [])
+    isp_rule = isp.get("source_rule_id") or "none"
+    print(f"  is_mentioned: {isp_mentioned}")
+    print(f"  is_value_present: {isp_value}")
+    print(f"  mention_count: {isp_mention_count}")
+    print(f"  order_count: {isp_order_count}")
+    print(f"  measurement_count: {isp_meas_count}")
+    print(f"  source_rule_id: {isp_rule}")
+    # Mention type breakdown
+    isp_type_counts = isp.get("mention_type_counts", {})
+    if isp_type_counts:
+        parts = ", ".join(f"{k}={v}" for k, v in sorted(isp_type_counts.items()))
+        print(f"  mention_types: {parts}")
+    # Orders
+    if isp_order_count > 0:
+        for o in isp.get("orders", [])[:5]:
+            freq = o.get("frequency", "?")
+            onum = o.get("order_number", "?")
+            ost = o.get("status", "active")
+            print(f"    order: freq={freq} order_num={onum} status={ost}")
+    # Goals
+    if isp_goals:
+        for g in isp_goals:
+            print(f"    goal: {g.get('value')} {g.get('unit', 'cc')}")
+    # Measurements summary
+    if isp_meas_count > 0:
+        for m in isp.get("measurements", [])[:5]:
+            vol = m.get("largest_volume_cc", "?")
+            eff = m.get("patient_effort", "?")
+            ts = m.get("ts", "?")
+            print(f"    measurement: ts={ts} largest_vol={vol}cc effort={eff}")
+        if isp_meas_count > 5:
+            print(f"    ... and {isp_meas_count - 5} more")
+    # Evidence
+    print(f"  evidence_count: {len(isp_evidence)}")
+    if isp_evidence:
+        for ev in isp_evidence[:5]:
+            print(f"    [{ev.get('ts', 'no_ts')}] ({ev.get('label', '?')}) "
+                  f"{ev.get('snippet', '')[:80]}")
+    if isp_warns:
+        print(f"  warnings ({len(isp_warns)}):")
+        for w in isp_warns[:5]:
+            print(f"    - {w}")
+    if isp_notes:
+        for n in isp_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     # ── Hemodynamic Instability Pattern v1 QA ──────────────────
     hip = feats.get("hemodynamic_instability_pattern_v1", {})
     print("HEMODYNAMIC INSTABILITY PATTERN v1 QA:")
