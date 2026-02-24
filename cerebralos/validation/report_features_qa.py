@@ -1408,6 +1408,39 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── ADT Transfer Timeline v1 QA ──────────────────────────────
+    adt = feats.get("adt_transfer_timeline_v1", {})
+    print("ADT TRANSFER TIMELINE v1 QA:")
+    adt_summary = adt.get("summary", {})
+    print(f"  adt_event_count: {adt_summary.get('adt_event_count', 0)}")
+    print(f"  first_admission_ts: {adt_summary.get('first_admission_ts', 'N/A')}")
+    print(f"  transfer_count: {adt_summary.get('transfer_count', 0)}")
+    print(f"  discharge_ts: {adt_summary.get('discharge_ts', 'N/A')}")
+    print(f"  los_hours: {adt_summary.get('los_hours', 'N/A')}")
+    units = adt_summary.get("units_visited", [])
+    print(f"  units_visited ({len(units)}): {', '.join(units[:10]) if units else 'none'}")
+    adt_events = adt.get("events", [])
+    if adt_events:
+        print(f"  events ({len(adt_events)}):")
+        for ev in adt_events[:20]:
+            print(
+                f"    {ev.get('timestamp_raw', '?'):16s} "
+                f"{ev.get('event_type', '?'):16s} "
+                f"{ev.get('unit', '?')}"
+            )
+    adt_evidence = adt.get("evidence", [])
+    print(f"  evidence_count: {len(adt_evidence)}")
+    adt_warns = adt.get("warnings", [])
+    if adt_warns:
+        print(f"  warnings ({len(adt_warns)}):")
+        for w in adt_warns[:5]:
+            print(f"    - {w}")
+    adt_notes = adt.get("notes", [])
+    if adt_notes:
+        for n in adt_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     print("=" * 60)
     return 0
 
