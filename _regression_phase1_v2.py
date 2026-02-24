@@ -36,7 +36,7 @@ if str(REPO) not in sys.path:
 
 from cerebralos.features.vitals_daily import ABNORMAL_THRESHOLDS, is_abnormal
 
-PATIENTS = ["Anna_Dennis", "William_Simmons", "Timothy_Nachtwey", "Timothy_Cowan"]
+PATIENTS = ["Anna_Dennis", "William Simmons", "Timothy_Nachtwey", "Timothy_Cowan"]
 DNA = "DATA NOT AVAILABLE"
 
 # Metrics to include in abnormal counts (MAP explicitly included)
@@ -85,9 +85,19 @@ def load_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _slugify(name: str) -> str:
+    """Match the parser's _slugify: spaces → underscores, filesystem-safe."""
+    import re as _re
+    s = name.strip().replace(" ", "_")
+    s = _re.sub(r"[^A-Za-z0-9_]+", "_", s)
+    s = _re.sub(r"_+", "_", s).strip("_")
+    return s or "UNKNOWN_PATIENT"
+
+
 def get_v4_arrival_gcs_line(pat: str) -> str:
     """Read arrival GCS as it appears in v4 rendered output."""
-    v4_path = REPO / "outputs" / "reporting" / pat / "TRAUMA_DAILY_NOTES_v4.txt"
+    slug = _slugify(pat)
+    v4_path = REPO / "outputs" / "reporting" / slug / "TRAUMA_DAILY_NOTES_v4.txt"
     if not v4_path.is_file():
         return DNA
     for line in v4_path.read_text(encoding="utf-8").splitlines():
@@ -98,8 +108,9 @@ def get_v4_arrival_gcs_line(pat: str) -> str:
 
 
 def compute_patient_box(pat: str) -> str:
-    features_path = REPO / "outputs" / "features" / pat / "patient_features_v1.json"
-    timeline_path = REPO / "outputs" / "timeline" / pat / "patient_days_v1.json"
+    slug = _slugify(pat)
+    features_path = REPO / "outputs" / "features" / slug / "patient_features_v1.json"
+    timeline_path = REPO / "outputs" / "timeline" / slug / "patient_days_v1.json"
     features = load_json(features_path)
     timeline = load_json(timeline_path)
 
@@ -480,8 +491,9 @@ def main() -> int:
 
     # ── Determinism check: run pipeline again for first patient ──
     det_pat = PATIENTS[0]
-    features_path = REPO / "outputs" / "features" / det_pat / "patient_features_v1.json"
-    v4_path = REPO / "outputs" / "reporting" / det_pat / "TRAUMA_DAILY_NOTES_v4.txt"
+    det_slug = _slugify(det_pat)
+    features_path = REPO / "outputs" / "features" / det_slug / "patient_features_v1.json"
+    v4_path = REPO / "outputs" / "reporting" / det_slug / "TRAUMA_DAILY_NOTES_v4.txt"
     hash1_features = md5_file(features_path) if features_path.is_file() else "MISSING"
     hash1_v4 = md5_file(v4_path) if v4_path.is_file() else "MISSING"
 
