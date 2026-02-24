@@ -1475,6 +1475,55 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Anesthesia Case Metrics v1 QA ────────────────────────────
+    anes = feats.get("anesthesia_case_metrics_v1", {})
+    print("ANESTHESIA CASE METRICS v1 QA:")
+    print(f"  case_count: {anes.get('case_count', 0)}")
+    print(f"  or_hypothermia_any: {anes.get('or_hypothermia_any')}")
+    anes_flags = anes.get("flags", [])
+    if anes_flags:
+        print(f"  flags: {', '.join(anes_flags)}")
+    anes_cases = anes.get("cases", [])
+    if anes_cases:
+        print(f"  cases ({len(anes_cases)}):")
+        for ac in anes_cases[:10]:
+            lbl = ac.get("case_label") or "(no label)"
+            atype = ac.get("anesthesia_type", "?")
+            asa = ac.get("asa_status", "?")
+            mal = ac.get("mallampati", "?")
+            day = ac.get("case_day", "?")
+            hypo = ac.get("or_hypothermia_flag")
+            min_t = ac.get("min_temp_f")
+            ebl_r = ac.get("ebl_raw")
+            temp_str = f" min_temp={min_t}°F" if min_t is not None else ""
+            hypo_str = f" hypothermia={hypo}" if hypo is not None else ""
+            ebl_str = f" EBL={ebl_r}" if ebl_r and ebl_r != "DATA NOT AVAILABLE" else ""
+            # Airway summary
+            aw = ac.get("airway", {})
+            if aw:
+                aw_dev = aw.get("device") or "?"
+                aw_sz = aw.get("size") or "?"
+                aw_diff = aw.get("difficulty") or "?"
+                aw_str = f" airway={aw_dev}/{aw_sz}/{aw_diff}"
+            else:
+                aw_str = ""
+            print(
+                f"    [{day}] {lbl[:50]} | {atype} ASA={asa} Mallampati={mal}"
+                f"{aw_str}{temp_str}{hypo_str}{ebl_str}"
+            )
+    anes_evidence = anes.get("evidence", [])
+    print(f"  evidence_count: {len(anes_evidence)}")
+    anes_warns = anes.get("warnings", [])
+    if anes_warns:
+        print(f"  warnings ({len(anes_warns)}):")
+        for w in anes_warns[:5]:
+            print(f"    - {w}")
+    anes_notes = anes.get("notes", [])
+    if anes_notes:
+        for n in anes_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     print("=" * 60)
     return 0
 
