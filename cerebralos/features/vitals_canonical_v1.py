@@ -273,6 +273,14 @@ _ARRIVAL_WINDOW_MINUTES: Dict[str, int] = {
     "TABULAR":       120,
 }
 
+# Cross-midnight extension: when arrival is at or after this hour (local)
+# and a candidate record falls on a different calendar day, the per-tier
+# window is extended to at least this many minutes.  Covers transfer
+# patients whose vitals are documented after midnight at the receiving
+# facility (e.g. arrival 20:38 12/31, TRAUMA_HP at 02:20 01/01).
+_CROSS_MIDNIGHT_HOUR = 18          # 6 PM
+_CROSS_MIDNIGHT_WINDOW_MIN = 480   # 8 hours
+
 
 def _parse_ts(ts_str: Optional[str]) -> Optional[datetime]:
     """Parse an ISO-ish timestamp string to datetime. Returns None on failure."""
@@ -302,12 +310,19 @@ def select_arrival_vitals(
       5. TABULAR record within 120 min of arrival
       6. DATA NOT AVAILABLE
 
+    Cross-midnight extension: when the patient arrives at or after 18:00
+    and a candidate record falls on a subsequent calendar day (e.g. a
+    transfer patient whose vitals are documented after midnight at the
+    receiving facility), the per-tier time window is extended to at least
+    ``_CROSS_MIDNIGHT_WINDOW_MIN`` minutes (8 h).
+
     Tie-breaking within a tier: earliest timestamp, then lowest raw_line_id.
 
     Parameters
     ----------
     records : list[dict]
-        Canonical vital records for the arrival day.
+        Canonical vital records for the arrival day (may include next-day
+        records for cross-midnight coverage).
     arrival_ts : str, optional
         Arrival datetime string (ISO or "YYYY-MM-DD HH:MM:SS").
 
@@ -338,13 +353,27 @@ def select_arrival_vitals(
         # Apply time-window filter when arrival_dt is available
         if arrival_dt is not None:
             window_delta = timedelta(minutes=window_min)
+            # Cross-midnight extension: when the patient arrived in the
+            # evening and the record falls on a later calendar day
+            # (transfer scenario), widen the effective window.
+            cross_midnight_delta = timedelta(
+                minutes=max(window_min, _CROSS_MIDNIGHT_WINDOW_MIN)
+            )
             filtered = []
             for r in candidates:
                 r_dt = _parse_ts(r.get("ts"))
                 if r_dt is None:
                     continue  # fail-closed: no ts → skip
                 delta = r_dt - arrival_dt
-                if timedelta(0) <= delta <= window_delta:
+                # Choose effective window: cross-midnight if evening
+                # arrival and record on a later calendar day.
+                effective = window_delta
+                if (
+                    arrival_dt.hour >= _CROSS_MIDNIGHT_HOUR
+                    and r_dt.date() > arrival_dt.date()
+                ):
+                    effective = cross_midnight_delta
+                if timedelta(0) <= delta <= effective:
                     filtered.append(r)
             candidates = filtered
 
@@ -355,16 +384,31 @@ def select_arrival_vitals(
         candidates.sort(key=lambda r: (r.get("ts") or "", r.get("raw_line_id") or ""))
         selected = candidates[0]
 
-        return _arrival_selected(selected, source_type, priority)
+        # Detect whether the selected record used cross-midnight extension
+        cross_midnight = False
+        if arrival_dt is not None:
+            sel_dt = _parse_ts(selected.get("ts"))
+            if sel_dt is not None and sel_dt.date() > arrival_dt.date():
+                cross_midnight = True
+
+        return _arrival_selected(selected, source_type, priority, cross_midnight)
 
     return _arrival_stub("no_qualifying_record")
 
 
-def _arrival_selected(record: Dict[str, Any], source_type: str, priority: int) -> Dict[str, Any]:
+def _arrival_selected(
+    record: Dict[str, Any],
+    source_type: str,
+    priority: int,
+    cross_midnight: bool = False,
+) -> Dict[str, Any]:
     """Build arrival vitals result from a selected canonical record."""
+    rule = f"tier_{priority}_{source_type}"
+    if cross_midnight:
+        rule += "_cross_midnight"
     return {
         "status": "selected",
-        "selector_rule": f"tier_{priority}_{source_type}",
+        "selector_rule": rule,
         "selector_source": source_type,
         "ts": record.get("ts"),
         "day": record.get("day"),

@@ -306,10 +306,23 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
     # ── arrival vitals selector (deterministic hierarchy) ───────
     arrival_ts_str = meta.get("arrival_datetime")
     arrival_day_iso = arrival_ts_str[:10] if arrival_ts_str else None
-    arrival_day_records = (
-        vitals_canonical_days.get(arrival_day_iso, {}).get("records", [])
-        if arrival_day_iso else []
-    )
+
+    # Gather candidate records: arrival day + next calendar day.
+    # Cross-midnight transfers (late-evening arrival, note documented
+    # after midnight) place vitals on the next calendar day.  The
+    # selector's time-window logic decides which records qualify.
+    arrival_day_records: List[Dict[str, Any]] = []
+    if arrival_day_iso:
+        arrival_day_records = list(
+            vitals_canonical_days.get(arrival_day_iso, {}).get("records", [])
+        )
+        next_day_iso = (
+            date.fromisoformat(arrival_day_iso) + timedelta(days=1)
+        ).isoformat()
+        arrival_day_records += (
+            vitals_canonical_days.get(next_day_iso, {}).get("records", [])
+        )
+
     arrival_vitals = select_arrival_vitals(arrival_day_records, arrival_ts_str)
 
     # ── evidence gap-day detection ───────────────────────────────
