@@ -65,6 +65,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "procedure_operatives_v1",
     "anesthesia_case_metrics_v1",
     "spine_clearance_v1",
+    "note_index_events_v1",
     "vitals_qa",
 })
 
@@ -503,6 +504,20 @@ def _check_evidence_line_ids(
                     errors.append(
                         f"SPINE_CLEARANCE_EVIDENCE_MISSING_RAW_LINE_ID: "
                         f"{sc_missing} evidence entry(ies) without raw_line_id"
+                    )
+
+        # ── note_index_events_v1: evidence[] raw_line_id ──
+        if feat_key == "note_index_events_v1":
+            ni_evidence = feat_val.get("evidence", [])
+            if isinstance(ni_evidence, list):
+                ni_missing = sum(
+                    1 for e in ni_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if ni_missing > 0:
+                    errors.append(
+                        f"NOTE_INDEX_EVENTS_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{ni_missing} evidence entry(ies) without raw_line_id"
                     )
 
 

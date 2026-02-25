@@ -1559,6 +1559,46 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Note Index Events v1 QA ──────────────────────────────────
+    ni = feats.get("note_index_events_v1", {})
+    print("NOTE INDEX EVENTS v1 QA:")
+    ni_summary = ni.get("summary", {})
+    print(f"  note_index_event_count: {ni_summary.get('note_index_event_count', 0)}")
+    print(f"  unique_authors_count: {ni_summary.get('unique_authors_count', 0)}")
+    print(f"  unique_note_types_count: {ni_summary.get('unique_note_types_count', 0)}")
+    print(f"  consult_note_count: {ni_summary.get('consult_note_count', 0)}")
+    ni_services = ni_summary.get("services_detected", [])
+    if ni_services:
+        print(f"  services_detected ({len(ni_services)}):")
+        for svc in ni_services[:15]:
+            print(f"    - {svc}")
+    print(f"  source_rule_id: {ni.get('source_rule_id', '(none)')}")
+    ni_entries = ni.get("entries", [])
+    if ni_entries:
+        print(f"  entries ({len(ni_entries)}):")
+        for e in ni_entries[:15]:
+            svc_str = f" [{e.get('service')}]" if e.get("service") else ""
+            cred_str = f", {e.get('author_credential')}" if e.get("author_credential") else ""
+            print(
+                f"    {e.get('date_raw', '??/??')} {e.get('time_raw', '????')} "
+                f"{e.get('note_type', '?'):30s} "
+                f"{e.get('author_name', '?')}{cred_str}{svc_str}"
+            )
+        if len(ni_entries) > 15:
+            print(f"    ... and {len(ni_entries) - 15} more entries")
+    ni_evidence = ni.get("evidence", [])
+    print(f"  evidence_count: {len(ni_evidence)}")
+    ni_warns = ni.get("warnings", [])
+    if ni_warns:
+        print(f"  warnings ({len(ni_warns)}):")
+        for w in ni_warns[:5]:
+            print(f"    - {w}")
+    ni_notes = ni.get("notes", [])
+    if ni_notes:
+        for n in ni_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     print("=" * 60)
     return 0
 
