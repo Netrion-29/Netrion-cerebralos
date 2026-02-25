@@ -252,17 +252,25 @@ def build_canonical_vitals(
 # ── Arrival vitals selector ─────────────────────────────────────────
 
 # Source-priority tiers for arrival selection (lower = higher priority).
+# v2: added NURSING_NOTE (tier 3) and TABULAR (tier 4) per vitals audit
+#     2026-02-25.  Widened TRAUMA_HP from 30 → 120 min because
+#     VISIT_VITALS → TRAUMA_HP mapping produces timestamps well beyond
+#     the original 30-min window (attending exam, not triage).
 _ARRIVAL_SOURCE_PRIORITY: Dict[str, int] = {
-    "TRAUMA_HP":    0,
-    "ED_NOTE":      1,
-    "FLOWSHEET":    2,
+    "TRAUMA_HP":     0,
+    "ED_NOTE":       1,
+    "FLOWSHEET":     2,
+    "NURSING_NOTE":  3,
+    "TABULAR":       4,
 }
 
 # Maximum time-window (minutes) per source tier.
 _ARRIVAL_WINDOW_MINUTES: Dict[str, int] = {
-    "TRAUMA_HP":    30,
-    "ED_NOTE":      60,
-    "FLOWSHEET":    15,
+    "TRAUMA_HP":     120,   # was 30; covers attending/visit vitals
+    "ED_NOTE":        60,
+    "FLOWSHEET":      15,
+    "NURSING_NOTE":  120,
+    "TABULAR":       120,
 }
 
 
@@ -287,10 +295,12 @@ def select_arrival_vitals(
     Deterministic arrival vitals selector per contract §4.
 
     Hierarchy (first match wins):
-      1. TRAUMA_HP record within 30 min of arrival
+      1. TRAUMA_HP record within 120 min of arrival
       2. ED_NOTE (triage) record within 60 min of arrival
-      3. First FLOWSHEET record within 15 min of arrival
-      4. DATA NOT AVAILABLE
+      3. FLOWSHEET record within 15 min of arrival
+      4. NURSING_NOTE record within 120 min of arrival
+      5. TABULAR record within 120 min of arrival
+      6. DATA NOT AVAILABLE
 
     Tie-breaking within a tier: earliest timestamp, then lowest raw_line_id.
 
@@ -317,7 +327,7 @@ def select_arrival_vitals(
         return _arrival_stub("no_viable_records")
 
     # Evaluate each priority tier in order
-    for source_type in ("TRAUMA_HP", "ED_NOTE", "FLOWSHEET"):
+    for source_type in ("TRAUMA_HP", "ED_NOTE", "FLOWSHEET", "NURSING_NOTE", "TABULAR"):
         priority = _ARRIVAL_SOURCE_PRIORITY[source_type]
         window_min = _ARRIVAL_WINDOW_MINUTES[source_type]
 

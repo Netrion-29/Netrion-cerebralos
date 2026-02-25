@@ -1,10 +1,12 @@
 """
 Tests for deterministic arrival vitals selector hierarchy.
 
-Contract §4 hierarchy:
-  Tier 0  TRAUMA_HP   within 30 min of arrival
-  Tier 1  ED_NOTE     within 60 min (any on arrival day)
-  Tier 2  FLOWSHEET   within 15 min of arrival
+Contract §4 hierarchy (v2):
+  Tier 0  TRAUMA_HP    within 120 min of arrival
+  Tier 1  ED_NOTE      within 60 min of arrival
+  Tier 2  FLOWSHEET    within 15 min of arrival
+  Tier 3  NURSING_NOTE within 120 min of arrival
+  Tier 4  TABULAR      within 120 min of arrival
   Else    DATA NOT AVAILABLE
 """
 
@@ -47,11 +49,18 @@ class TestTier0TraumaHP:
         assert result["sbp"] == 145
 
     def test_rejected_outside_window(self):
-        """TRAUMA_HP record 45 min after arrival → outside 30-min window."""
+        """TRAUMA_HP record 125 min after arrival → outside 120-min window."""
+        recs = [_rec("TRAUMA_HP", "2025-12-31T17:04:00", sbp=145)]
+        result = select_arrival_vitals(recs, ARRIVAL_TS)
+        # Should NOT be tier 0 — 125 min > 120 min
+        assert result["status"] == "DATA NOT AVAILABLE"
+
+    def test_selected_within_widened_window(self):
+        """TRAUMA_HP record 45 min after arrival → within 120-min window (v2)."""
         recs = [_rec("TRAUMA_HP", "2025-12-31T15:44:00", sbp=145)]
         result = select_arrival_vitals(recs, ARRIVAL_TS)
-        # Should NOT be tier 0 — 45 min > 30 min
-        assert result["status"] == "DATA NOT AVAILABLE"
+        assert result["status"] == "selected"
+        assert result["selector_rule"] == "tier_0_TRAUMA_HP"
 
     def test_before_arrival_rejected(self):
         """TRAUMA_HP record before arrival_ts → outside window (negative delta)."""
@@ -60,8 +69,8 @@ class TestTier0TraumaHP:
         assert result["status"] == "DATA NOT AVAILABLE"
 
     def test_exactly_at_window_edge(self):
-        """TRAUMA_HP at exactly 30 min → included (boundary is <=)."""
-        recs = [_rec("TRAUMA_HP", "2025-12-31T15:29:00")]
+        """TRAUMA_HP at exactly 120 min → included (boundary is <=)."""
+        recs = [_rec("TRAUMA_HP", "2025-12-31T16:59:00")]
         result = select_arrival_vitals(recs, ARRIVAL_TS)
         assert result["status"] == "selected"
         assert result["selector_rule"] == "tier_0_TRAUMA_HP"
@@ -86,9 +95,9 @@ class TestTier1EDNote:
         assert result["status"] == "DATA NOT AVAILABLE"
 
     def test_ed_note_fallback_when_trauma_hp_misses(self):
-        """TRAUMA_HP outside 30 min; ED_NOTE in 60 min → ED_NOTE wins."""
+        """TRAUMA_HP outside 120 min; ED_NOTE in 60 min → ED_NOTE wins."""
         recs = [
-            _rec("TRAUMA_HP", "2025-12-31T15:44:00", sbp=145),  # 45 min → too late
+            _rec("TRAUMA_HP", "2025-12-31T17:04:00", sbp=145),  # 125 min → too late
             _rec("ED_NOTE",   "2025-12-31T15:30:00", sbp=160),  # 31 min → ok for tier 1
         ]
         result = select_arrival_vitals(recs, ARRIVAL_TS)
@@ -124,8 +133,8 @@ class TestDataNotAvailable:
         assert result["selector_rule"] == "no_viable_records"
 
     def test_no_matching_source(self):
-        """Only NURSING_NOTE records → no tier match → stub."""
-        recs = [_rec("NURSING_NOTE", "2025-12-31T15:05:00", sbp=120)]
+        """Only UNKNOWN source → no tier match → stub."""
+        recs = [_rec("UNKNOWN_SRC", "2025-12-31T15:05:00", sbp=120)]
         result = select_arrival_vitals(recs, ARRIVAL_TS)
         assert result["status"] == "DATA NOT AVAILABLE"
         assert result["selector_rule"] == "no_qualifying_record"
@@ -196,6 +205,167 @@ class TestPriorityOrdering:
         ]
         result = select_arrival_vitals(recs, ARRIVAL_TS)
         assert result["selector_rule"] == "tier_1_ED_NOTE"
+
+
+# ── tier 3: NURSING_NOTE within 120 min ──────────────────────────────
+
+class TestTier3NursingNote:
+
+    def test_nursing_note_selected(self):
+        """NURSING_NOTE 23 min after arrival → tier 3."""
+        recs = [_rec("NURSING_NOTE", "2025-12-31T15:22:00", sbp=132)]
+        result = select_arrival_vitals(recs, ARRIVAL_TS)
+        assert result["status"] == "selected"
+        assert result["selector_rule"] == "tier_3_NURSING_NOTE"
+        assert result["sbp"] == 132
+
+    def test_nursing_note_outside_window(self):
+        """NURSING_NOTE 125 min after arrival → beyond 120-min window."""
+        recs = [_rec("NURSING_NOTE", "2025-12-31T17:04:00", sbp=132)]
+        result = select_arrival_vitals(recs, ARRIVAL_TS)
+        assert result["status"] == "DATA NOT AVAILABLE"
+
+    def test_nursing_note_fallback_after_higher_tiers(self):
+        """All higher tiers outside their windows → NURSING_NOTE wins."""
+        recs = [
+            _rec("TRAUMA_HP",    "2025-12-31T17:04:00", sbp=145),  # 125 min > 120
+            _rec("ED_NOTE",      "2025-12-31T16:15:00", sbp=160),  # 76 min > 60
+            _rec("FLOWSHEET",    "2025-12-31T15:20:00", sbp=130),  # 21 min > 15
+            _rec("NURSING_NOTE", "2025-12-31T15:22:00", sbp=132),  # 23 min → ok
+        ]
+        result = select_arrival_vitals(recs, ARRIVAL_TS)
+        assert result["selector_rule"] == "tier_3_NURSING_NOTE"
+        assert result["sbp"] == 132
+
+    def test_nursing_note_at_window_edge(self):
+        """NURSING_NOTE at exactly 120 min → included (boundary is <=)."""
+        recs = [_rec("NURSING_NOTE", "2025-12-31T16:59:00", sbp=140)]
+        result = select_arrival_vitals(recs, ARRIVAL_TS)
+        assert result["status"] == "selected"
+        assert result["selector_rule"] == "tier_3_NURSING_NOTE"
+
+
+# ── tier 4: TABULAR within 120 min ──────────────────────────────────
+
+class TestTier4Tabular:
+
+    def test_tabular_selected(self):
+        """TABULAR 15 min after arrival → tier 4."""
+        recs = [_rec("TABULAR", "2025-12-31T15:14:00", sbp=116)]
+        result = select_arrival_vitals(recs, ARRIVAL_TS)
+        assert result["status"] == "selected"
+        assert result["selector_rule"] == "tier_4_TABULAR"
+        assert result["sbp"] == 116
+
+    def test_tabular_outside_window(self):
+        """TABULAR 125 min after arrival → beyond 120-min window."""
+        recs = [_rec("TABULAR", "2025-12-31T17:04:00", sbp=116)]
+        result = select_arrival_vitals(recs, ARRIVAL_TS)
+        assert result["status"] == "DATA NOT AVAILABLE"
+
+    def test_tabular_last_resort_before_dna(self):
+        """All other tiers miss → TABULAR within window → selected."""
+        recs = [
+            _rec("TRAUMA_HP",    "2025-12-31T17:04:00", sbp=145),  # outside
+            _rec("ED_NOTE",      "2025-12-31T16:15:00", sbp=160),  # outside
+            _rec("FLOWSHEET",    "2025-12-31T15:20:00", sbp=130),  # outside
+            _rec("NURSING_NOTE", "2025-12-31T17:04:00", sbp=132),  # outside
+            _rec("TABULAR",      "2025-12-31T15:30:00", sbp=116),  # 31 min → ok
+        ]
+        result = select_arrival_vitals(recs, ARRIVAL_TS)
+        assert result["selector_rule"] == "tier_4_TABULAR"
+
+
+# ── cross-tier priority: new vs existing ──────────────────────────
+
+class TestCrossTierPriority:
+
+    def test_trauma_hp_over_nursing_note(self):
+        """TRAUMA_HP in window beats NURSING_NOTE in window."""
+        recs = [
+            _rec("NURSING_NOTE", "2025-12-31T15:05:00", sbp=132),
+            _rec("TRAUMA_HP",    "2025-12-31T15:10:00", sbp=145),
+        ]
+        result = select_arrival_vitals(recs, ARRIVAL_TS)
+        assert result["selector_rule"] == "tier_0_TRAUMA_HP"
+
+    def test_nursing_note_over_tabular(self):
+        """NURSING_NOTE and TABULAR both qualify → NURSING_NOTE wins (tier 3 > tier 4)."""
+        recs = [
+            _rec("TABULAR",      "2025-12-31T15:05:00", sbp=116),
+            _rec("NURSING_NOTE", "2025-12-31T15:10:00", sbp=132),
+        ]
+        result = select_arrival_vitals(recs, ARRIVAL_TS)
+        assert result["selector_rule"] == "tier_3_NURSING_NOTE"
+
+    def test_flowsheet_over_nursing_note(self):
+        """FLOWSHEET in its tight window beats NURSING_NOTE."""
+        recs = [
+            _rec("NURSING_NOTE", "2025-12-31T15:05:00", sbp=132),
+            _rec("FLOWSHEET",    "2025-12-31T15:09:00", sbp=130),
+        ]
+        result = select_arrival_vitals(recs, ARRIVAL_TS)
+        assert result["selector_rule"] == "tier_2_FLOWSHEET"
+
+    def test_ed_note_over_tabular(self):
+        """ED_NOTE beats TABULAR when both qualify."""
+        recs = [
+            _rec("TABULAR", "2025-12-31T15:05:00", sbp=116),
+            _rec("ED_NOTE", "2025-12-31T15:10:00", sbp=160),
+        ]
+        result = select_arrival_vitals(recs, ARRIVAL_TS)
+        assert result["selector_rule"] == "tier_1_ED_NOTE"
+
+
+# ── audit patient scenarios ─────────────────────────────────────────
+
+class TestAuditPatientScenarios:
+    """Regression tests based on vitals_coverage_audit_2026-02-25 findings."""
+
+    def test_timothy_cowan_nursing_note(self):
+        """Timothy Cowan: NURSING_NOTE at +23 min → tier 3 selected (was DNA)."""
+        recs = [_rec("NURSING_NOTE", "2025-12-18T16:17:00", sbp=132, hr=118)]
+        result = select_arrival_vitals(recs, "2025-12-18 15:54:00")
+        assert result["status"] == "selected"
+        assert result["selector_rule"] == "tier_3_NURSING_NOTE"
+        assert result["sbp"] == 132
+
+    def test_timothy_nachtwey_nursing_note(self):
+        """Timothy Nachtwey: NURSING_NOTE at +23 min → tier 3 (was DNA due to missing source)."""
+        recs = [
+            _rec("NURSING_NOTE", "2025-12-26T01:00:00", sbp=140, hr=96),
+            _rec("TABULAR",      "2025-12-26T01:05:00", sbp=138),
+        ]
+        result = select_arrival_vitals(recs, "2025-12-26 00:37:00")
+        assert result["status"] == "selected"
+        assert result["selector_rule"] == "tier_3_NURSING_NOTE"
+
+    def test_anna_dennis_nursing_note_or_trauma_hp(self):
+        """Anna Dennis: TRAUMA_HP at +104 min (now within 120) → tier 0."""
+        recs = [
+            _rec("NURSING_NOTE", "2025-12-31T15:44:00", sbp=134),   # +45 min
+            _rec("TRAUMA_HP",    "2025-12-31T16:43:00", sbp=145),   # +104 min
+        ]
+        result = select_arrival_vitals(recs, "2025-12-31 14:59:00")
+        assert result["status"] == "selected"
+        # TRAUMA_HP tier 0 at 104 min (within 120) beats NURSING_NOTE tier 3
+        assert result["selector_rule"] == "tier_0_TRAUMA_HP"
+
+    def test_charlotte_howlett_nursing_note(self):
+        """Charlotte Howlett: TRAUMA_HP at +412 min (outside 120), NURSING_NOTE at +110 min → tier 3."""
+        recs = [
+            _rec("NURSING_NOTE", "2025-12-30T18:31:00", sbp=136),   # +110 min
+            _rec("TRAUMA_HP",    "2025-12-30T23:33:00", sbp=126),   # +412 min
+        ]
+        result = select_arrival_vitals(recs, "2025-12-30 16:41:00")
+        assert result["status"] == "selected"
+        assert result["selector_rule"] == "tier_3_NURSING_NOTE"
+
+    def test_ronald_bittner_still_dna(self):
+        """Ronald Bittner: 0 arrival-day records → remains DNA (out of scope)."""
+        result = select_arrival_vitals([], "2025-12-31 20:38:00")
+        assert result["status"] == "DATA NOT AVAILABLE"
+        assert result["selector_rule"] == "no_viable_records"
 
 
 # ── output schema completeness ──────────────────────────────────────
