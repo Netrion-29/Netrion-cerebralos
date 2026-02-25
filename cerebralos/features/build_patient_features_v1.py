@@ -91,6 +91,7 @@ from cerebralos.features.patient_movement_v1 import extract_patient_movement
 from cerebralos.features.consultant_events_v1 import extract_consultant_events
 from cerebralos.features.consultant_plan_items_v1 import extract_consultant_plan_items
 from cerebralos.features.lda_events_v1 import extract_lda_events
+from cerebralos.features.urine_output_events_v1 import extract_urine_output_events
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -478,6 +479,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
 
+    # ── Urine Output Events v1 (additive, patient-level) ──
+    urine_output_events = extract_urine_output_events(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     # ── Assemble features dict (all feature modules live here) ──
     features: Dict[str, Any] = {
         "vitals_canonical_v1": {
@@ -506,6 +513,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "note_index_events_v1": note_index_events,
         "patient_movement_v1": patient_movement,
         "lda_events_v1": lda_events,
+        "urine_output_events_v1": urine_output_events,
         "vitals_qa": agg_vitals_qa,
     }
 

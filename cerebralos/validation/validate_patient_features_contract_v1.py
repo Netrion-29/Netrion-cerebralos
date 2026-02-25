@@ -70,6 +70,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "consultant_events_v1",
     "consultant_plan_items_v1",
     "lda_events_v1",
+    "urine_output_events_v1",
     "vitals_qa",
 })
 
@@ -539,6 +540,23 @@ def _check_evidence_line_ids(
                     errors.append(
                         f"LDA_EVENTS_EVIDENCE_MISSING_RAW_LINE_ID: "
                         f"{lda_missing} evidence entry(ies) without raw_line_id"
+                    )
+
+        # ── urine_output_events_v1: per-event evidence[] raw_line_id ──
+        if feat_key == "urine_output_events_v1":
+            uo_events = feat_val.get("events", [])
+            if isinstance(uo_events, list):
+                uo_missing = 0
+                for ev in uo_events:
+                    if not isinstance(ev, dict):
+                        continue
+                    for e in ev.get("evidence", []):
+                        if isinstance(e, dict) and "raw_line_id" not in e:
+                            uo_missing += 1
+                if uo_missing > 0:
+                    errors.append(
+                        f"URINE_OUTPUT_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{uo_missing} evidence entry(ies) without raw_line_id"
                     )
 
 
