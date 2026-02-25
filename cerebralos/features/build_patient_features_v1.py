@@ -90,6 +90,7 @@ from cerebralos.features.note_index_events_v1 import extract_note_index_events
 from cerebralos.features.patient_movement_v1 import extract_patient_movement
 from cerebralos.features.consultant_events_v1 import extract_consultant_events
 from cerebralos.features.consultant_plan_items_v1 import extract_consultant_plan_items
+from cerebralos.features.lda_events_v1 import extract_lda_events
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -471,6 +472,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
 
+    # ── LDA Events v1 (additive, patient-level) ──
+    lda_events = extract_lda_events(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     # ── Assemble features dict (all feature modules live here) ──
     features: Dict[str, Any] = {
         "vitals_canonical_v1": {
@@ -498,6 +505,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "spine_clearance_v1": spine_clearance,
         "note_index_events_v1": note_index_events,
         "patient_movement_v1": patient_movement,
+        "lda_events_v1": lda_events,
         "vitals_qa": agg_vitals_qa,
     }
 
