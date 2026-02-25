@@ -1179,6 +1179,82 @@ def _parse_supplemental_dos(lines, last_dos_idx, arrival_dt_str, start_idx=0):
         for j in range(block_start, block_end):
             claimed.add(j)
 
+    # ── SBIRT_FLOWSHEET: Flowsheet History with SBIRT questions ──
+    # "Flowsheet History" sections that contain SBIRT screening
+    # questions (e.g. "Does the patient have an injury?",
+    # "Have you used drugs…", "Audit-C Score").  Emitted as
+    # NURSING_NOTE so the feature-layer SBIRT scanner picks them up.
+    _SBIRT_Q_SIGNATURES = (
+        "Does the patient have an injury",
+        "Have you used drugs other than",
+        "Do you drink alcohol",
+        "Audit-C Score",
+        "Audit C Score",
+    )
+    for i in range(scan_start, n):
+        if i in claimed:
+            continue
+        stripped = lines[i].strip()
+        if stripped != "Flowsheet History":
+            continue
+
+        # Find a tab-delimited header row containing SBIRT questions
+        hdr_idx: Optional[int] = None
+        for j in range(i + 1, min(n, i + 15)):
+            if j in claimed:
+                continue
+            jl = lines[j]
+            if "\t" not in jl:
+                continue
+            if any(sig in jl for sig in _SBIRT_Q_SIGNATURES):
+                hdr_idx = j
+                break
+
+        if hdr_idx is None:
+            continue  # not an SBIRT-containing flowsheet section
+
+        # Collect data rows immediately after the header until blank
+        # or non-data line (e.g. "User Key").
+        block_start = hdr_idx
+        block_end = hdr_idx + 1
+        sbirt_dt: Optional[str] = None
+        for j in range(hdr_idx + 1, min(n, hdr_idx + 30)):
+            jl = lines[j].strip()
+            if not jl:
+                block_end = j
+                break
+            # Data rows start with MM/DD/YY
+            if re.match(r"\d{1,2}/\d{1,2}/\d{2,4}", jl):
+                block_end = j + 1
+                if sbirt_dt is None:
+                    parts = jl.split("\t")[0].strip().split()
+                    if len(parts) >= 2:
+                        sbirt_dt = _parse_dt_slash_hhmm(parts[0], parts[1][:4])
+                        if sbirt_dt:
+                            _ts_count("MM/DD/YY HHMM (SBIRT flowsheet)")
+                continue
+            # Stop at non-data lines like "User Key"
+            block_end = j
+            break
+
+        block_text = "\n".join(lines[block_start:block_end]).strip()
+
+        warns: List[str] = []
+        if sbirt_dt is None:
+            _ts_fail()
+            warns.append("ts_missing")
+
+        items.append(
+            EvidenceItem(
+                idx=idx, kind="NURSING_NOTE", datetime=sbirt_dt,
+                line_start=block_start + 1, line_end=block_end,
+                text=block_text, warnings=tuple(warns), header_dt=sbirt_dt,
+            )
+        )
+        idx += 1
+        for j in range(i, block_end):
+            claimed.add(j)
+
     return items
 
 
