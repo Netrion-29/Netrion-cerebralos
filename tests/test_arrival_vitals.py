@@ -361,11 +361,96 @@ class TestAuditPatientScenarios:
         assert result["status"] == "selected"
         assert result["selector_rule"] == "tier_3_NURSING_NOTE"
 
-    def test_ronald_bittner_still_dna(self):
-        """Ronald Bittner: 0 arrival-day records → remains DNA (out of scope)."""
-        result = select_arrival_vitals([], "2025-12-31 20:38:00")
+    def test_ronald_bittner_cross_midnight(self):
+        """Ronald Bittner: arrival 20:38 12/31, NURSING_NOTE at 02:20 01/01 (342 min).
+        Cross-midnight extension (8 h) applies → tier 3 selected."""
+        recs = [
+            _rec("NURSING_NOTE", "2026-01-01T02:20:00", sbp=164, hr=107,
+                 rr=21, spo2=96, temp_f=98.1),
+        ]
+        result = select_arrival_vitals(recs, "2025-12-31 20:38:00")
+        assert result["status"] == "selected"
+        assert result["selector_rule"] == "tier_3_NURSING_NOTE_cross_midnight"
+        assert result["sbp"] == 164
+        assert result["hr"] == 107
+
+
+# ── cross-midnight window extension ──────────────────────────────────
+
+class TestCrossMidnight:
+    """Tests for cross-midnight window extension (arrival >= 18:00, record next day)."""
+
+    def test_nursing_note_within_8h_selected(self):
+        """NURSING_NOTE 342 min (5h42m) after evening arrival on next day → selected."""
+        recs = [_rec("NURSING_NOTE", "2026-01-01T02:20:00", sbp=164)]
+        result = select_arrival_vitals(recs, "2025-12-31 20:38:00")
+        assert result["status"] == "selected"
+        assert result["selector_rule"] == "tier_3_NURSING_NOTE_cross_midnight"
+
+    def test_trauma_hp_cross_midnight_selected(self):
+        """TRAUMA_HP 300 min (5h) after evening arrival on next day → selected."""
+        recs = [_rec("TRAUMA_HP", "2026-01-01T01:59:00", sbp=150)]
+        result = select_arrival_vitals(recs, "2025-12-31 20:59:00")
+        assert result["status"] == "selected"
+        assert result["selector_rule"] == "tier_0_TRAUMA_HP_cross_midnight"
+
+    def test_cross_midnight_beyond_8h_rejected(self):
+        """Record 500 min (8h20m) after evening arrival on next day → rejected."""
+        recs = [_rec("NURSING_NOTE", "2026-01-01T05:18:00", sbp=130)]
+        result = select_arrival_vitals(recs, "2025-12-31 20:58:00")
         assert result["status"] == "DATA NOT AVAILABLE"
-        assert result["selector_rule"] == "no_viable_records"
+
+    def test_cross_midnight_not_applied_before_18(self):
+        """Arrival at 17:59 (before 18:00) → cross-midnight extension NOT applied."""
+        recs = [_rec("NURSING_NOTE", "2026-01-01T01:00:00", sbp=130)]
+        # 17:59 → 01:00 next day = 421 min, well beyond 120-min normal window
+        result = select_arrival_vitals(recs, "2025-12-31 17:59:00")
+        assert result["status"] == "DATA NOT AVAILABLE"
+
+    def test_same_day_record_uses_normal_window(self):
+        """Same-day record still uses original per-tier window, not cross-midnight."""
+        # Evening arrival, but record on SAME day → normal 120-min NURSING_NOTE window
+        recs = [_rec("NURSING_NOTE", "2025-12-31T23:30:00", sbp=128)]
+        # Arrival at 20:00, record at 23:30 = 210 min > 120 min → should fail
+        result = select_arrival_vitals(recs, "2025-12-31 20:00:00")
+        assert result["status"] == "DATA NOT AVAILABLE"
+
+    def test_same_day_tier_beats_cross_midnight(self):
+        """Same-day qualifying record (higher tier) beats cross-midnight record."""
+        recs = [
+            _rec("TRAUMA_HP",    "2025-12-31T21:30:00", sbp=140),  # same day, +32 min
+            _rec("NURSING_NOTE", "2026-01-01T02:20:00", sbp=164),  # cross-midnight
+        ]
+        result = select_arrival_vitals(recs, "2025-12-31 20:58:00")
+        assert result["status"] == "selected"
+        assert result["selector_rule"] == "tier_0_TRAUMA_HP"  # no cross_midnight suffix
+        assert result["sbp"] == 140
+
+    def test_same_tier_same_day_beats_cross_midnight(self):
+        """Same-tier same-day record is preferred over cross-midnight record."""
+        recs = [
+            _rec("NURSING_NOTE", "2025-12-31T22:30:00", sbp=128),  # same day, +92 min
+            _rec("NURSING_NOTE", "2026-01-01T02:20:00", sbp=164),  # cross-midnight
+        ]
+        result = select_arrival_vitals(recs, "2025-12-31 20:58:00")
+        assert result["status"] == "selected"
+        assert result["selector_rule"] == "tier_3_NURSING_NOTE"  # no cross_midnight
+        assert result["sbp"] == 128
+
+    def test_cross_midnight_at_exactly_18(self):
+        """Arrival at exactly 18:00 → cross-midnight extension applies."""
+        recs = [_rec("NURSING_NOTE", "2026-01-01T00:30:00", sbp=145)]
+        # 18:00 → 00:30 next day = 390 min, applies with 480-min window
+        result = select_arrival_vitals(recs, "2025-12-31 18:00:00")
+        assert result["status"] == "selected"
+        assert result["selector_rule"] == "tier_3_NURSING_NOTE_cross_midnight"
+
+    def test_cross_midnight_exactly_at_boundary(self):
+        """Record exactly 480 min (8h) after evening arrival → included (boundary)."""
+        recs = [_rec("TABULAR", "2026-01-01T04:00:00", sbp=120)]
+        result = select_arrival_vitals(recs, "2025-12-31 20:00:00")
+        assert result["status"] == "selected"
+        assert result["selector_rule"] == "tier_4_TABULAR_cross_midnight"
 
 
 # ── output schema completeness ──────────────────────────────────────
