@@ -50,6 +50,9 @@ _TRACKED_DEVICES = ("foley", "central_line", "ett_vent", "chest_tube", "drain")
 # Deterministic truncation limit for consultant plan items per service
 _MAX_PLAN_ITEMS_PER_SERVICE = 15
 
+# Deterministic truncation for actionable items per category per service
+_MAX_ACTIONABLE_ITEMS_PER_CATEGORY = 10
+
 # Deterministic truncation for procedure events
 _MAX_PROCEDURE_EVENTS = 30
 
@@ -631,18 +634,49 @@ def _render_urine_output(feats: Dict[str, Any]) -> List[str]:
 # §7  CONSULTANT SUMMARY
 # ════════════════════════════════════════════════════════════════════
 
+# Display order for actionable categories — deterministic, clinically
+# meaningful: protocol-critical categories first, then supportive.
+_CATEGORY_DISPLAY_ORDER = [
+    "imaging",
+    "procedure",
+    "medication",
+    "monitoring_labs",
+    "brace_immobilization",
+    "activity",
+    "follow_up",
+    "discharge",
+    "recommendation",
+]
+
+# Human-readable labels for actionable categories
+_CATEGORY_LABELS = {
+    "imaging": "Imaging",
+    "procedure": "Procedure",
+    "medication": "Medication",
+    "monitoring_labs": "Monitoring / Labs",
+    "brace_immobilization": "Brace / Immobilization",
+    "activity": "Activity / Mobility",
+    "follow_up": "Follow-Up",
+    "discharge": "Discharge",
+    "recommendation": "Recommendation",
+}
+
+
 def _render_consultant_summary(feats: Dict[str, Any]) -> List[str]:
+    """Render consultant summary using actionables when available,
+    falling back to plan_items_v1 for older feature outputs."""
     out: List[str] = []
     ce = feats.get("consultant_events_v1", {})
+    cpa = feats.get("consultant_plan_actionables_v1", {})
     cpi = feats.get("consultant_plan_items_v1", {})
 
     consultant_present = ce.get("consultant_present")
     services = ce.get("consultant_services", [])
-    plan_items = cpi.get("items", [])
-    plan_count = cpi.get("item_count", 0)
-    plan_services = cpi.get("services_with_plan_items", [])
+    actionables = cpa.get("actionables", [])
+    actionable_count = cpa.get("actionable_count", 0)
 
-    if not services and not plan_items:
+    # If no consultant data at all → short-circuit
+    if not services and not actionables and not cpi.get("items"):
         out.append("CONSULTANT SUMMARY")
         out.append("-" * 60)
         if consultant_present == _DNA:
@@ -656,7 +690,7 @@ def _render_consultant_summary(feats: Dict[str, Any]) -> List[str]:
     out.append("-" * 60)
     out.append(f"  Services consulted: {len(services)}")
 
-    # Service list with timing
+    # Service list with timing (from consultant_events_v1 — always shown)
     for svc in services:
         sname = svc.get("service", "?")
         first = svc.get("first_ts", "?")
@@ -665,8 +699,59 @@ def _render_consultant_summary(feats: Dict[str, Any]) -> List[str]:
         author_str = f"  by {', '.join(authors)}" if authors else ""
         out.append(f"    - {sname} (first: {first}, {ncount} note(s){author_str})")
 
-    # Plan items by service — grouped, deduped, capped
-    if plan_items:
+    # ── Actionable-based rendering (preferred path) ──
+    if actionable_count > 0:
+        svc_counts = cpa.get("category_counts", {})
+        svc_list = cpa.get("services_with_actionables", [])
+
+        out.append("")
+        out.append(f"  Actionable Plan Items: {actionable_count} across {len(svc_list)} service(s)")
+
+        # Category summary line
+        cat_parts = []
+        for cat in _CATEGORY_DISPLAY_ORDER:
+            cnt = svc_counts.get(cat, 0)
+            if cnt > 0:
+                label = _CATEGORY_LABELS.get(cat, cat)
+                cat_parts.append(f"{label}: {cnt}")
+        if cat_parts:
+            out.append(f"  Categories: {', '.join(cat_parts)}")
+
+        # Group actionables by service, then by category
+        acts_by_svc: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
+        for act in actionables:
+            svc = act.get("service", "Unknown")
+            cat = act.get("category", "recommendation")
+            acts_by_svc.setdefault(svc, {}).setdefault(cat, []).append(act)
+
+        for svc_name in sorted(acts_by_svc.keys()):
+            svc_cats = acts_by_svc[svc_name]
+            total = sum(len(v) for v in svc_cats.values())
+            out.append("")
+            out.append(f"    [{svc_name}] ({total} actionable(s)):")
+
+            for cat in _CATEGORY_DISPLAY_ORDER:
+                if cat not in svc_cats:
+                    continue
+                cat_items = svc_cats[cat]
+                label = _CATEGORY_LABELS.get(cat, cat)
+                out.append(f"      {label}:")
+                for j, act in enumerate(cat_items[:_MAX_ACTIONABLE_ITEMS_PER_CATEGORY]):
+                    atext = act.get("action_text", "?")
+                    author = act.get("author_name", "")
+                    if len(atext) > _MAX_PLAN_ITEM_LEN:
+                        atext = atext[:_MAX_PLAN_ITEM_LEN - 3] + "..."
+                    author_tag = f"  [{author}]" if author else ""
+                    out.append(f"        - {atext}{author_tag}")
+                if len(cat_items) > _MAX_ACTIONABLE_ITEMS_PER_CATEGORY:
+                    out.append(f"        ... +{len(cat_items) - _MAX_ACTIONABLE_ITEMS_PER_CATEGORY} more (truncated)")
+
+    # ── Fallback: plan_items_v1 rendering (no actionables available) ──
+    elif cpi.get("items"):
+        plan_items = cpi["items"]
+        plan_count = cpi.get("item_count", len(plan_items))
+        plan_services = cpi.get("services_with_plan_items", [])
+
         out.append("")
         out.append(f"  Plan Items: {plan_count} total across {len(plan_services)} service(s)")
 
@@ -680,7 +765,6 @@ def _render_consultant_summary(feats: Dict[str, Any]) -> List[str]:
             svc_items = items_by_svc[svc_name]
 
             # Deduplicate by item_text within each service
-            # (keeps first occurrence, deterministic)
             seen_texts: set = set()
             unique_items: List[Dict[str, Any]] = []
             for it in svc_items:
@@ -698,7 +782,6 @@ def _render_consultant_summary(feats: Dict[str, Any]) -> List[str]:
                 itype = it.get("item_type", "?")
                 itext = it.get("item_text", "?")
                 author = it.get("author_name", "")
-                # Truncate very long plan items deterministically
                 if len(itext) > _MAX_PLAN_ITEM_LEN:
                     itext = itext[:_MAX_PLAN_ITEM_LEN - 3] + "..."
                 author_tag = f"  [{author}]" if author else ""
