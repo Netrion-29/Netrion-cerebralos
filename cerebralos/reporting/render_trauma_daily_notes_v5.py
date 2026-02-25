@@ -53,6 +53,15 @@ _MAX_PLAN_ITEMS_PER_SERVICE = 15
 # Deterministic truncation for procedure events
 _MAX_PROCEDURE_EVENTS = 30
 
+# Deterministic cap for LDA device list
+_MAX_LDA_DEVICES = 25
+
+# Deterministic cap for urine output event samples
+_MAX_URINE_SAMPLES = 8
+
+# Max length for a single plan item display line
+_MAX_PLAN_ITEM_LEN = 120
+
 # ── Formatting Helpers ──────────────────────────────────────────────
 
 def _fv(val: Any, decimals: int = 1) -> str:
@@ -488,7 +497,138 @@ def _render_procedure_summary(feats: Dict[str, Any]) -> List[str]:
 
 
 # ════════════════════════════════════════════════════════════════════
-# §5  CONSULTANT SUMMARY
+# §5  LDA / DEVICE LIFECYCLE SUMMARY
+# ════════════════════════════════════════════════════════════════════
+
+def _render_lda_summary(feats: Dict[str, Any]) -> List[str]:
+    """Render concise LDA device lifecycle summary from lda_events_v1.
+
+    Shows device inventory by category, placement/removal lifecycle,
+    and active device count.  Not a raw dump — this is a clinical
+    summary of key devices placed/removed during the encounter.
+    """
+    out: List[str] = []
+    lda = feats.get("lda_events_v1", {})
+    if not lda:
+        return out  # Omit section entirely if feature absent
+
+    device_count = lda.get("lda_device_count", 0)
+    active_count = lda.get("active_devices_count", 0)
+    categories = lda.get("categories_present", [])
+    devices = lda.get("devices", [])
+
+    if device_count == 0 and not devices:
+        return out  # No devices documented
+
+    out.append("LDA / DEVICE LIFECYCLE SUMMARY")
+    out.append("-" * 60)
+    out.append(f"  Total devices:    {device_count}")
+    out.append(f"  Active (at d/c):  {active_count}")
+    out.append(f"  Categories:       {', '.join(sorted(categories)) if categories else _DNA}")
+
+    # Category breakdown: count per category, sorted deterministically
+    cat_counts: Dict[str, int] = {}
+    for dev in devices:
+        cat = dev.get("category", "Unknown")
+        cat_counts[cat] = cat_counts.get(cat, 0) + 1
+    if cat_counts:
+        out.append("  Breakdown:")
+        for cat_name in sorted(cat_counts.keys()):
+            out.append(f"    {cat_name}: {cat_counts[cat_name]}")
+
+    # Device inventory (concise, capped)
+    if devices:
+        out.append("")
+        out.append("  Device Inventory:")
+        for i, dev in enumerate(devices[:_MAX_LDA_DEVICES]):
+            dtype = dev.get("device_type", "Unknown")
+            placed = dev.get("placed_ts", _DNA)
+            removed = dev.get("removed_ts")
+            duration = dev.get("duration_text", "")
+            status = "active" if removed is None else f"removed {removed}"
+            dur_str = f"  ({duration})" if duration else ""
+            out.append(f"    - {dtype}: placed {placed}, {status}{dur_str}")
+        if len(devices) > _MAX_LDA_DEVICES:
+            out.append(f"    ... +{len(devices) - _MAX_LDA_DEVICES} more (truncated)")
+
+    out.append("")
+    return out
+
+
+# ════════════════════════════════════════════════════════════════════
+# §6  URINE OUTPUT SUMMARY
+# ════════════════════════════════════════════════════════════════════
+
+def _render_urine_output(feats: Dict[str, Any]) -> List[str]:
+    """Render urine output summary from urine_output_events_v1.
+
+    Shows total explicit volume, event count, source types, and
+    subtype breakdown.  Does NOT render raw event details — only
+    aggregate statistics and a small sample of events.
+    """
+    out: List[str] = []
+    uo = feats.get("urine_output_events_v1", {})
+    if not uo:
+        return out  # Omit section entirely if feature absent
+
+    event_count = uo.get("urine_output_event_count", 0)
+    if event_count == 0:
+        return out  # No urine output documented — omit silently
+
+    total_ml = uo.get("total_urine_output_ml", 0)
+    first_ts = uo.get("first_urine_output_ts", _DNA)
+    last_ts = uo.get("last_urine_output_ts", _DNA)
+    source_types = uo.get("source_types_present", [])
+    events = uo.get("events", [])
+
+    out.append("URINE OUTPUT SUMMARY")
+    out.append("-" * 60)
+    out.append(f"  Event count:      {event_count}")
+    out.append(f"  Total output:     {total_ml} mL (explicit measurements only)")
+    out.append(f"  First recorded:   {first_ts}")
+    out.append(f"  Last recorded:    {last_ts}")
+    out.append(f"  Source types:     {', '.join(sorted(source_types)) if source_types else _DNA}")
+
+    # Subtype breakdown (Voided vs Catheter etc.)
+    subtype_counts: Dict[str, int] = {}
+    subtype_ml: Dict[str, int] = {}
+    for ev in events:
+        st = ev.get("source_subtype", "Unknown")
+        subtype_counts[st] = subtype_counts.get(st, 0) + 1
+        ml = ev.get("output_ml")
+        if ml is not None:
+            subtype_ml[st] = subtype_ml.get(st, 0) + ml
+    if subtype_counts:
+        out.append("  By source:")
+        for st_name in sorted(subtype_counts.keys()):
+            ml_str = f"  {subtype_ml.get(st_name, 0)} mL"
+            out.append(f"    {st_name}: {subtype_counts[st_name]} events{ml_str}")
+
+    # Small event sample for context (capped)
+    measured_events = [e for e in events if e.get("output_ml") is not None]
+    if measured_events:
+        out.append("")
+        out.append(f"  Recent measured outputs (up to {_MAX_URINE_SAMPLES}):")
+        # Show last N measured events (most recent clinically relevant)
+        sample = measured_events[-_MAX_URINE_SAMPLES:]
+        for ev in sample:
+            ts = ev.get("ts", "?")
+            ml = ev.get("output_ml", "?")
+            src = ev.get("source_subtype", "")
+            color = ev.get("urine_color", "")
+            parts = [f"{ml} mL"]
+            if src:
+                parts.append(f"[{src}]")
+            if color:
+                parts.append(f"color={color}")
+            out.append(f"    {ts}: {' '.join(parts)}")
+
+    out.append("")
+    return out
+
+
+# ════════════════════════════════════════════════════════════════════
+# §7  CONSULTANT SUMMARY
 # ════════════════════════════════════════════════════════════════════
 
 def _render_consultant_summary(feats: Dict[str, Any]) -> List[str]:
@@ -525,7 +665,7 @@ def _render_consultant_summary(feats: Dict[str, Any]) -> List[str]:
         author_str = f"  by {', '.join(authors)}" if authors else ""
         out.append(f"    - {sname} (first: {first}, {ncount} note(s){author_str})")
 
-    # Plan items by service
+    # Plan items by service — grouped, deduped, capped
     if plan_items:
         out.append("")
         out.append(f"  Plan Items: {plan_count} total across {len(plan_services)} service(s)")
@@ -538,16 +678,33 @@ def _render_consultant_summary(feats: Dict[str, Any]) -> List[str]:
 
         for svc_name in sorted(items_by_svc.keys()):
             svc_items = items_by_svc[svc_name]
-            out.append(f"    [{svc_name}] ({len(svc_items)} items):")
-            for j, it in enumerate(svc_items[:_MAX_PLAN_ITEMS_PER_SERVICE]):
+
+            # Deduplicate by item_text within each service
+            # (keeps first occurrence, deterministic)
+            seen_texts: set = set()
+            unique_items: List[Dict[str, Any]] = []
+            for it in svc_items:
+                txt = it.get("item_text", "")
+                if txt not in seen_texts:
+                    seen_texts.add(txt)
+                    unique_items.append(it)
+
+            dedup_note = ""
+            if len(unique_items) < len(svc_items):
+                dedup_note = f", {len(svc_items) - len(unique_items)} duplicate(s) suppressed"
+
+            out.append(f"    [{svc_name}] ({len(unique_items)} items{dedup_note}):")
+            for j, it in enumerate(unique_items[:_MAX_PLAN_ITEMS_PER_SERVICE]):
                 itype = it.get("item_type", "?")
                 itext = it.get("item_text", "?")
-                # Truncate very long plan items
-                if len(itext) > 120:
-                    itext = itext[:117] + "..."
-                out.append(f"      - ({itype}) {itext}")
-            if len(svc_items) > _MAX_PLAN_ITEMS_PER_SERVICE:
-                out.append(f"      ... +{len(svc_items) - _MAX_PLAN_ITEMS_PER_SERVICE} more (truncated)")
+                author = it.get("author_name", "")
+                # Truncate very long plan items deterministically
+                if len(itext) > _MAX_PLAN_ITEM_LEN:
+                    itext = itext[:_MAX_PLAN_ITEM_LEN - 3] + "..."
+                author_tag = f"  [{author}]" if author else ""
+                out.append(f"      - ({itype}) {itext}{author_tag}")
+            if len(unique_items) > _MAX_PLAN_ITEMS_PER_SERVICE:
+                out.append(f"      ... +{len(unique_items) - _MAX_PLAN_ITEMS_PER_SERVICE} more (truncated)")
 
     out.append("")
     return out
@@ -1046,6 +1203,8 @@ def render_v5(
     out.extend(_render_injury_catalog(feats))
     out.extend(_render_movement_summary(feats))
     out.extend(_render_procedure_summary(feats))
+    out.extend(_render_lda_summary(feats))
+    out.extend(_render_urine_output(feats))
     out.extend(_render_consultant_summary(feats))
     out.extend(_render_prophylaxis(feats))
     out.extend(_render_trigger_hemodynamic(feats))

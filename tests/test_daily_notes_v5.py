@@ -251,6 +251,238 @@ class TestRenderV5WithData(unittest.TestCase):
         self.assertIn("SPINE CLEARANCE", result)
         self.assertIn("CLEARED", result)
 
+    def test_lda_summary_omitted_when_absent(self):
+        data = _minimal_features()
+        result = render_v5(data)
+        self.assertNotIn("LDA / DEVICE LIFECYCLE SUMMARY", result)
+
+    def test_lda_summary_shown(self):
+        data = _minimal_features()
+        data["features"]["lda_events_v1"] = {
+            "lda_device_count": 2,
+            "active_devices_count": 1,
+            "categories_present": ["PIV", "Urethral Catheter"],
+            "devices": [
+                {"device_type": "Peripheral IV", "category": "PIV",
+                 "placed_ts": "01/01/26 0800", "removed_ts": "01/03/26 1200",
+                 "duration_text": "2 days"},
+                {"device_type": "Urethral Catheter", "category": "Urethral Catheter",
+                 "placed_ts": "01/01/26 0900", "removed_ts": None,
+                 "duration_text": ""},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("LDA / DEVICE LIFECYCLE SUMMARY", result)
+        self.assertIn("Total devices:    2", result)
+        self.assertIn("Active (at d/c):  1", result)
+        self.assertIn("PIV", result)
+        self.assertIn("Urethral Catheter", result)
+        self.assertIn("placed 01/01/26 0800", result)
+        self.assertIn("active", result)
+
+    def test_lda_truncation(self):
+        """More than _MAX_LDA_DEVICES should show truncation notice."""
+        data = _minimal_features()
+        devices = []
+        for i in range(30):
+            devices.append({
+                "device_type": f"Device_{i}", "category": "PIV",
+                "placed_ts": f"01/{i+1:02d}/26 0800", "removed_ts": None,
+            })
+        data["features"]["lda_events_v1"] = {
+            "lda_device_count": 30,
+            "active_devices_count": 30,
+            "categories_present": ["PIV"],
+            "devices": devices,
+        }
+        result = render_v5(data)
+        self.assertIn("truncated", result)
+        self.assertIn("Device_0", result)
+        self.assertNotIn("Device_29", result)
+
+    def test_urine_output_omitted_when_absent(self):
+        data = _minimal_features()
+        result = render_v5(data)
+        self.assertNotIn("URINE OUTPUT SUMMARY", result)
+
+    def test_urine_output_omitted_when_zero_events(self):
+        data = _minimal_features()
+        data["features"]["urine_output_events_v1"] = {
+            "urine_output_event_count": 0,
+            "total_urine_output_ml": 0,
+            "events": [],
+            "source_types_present": [],
+            "source_rule_id": "no_urine_output_data",
+        }
+        result = render_v5(data)
+        self.assertNotIn("URINE OUTPUT SUMMARY", result)
+
+    def test_urine_output_shown(self):
+        data = _minimal_features()
+        data["features"]["urine_output_events_v1"] = {
+            "urine_output_event_count": 5,
+            "total_urine_output_ml": 1200,
+            "first_urine_output_ts": "01/01 0800",
+            "last_urine_output_ts": "01/02 1600",
+            "source_types_present": ["flowsheet"],
+            "source_rule_id": "urine_output_events_raw_file",
+            "events": [
+                {"ts": "01/01 0800", "output_ml": 200, "source_type": "flowsheet",
+                 "source_subtype": "Voided", "urine_color": "Yellow/Straw"},
+                {"ts": "01/01 1200", "output_ml": 300, "source_type": "flowsheet",
+                 "source_subtype": "Voided", "urine_color": "Yellow/Straw"},
+                {"ts": "01/01 1800", "output_ml": None, "source_type": "flowsheet",
+                 "source_subtype": "Voided", "urine_color": "Yellow/Straw"},
+                {"ts": "01/02 0400", "output_ml": 250, "source_type": "flowsheet",
+                 "source_subtype": "Voided", "urine_color": "Amber"},
+                {"ts": "01/02 1600", "output_ml": 450, "source_type": "flowsheet",
+                 "source_subtype": "Voided", "urine_color": "Yellow/Straw"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("URINE OUTPUT SUMMARY", result)
+        self.assertIn("1200 mL", result)
+        self.assertIn("Event count:      5", result)
+        self.assertIn("First recorded:   01/01 0800", result)
+        self.assertIn("Last recorded:    01/02 1600", result)
+        self.assertIn("flowsheet", result)
+        self.assertIn("Voided:", result)
+
+    def test_urine_output_subtype_breakdown(self):
+        data = _minimal_features()
+        data["features"]["urine_output_events_v1"] = {
+            "urine_output_event_count": 3,
+            "total_urine_output_ml": 900,
+            "first_urine_output_ts": "01/01 0800",
+            "last_urine_output_ts": "01/01 1800",
+            "source_types_present": ["flowsheet", "lda_assessment"],
+            "events": [
+                {"ts": "01/01 0800", "output_ml": 200, "source_subtype": "Voided"},
+                {"ts": "01/01 1200", "output_ml": 400, "source_subtype": "Urethral Catheter"},
+                {"ts": "01/01 1800", "output_ml": 300, "source_subtype": "Urethral Catheter"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("Voided: 1 events", result)
+        self.assertIn("Urethral Catheter: 2 events", result)
+
+    def test_consultant_plan_dedup(self):
+        """Duplicate plan items within a service should be suppressed."""
+        data = _minimal_features()
+        data["features"]["consultant_events_v1"] = {
+            "consultant_present": True,
+            "consultant_services_count": 1,
+            "consultant_services": [
+                {"service": "Ortho", "first_ts": "2026-01-01 08:00",
+                 "note_count": 1, "authors": ["Dr. Smith"]},
+            ],
+        }
+        data["features"]["consultant_plan_items_v1"] = {
+            "item_count": 3,
+            "services_with_plan_items": ["Ortho"],
+            "items": [
+                {"item_text": "Continue weight bearing", "item_type": "activity",
+                 "service": "Ortho", "author_name": "Dr. Smith"},
+                {"item_text": "Continue weight bearing", "item_type": "activity",
+                 "service": "Ortho", "author_name": "Dr. Smith"},
+                {"item_text": "Follow-up in 2 weeks", "item_type": "follow-up",
+                 "service": "Ortho", "author_name": "Dr. Jones"},
+            ],
+        }
+        result = render_v5(data)
+        # Should show dedup notice
+        self.assertIn("duplicate", result.lower())
+        # Should show author tags
+        self.assertIn("[Dr. Smith]", result)
+        self.assertIn("[Dr. Jones]", result)
+        # Count occurrences of "Continue weight bearing" - should be 1 not 2
+        self.assertEqual(result.count("Continue weight bearing"), 1)
+
+    def test_consultant_plan_author_shown(self):
+        """Plan items should show author name."""
+        data = _minimal_features()
+        data["features"]["consultant_events_v1"] = {
+            "consultant_present": True,
+            "consultant_services_count": 1,
+            "consultant_services": [
+                {"service": "Neurosurgery", "first_ts": "2026-01-01 09:00",
+                 "note_count": 1, "authors": []},
+            ],
+        }
+        data["features"]["consultant_plan_items_v1"] = {
+            "item_count": 1,
+            "services_with_plan_items": ["Neurosurgery"],
+            "items": [
+                {"item_text": "Repeat CT head in 6 hours", "item_type": "imaging",
+                 "service": "Neurosurgery", "author_name": "Dr. Patel"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("[Dr. Patel]", result)
+
+    def test_consultant_plan_long_item_truncation(self):
+        """Very long plan items should be truncated deterministically."""
+        data = _minimal_features()
+        long_text = "A" * 200
+        data["features"]["consultant_events_v1"] = {
+            "consultant_present": True,
+            "consultant_services_count": 1,
+            "consultant_services": [
+                {"service": "Internal Medicine", "first_ts": "2026-01-01",
+                 "note_count": 1, "authors": []},
+            ],
+        }
+        data["features"]["consultant_plan_items_v1"] = {
+            "item_count": 1,
+            "services_with_plan_items": ["Internal Medicine"],
+            "items": [
+                {"item_text": long_text, "item_type": "recommendation",
+                 "service": "Internal Medicine"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("...", result)
+        self.assertNotIn(long_text, result)
+
+    def test_section_ordering(self):
+        """LDA and Urine Output should appear between Procedure and Consultant."""
+        data = _minimal_features()
+        data["features"]["lda_events_v1"] = {
+            "lda_device_count": 1,
+            "active_devices_count": 0,
+            "categories_present": ["PIV"],
+            "devices": [
+                {"device_type": "PIV", "category": "PIV",
+                 "placed_ts": "01/01", "removed_ts": "01/02"},
+            ],
+        }
+        data["features"]["urine_output_events_v1"] = {
+            "urine_output_event_count": 1,
+            "total_urine_output_ml": 100,
+            "first_urine_output_ts": "01/01",
+            "last_urine_output_ts": "01/01",
+            "source_types_present": ["flowsheet"],
+            "events": [
+                {"ts": "01/01", "output_ml": 100, "source_subtype": "Voided"},
+            ],
+        }
+        data["features"]["consultant_events_v1"] = {
+            "consultant_present": True,
+            "consultant_services_count": 1,
+            "consultant_services": [
+                {"service": "Ortho", "first_ts": "01/01", "note_count": 1, "authors": []},
+            ],
+        }
+        result = render_v5(data)
+        # Verify ordering: Procedure < LDA < Urine Output < Consultant
+        proc_pos = result.index("PROCEDURE / OR / ANESTHESIA SUMMARY")
+        lda_pos = result.index("LDA / DEVICE LIFECYCLE SUMMARY")
+        urine_pos = result.index("URINE OUTPUT SUMMARY")
+        consult_pos = result.index("CONSULTANT SUMMARY")
+        self.assertLess(proc_pos, lda_pos)
+        self.assertLess(lda_pos, urine_pos)
+        self.assertLess(urine_pos, consult_pos)
+
     def test_incentive_spirometry_omitted_when_not_mentioned(self):
         data = _minimal_features()
         result = render_v5(data)
@@ -329,11 +561,37 @@ class TestRenderV5RealData(unittest.TestCase):
         self.assertIn("ADMISSION / MOVEMENT SUMMARY", text)
         # Should have consultant data
         self.assertIn("CONSULTANT SUMMARY", text)
+        # Should have urine output (flowsheet source)
+        self.assertIn("URINE OUTPUT SUMMARY", text)
+
+    def test_lee_woodard(self):
+        features, days = self._load_patient("Lee_Woodard")
+        text = render_v5(features, days)
+        self._assert_v5_structure(text, "Lee_Woodard")
+        # Should have LDA devices
+        self.assertIn("LDA / DEVICE LIFECYCLE SUMMARY", text)
+        # Should have urine output (LDA + flowsheet)
+        self.assertIn("URINE OUTPUT SUMMARY", text)
+        # Should have consultant data
+        self.assertIn("CONSULTANT SUMMARY", text)
+
+    def test_ronald_bittner(self):
+        features, days = self._load_patient("Ronald_Bittner")
+        text = render_v5(features, days)
+        self._assert_v5_structure(text, "Ronald_Bittner")
+        # High-volume patient: should have LDA and urine
+        self.assertIn("LDA / DEVICE LIFECYCLE SUMMARY", text)
+        self.assertIn("URINE OUTPUT SUMMARY", text)
 
     def test_anna_dennis(self):
         features, days = self._load_patient("Anna_Dennis")
         text = render_v5(features, days)
         self._assert_v5_structure(text, "Anna_Dennis")
+
+    def test_michael_dougan(self):
+        features, days = self._load_patient("Michael_Dougan")
+        text = render_v5(features, days)
+        self._assert_v5_structure(text, "Michael_Dougan")
 
     def test_determinism_real(self):
         features, days = self._load_patient("Roscella_Weatherly")
