@@ -85,6 +85,7 @@ from cerebralos.features.pmh_social_allergies_v1 import extract_pmh_social_aller
 from cerebralos.features.adt_transfer_timeline_v1 import extract_adt_transfer_timeline
 from cerebralos.features.procedure_operatives_v1 import extract_procedure_operatives
 from cerebralos.features.anesthesia_case_metrics_v1 import extract_anesthesia_case_metrics
+from cerebralos.features.spine_clearance_v1 import extract_spine_clearance
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -448,6 +449,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
 
+    # ── Spine Clearance v1 (additive, patient-level) ──
+    spine_clearance = extract_spine_clearance(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     # ── Assemble features dict (all feature modules live here) ──
     features: Dict[str, Any] = {
         "vitals_canonical_v1": {
@@ -472,6 +479,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "adt_transfer_timeline_v1": adt_transfer_timeline,
         "procedure_operatives_v1": procedure_operatives,
         "anesthesia_case_metrics_v1": anesthesia_case_metrics,
+        "spine_clearance_v1": spine_clearance,
         "vitals_qa": agg_vitals_qa,
     }
 
