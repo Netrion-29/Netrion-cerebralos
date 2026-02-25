@@ -64,6 +64,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "adt_transfer_timeline_v1",
     "procedure_operatives_v1",
     "anesthesia_case_metrics_v1",
+    "spine_clearance_v1",
     "vitals_qa",
 })
 
@@ -488,6 +489,20 @@ def _check_evidence_line_ids(
                     errors.append(
                         f"VITALS_CANONICAL_MISSING_RAW_LINE_ID: "
                         f"{vc_missing} record(s) without raw_line_id"
+                    )
+
+        # ── spine_clearance_v1: evidence[] raw_line_id ──
+        if feat_key == "spine_clearance_v1":
+            sc_evidence = feat_val.get("evidence", [])
+            if isinstance(sc_evidence, list):
+                sc_missing = sum(
+                    1 for e in sc_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if sc_missing > 0:
+                    errors.append(
+                        f"SPINE_CLEARANCE_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{sc_missing} evidence entry(ies) without raw_line_id"
                     )
 
 

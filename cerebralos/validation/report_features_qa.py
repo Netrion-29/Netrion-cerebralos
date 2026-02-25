@@ -1524,6 +1524,41 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Spine Clearance v1 QA ────────────────────────────────────
+    sc = feats.get("spine_clearance_v1", {})
+    print("SPINE CLEARANCE v1 QA:")
+    print(f"  clearance_status: {sc.get('clearance_status', 'DATA NOT AVAILABLE')}")
+    print(f"  clearance_ts: {sc.get('clearance_ts') or '(none)'}")
+    print(f"  method: {sc.get('method', 'DATA NOT AVAILABLE')}")
+    print(f"  collar_status: {sc.get('collar_status', 'DATA NOT AVAILABLE')}")
+    print(f"  order_count: {sc.get('order_count', 0)}")
+    print(f"  cleared_phrase_count: {sc.get('cleared_phrase_count', 0)}")
+    print(f"  not_cleared_phrase_count: {sc.get('not_cleared_phrase_count', 0)}")
+    sc_regions = sc.get("regions", [])
+    if sc_regions:
+        print(f"  regions ({len(sc_regions)}):")
+        for r in sc_regions:
+            print(
+                f"    {r.get('name', '?'):16s} "
+                f"clearance={r.get('clearance', '?'):8s} "
+                f"ordered_on={r.get('ordered_on') or '(none)'}"
+            )
+    sc_evidence = sc.get("evidence", [])
+    print(f"  evidence_count: {len(sc_evidence)}")
+    if sc_evidence:
+        for ev in sc_evidence[:10]:
+            print(f"    [{ev.get('role', '?')}] {ev.get('snippet', '')[:80]}")
+    sc_warns = sc.get("warnings", [])
+    if sc_warns:
+        print(f"  warnings ({len(sc_warns)}):")
+        for w in sc_warns[:5]:
+            print(f"    - {w}")
+    sc_notes = sc.get("notes", [])
+    if sc_notes:
+        for n in sc_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     print("=" * 60)
     return 0
 
