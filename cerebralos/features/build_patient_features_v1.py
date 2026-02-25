@@ -86,6 +86,7 @@ from cerebralos.features.adt_transfer_timeline_v1 import extract_adt_transfer_ti
 from cerebralos.features.procedure_operatives_v1 import extract_procedure_operatives
 from cerebralos.features.anesthesia_case_metrics_v1 import extract_anesthesia_case_metrics
 from cerebralos.features.spine_clearance_v1 import extract_spine_clearance
+from cerebralos.features.note_index_events_v1 import extract_note_index_events
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -455,6 +456,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
 
+    # ── Note Index Events v1 (additive, patient-level) ──
+    note_index_events = extract_note_index_events(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     # ── Assemble features dict (all feature modules live here) ──
     features: Dict[str, Any] = {
         "vitals_canonical_v1": {
@@ -480,6 +487,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "procedure_operatives_v1": procedure_operatives,
         "anesthesia_case_metrics_v1": anesthesia_case_metrics,
         "spine_clearance_v1": spine_clearance,
+        "note_index_events_v1": note_index_events,
         "vitals_qa": agg_vitals_qa,
     }
 
@@ -552,6 +560,10 @@ def main() -> int:
             raw_header = (ev_data.get("raw") or {}).get("first_50_lines", [])
             if raw_header:
                 days_data.setdefault("meta", {})["raw_header_lines"] = raw_header
+            # Inject source_file path for raw-file features (note_index_events)
+            ev_source = (ev_data.get("meta") or {}).get("source_file")
+            if ev_source:
+                days_data.setdefault("meta", {})["source_file"] = ev_source
         except (json.JSONDecodeError, OSError):
             pass  # fail-closed: no header lines available
 
