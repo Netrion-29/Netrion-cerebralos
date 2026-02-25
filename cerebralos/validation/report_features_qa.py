@@ -1706,6 +1706,55 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Urine Output Events v1 QA ────────────────────────────────
+    uo = feats.get("urine_output_events_v1", {})
+    print("URINE OUTPUT EVENTS v1 QA:")
+    print(f"  urine_output_event_count: {uo.get('urine_output_event_count', 0)}")
+    print(f"  total_urine_output_ml: {uo.get('total_urine_output_ml', 0)}")
+    print(f"  first_urine_output_ts: {uo.get('first_urine_output_ts') or '(none)'}")
+    print(f"  last_urine_output_ts: {uo.get('last_urine_output_ts') or '(none)'}")
+    uo_src = uo.get("source_types_present", [])
+    if uo_src:
+        print(f"  source_types_present: {', '.join(uo_src)}")
+    print(f"  source_rule_id: {uo.get('source_rule_id', '(none)')}")
+    uo_events = uo.get("events", [])
+    if uo_events:
+        # Show summary by source_subtype
+        subtype_counts: dict[str, int] = {}
+        subtype_ml: dict[str, int] = {}
+        for ev in uo_events:
+            st = ev.get("source_subtype", "?")
+            subtype_counts[st] = subtype_counts.get(st, 0) + 1
+            if ev.get("output_ml") is not None:
+                subtype_ml[st] = subtype_ml.get(st, 0) + ev["output_ml"]
+        print(f"  events by subtype:")
+        for st in sorted(subtype_counts):
+            ml_str = f"  total_ml={subtype_ml.get(st, 0)}" if st in subtype_ml else ""
+            print(f"    {st}: {subtype_counts[st]} events{ml_str}")
+        # Show first 10 events as samples
+        print(f"  event samples (first 10 of {len(uo_events)}):")
+        for ev in uo_events[:10]:
+            ml_str = f"{ev['output_ml']} ml" if ev.get("output_ml") is not None else "(no vol)"
+            color = ev.get("urine_color") or ""
+            src = ev.get("source_type", "?")
+            sub = ev.get("source_subtype", "?")
+            color_part = f"  color={color}" if color else ""
+            print(f"    {ev['ts']}  {ml_str:>12s}  [{src}/{sub}]{color_part}")
+        if len(uo_events) > 10:
+            print(f"    ... and {len(uo_events) - 10} more events")
+    uo_evidence_total = sum(len(ev.get("evidence", [])) for ev in uo_events)
+    print(f"  evidence_count: {uo_evidence_total}")
+    uo_warns = uo.get("warnings", [])
+    if uo_warns:
+        print(f"  warnings ({len(uo_warns)}):")
+        for w in uo_warns[:5]:
+            print(f"    - {w}")
+    uo_notes = uo.get("notes", [])
+    if uo_notes:
+        for n in uo_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     # ── Consultant Events v1 QA ──────────────────────────────────
     ce = feats.get("consultant_events_v1", {})
     print("CONSULTANT EVENTS v1 QA:")
