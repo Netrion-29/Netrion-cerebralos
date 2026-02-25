@@ -104,6 +104,27 @@ FORMAT_FEEDING_TUBE_ONLY = (
     "User Key\n"
 )
 
+# Cross-source collision: flowsheet 0ml at same timestamp as LDA actual ml
+FORMAT_CROSS_SOURCE = (
+    "Flowsheets\n"
+    "\n"
+    "Urine Documentation\n"
+    "\tUrine ml\tUrine Unmeasured Occurrence\tUrine Color\tUrine Appearance\tUrine Odor\tUrine Source\n"
+    "01/04 0700\t0 mL\t\tYellow/Straw\tClear\tNo odor\tVoided\n"
+    "01/04 1200\t300 mL\t\tYellow/Straw\tClear\tNo odor\tVoided\n"
+    "\n"
+    "[ACTIVE] Urethral Catheter Anchored\n"
+    "Properties\n"
+    "Placement date\t01/03/26   -BW\n"
+    "Assessments\n"
+    "Assessments\n"
+    "Row Name\t01/04/26 0700\n"
+    "Output (ml)\t250 ml   -MW\n"
+    "Urine Color\tYellow/Straw   -MW\n"
+    "\n"
+    "User Key\n"
+)
+
 
 # ── Test classes ─────────────────────────────────────────────────────
 
@@ -343,6 +364,14 @@ class TestRealData(unittest.TestCase):
         self.assertIn("lda_assessment", result["source_types_present"])
         self.assertGreater(result["total_urine_output_ml"], 0)
 
+    def test_ronald_bittner_cross_source_dedup(self):
+        """Ronald Bittner has timestamp collisions between flowsheet and LDA."""
+        result = self._extract("Ronald Bittner")
+        # Cross-source dedup should have dropped some zero-ml flowsheet events
+        cross_notes = [n for n in result["notes"] if "cross_source_duplicates_dropped" in n]
+        self.assertTrue(len(cross_notes) > 0,
+                        "Expected cross_source_duplicates_dropped note")
+
     def test_anna_dennis_no_urine(self):
         """Anna Dennis has no urine data — DNA control."""
         result = self._extract("Anna_Dennis")
@@ -357,6 +386,41 @@ class TestRealData(unittest.TestCase):
         r1 = extract_urine_output_events({}, _make_days_with_source(path))
         r2 = extract_urine_output_events({}, _make_days_with_source(path))
         self.assertEqual(r1, r2)
+
+
+class TestCrossSourceDedup(unittest.TestCase):
+    """Tests for cross-source dedup (flowsheet 0ml vs LDA actual ml at same ts)."""
+
+    @classmethod
+    def setUpClass(cls):
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+            f.write(FORMAT_CROSS_SOURCE)
+            cls.path = f.name
+        cls.result = extract_urine_output_events({}, _make_days_with_source(cls.path))
+
+    @classmethod
+    def tearDownClass(cls):
+        os.unlink(cls.path)
+
+    def test_event_count(self):
+        """Flowsheet 0ml at 01/04 0700 should be dropped; LDA 250ml kept. Plus flowsheet 300ml at 1200."""
+        self.assertEqual(self.result["urine_output_event_count"], 2)
+
+    def test_total_ml(self):
+        """250 (LDA at 0700) + 300 (flowsheet at 1200) = 550."""
+        self.assertEqual(self.result["total_urine_output_ml"], 550)
+
+    def test_cross_source_note(self):
+        cross_notes = [n for n in self.result["notes"] if "cross_source_duplicates_dropped" in n]
+        self.assertTrue(len(cross_notes) > 0)
+        self.assertIn("1", cross_notes[0])
+
+    def test_lda_event_kept(self):
+        """The LDA event with 250ml at 01/04 0700 should be kept."""
+        ev_0700 = [e for e in self.result["events"] if e["ts"] == "01/04 0700"]
+        self.assertEqual(len(ev_0700), 1)
+        self.assertEqual(ev_0700[0]["output_ml"], 250)
+        self.assertEqual(ev_0700[0]["source_type"], "lda_assessment")
 
 
 if __name__ == "__main__":
