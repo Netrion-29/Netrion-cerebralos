@@ -63,6 +63,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "pmh_social_allergies_v1",
     "adt_transfer_timeline_v1",
     "procedure_operatives_v1",
+    "anesthesia_case_metrics_v1",
     "vitals_qa",
 })
 
