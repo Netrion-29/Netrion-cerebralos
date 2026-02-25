@@ -1605,8 +1605,14 @@ def main() -> int:
     pm_summary = pm.get("summary", {})
     print(f"  movement_event_count: {pm_summary.get('movement_event_count', 0)}")
     print(f"  first_movement_ts: {pm_summary.get('first_movement_ts', '(none)')}")
+    print(f"  admission_ts: {pm_summary.get('admission_ts', '(none)')}")
     print(f"  discharge_ts: {pm_summary.get('discharge_ts', '(none)')}")
+    print(f"  discharge_disposition_final: {pm_summary.get('discharge_disposition_final', '(none)')}")
     print(f"  transfer_count: {pm_summary.get('transfer_count', 0)}")
+    pm_etc = pm_summary.get("event_type_counts", {})
+    if pm_etc:
+        parts = [f"{k}={v}" for k, v in pm_etc.items()]
+        print(f"  event_type_counts: {', '.join(parts)}")
     pm_units = pm_summary.get("units_visited", [])
     if pm_units:
         print(f"  units_visited ({len(pm_units)}):")
@@ -1622,6 +1628,11 @@ def main() -> int:
         print(f"  services_seen ({len(pm_svcs)}):")
         for svc in pm_svcs[:10]:
             print(f"    - {svc}")
+    pm_rooms = pm_summary.get("rooms_visited", [])
+    if pm_rooms:
+        print(f"  rooms_visited ({len(pm_rooms)}):")
+        for rm in pm_rooms[:10]:
+            print(f"    - {rm}")
     print(f"  source_rule_id: {pm.get('source_rule_id', '(none)')}")
     pm_entries = pm.get("entries", [])
     if pm_entries:

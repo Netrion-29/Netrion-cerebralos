@@ -12,6 +12,14 @@ Events header table.  Patient Movement provides richer per-event fields
 (room, bed, level of care, providers, discharge disposition) from a
 different section of the raw data.
 
+v2 refinements (tier1/patient-movement-v2):
+  - Deterministic dedup on (unit, date_raw, time_raw, event_type).
+  - Additional section boundaries for robustness.
+  - Medication-line guard to prevent false-match entry headers.
+  - Enriched summary: admission_ts, discharge_disposition_final,
+    event_type_counts, rooms_visited.
+  - Handles "Checked Out" / "Checked In" bare entries (no body fields).
+
 Source priority:
   1. Raw data file (``meta.source_file`` injected by the builder from
      the evidence JSON).
@@ -45,6 +53,13 @@ Patient Movement subsection format (tab-delimited header + field blocks):
     <blank>
     Discharge Disposition   (optional — only on Discharge events)
     <disposition_value>
+
+Event types observed in real data:
+  - Admission
+  - Transfer In
+  - Discharge
+  - Checked In   (bare entry — no body fields)
+  - Checked Out  (bare entry — no body fields)
 
 Entries appear in reverse chronological order (most recent first).
 Section ends when a line matches another event-log section header
@@ -102,6 +117,7 @@ Design:
 - Deterministic, fail-closed.
 - No LLM, no ML, no clinical inference.
 - raw_line_id required on every evidence entry.
+- Dedup on (unit, date_raw, time_raw, event_type) — first occurrence wins.
 """
 
 from __future__ import annotations
@@ -127,10 +143,21 @@ _SECTION_BOUNDARIES = frozenset({
     "Imaging",
     "Imaging, EKG, and Radiology",
     "Scheduled",
+    "Procedures",
+    "Orders",
+    "Vitals",
+    "Allergies",
+    "Consults",
+    "Results",
+    "Micro",
+    "I&O",
+    "ADT Events",
 })
 
 RE_SECTION_BOUNDARY = re.compile(
     r"^(?:Notes|LDAs|Flowsheets|Meds|Labs|Scheduled|"
+    r"Procedures|Orders|Vitals|Allergies|Consults|Results|Micro|"
+    r"I\s*&\s*O|ADT\s*Events|"
     r"Imaging(?:,\s*EKG,?\s*and\s*Radiology)?)\s*$",
     re.IGNORECASE,
 )
@@ -139,6 +166,18 @@ RE_SECTION_BOUNDARY = re.compile(
 # Lines starting with a date in MM/DD/YY HH:MM format indicate we've
 # left the Patient Movement section and entered labs/imaging data.
 RE_LAB_LINE = re.compile(r"^\d{2}/\d{2}/\d{2}\s+\d{2}:\d{2}")
+
+# ── Medication-line guard ─────────────────────────────────────────
+# After a "Scheduled" boundary, medication lines use the same
+# tab-delimited format as entry headers.  This pattern detects
+# medication names (contain dosage units or parenthesised brand names)
+# so we can reject false-match entry-header hits.
+RE_MEDICATION_LINE = re.compile(
+    r"\b(?:tablet|capsule|bottle|injection|solution|suspension|"
+    r"patch|cream|ointment|suppository|inhaler|spray|vial|syringe|"
+    r"mg|mcg|mL|units?\b|%\s)",
+    re.IGNORECASE,
+)
 
 # ── Entry header pattern (tab-delimited) ──────────────────────────
 # Format: UnitName\tMM/DD\tHHMM\tEventType
@@ -263,7 +302,12 @@ def _parse_movement_entries(
     header_indices: List[int] = []
     for idx, (line_num, line_text) in enumerate(section_lines):
         stripped = line_text.strip().replace("\r", "")
-        if RE_ENTRY_HEADER.match(stripped):
+        m = RE_ENTRY_HEADER.match(stripped)
+        if m:
+            # Guard: reject lines that look like medication entries
+            # (contain dosage units or pharma brand-name parentheses).
+            if RE_MEDICATION_LINE.search(stripped):
+                continue
             header_indices.append(idx)
 
     # Parse each entry: header + field block until next header
@@ -353,6 +397,22 @@ def _parse_movement_entries(
             "line_number": line_num,
         })
 
+    # ── Deterministic dedup on (unit, date_raw, time_raw, event_type) ──
+    # Keep first occurrence; warn on duplicates.
+    seen: set = set()
+    deduped: List[Dict[str, Any]] = []
+    dup_count = 0
+    for e in entries:
+        key = (e["unit"], e["date_raw"], e["time_raw"], e["event_type"])
+        if key in seen:
+            dup_count += 1
+            continue
+        seen.add(key)
+        deduped.append(e)
+    if dup_count:
+        warnings.append(f"dedup_removed={dup_count}")
+    entries = deduped
+
     return entries, warnings
 
 
@@ -362,19 +422,27 @@ def _build_summary(entries: List[Dict[str, Any]]) -> Dict[str, Any]:
         return {
             "movement_event_count": 0,
             "first_movement_ts": None,
+            "admission_ts": None,
             "discharge_ts": None,
+            "discharge_disposition_final": None,
             "transfer_count": 0,
             "units_visited": [],
             "levels_of_care": [],
             "services_seen": [],
+            "rooms_visited": [],
+            "event_type_counts": {},
         }
 
-    units = []
-    levels = set()
-    services = set()
+    units: List[str] = []
+    rooms: List[str] = []
+    levels: set = set()
+    services: set = set()
     transfer_count = 0
     first_ts: Optional[str] = None
+    admission_ts: Optional[str] = None
     discharge_ts: Optional[str] = None
+    discharge_disposition_final: Optional[str] = None
+    event_type_counts: Dict[str, int] = {}
 
     # Entries are in reverse chronological order (most recent first)
     # So "first" movement is the last entry, "latest discharge" is the
@@ -383,31 +451,47 @@ def _build_summary(entries: List[Dict[str, Any]]) -> Dict[str, Any]:
         unit = e["unit"]
         if unit not in units:
             units.append(unit)
-        if e["level_of_care"]:
+        rm = e.get("room")
+        if rm and rm not in rooms:
+            rooms.append(rm)
+        if e.get("level_of_care"):
             levels.add(e["level_of_care"])
-        if e["service"]:
+        if e.get("service"):
             services.add(e["service"])
-        if e["event_type"].lower().startswith("transfer"):
+        et = e["event_type"]
+        event_type_counts[et] = event_type_counts.get(et, 0) + 1
+        if et.lower().startswith("transfer"):
             transfer_count += 1
 
     # First movement = last entry (reverse chron → last is earliest)
     last_entry = entries[-1]
     first_ts = f"{last_entry['date_raw']} {last_entry['time_raw']}"
 
+    # Admission timestamp = latest (reverse chron) Admission entry → last one
+    for e in reversed(entries):
+        if e["event_type"].lower() == "admission":
+            admission_ts = f"{e['date_raw']} {e['time_raw']}"
+            break
+
     # Discharge timestamp = first Discharge entry found (most recent)
     for e in entries:
         if e["event_type"].lower() == "discharge":
             discharge_ts = f"{e['date_raw']} {e['time_raw']}"
+            discharge_disposition_final = e.get("discharge_disposition")
             break
 
     return {
         "movement_event_count": len(entries),
         "first_movement_ts": first_ts,
+        "admission_ts": admission_ts,
         "discharge_ts": discharge_ts,
+        "discharge_disposition_final": discharge_disposition_final,
         "transfer_count": transfer_count,
         "units_visited": units,
         "levels_of_care": sorted(levels),
         "services_seen": sorted(services),
+        "rooms_visited": rooms,
+        "event_type_counts": event_type_counts,
     }
 
 
