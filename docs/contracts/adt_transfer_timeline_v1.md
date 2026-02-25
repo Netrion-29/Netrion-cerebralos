@@ -34,6 +34,14 @@ ADT Events
 MM/DD/YY HHMM	UNIT_NAME	ROOM	BED	SERVICE	EVENT_TYPE
 ```
 
+### Headerless Variant (v2)
+
+Some raw files (e.g. Ronald Bittner) embed ADT data rows directly after
+demographics (name / age / DOB) with **no** "ADT Events" header and no
+column header row. The extractor detects these via a headerless fallback
+that scans for `RE_ADT_ROW` matches when the standard header-based
+extraction yields no events.
+
 Event types (whitelist): `Admission`, `Transfer In`, `Transfer Out`,
 `Patient Update`, `Discharge`.
 
@@ -60,7 +68,21 @@ Event types (whitelist): `Admission`, `Transfer In`, `Transfer Out`,
     "transfer_count": 7,            // max(transfer-in, transfer-out counts)
     "discharge_ts": "2026-01-07 17:54:00",  // or null
     "units_visited": ["EMERGENCY DEPT MC", "ORTHO NEURO TR CRE CTR", "SURGERY MC"],
-    "los_hours": 226.5              // or null
+    "los_hours": 226.5,             // or null
+    "los_days": 9.4,                // or null (v2)
+    "event_type_counts": {          // v2
+      "Admission": 1,
+      "Transfer Out": 7,
+      "Transfer In": 7,
+      "Patient Update": 0,
+      "Discharge": 1
+    },
+    "services_seen": ["Emergency", "Trauma"],  // sorted unique (v2)
+    "rooms_visited": ["1857", "4512", "4507"],  // ordered unique, excludes MCTRANSITION/NONE (v2)
+    "patient_update_count": 0,      // v2
+    "last_unit": "SURGERY MC",      // v2
+    "last_room": "4507",            // v2
+    "last_bed": "4507-01"           // v2
   },
   "evidence": [
     {
@@ -83,11 +105,16 @@ When no ADT table is found, `events` is `[]`, summary fields are
   whitelisted event types are captured.
 - **No inference**: no clinical reasoning, no LLM, no ML.
 - **raw_line_id**: every event and evidence entry carries a raw_line_id
-  (`header:<idx>` or `item:<day>:<item_idx>:<idx>`).
-- **First-source-wins**: header lines checked first, then timeline items;
-  no merging across sources.
+  (`header:<idx>`, `header_headerless:<idx>`, or `item:<day>:<item_idx>:<idx>`).
+- **First-source-wins**: header lines checked first (standard header →
+  headerless fallback), then timeline items; no merging across sources.
 - **Timestamp normalisation**: `MM/DD/YY HHMM` → `YYYY-MM-DD HH:MM:SS`
   with 2-digit year pivot at 80.
+- **Defensive dedup** (v2): exact-match dedup on
+  `(timestamp_raw, unit, room, bed, event_type)`. First occurrence wins;
+  duplicates dropped with warning.
+- **Chronology validation** (v2): warns if events deviate from
+  chronological order. Does NOT reorder — purely advisory.
 
 ## Validation
 
@@ -107,10 +134,12 @@ The `report_features_qa.py` renders:
 ## Gate Patients
 
 Standard gate: Anna_Dennis, William_Simmons, Timothy_Cowan, Timothy_Nachtwey.
-ADT-positive validation: Michael_Dougan (header), Gary_Linder (embedded note).
+ADT-positive validation: Michael_Dougan (header), Gary_Linder (embedded note),
+Ronald Bittner (headerless variant).
 
 ## Changelog
 
 | Date       | Change                        |
 |------------|-------------------------------|
+| 2026-02-25 | v2 — headerless ADT fallback, defensive dedup, chronology validation, enriched summary (event_type_counts, services_seen, rooms_visited, patient_update_count, last_unit/room/bed, los_days) |
 | 2026-02-24 | v1 — initial implementation   |
