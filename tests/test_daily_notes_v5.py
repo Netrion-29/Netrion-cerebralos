@@ -180,18 +180,27 @@ class TestRenderV5WithData(unittest.TestCase):
                 {"service": "Ortho", "first_ts": "2026-01-01 08:00", "note_count": 1, "authors": ["Dr. Smith"]},
             ],
         }
-        data["features"]["consultant_plan_items_v1"] = {
-            "item_count": 2,
-            "services_with_plan_items": ["Ortho"],
-            "items": [
-                {"item_text": "Continue weight bearing", "item_type": "activity", "service": "Ortho"},
-                {"item_text": "Follow-up in 2 weeks", "item_type": "follow-up", "service": "Ortho"},
+        data["features"]["consultant_plan_actionables_v1"] = {
+            "actionable_count": 2,
+            "services_with_actionables": ["Ortho"],
+            "category_counts": {"activity": 1, "follow_up": 1},
+            "source_rule_id": "consultant_actionables_from_plan_items",
+            "actionables": [
+                {"action_text": "Continue weight bearing", "category": "activity",
+                 "source_item_type": "activity", "service": "Ortho", "author_name": "Dr. Smith"},
+                {"action_text": "Follow-up in 2 weeks", "category": "follow_up",
+                 "source_item_type": "follow-up", "service": "Ortho", "author_name": "Dr. Smith"},
             ],
+            "warnings": [],
+            "notes": [],
         }
         result = render_v5(data)
         self.assertIn("Ortho", result)
         self.assertIn("Continue weight bearing", result)
         self.assertIn("Follow-up in 2 weeks", result)
+        self.assertIn("Actionable Plan Items: 2", result)
+        self.assertIn("Activity / Mobility:", result)
+        self.assertIn("Follow-Up:", result)
 
     def test_procedure_events(self):
         data = _minimal_features()
@@ -367,7 +376,7 @@ class TestRenderV5WithData(unittest.TestCase):
         self.assertIn("Urethral Catheter: 2 events", result)
 
     def test_consultant_plan_dedup(self):
-        """Duplicate plan items within a service should be suppressed."""
+        """Duplicate plan items within a service should be suppressed (fallback path)."""
         data = _minimal_features()
         data["features"]["consultant_events_v1"] = {
             "consultant_present": True,
@@ -377,6 +386,7 @@ class TestRenderV5WithData(unittest.TestCase):
                  "note_count": 1, "authors": ["Dr. Smith"]},
             ],
         }
+        # No actionables → fallback to plan_items_v1
         data["features"]["consultant_plan_items_v1"] = {
             "item_count": 3,
             "services_with_plan_items": ["Ortho"],
@@ -399,7 +409,7 @@ class TestRenderV5WithData(unittest.TestCase):
         self.assertEqual(result.count("Continue weight bearing"), 1)
 
     def test_consultant_plan_author_shown(self):
-        """Plan items should show author name."""
+        """Actionable items should show author name."""
         data = _minimal_features()
         data["features"]["consultant_events_v1"] = {
             "consultant_present": True,
@@ -409,19 +419,24 @@ class TestRenderV5WithData(unittest.TestCase):
                  "note_count": 1, "authors": []},
             ],
         }
-        data["features"]["consultant_plan_items_v1"] = {
-            "item_count": 1,
-            "services_with_plan_items": ["Neurosurgery"],
-            "items": [
-                {"item_text": "Repeat CT head in 6 hours", "item_type": "imaging",
-                 "service": "Neurosurgery", "author_name": "Dr. Patel"},
+        data["features"]["consultant_plan_actionables_v1"] = {
+            "actionable_count": 1,
+            "services_with_actionables": ["Neurosurgery"],
+            "category_counts": {"imaging": 1},
+            "source_rule_id": "consultant_actionables_from_plan_items",
+            "actionables": [
+                {"action_text": "Repeat CT head in 6 hours", "category": "imaging",
+                 "source_item_type": "imaging", "service": "Neurosurgery",
+                 "author_name": "Dr. Patel"},
             ],
+            "warnings": [],
+            "notes": [],
         }
         result = render_v5(data)
         self.assertIn("[Dr. Patel]", result)
 
     def test_consultant_plan_long_item_truncation(self):
-        """Very long plan items should be truncated deterministically."""
+        """Very long actionable items should be truncated deterministically."""
         data = _minimal_features()
         long_text = "A" * 200
         data["features"]["consultant_events_v1"] = {
@@ -432,13 +447,18 @@ class TestRenderV5WithData(unittest.TestCase):
                  "note_count": 1, "authors": []},
             ],
         }
-        data["features"]["consultant_plan_items_v1"] = {
-            "item_count": 1,
-            "services_with_plan_items": ["Internal Medicine"],
-            "items": [
-                {"item_text": long_text, "item_type": "recommendation",
-                 "service": "Internal Medicine"},
+        data["features"]["consultant_plan_actionables_v1"] = {
+            "actionable_count": 1,
+            "services_with_actionables": ["Internal Medicine"],
+            "category_counts": {"recommendation": 1},
+            "source_rule_id": "consultant_actionables_from_plan_items",
+            "actionables": [
+                {"action_text": long_text, "category": "recommendation",
+                 "source_item_type": "recommendation",
+                 "service": "Internal Medicine", "author_name": ""},
             ],
+            "warnings": [],
+            "notes": [],
         }
         result = render_v5(data)
         self.assertIn("...", result)
@@ -529,6 +549,214 @@ class TestRenderV5WithData(unittest.TestCase):
         self.assertIn("Rib Fractures", result)
 
 
+class TestRenderV5ConsultantActionables(unittest.TestCase):
+    """Tests for consultant summary with actionables-based rendering."""
+
+    def test_actionables_category_grouping(self):
+        """Actionables should be grouped by service then category."""
+        data = _minimal_features()
+        data["features"]["consultant_events_v1"] = {
+            "consultant_present": True,
+            "consultant_services_count": 2,
+            "consultant_services": [
+                {"service": "Orthopedics", "first_ts": "2026-01-01 08:00",
+                 "note_count": 1, "authors": ["Dr. Smith"]},
+                {"service": "Neurosurgery", "first_ts": "2026-01-01 09:00",
+                 "note_count": 1, "authors": ["Dr. Patel"]},
+            ],
+        }
+        data["features"]["consultant_plan_actionables_v1"] = {
+            "actionable_count": 4,
+            "services_with_actionables": ["Neurosurgery", "Orthopedics"],
+            "category_counts": {"activity": 1, "imaging": 2, "discharge": 1},
+            "source_rule_id": "consultant_actionables_from_plan_items",
+            "actionables": [
+                {"action_text": "NWB on RUE", "category": "activity",
+                 "source_item_type": "activity", "service": "Orthopedics",
+                 "author_name": "Dr. Smith"},
+                {"action_text": "Repeat CT head 6h", "category": "imaging",
+                 "source_item_type": "imaging", "service": "Neurosurgery",
+                 "author_name": "Dr. Patel"},
+                {"action_text": "Repeat MRI spine", "category": "imaging",
+                 "source_item_type": "imaging", "service": "Neurosurgery",
+                 "author_name": "Dr. Patel"},
+                {"action_text": "Ok to d/c from NSG", "category": "discharge",
+                 "source_item_type": "discharge", "service": "Neurosurgery",
+                 "author_name": "Dr. Patel"},
+            ],
+            "warnings": [],
+            "notes": [],
+        }
+        result = render_v5(data)
+        # Category labels should appear
+        self.assertIn("Imaging:", result)
+        self.assertIn("Activity / Mobility:", result)
+        self.assertIn("Discharge:", result)
+        # Category summary line
+        self.assertIn("Categories:", result)
+        # Actionable count
+        self.assertIn("Actionable Plan Items: 4", result)
+        # Service grouping
+        self.assertIn("[Neurosurgery]", result)
+        self.assertIn("[Orthopedics]", result)
+
+    def test_actionables_category_display_order(self):
+        """Categories should render in protocol-meaningful order."""
+        data = _minimal_features()
+        data["features"]["consultant_events_v1"] = {
+            "consultant_present": True,
+            "consultant_services_count": 1,
+            "consultant_services": [
+                {"service": "IM", "first_ts": "2026-01-01", "note_count": 1, "authors": []},
+            ],
+        }
+        data["features"]["consultant_plan_actionables_v1"] = {
+            "actionable_count": 3,
+            "services_with_actionables": ["IM"],
+            "category_counts": {"discharge": 1, "imaging": 1, "medication": 1},
+            "source_rule_id": "consultant_actionables_from_plan_items",
+            "actionables": [
+                {"action_text": "Ok to d/c", "category": "discharge",
+                 "source_item_type": "discharge", "service": "IM", "author_name": ""},
+                {"action_text": "CT head", "category": "imaging",
+                 "source_item_type": "imaging", "service": "IM", "author_name": ""},
+                {"action_text": "Start abx", "category": "medication",
+                 "source_item_type": "medication", "service": "IM", "author_name": ""},
+            ],
+            "warnings": [],
+            "notes": [],
+        }
+        result = render_v5(data)
+        # Imaging should appear before Medication, which should appear before Discharge
+        img_pos = result.index("Imaging:")
+        med_pos = result.index("Medication:")
+        dis_pos = result.index("Discharge:")
+        self.assertLess(img_pos, med_pos)
+        self.assertLess(med_pos, dis_pos)
+
+    def test_fallback_to_plan_items_when_no_actionables(self):
+        """When consultant_plan_actionables_v1 is absent, fall back to plan_items_v1."""
+        data = _minimal_features()
+        data["features"]["consultant_events_v1"] = {
+            "consultant_present": True,
+            "consultant_services_count": 1,
+            "consultant_services": [
+                {"service": "Ortho", "first_ts": "2026-01-01", "note_count": 1, "authors": []},
+            ],
+        }
+        # No actionables feature — only plan_items
+        data["features"]["consultant_plan_items_v1"] = {
+            "item_count": 1,
+            "services_with_plan_items": ["Ortho"],
+            "items": [
+                {"item_text": "WBAT on LLE", "item_type": "activity",
+                 "service": "Ortho", "author_name": "Dr. Smith"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("Plan Items: 1", result)
+        self.assertIn("WBAT on LLE", result)
+        # Should NOT show "Actionable Plan Items"
+        self.assertNotIn("Actionable Plan Items", result)
+
+    def test_fallback_when_actionables_zero(self):
+        """When actionable_count is 0 but plan_items exist, use fallback."""
+        data = _minimal_features()
+        data["features"]["consultant_events_v1"] = {
+            "consultant_present": True,
+            "consultant_services_count": 1,
+            "consultant_services": [
+                {"service": "Ortho", "first_ts": "2026-01-01", "note_count": 1, "authors": []},
+            ],
+        }
+        data["features"]["consultant_plan_actionables_v1"] = {
+            "actionable_count": 0,
+            "services_with_actionables": [],
+            "category_counts": {},
+            "source_rule_id": "no_actionables_extracted",
+            "actionables": [],
+            "warnings": [],
+            "notes": [],
+        }
+        data["features"]["consultant_plan_items_v1"] = {
+            "item_count": 1,
+            "services_with_plan_items": ["Ortho"],
+            "items": [
+                {"item_text": "WBAT on LLE", "item_type": "activity",
+                 "service": "Ortho", "author_name": "Dr. Smith"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("Plan Items: 1", result)
+        self.assertNotIn("Actionable Plan Items", result)
+
+    def test_no_consultant_data_shows_dna(self):
+        """No consultant features → shows 'No consultant services documented'."""
+        data = _minimal_features()
+        result = render_v5(data)
+        self.assertIn("CONSULTANT SUMMARY", result)
+        self.assertIn("No consultant services documented", result)
+
+    def test_multiple_categories_per_service(self):
+        """Multiple categories under one service should each have a heading."""
+        data = _minimal_features()
+        data["features"]["consultant_events_v1"] = {
+            "consultant_present": True,
+            "consultant_services_count": 1,
+            "consultant_services": [
+                {"service": "IM", "first_ts": "2026-01-01", "note_count": 1, "authors": []},
+            ],
+        }
+        data["features"]["consultant_plan_actionables_v1"] = {
+            "actionable_count": 3,
+            "services_with_actionables": ["IM"],
+            "category_counts": {"medication": 2, "monitoring_labs": 1},
+            "source_rule_id": "consultant_actionables_from_plan_items",
+            "actionables": [
+                {"action_text": "Start Nimodipine", "category": "medication",
+                 "source_item_type": "medication", "service": "IM", "author_name": "Dr. A"},
+                {"action_text": "Resume Wellbutrin", "category": "medication",
+                 "source_item_type": "medication", "service": "IM", "author_name": "Dr. A"},
+                {"action_text": "Labs: A1c, TSH", "category": "monitoring_labs",
+                 "source_item_type": "recommendation", "service": "IM", "author_name": "Dr. A"},
+            ],
+            "warnings": [],
+            "notes": [],
+        }
+        result = render_v5(data)
+        self.assertIn("Medication:", result)
+        self.assertIn("Monitoring / Labs:", result)
+        self.assertIn("[IM] (3 actionable(s)):", result)
+
+    def test_actionables_determinism(self):
+        """Actionable rendering must be deterministic."""
+        data = _minimal_features()
+        data["features"]["consultant_events_v1"] = {
+            "consultant_present": True,
+            "consultant_services_count": 1,
+            "consultant_services": [
+                {"service": "Ortho", "first_ts": "2026-01-01", "note_count": 1, "authors": []},
+            ],
+        }
+        data["features"]["consultant_plan_actionables_v1"] = {
+            "actionable_count": 2,
+            "services_with_actionables": ["Ortho"],
+            "category_counts": {"activity": 1, "imaging": 1},
+            "source_rule_id": "consultant_actionables_from_plan_items",
+            "actionables": [
+                {"action_text": "NWB on RUE", "category": "activity",
+                 "source_item_type": "activity", "service": "Ortho", "author_name": ""},
+                {"action_text": "Repeat XR", "category": "imaging",
+                 "source_item_type": "imaging", "service": "Ortho", "author_name": ""},
+            ],
+            "warnings": [],
+            "notes": [],
+        }
+        r1 = render_v5(data)
+        r2 = render_v5(data)
+        self.assertEqual(r1, r2)
+
+
 class TestRenderV5RealData(unittest.TestCase):
     """Integration tests against real patient data files (skipped if unavailable)."""
 
@@ -559,8 +787,9 @@ class TestRenderV5RealData(unittest.TestCase):
         self._assert_v5_structure(text, "Roscella_Weatherly")
         # Should have movement data
         self.assertIn("ADMISSION / MOVEMENT SUMMARY", text)
-        # Should have consultant data
+        # Should have consultant data with actionables
         self.assertIn("CONSULTANT SUMMARY", text)
+        self.assertIn("Actionable Plan Items:", text)
         # Should have urine output (flowsheet source)
         self.assertIn("URINE OUTPUT SUMMARY", text)
 
@@ -572,8 +801,9 @@ class TestRenderV5RealData(unittest.TestCase):
         self.assertIn("LDA / DEVICE LIFECYCLE SUMMARY", text)
         # Should have urine output (LDA + flowsheet)
         self.assertIn("URINE OUTPUT SUMMARY", text)
-        # Should have consultant data
+        # Should have consultant data with actionables
         self.assertIn("CONSULTANT SUMMARY", text)
+        self.assertIn("Actionable Plan Items:", text)
 
     def test_ronald_bittner(self):
         features, days = self._load_patient("Ronald_Bittner")
