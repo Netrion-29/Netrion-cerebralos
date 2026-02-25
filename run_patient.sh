@@ -49,6 +49,12 @@ python3 cerebralos/reporting/render_trauma_daily_notes_v4.py \
   --days "outputs/timeline/$SLUG/patient_days_v1.json" \
   --out "outputs/reporting/$SLUG/TRAUMA_DAILY_NOTES_v4.txt"
 
+# Render v5 (feature-layer clinical narrative — additive, does not replace v3/v4)
+python3 cerebralos/reporting/render_trauma_daily_notes_v5.py \
+  --features "outputs/features/$SLUG/patient_features_v1.json" \
+  --days "outputs/timeline/$SLUG/patient_days_v1.json" \
+  --out "outputs/reporting/$SLUG/TRAUMA_DAILY_NOTES_v5.txt"
+
 echo "---- sanity checks ----"
 echo -n "noise(ADS/OMNICELL): "
 grep -ciE "ADS Dispense|OMNICELL" "outputs/reporting/$SLUG/TRAUMA_DAILY_NOTES_v3.txt" || true
