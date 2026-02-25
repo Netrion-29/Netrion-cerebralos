@@ -176,11 +176,16 @@ def _render_patient_summary(feats: Dict[str, Any]) -> List[str]:
 
     # FAST exam
     fast = feats.get("fast_exam_v1", {})
-    fast_result = fast.get("fast_result", _DNA)
+    fast_result = fast.get("fast_result")
     fast_ts = fast.get("fast_ts")
     if fast.get("fast_performed"):
         ts_str = f" at {fast_ts}" if fast_ts else ""
-        out.append(f"  FAST:             {fast_result}{ts_str}")
+        # When FAST was performed but result is null/None/DNA, say so clearly
+        if fast_result and fast_result != _DNA and str(fast_result) != "None":
+            out.append(f"  FAST:             {fast_result}{ts_str}")
+        else:
+            performed_str = f"Performed{ts_str} — result not documented"
+            out.append(f"  FAST:             {performed_str}")
     elif fast:
         out.append(f"  FAST:             Not documented")
     else:
@@ -213,7 +218,7 @@ def _render_patient_summary(feats: Dict[str, Any]) -> List[str]:
     sbirt_present = sbirt.get("sbirt_screening_present")
     if sbirt_present:
         instruments = sbirt.get("instruments_detected", [])
-        inst_str = ", ".join(instruments) if instruments else "none identified"
+        inst_str = ", ".join(instruments) if instruments else "instrument type not documented"
         out.append(f"  SBIRT Screening:  Present (instruments: {inst_str})")
         # AUDIT-C score
         audit_c = sbirt.get("audit_c", {})
@@ -462,7 +467,10 @@ def _render_procedure_summary(feats: Dict[str, Any]) -> List[str]:
         out.append("  Procedure / Operative Events:")
         for i, e in enumerate(events[:_MAX_PROCEDURE_EVENTS]):
             cat = e.get("category", "?")
-            label = e.get("label", "?")
+            label = e.get("label") or ""
+            # Suppress literal "None" string from upstream extraction
+            if not label or label == "None":
+                label = "(description not documented)"
             ts = e.get("ts", "?")
             out.append(f"    {i+1:2d}. [{cat}] {label}  ({ts})")
         if len(events) > _MAX_PROCEDURE_EVENTS:
@@ -550,7 +558,9 @@ def _render_lda_summary(feats: Dict[str, Any]) -> List[str]:
             duration = dev.get("duration_text", "")
             status = "active" if removed is None else f"removed {removed}"
             dur_str = f"  ({duration})" if duration else ""
-            out.append(f"    - {dtype}: placed {placed}, {status}{dur_str}")
+            # Suppress "placed DATA NOT AVAILABLE" clutter
+            placed_str = f"placed {placed}" if placed and placed != _DNA else "placement time unknown"
+            out.append(f"    - {dtype}: {placed_str}, {status}{dur_str}")
         if len(devices) > _MAX_LDA_DEVICES:
             out.append(f"    ... +{len(devices) - _MAX_LDA_DEVICES} more (truncated)")
 
@@ -1039,16 +1049,21 @@ def _render_incentive_spirometry(feats: Dict[str, Any]) -> List[str]:
     out.append(f"  Mention Count:    {isp.get('mention_count', 0)}")
     out.append(f"  Measurement Count:{isp.get('measurement_count', 0)}")
 
-    # Show measurements if present
+    # Show measurements if present (suppress rows with no extracted values)
     measurements = isp.get("measurements", [])
     if measurements:
-        out.append("  Measurements:")
-        for m in measurements[:10]:
+        rendered_count = 0
+        measure_lines: List[str] = []
+        suppressed = 0
+        for m in measurements:
             ts = m.get("ts", "?")
             avg = m.get("avg_volume_cc")
             largest = m.get("largest_volume_cc")
             goal = m.get("goal_cc")
-            effort = m.get("patient_effort", "")
+            effort = m.get("patient_effort")
+            # Suppress literal "None" effort string from upstream
+            if effort and str(effort) == "None":
+                effort = None
             vol_str = f"avg={avg}cc" if avg else ""
             if largest:
                 vol_str += f" max={largest}cc"
@@ -1056,9 +1071,19 @@ def _render_incentive_spirometry(feats: Dict[str, Any]) -> List[str]:
                 vol_str += f" goal={goal}cc"
             if effort:
                 vol_str += f" effort={effort}"
-            out.append(f"    {ts}: {vol_str}")
-        if len(measurements) > 10:
-            out.append(f"    ... +{len(measurements) - 10} more")
+            if not vol_str.strip():
+                suppressed += 1
+                continue  # Skip rows with no extracted values
+            if rendered_count < 10:
+                measure_lines.append(f"    {ts}: {vol_str}")
+            rendered_count += 1
+        if measure_lines:
+            out.append("  Measurements:")
+            out.extend(measure_lines)
+            if rendered_count > 10:
+                out.append(f"    ... +{rendered_count - 10} more")
+        if suppressed:
+            out.append(f"  ({suppressed} mention-only entries with no measured values suppressed)")
 
     # Goals
     goals = isp.get("goals", [])
@@ -1089,11 +1114,12 @@ def _render_note_sections(feats: Dict[str, Any]) -> List[str]:
             txt = sec.get("text", "")
             lines = txt.strip().split("\n") if txt else []
             out.append(f"  {section_key.upper()} ({len(lines)} lines):")
-            # Show first 15 lines, truncate
-            for ln in lines[:15]:
+            # Show first 50 lines — clinical sections need higher cap
+            _MAX_NOTE_SECTION_LINES = 50
+            for ln in lines[:_MAX_NOTE_SECTION_LINES]:
                 out.append(f"    {ln.rstrip()}")
-            if len(lines) > 15:
-                out.append(f"    ... (+{len(lines) - 15} more lines)")
+            if len(lines) > _MAX_NOTE_SECTION_LINES:
+                out.append(f"    ... (+{len(lines) - _MAX_NOTE_SECTION_LINES} more lines)")
             out.append("")
 
     return out
@@ -1139,23 +1165,28 @@ def _render_vitals_trending(vitals: Dict[str, Any]) -> List[str]:
     return lines
 
 
-def _render_gcs(gcs: Dict[str, Any]) -> List[str]:
+def _render_gcs(gcs: Dict[str, Any], is_arrival_day: bool = True) -> List[str]:
     lines: List[str] = []
     if not gcs or not isinstance(gcs, dict):
         lines.append(f"  {_DNA}")
         return lines
 
     arrival = gcs.get("arrival_gcs", _DNA)
-    if arrival == _DNA or arrival is None:
+    # Only show Arrival GCS on arrival day or when a value is actually present
+    has_arrival_value = (arrival is not None and arrival != _DNA
+                         and not (isinstance(arrival, dict) and arrival.get("value") in (None, _DNA)))
+    if has_arrival_value:
+        if isinstance(arrival, dict):
+            val = arrival.get("value", _DNA)
+            src = arrival.get("source", "")
+            dt = arrival.get("dt", "")
+            intub = " (T)" if arrival.get("intubated") else ""
+            lines.append(f"  Arrival GCS: {val}{intub}  [{src}] {dt}")
+        else:
+            lines.append(f"  Arrival GCS: {arrival}")
+    elif is_arrival_day:
         lines.append(f"  Arrival GCS: {_DNA}")
-    elif isinstance(arrival, dict):
-        val = arrival.get("value", _DNA)
-        src = arrival.get("source", "")
-        dt = arrival.get("dt", "")
-        intub = " (T)" if arrival.get("intubated") else ""
-        lines.append(f"  Arrival GCS: {val}{intub}  [{src}] {dt}")
-    else:
-        lines.append(f"  Arrival GCS: {arrival}")
+    # else: non-arrival day with no value → suppress field entirely
 
     best = gcs.get("best_gcs", _DNA)
     if best == _DNA or best is None:
@@ -1327,9 +1358,10 @@ def render_v5(
         out.extend(_render_vitals_trending(day.get("vitals", {})))
         out.append("")
 
-        # GCS
+        # GCS — suppress Arrival GCS field on non-arrival days
         out.append("GCS:")
-        out.extend(_render_gcs(day.get("gcs_daily", {})))
+        is_arrival_day = (dk == day_keys[0]) if day_keys else True
+        out.extend(_render_gcs(day.get("gcs_daily", {}), is_arrival_day=is_arrival_day))
         out.append("")
 
         # Labs Panel Lite
