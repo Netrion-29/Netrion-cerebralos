@@ -1177,6 +1177,7 @@ def _render_note_sections(feats: Dict[str, Any]) -> List[str]:
 
 
 # ════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════
 # PER-DAY: Trauma Daily Plan (from trauma progress notes)
 # ════════════════════════════════════════════════════════════════════
 
@@ -1219,6 +1220,49 @@ def _render_trauma_daily_plan(feats: Dict[str, Any], day_iso: str) -> List[str]:
 
         out.append("")
 
+    return out
+
+
+# ════════════════════════════════════════════════════════════════════
+# PER-DAY: Consultant Day Plans (from consultant notes)
+# ════════════════════════════════════════════════════════════════════
+
+# Deterministic cap for consultant plan items per service in per-day view
+_MAX_CONSULTANT_DAY_ITEMS_PER_SERVICE = 25
+
+
+def _render_consultant_day_plans(feats: Dict[str, Any], day_iso: str) -> List[str]:
+    """Render consultant plan items for a specific day, grouped by service."""
+    out: List[str] = []
+    cdp = feats.get("consultant_day_plans_by_day_v1", {})
+    if not cdp:
+        return out
+    days = cdp.get("days", {})
+    day_data = days.get(day_iso, {})
+    services = day_data.get("services", {})
+    if not services:
+        return out
+
+    out.append("Consultant Day Plans:")
+    for svc_name in sorted(services.keys()):
+        svc = services[svc_name]
+        items = svc.get("items", [])
+        if not items:
+            continue
+        authors = svc.get("authors", [])
+        author_str = ", ".join(authors) if authors else "Unknown"
+        # Use first item ts for time display
+        first_ts = items[0].get("ts", "")
+        time_str = first_ts.split("T")[1][:5] if "T" in str(first_ts) else str(first_ts)
+        out.append(f"  [{svc_name}] {time_str} — {author_str} ({len(items)} items)")
+        cap = _MAX_CONSULTANT_DAY_ITEMS_PER_SERVICE
+        for it in items[:cap]:
+            item_type = it.get("item_type", "")
+            item_text = it.get("item_text", "")
+            out.append(f"    - ({item_type}) {item_text}")
+        if len(items) > cap:
+            out.append(f"    ... (+{len(items) - cap} more items)")
+    out.append("")
     return out
 
 
@@ -1798,6 +1842,12 @@ def render_v5(
         tdp_lines = _render_trauma_daily_plan(feats, dk)
         if tdp_lines:
             out.extend(tdp_lines)
+            out.append("")
+
+        # Consultant Day Plans (from consultant notes)
+        cdp_lines = _render_consultant_day_plans(feats, dk)
+        if cdp_lines:
+            out.extend(cdp_lines)
             out.append("")
 
         # B7 Clinical Narrative (from timeline items, noise-filtered)
