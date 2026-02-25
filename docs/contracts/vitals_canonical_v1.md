@@ -101,12 +101,14 @@ Implemented in `select_arrival_vitals()` in
 
 ### 4.1 Hierarchy
 
-| Priority | Source       | Window                | Rule Label           |
-|----------|--------------|-----------------------|----------------------|
-| Tier 0   | TRAUMA_HP    | ≤ 30 min post-arrival | `tier_0_TRAUMA_HP`   |
-| Tier 1   | ED_NOTE      | ≤ 60 min post-arrival | `tier_1_ED_NOTE`     |
-| Tier 2   | FLOWSHEET    | ≤ 15 min post-arrival | `tier_2_FLOWSHEET`   |
-| Else     | —            | —                     | DATA NOT AVAILABLE   |
+| Priority | Source        | Window                 | Rule Label             |
+|----------|---------------|------------------------|------------------------|
+| Tier 0   | TRAUMA_HP     | ≤ 120 min post-arrival | `tier_0_TRAUMA_HP`     |
+| Tier 1   | ED_NOTE       | ≤ 60 min post-arrival  | `tier_1_ED_NOTE`       |
+| Tier 2   | FLOWSHEET     | ≤ 15 min post-arrival  | `tier_2_FLOWSHEET`     |
+| Tier 3   | NURSING_NOTE  | ≤ 120 min post-arrival | `tier_3_NURSING_NOTE`  |
+| Tier 4   | TABULAR       | ≤ 120 min post-arrival | `tier_4_TABULAR`       |
+| Else     | —             | —                      | DATA NOT AVAILABLE     |
 
 ### 4.2 Selection Rules
 
@@ -141,8 +143,9 @@ day's canonical records.
 
 ### 4.5 Test Coverage
 
-19 unit tests in `tests/test_arrival_vitals.py` covering all tiers,
-tie-breaking, edge cases, null handling, and output schema completeness.
+36 unit tests in `tests/test_arrival_vitals.py` covering all 5 tiers,
+tie-breaking, edge cases, null handling, cross-tier priority ordering,
+audit patient regression scenarios, and output schema completeness.
 
 ---
 
