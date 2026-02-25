@@ -830,5 +830,257 @@ class TestRenderV5RealData(unittest.TestCase):
         self.assertEqual(r1, r2, "v5 output must be deterministic")
 
 
+class TestRenderV5RefinementV3(unittest.TestCase):
+    """Tests for daily-notes-v5-refinement-v3 fixes.
+
+    Covers: FAST wording, SBIRT instrument wording, procedure None
+    descriptions, IS blank measurement suppression, GCS non-arrival
+    suppression, note section line cap increase, LDA DNA-timestamp.
+    """
+
+    # ── Fix #4: FAST "None at <ts>" → "Performed — result not documented" ──
+
+    def test_fast_none_result_with_timestamp(self):
+        """When FAST was performed but result is None, render clear message."""
+        data = _minimal_features()
+        data["features"]["fast_exam_v1"] = {
+            "fast_performed": True,
+            "fast_result": None,
+            "fast_ts": "2026-01-01T10:00:00",
+        }
+        result = render_v5(data)
+        self.assertIn("Performed at 2026-01-01T10:00:00", result)
+        self.assertIn("result not documented", result)
+        self.assertNotIn("None at", result)
+
+    def test_fast_string_none_result(self):
+        """The string 'None' from upstream should also trigger clear wording."""
+        data = _minimal_features()
+        data["features"]["fast_exam_v1"] = {
+            "fast_performed": True,
+            "fast_result": "None",
+            "fast_ts": "2026-01-01T10:00:00",
+        }
+        result = render_v5(data)
+        self.assertIn("result not documented", result)
+        self.assertNotIn("  FAST:             None at", result)
+
+    def test_fast_valid_result_unchanged(self):
+        """FAST with a real result should render as before."""
+        data = _minimal_features()
+        data["features"]["fast_exam_v1"] = {
+            "fast_performed": True,
+            "fast_result": "Negative",
+            "fast_ts": "2026-01-01T10:00:00",
+        }
+        result = render_v5(data)
+        self.assertIn("FAST:             Negative at 2026-01-01T10:00:00", result)
+
+    # ── Fix #6: SBIRT "none identified" → "instrument type not documented" ──
+
+    def test_sbirt_no_instruments_wording(self):
+        """SBIRT present with empty instruments should say 'instrument type not documented'."""
+        data = _minimal_features()
+        data["features"]["sbirt_screening_v1"] = {
+            "sbirt_screening_present": True,
+            "instruments_detected": [],
+        }
+        result = render_v5(data)
+        self.assertIn("instrument type not documented", result)
+        self.assertNotIn("none identified", result)
+
+    def test_sbirt_with_instruments_unchanged(self):
+        """SBIRT with instruments should render them normally."""
+        data = _minimal_features()
+        data["features"]["sbirt_screening_v1"] = {
+            "sbirt_screening_present": True,
+            "instruments_detected": ["audit_c", "sbirt_flowsheet"],
+        }
+        result = render_v5(data)
+        self.assertIn("audit_c, sbirt_flowsheet", result)
+
+    # ── Fix #2: Procedure "None" description ──
+
+    def test_procedure_none_label_suppressed(self):
+        """Procedure events with 'None' label should render clear placeholder."""
+        data = _minimal_features()
+        data["features"]["procedure_operatives_v1"] = {
+            "procedure_event_count": 1,
+            "operative_event_count": 0,
+            "anesthesia_event_count": 0,
+            "categories_present": ["anesthesia"],
+            "events": [
+                {"category": "anesthesia", "label": "None", "ts": "2026-01-01 10:00"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("(description not documented)", result)
+        self.assertNotIn("[anesthesia] None", result)
+
+    def test_procedure_empty_label_suppressed(self):
+        """Procedure events with empty label should render placeholder."""
+        data = _minimal_features()
+        data["features"]["procedure_operatives_v1"] = {
+            "procedure_event_count": 1,
+            "operative_event_count": 0,
+            "anesthesia_event_count": 0,
+            "categories_present": ["bedside_procedure"],
+            "events": [
+                {"category": "bedside_procedure", "label": "", "ts": "2026-01-01 10:00"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("(description not documented)", result)
+
+    def test_procedure_valid_label_unchanged(self):
+        """Procedure with a valid label should render normally."""
+        data = _minimal_features()
+        data["features"]["procedure_operatives_v1"] = {
+            "procedure_event_count": 1,
+            "operative_event_count": 0,
+            "anesthesia_event_count": 0,
+            "categories_present": ["bedside_procedure"],
+            "events": [
+                {"category": "bedside_procedure", "label": "Chest tube insertion", "ts": "2026-01-01 10:00"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("Chest tube insertion", result)
+        self.assertNotIn("description not documented", result)
+
+    # ── Fix #3: IS blank measurement suppression ──
+
+    def test_is_blank_measurements_suppressed(self):
+        """IS measurement rows with no values should be suppressed."""
+        data = _minimal_features()
+        data["features"]["incentive_spirometry_v1"] = {
+            "is_mentioned": "yes",
+            "is_value_present": "yes",
+            "mention_count": 5,
+            "measurement_count": 3,
+            "measurements": [
+                {"ts": "2026-01-01 08:00", "avg_volume_cc": None, "goal_cc": None,
+                 "largest_volume_cc": None, "patient_effort": None},
+                {"ts": "2026-01-01 12:00", "avg_volume_cc": 1500, "goal_cc": 2000},
+                {"ts": "2026-01-01 16:00"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("1500", result)
+        self.assertIn("suppressed", result)
+        # The blank rows (ts only) should NOT appear as bare timestamps
+        self.assertNotIn("2026-01-01 08:00: \n", result)
+        self.assertNotIn("2026-01-01 16:00: \n", result)
+
+    def test_is_effort_none_string_suppressed(self):
+        """IS measurement 'effort=None' string should not render."""
+        data = _minimal_features()
+        data["features"]["incentive_spirometry_v1"] = {
+            "is_mentioned": "yes",
+            "is_value_present": "yes",
+            "mention_count": 2,
+            "measurement_count": 1,
+            "measurements": [
+                {"ts": "2026-01-01 08:00", "avg_volume_cc": 1000,
+                 "largest_volume_cc": 1300, "patient_effort": "None"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("avg=1000cc max=1300cc", result)
+        self.assertNotIn("effort=None", result)
+
+    # ── Fix #5: Arrival GCS on non-arrival days ──
+
+    def test_gcs_arrival_day_shows_arrival_gcs(self):
+        """Arrival day should still show Arrival GCS even if DNA."""
+        data = _minimal_features()
+        data["days"] = {
+            "2026-01-01": {
+                "vitals": {},
+                "gcs_daily": {"arrival_gcs": _DNA, "best_gcs": 15, "worst_gcs": 15},
+                "labs_panel_daily": {},
+                "device_day_counts": {},
+            },
+        }
+        result = render_v5(data)
+        self.assertIn("Arrival GCS: DATA NOT AVAILABLE", result)
+
+    def test_gcs_non_arrival_day_suppresses_dna(self):
+        """Non-arrival days should NOT show 'Arrival GCS: DATA NOT AVAILABLE'."""
+        data = _minimal_features()
+        data["days"] = {
+            "2026-01-01": {
+                "vitals": {},
+                "gcs_daily": {"arrival_gcs": {"value": 15, "source": "HP", "dt": "2026-01-01T02:00:00"},
+                              "best_gcs": 15, "worst_gcs": 15},
+                "labs_panel_daily": {},
+                "device_day_counts": {},
+            },
+            "2026-01-02": {
+                "vitals": {},
+                "gcs_daily": {"arrival_gcs": _DNA, "best_gcs": 14, "worst_gcs": 14},
+                "labs_panel_daily": {},
+                "device_day_counts": {},
+            },
+        }
+        result = render_v5(data)
+        # Day 1 should show arrival GCS
+        self.assertIn("Arrival GCS: 15", result)
+        # Count of "Arrival GCS: DATA NOT AVAILABLE" should be 0 in per-day sections
+        # (the patient summary may show it from neuro trigger but that's separate)
+        per_day_start = result.index("PER-DAY CLINICAL STATUS")
+        per_day_text = result[per_day_start:]
+        self.assertNotIn("Arrival GCS: DATA NOT AVAILABLE", per_day_text)
+
+    # ── Fix #1: Note section line cap increased ──
+
+    def test_note_section_shows_more_lines(self):
+        """Note sections should show up to 50 lines (not 15)."""
+        data = _minimal_features()
+        # Create a 30-line impression
+        impression_text = "\n".join(f"Line {i+1} of impression" for i in range(30))
+        data["features"]["note_sections_v1"] = {
+            "sections_present": True,
+            "impression": {"present": True, "text": impression_text},
+        }
+        result = render_v5(data)
+        # Line 20 should now be visible (was truncated at 15 before)
+        self.assertIn("Line 20 of impression", result)
+        self.assertIn("Line 30 of impression", result)
+        # Should not show truncation notice for 30 lines
+        self.assertNotIn("more lines)", result)
+
+    def test_note_section_truncates_at_50(self):
+        """Note sections with >50 lines should still truncate."""
+        data = _minimal_features()
+        impression_text = "\n".join(f"Line {i+1}" for i in range(60))
+        data["features"]["note_sections_v1"] = {
+            "sections_present": True,
+            "impression": {"present": True, "text": impression_text},
+        }
+        result = render_v5(data)
+        self.assertIn("Line 50", result)
+        self.assertIn("(+10 more lines)", result)
+        self.assertNotIn("Line 51", result)
+
+    # ── Fix #7: LDA DNA-timestamp polish ──
+
+    def test_lda_dna_placed_ts_polished(self):
+        """LDA devices with DNA placed_ts should render 'placement time unknown'."""
+        data = _minimal_features()
+        data["features"]["lda_events_v1"] = {
+            "lda_device_count": 1,
+            "active_devices_count": 1,
+            "categories_present": ["PIV"],
+            "devices": [
+                {"device_type": "Peripheral IV", "category": "PIV",
+                 "placed_ts": _DNA, "removed_ts": None},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("placement time unknown", result)
+        self.assertNotIn("placed DATA NOT AVAILABLE", result)
+
+
 if __name__ == "__main__":
     unittest.main()
