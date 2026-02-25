@@ -2,23 +2,31 @@
 """
 CerebralOS — Trauma Daily Plan By Day v1
 
-Extracts per-day plan text from trauma-team progress notes (Trauma Progress
-Note, Trauma Tertiary Survey Note) and organises it by calendar day.
+Extracts per-day plan text from trauma-team progress notes and organises
+it by calendar day.
 
 Strategy:
   1. Iterate timeline items chronologically across all days.
   2. Select items of type PHYSICIAN_NOTE whose text matches the
-     qualifying note-type header allowlist (Trauma Progress Note,
-     Trauma Tertiary Survey Note).
-  3. Within each qualifying note, locate the "Impression:" and "Plan:"
-     sections using deterministic regex anchors.
-  4. Extract the Impression + Plan text as structured data.
+     qualifying note-type header allowlist.
+  3. Within each qualifying note, locate the "Impression:" (or
+     "Assessment:") and "Plan:" sections using deterministic regex
+     anchors.
+  4. Extract the Impression/Assessment + Plan text as structured data.
   5. Organise results by day, with per-note entries preserving the
      author, timestamp, and raw plan lines.
 
 Qualifying note types (allowlist):
   - "Trauma Progress Note"
   - "Trauma Tertiary Survey Note"
+  - "Trauma Tertiary Note"
+  - "Trauma Tertiary Progress Note"
+  - "Trauma Overnight Progress Note"
+  - "Daily Progress Note" (only when from Evansville Surgical Associates)
+  - "ESA Brief Progress Note" (brief — may lack Impression/Plan)
+  - "ESA Brief Update" (brief — may lack Impression/Plan)
+  - "ESA Quick Update Note" (brief — may lack Impression/Plan)
+  - "ESA TRAUMA BRIEF NOTE" (brief — may lack Impression/Plan)
 
 Excluded (not in scope):
   - Consultant notes (separate feature: consultant_plan_items_v1)
@@ -32,7 +40,7 @@ Output schema:
           "<ISO-date>": {
               "notes": [
                   {
-                      "note_type": "Trauma Progress Note" | "Trauma Tertiary Survey Note",
+                      "note_type": "<qualifying header>",
                       "author": "<name, credential>",
                       "dt": "<ISO datetime>",
                       "source_id": "<item source_id>",
@@ -74,12 +82,32 @@ _DNA = "DATA NOT AVAILABLE"
 _QUALIFYING_NOTE_HEADERS = (
     "Trauma Progress Note",
     "Trauma Tertiary Survey Note",
+    "Trauma Tertiary Note",
+    "Trauma Tertiary Progress Note",
+    "Trauma Overnight Progress Note",
+    "Daily Progress Note",           # Only when ESA-gated (see _detect_note_type)
+    "ESA Brief Progress Note",
+    "ESA Brief Update",
+    "ESA Quick Update Note",
+    "ESA TRAUMA BRIEF NOTE",
 )
 
 # Regex to match a qualifying trauma note header in the note text.
-# Anchored to line start (after optional whitespace).
+# Anchored to line start (after optional whitespace).  The trailing
+# colon is optional ("Trauma Overnight Progress Note:" has one).
 _RE_QUALIFYING_HEADER = re.compile(
-    r"^\s*(?:Trauma\s+Progress\s+Note|Trauma\s+Tertiary\s+Survey\s+Note)\s*$",
+    r"^\s*(?:"
+    r"Trauma\s+Progress\s+Note"
+    r"|Trauma\s+Tertiary\s+Survey\s+Note"
+    r"|Trauma\s+Tertiary\s+Note"
+    r"|Trauma\s+Tertiary\s+Progress\s+Note"
+    r"|Trauma\s+Overnight\s+Progress\s+Note"
+    r"|Daily\s+Progress\s+Note"
+    r"|ESA\s+Brief\s+Progress\s+Note"
+    r"|ESA\s+Brief\s+Update"
+    r"|ESA\s+Quick\s+Update\s+Note"
+    r"|ESA\s+TRAUMA\s+BRIEF\s+NOTE"
+    r")\s*:?\s*$",
     re.IGNORECASE | re.MULTILINE,
 )
 
@@ -96,9 +124,17 @@ _RE_IMPRESSION_START = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 
-# Plan section start
+# Assessment section start: used by ESA "Daily Progress Note" format
+# which uses "Assessment:" instead of "Impression:"
+_RE_ASSESSMENT_START = re.compile(
+    r"^\s*Assessment\s*:\s*$|^\s*Assessment\s*:\s*\S",
+    re.IGNORECASE | re.MULTILINE,
+)
+
+# Plan section start — matches "Plan:" at line start, with or without
+# inline content (some ESA notes have "Plan:  Admit to 45/46" on same line)
 _RE_PLAN_START = re.compile(
-    r"^\s*Plan\s*:\s*$",
+    r"^\s*Plan\s*:",
     re.IGNORECASE | re.MULTILINE,
 )
 
@@ -145,15 +181,50 @@ def _make_raw_line_id(source_id: str, dt: str, preview: str) -> str:
 
 
 def _detect_note_type(text: str) -> Optional[str]:
-    """Return the qualifying note type header if found, else None."""
+    """Return the qualifying note type header if found, else None.
+
+    For "Daily Progress Note", requires ESA (Evansville Surgical Associates)
+    body text to avoid false-matching hospitalist notes.
+    """
     m = _RE_QUALIFYING_HEADER.search(text)
     if not m:
         return None
-    matched = m.group(0).strip()
-    # Normalize to canonical form
+    matched = m.group(0).strip().rstrip(":")
     lower = matched.lower()
-    if "tertiary" in lower:
+
+    # ── ESA brief note patterns ──
+    if lower.startswith("esa "):
+        # Normalise to canonical form
+        if "brief progress" in lower:
+            return "ESA Brief Progress Note"
+        if "brief update" in lower:
+            return "ESA Brief Update"
+        if "quick update" in lower:
+            return "ESA Quick Update Note"
+        if "trauma brief" in lower:
+            return "ESA TRAUMA BRIEF NOTE"
+        return matched  # fallback (shouldn't happen)
+
+    # ── Daily Progress Note: must be from ESA ──
+    if lower == "daily progress note":
+        # Gate: only match if the note body mentions ESA affiliation
+        if not re.search(
+            r"Evansville\s+Surgical\s+Assoc",
+            text[:600],
+            re.IGNORECASE,
+        ):
+            return None
+        return "Daily Progress Note"
+
+    # ── Trauma-prefixed headers ──
+    if "overnight" in lower:
+        return "Trauma Overnight Progress Note"
+    if "tertiary" in lower and "survey" in lower:
         return "Trauma Tertiary Survey Note"
+    if "tertiary" in lower and "progress" in lower:
+        return "Trauma Tertiary Progress Note"
+    if "tertiary" in lower:
+        return "Trauma Tertiary Note"
     return "Trauma Progress Note"
 
 
@@ -240,10 +311,16 @@ def _find_clinical_impression_and_plan(text: str) -> Tuple[int, int, int]:
                 break
 
     # Find the LAST Impression: before Plan:
+    # Fall back to Assessment: if no Impression: is found (ESA format)
     impression_start = plan_start  # default: no impression found
     last_impression_match = None
     for m in _RE_IMPRESSION_START.finditer(text[:plan_start]):
         last_impression_match = m
+
+    if not last_impression_match:
+        # Try Assessment: as fallback (ESA "Daily Progress Note" format)
+        for m in _RE_ASSESSMENT_START.finditer(text[:plan_start]):
+            last_impression_match = m
 
     if last_impression_match:
         # Get the start of the line containing "Impression:"
@@ -262,8 +339,10 @@ def _extract_impression(text: str) -> List[str]:
     # Get the text between impression header and plan header
     impression_text = text[imp_start:plan_start]
 
-    # Remove the "Impression:" header itself and extract content
+    # Remove the "Impression:" (or "Assessment:") header itself and extract content
     m = _RE_IMPRESSION_START.search(impression_text)
+    if not m:
+        m = _RE_ASSESSMENT_START.search(impression_text)
     if not m:
         return []
 

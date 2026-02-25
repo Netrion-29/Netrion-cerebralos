@@ -17,10 +17,27 @@ blocks can show the evolving trauma plan over the hospital stay.
 
 Only these note headers qualify for extraction:
 
-| Note Header                    | Item type        |
-|-------------------------------|------------------|
-| `Trauma Progress Note`        | `PHYSICIAN_NOTE` |
-| `Trauma Tertiary Survey Note` | `PHYSICIAN_NOTE` |
+| Note Header                        | Item type        | Section Format       | Gate            |
+|-----------------------------------|------------------|----------------------|-----------------|
+| `Trauma Progress Note`            | `PHYSICIAN_NOTE` | Impression + Plan    | —               |
+| `Trauma Tertiary Survey Note`     | `PHYSICIAN_NOTE` | Impression + Plan    | —               |
+| `Trauma Tertiary Note`            | `PHYSICIAN_NOTE` | Impression + Plan    | —               |
+| `Trauma Tertiary Progress Note`   | `PHYSICIAN_NOTE` | Impression + Plan    | —               |
+| `Trauma Overnight Progress Note`  | `PHYSICIAN_NOTE` | Narrative (no Plan)  | — (warn+skip)   |
+| `Daily Progress Note`             | `PHYSICIAN_NOTE` | Assessment + Plan    | ESA body text   |
+| `ESA Brief Progress Note`         | `PHYSICIAN_NOTE` | Brief (no Plan)      | — (warn+skip)   |
+| `ESA Brief Update`                | `PHYSICIAN_NOTE` | Brief (no Plan)      | — (warn+skip)   |
+| `ESA Quick Update Note`           | `PHYSICIAN_NOTE` | Brief (no Plan)      | — (warn+skip)   |
+| `ESA TRAUMA BRIEF NOTE`           | `PHYSICIAN_NOTE` | Brief (no Plan)      | — (warn+skip)   |
+
+Notes:
+- `Daily Progress Note` is only matched when the note body contains
+  "Evansville Surgical Associates" (ESA gate) to avoid false-matching
+  hospitalist notes.
+- Brief/narrative notes without a Plan: section emit a warning and are
+  skipped (fail-closed).  They are counted for audit visibility.
+- `Assessment:` is accepted as an alternate section label for
+  `Impression:` (used by ESA Daily Progress Note format).
 
 Excluded:
 - Consultant notes → separate feature (`consultant_plan_items_v1`)
@@ -32,12 +49,14 @@ Excluded:
 
 1. Iterate `patient_days_v1.json` days chronologically.
 2. For each `PHYSICIAN_NOTE` item, check for qualifying header.
-3. Skip radiology reads (heuristic: `Narrative & Impression` or
+3. For `Daily Progress Note`, verify ESA affiliation in body text.
+4. Skip radiology reads (heuristic: `Narrative & Impression` or
    `INDICATION` + `FINDINGS` without qualifying header).
-4. Extract `Impression:` section (bounded by `Plan:` start).
-5. Extract `Plan:` section (bounded by attestation/footer terminators).
-6. Parse plan lines as bulleted items (dash-prefixed).
-7. Record author, timestamp, and raw_line_id for traceability.
+5. Extract `Impression:` or `Assessment:` section (bounded by `Plan:` start).
+6. Extract `Plan:` section (bounded by attestation/footer terminators).
+   Plan may have inline content on the header line.
+7. Parse plan lines as bulleted items (dash-prefixed).
+8. Record author, timestamp, and raw_line_id for traceability.
 
 ## Output Schema
 

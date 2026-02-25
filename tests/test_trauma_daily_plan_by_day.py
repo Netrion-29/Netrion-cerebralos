@@ -169,6 +169,223 @@ Impression: Stable patient
 """
 
 
+# ── Sample notes for expanded header patterns ───────────────────────
+
+SAMPLE_TRAUMA_TERTIARY_NOTE = """Signed
+
+Trauma Tertiary Note
+Austin Mark Buettner, PA-C
+
+
+HPI: George Kraus is a 87 yo male with a PMH significant for CKD.
+
+SUBJECTIVE:
+No acute complaints
+
+PE:
+General: Elderly male in no acute distress
+Vitals: Blood pressure 138/72, pulse 76, SpO2 95%.
+
+Radiographs: No results found.
+
+Labs:
+Recent Labs
+WBC 8.2
+HGB 10.1
+
+Prophylaxis:
+Antibiotics: no
+GI prophylaxis: yes
+DVT prophylaxis: Mechanical yes, pharmacologic yes
+
+Impression: 87 y.o. male s/p fall with
+            - T12 compression fracture
+            - Rib fractures 9-11 on left
+
+Plan:
+- Floor status
+- IR consult for kyphoplasty
+- Pain control
+- PT/OT evaluation
+- Lovenox for DVT ppx
+- SW for dispo needs
+
+Austin Mark Buettner, PA-C
+
+I have seen and examined patient on the above stated date.
+
+Kali Kuhlenschmidt, MD
+
+Revision HistoryToggle Section Visibility
+"""
+
+SAMPLE_TRAUMA_TERTIARY_PROGRESS_NOTE = """Signed
+
+
+Trauma Tertiary Progress Note
+Jessica J Anderson, NP
+
+
+HPI: 55 y.o. female with a PMH significant for migraines.
+
+SUBJECTIVE:
+No new issues
+Awaiting US results
+
+PE:
+General: Well-developed female in no acute distress.
+Vitals: Blood pressure 106/64, pulse 80, SpO2 99%.
+
+Labs:
+Recent Labs
+WBC 5.0
+HGB 12.5
+
+Prophylaxis:
+Antibiotics: no
+GI prophylaxis: no
+DVT prophylaxis: Mechanical yes, pharmacologic no
+
+ Impression: 55 y.o. female s/p syncope with fall with
+            - Small left frontal SAH
+            - Possible nasal bone fracture
+
+Plan:
+- ENT consulted. Non-op. Follow up 1 week.
+- Hospitalist following. Syncope workup.
+- General diet
+- Lovenox for dvt ppx
+- PT/OT eval - cleared for home
+
+Jessica J Anderson, NP
+
+I have seen and examined patient on the above stated date.
+
+Roberto C Iglesias, MD
+
+MyChart now allows progress notes to be visible to patients.
+"""
+
+SAMPLE_TRAUMA_OVERNIGHT_PROGRESS_NOTE = """Signed
+
+Trauma Overnight Progress Note:
+
+Called by the RN who states that patient's pupils are unequal.
+I went to evaluate patient who is unresponsive.
+Dr. Field is my attending this evening.
+
+Sarah M Meehan, NP
+
+Cosigned by:\tField, Matthew S, MD at 12/22/25 0527
+Revision HistoryToggle Section Visibility
+"""
+
+SAMPLE_ESA_DAILY_PROGRESS_NOTE = """Signed
+
+Daily Progress Note
+
+Evansville Surgical Associates
+ 12/25/2025
+
+Chief Complaint:  When will i get out here
+
+Subjective:  No adverse events overnight
+
+Labs:
+Recent Labs
+WBC 5.7
+HGB 7.9
+
+Objective
+General Patient not in any distress
+
+Assessment:
+Active Hospital Problems
+Diagnosis
+MVC (motor vehicle collision), initial encounter
+
+Plan:  Admit to  45/46
+- Telemetry
+- General diet
+- Pain control as needed
+- Ambulate as tolerated
+- Hold lovenox due to hematoma
+Echocardiogram this a.m.
+
+Electronically signed by Derek M West, NP on 12/25/2025 at 6:20 AM.
+
+Kevin W McConnell, MD
+
+Revision HistoryToggle Section Visibility
+"""
+
+SAMPLE_ESA_DAILY_PROGRESS_NOTE_NON_ESA = """Signed
+
+Daily Progress Note
+
+Deaconess Care Group
+ 12/25/2025
+
+Chief Complaint: Follow up
+
+Subjective: No complaints
+
+Assessment:
+Stable
+
+Plan:
+- Continue current management
+
+John Smith, MD
+"""
+
+SAMPLE_ESA_BRIEF_PROGRESS_NOTE = """Signed
+
+ESA Brief Progress Note
+Attempted to see patient on morning rounds.  Patient has already in dialysis suite.  We will attempt to see patient later after returning from dialysis.
+
+Austin Mark Buettner, PA-C
+Cosigned by:\tMcConnell, Kevin W, MD at 12/24/25 1341
+Revision HistoryToggle Section Visibility
+"""
+
+SAMPLE_ESA_BRIEF_UPDATE = """Signed
+
+ESA Brief Update
+
+Spoke with GI re: PEG tube, will discuss with the family.
+
+Marisa Biehle, PA-C
+
+Cosigned by:\tIglesias, Roberto C, MD at 12/29/25 1200
+Revision HistoryToggle Section Visibility
+"""
+
+SAMPLE_ESA_QUICK_UPDATE = """Signed
+
+ESA Quick Update Note
+
+Anesthesia contacted for ESBs at 0900. Ok for transfer to floor today. Diet as tolerated. PT and OT evals.
+
+Lindsey Jamerson, PA-C
+Revision HistoryToggle Section Visibility
+"""
+
+SAMPLE_ESA_TRAUMA_BRIEF_NOTE = """Signed
+
+ESA TRAUMA BRIEF NOTE
+
+Spoke with hospitalist service, Dr. Haroon.  Patient is medical cardiac arrest, which then resulted an MVC.  He has no traumatic injuries.
+
+Hospitalist services agreed to assume care.  Trauma Service will sign off, please call with any questions or concerns.
+
+Joshua C Barajas, PA-C
+
+Cosigned by:\tField, Matthew S, MD at 12/18/25 2110
+Revision HistoryToggle Section Visibility
+"""
+
+
 # ═══════════════════════════════════════════════════════════════════
 # Extractor Unit Tests
 # ═══════════════════════════════════════════════════════════════════
@@ -270,6 +487,223 @@ class TestRawLineId(unittest.TestCase):
         id1 = _make_raw_line_id("61", "2026-01-03T06:56:00", "plan A")
         id2 = _make_raw_line_id("62", "2026-01-03T06:56:00", "plan A")
         self.assertNotEqual(id1, id2)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Expanded Header Unit Tests
+# ═══════════════════════════════════════════════════════════════════
+
+class TestDetectNoteTypeExpanded(unittest.TestCase):
+    """Tests for newly-added trauma note header patterns."""
+
+    def test_trauma_tertiary_note(self):
+        self.assertEqual(
+            _detect_note_type(SAMPLE_TRAUMA_TERTIARY_NOTE),
+            "Trauma Tertiary Note",
+        )
+
+    def test_trauma_tertiary_progress_note(self):
+        self.assertEqual(
+            _detect_note_type(SAMPLE_TRAUMA_TERTIARY_PROGRESS_NOTE),
+            "Trauma Tertiary Progress Note",
+        )
+
+    def test_trauma_overnight_progress_note(self):
+        self.assertEqual(
+            _detect_note_type(SAMPLE_TRAUMA_OVERNIGHT_PROGRESS_NOTE),
+            "Trauma Overnight Progress Note",
+        )
+
+    def test_daily_progress_note_esa(self):
+        self.assertEqual(
+            _detect_note_type(SAMPLE_ESA_DAILY_PROGRESS_NOTE),
+            "Daily Progress Note",
+        )
+
+    def test_daily_progress_note_non_esa_rejected(self):
+        """Daily Progress Note from non-ESA service should NOT qualify."""
+        self.assertIsNone(
+            _detect_note_type(SAMPLE_ESA_DAILY_PROGRESS_NOTE_NON_ESA),
+        )
+
+    def test_esa_brief_progress_note(self):
+        self.assertEqual(
+            _detect_note_type(SAMPLE_ESA_BRIEF_PROGRESS_NOTE),
+            "ESA Brief Progress Note",
+        )
+
+    def test_esa_brief_update(self):
+        self.assertEqual(
+            _detect_note_type(SAMPLE_ESA_BRIEF_UPDATE),
+            "ESA Brief Update",
+        )
+
+    def test_esa_quick_update_note(self):
+        self.assertEqual(
+            _detect_note_type(SAMPLE_ESA_QUICK_UPDATE),
+            "ESA Quick Update Note",
+        )
+
+    def test_esa_trauma_brief_note(self):
+        self.assertEqual(
+            _detect_note_type(SAMPLE_ESA_TRAUMA_BRIEF_NOTE),
+            "ESA TRAUMA BRIEF NOTE",
+        )
+
+
+class TestExtractImpressionExpanded(unittest.TestCase):
+    """Tests for impression/assessment extraction from expanded headers."""
+
+    def test_tertiary_note_impression(self):
+        lines = _extract_impression(SAMPLE_TRAUMA_TERTIARY_NOTE)
+        self.assertGreater(len(lines), 0)
+        combined = " ".join(lines)
+        self.assertIn("T12 compression fracture", combined)
+
+    def test_tertiary_progress_impression(self):
+        lines = _extract_impression(SAMPLE_TRAUMA_TERTIARY_PROGRESS_NOTE)
+        self.assertGreater(len(lines), 0)
+        combined = " ".join(lines)
+        self.assertIn("Small left frontal SAH", combined)
+
+    def test_esa_daily_assessment_as_impression(self):
+        """ESA Daily Progress Note uses Assessment: instead of Impression:."""
+        lines = _extract_impression(SAMPLE_ESA_DAILY_PROGRESS_NOTE)
+        self.assertGreater(len(lines), 0)
+        combined = " ".join(lines)
+        self.assertIn("MVC", combined)
+
+
+class TestExtractPlanExpanded(unittest.TestCase):
+    """Tests for plan extraction from expanded header patterns."""
+
+    def test_tertiary_note_plan(self):
+        lines = _extract_plan(SAMPLE_TRAUMA_TERTIARY_NOTE)
+        self.assertGreater(len(lines), 0)
+        combined = " ".join(lines)
+        self.assertIn("kyphoplasty", combined)
+        self.assertIn("Floor status", combined)
+
+    def test_tertiary_progress_plan(self):
+        lines = _extract_plan(SAMPLE_TRAUMA_TERTIARY_PROGRESS_NOTE)
+        self.assertGreater(len(lines), 0)
+        combined = " ".join(lines)
+        self.assertIn("ENT consulted", combined)
+        self.assertIn("Lovenox for dvt ppx", combined)
+
+    def test_tertiary_progress_plan_terminates_at_mychar(self):
+        lines = _extract_plan(SAMPLE_TRAUMA_TERTIARY_PROGRESS_NOTE)
+        combined = " ".join(lines)
+        self.assertNotIn("MyChart", combined)
+
+    def test_overnight_no_plan(self):
+        """Trauma Overnight Progress Note is narrative; no Plan: section."""
+        lines = _extract_plan(SAMPLE_TRAUMA_OVERNIGHT_PROGRESS_NOTE)
+        self.assertEqual(len(lines), 0)
+
+    def test_esa_daily_plan(self):
+        lines = _extract_plan(SAMPLE_ESA_DAILY_PROGRESS_NOTE)
+        self.assertGreater(len(lines), 0)
+        combined = " ".join(lines)
+        self.assertIn("Telemetry", combined)
+        self.assertIn("Pain control", combined)
+
+    def test_esa_brief_no_plan(self):
+        """ESA Brief Progress Note has no Plan: section."""
+        lines = _extract_plan(SAMPLE_ESA_BRIEF_PROGRESS_NOTE)
+        self.assertEqual(len(lines), 0)
+
+    def test_esa_brief_update_no_plan(self):
+        lines = _extract_plan(SAMPLE_ESA_BRIEF_UPDATE)
+        self.assertEqual(len(lines), 0)
+
+    def test_esa_quick_update_no_plan(self):
+        lines = _extract_plan(SAMPLE_ESA_QUICK_UPDATE)
+        self.assertEqual(len(lines), 0)
+
+    def test_esa_trauma_brief_no_plan(self):
+        lines = _extract_plan(SAMPLE_ESA_TRAUMA_BRIEF_NOTE)
+        self.assertEqual(len(lines), 0)
+
+
+class TestIntegrationExpandedHeaders(unittest.TestCase):
+    """Integration tests for expanded header extraction."""
+
+    def test_tertiary_note_full_extraction(self):
+        items = [_make_physician_note_item(SAMPLE_TRAUMA_TERTIARY_NOTE)]
+        days_data = _make_days_data({"2026-01-01": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 1)
+        self.assertEqual(result["source_rule_id"], "trauma_daily_plan_from_progress_notes")
+        note = result["days"]["2026-01-01"]["notes"][0]
+        self.assertEqual(note["note_type"], "Trauma Tertiary Note")
+        self.assertGreater(len(note["plan_lines"]), 0)
+        self.assertGreater(len(note["impression_lines"]), 0)
+
+    def test_tertiary_progress_note_full(self):
+        items = [_make_physician_note_item(SAMPLE_TRAUMA_TERTIARY_PROGRESS_NOTE)]
+        days_data = _make_days_data({"2026-01-02": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 1)
+        note = result["days"]["2026-01-02"]["notes"][0]
+        self.assertEqual(note["note_type"], "Trauma Tertiary Progress Note")
+
+    def test_esa_daily_progress_note_full(self):
+        items = [_make_physician_note_item(SAMPLE_ESA_DAILY_PROGRESS_NOTE)]
+        days_data = _make_days_data({"2025-12-25": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 1)
+        note = result["days"]["2025-12-25"]["notes"][0]
+        self.assertEqual(note["note_type"], "Daily Progress Note")
+        self.assertGreater(len(note["plan_lines"]), 0)
+        # Assessment: should be captured as impression_lines
+        self.assertGreater(len(note["impression_lines"]), 0)
+
+    def test_non_esa_daily_skipped(self):
+        """Daily Progress Note from non-ESA service should be skipped."""
+        items = [_make_physician_note_item(SAMPLE_ESA_DAILY_PROGRESS_NOTE_NON_ESA)]
+        days_data = _make_days_data({"2025-12-25": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 0)
+        self.assertEqual(result["source_rule_id"], "no_qualifying_notes")
+
+    def test_esa_brief_emits_warning(self):
+        """ESA Brief notes qualify but have no Plan → warning emitted, note skipped."""
+        items = [_make_physician_note_item(SAMPLE_ESA_BRIEF_PROGRESS_NOTE)]
+        days_data = _make_days_data({"2025-12-23": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 0)
+        self.assertGreater(len(result["warnings"]), 0)
+        self.assertIn("no extractable Plan", result["warnings"][0])
+
+    def test_overnight_note_emits_warning(self):
+        """Trauma Overnight Progress Note (narrative) has no Plan → warning."""
+        items = [_make_physician_note_item(SAMPLE_TRAUMA_OVERNIGHT_PROGRESS_NOTE)]
+        days_data = _make_days_data({"2025-12-21": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 0)
+        self.assertGreater(len(result["warnings"]), 0)
+
+    def test_mixed_old_and_new_headers(self):
+        """Old and new headers in the same day both get extracted."""
+        items = [
+            _make_physician_note_item(SAMPLE_TRAUMA_PROGRESS_NOTE, source_id="61"),
+            _make_physician_note_item(SAMPLE_TRAUMA_TERTIARY_NOTE, source_id="62",
+                                      dt="2026-01-03T10:00:00"),
+        ]
+        days_data = _make_days_data({"2026-01-03": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 2)
+        note_types = {n["note_type"] for n in result["days"]["2026-01-03"]["notes"]}
+        self.assertIn("Trauma Progress Note", note_types)
+        self.assertIn("Trauma Tertiary Note", note_types)
 
 
 # ═══════════════════════════════════════════════════════════════════
