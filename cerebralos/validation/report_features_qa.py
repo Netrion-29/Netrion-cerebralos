@@ -1654,6 +1654,58 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── LDA Events v1 QA ─────────────────────────────────────────
+    lda = feats.get("lda_events_v1", {})
+    print("LDA EVENTS v1 QA:")
+    print(f"  lda_device_count: {lda.get('lda_device_count', 0)}")
+    print(f"  active_devices_count: {lda.get('active_devices_count', 0)}")
+    lda_cats = lda.get("categories_present", [])
+    if lda_cats:
+        print(f"  categories_present: {', '.join(lda_cats)}")
+    lda_placed = lda.get("devices_with_placement", [])
+    if lda_placed:
+        print(f"  devices_with_placement ({len(lda_placed)}):")
+        for dl in lda_placed[:10]:
+            print(f"    - {dl}")
+    lda_removed = lda.get("devices_with_removal", [])
+    if lda_removed:
+        print(f"  devices_with_removal ({len(lda_removed)}):")
+        for dl in lda_removed[:10]:
+            print(f"    - {dl}")
+    print(f"  source_rule_id: {lda.get('source_rule_id', '(none)')}")
+    lda_devs = lda.get("devices", [])
+    if lda_devs:
+        print(f"  devices ({len(lda_devs)}):")
+        for dev in lda_devs[:15]:
+            placed = dev.get("placed_ts") or "(none)"
+            removed = dev.get("removed_ts") or "(none)"
+            dur = dev.get("duration_text") or ""
+            site = dev.get("site") or ""
+            assess = dev.get("assessment_count", 0)
+            fmt = dev.get("source_format", "?")
+            site_part = f"  site={site}" if site else ""
+            dur_part = f"  dur={dur}" if dur else ""
+            print(
+                f"    [{dev.get('category', '?')}] "
+                f"{dev.get('device_label', '?')[:60]:60s} "
+                f"placed={placed}  removed={removed}"
+                f"{dur_part}{site_part}  assess={assess}  fmt={fmt}"
+            )
+        if len(lda_devs) > 15:
+            print(f"    ... and {len(lda_devs) - 15} more devices")
+    lda_evidence_total = sum(len(d.get("evidence", [])) for d in lda_devs)
+    print(f"  evidence_count: {lda_evidence_total}")
+    lda_warns = lda.get("warnings", [])
+    if lda_warns:
+        print(f"  warnings ({len(lda_warns)}):")
+        for w in lda_warns[:5]:
+            print(f"    - {w}")
+    lda_notes = lda.get("notes", [])
+    if lda_notes:
+        for n in lda_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     # ── Consultant Events v1 QA ──────────────────────────────────
     ce = feats.get("consultant_events_v1", {})
     print("CONSULTANT EVENTS v1 QA:")

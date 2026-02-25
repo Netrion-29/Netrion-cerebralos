@@ -69,6 +69,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "patient_movement_v1",
     "consultant_events_v1",
     "consultant_plan_items_v1",
+    "lda_events_v1",
     "vitals_qa",
 })
 
@@ -521,6 +522,23 @@ def _check_evidence_line_ids(
                     errors.append(
                         f"NOTE_INDEX_EVENTS_EVIDENCE_MISSING_RAW_LINE_ID: "
                         f"{ni_missing} evidence entry(ies) without raw_line_id"
+                    )
+
+        # ── lda_events_v1: per-device evidence[] raw_line_id ──
+        if feat_key == "lda_events_v1":
+            lda_devices = feat_val.get("devices", [])
+            if isinstance(lda_devices, list):
+                lda_missing = 0
+                for dev in lda_devices:
+                    if not isinstance(dev, dict):
+                        continue
+                    for e in dev.get("evidence", []):
+                        if isinstance(e, dict) and "raw_line_id" not in e:
+                            lda_missing += 1
+                if lda_missing > 0:
+                    errors.append(
+                        f"LDA_EVENTS_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{lda_missing} evidence entry(ies) without raw_line_id"
                     )
 
 
