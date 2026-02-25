@@ -149,6 +149,33 @@ Columns are identified by pattern matching, not position (handles reordering).
 
 **Patients**: Larry_Corne, Timothy_Cowan, William_Simmons (short form); Valerie_Parker (long form)
 
+### Pattern B2 — Dos-format Flowsheet History (v2 addition)
+
+Same tab-delimited structure as Pattern B but found in **dos-format**
+patient files inside standalone "Flowsheet History" sections that were
+previously not captured by the ingestion pipeline.
+
+Key differences from standard Pattern B:
+- **Parenthetical question variants**: e.g. `"Have you used drugs other
+  than those required for medical reasons? (Or did the paient test
+  positive for un-prescribed drug use?)"` — the prefix match still
+  works because `_FLOWSHEET_Q_PATTERNS` use `re.search` against
+  the full column header.
+- **Em-dash blanks (U+2014)**: AUDIT-C columns may contain `—` instead
+  of standard dash `–` or hyphen `-`. The `_is_flowsheet_blank()`
+  helper already handles this character.
+- **Nurse marker suffix**: Values like `"Yes A"`, `"No A"` — trailing
+  single-letter marker stripped during extraction (unchanged logic).
+
+**Ingestion change**: Added a `SBIRT_FLOWSHEET` handler to
+`_parse_supplemental_dos()` in `cerebralos/ingest/parse_patient_txt.py`.
+This handler scans for "Flowsheet History" headings, detects
+tab-delimited header rows containing SBIRT question signatures, and
+emits evidence items as `kind="NURSING_NOTE"` so the existing SBIRT
+feature extractor can process them without modification.
+
+**Patients**: Lee_Woodard (long form, AUDIT-C columns blank/em-dash)
+
 ---
 
 ## Completion Status Values
@@ -179,3 +206,5 @@ Columns are identified by pattern matching, not position (handles reordering).
 - Refusal/admission detection
 - Completion status logic
 - Real-patient validation (4+ SBIRT patients + 1 negative control)
+- Dos-format variant (Pattern B2): parenthetical phrasing, em-dash blanks,
+  nurse markers — 6 unit tests + 5 real-patient regression tests (Lee Woodard)

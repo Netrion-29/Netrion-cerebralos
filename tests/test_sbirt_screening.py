@@ -894,6 +894,49 @@ class TestRealPatientFlowsheet:
         result = extract_sbirt_screening({}, days)
         assert "audit_c" in result["instruments_detected"]
 
+    def test_lee_woodard_present(self):
+        """Lee Woodard: dos-format file with SBIRT flowsheet section."""
+        days = _load_days("Lee_Woodard")
+        result = extract_sbirt_screening({}, days)
+        assert result["sbirt_screening_present"] == "yes"
+
+    def test_lee_woodard_flowsheet_responses(self):
+        """Lee Woodard: 4 flowsheet responses extracted (AUDIT-C cols blank)."""
+        days = _load_days("Lee_Woodard")
+        result = extract_sbirt_screening({}, days)
+        assert len(result["flowsheet_responses"]) == 4
+        answers = {r["question_id"]: r["answer"] for r in result["flowsheet_responses"]}
+        assert answers["injury"] == "Yes"
+        assert answers["drug_use"] == "No"
+        assert answers["alcohol_testing"] == "No"
+        assert answers["alcohol_history"] == "No"
+
+    def test_lee_woodard_instruments(self):
+        """Lee Woodard: audit_c detected from column headers even though all blank."""
+        days = _load_days("Lee_Woodard")
+        result = extract_sbirt_screening({}, days)
+        assert "audit_c" in result["instruments_detected"]
+        assert "sbirt_flowsheet" in result["instruments_detected"]
+        # No actual AUDIT-C data (all em-dashes)
+        assert result["audit_c"]["completion_status"] == "not_performed"
+
+    def test_lee_woodard_evidence_traceability(self):
+        """Lee Woodard: all evidence items have raw_line_id."""
+        days = _load_days("Lee_Woodard")
+        result = extract_sbirt_screening({}, days)
+        assert len(result["evidence"]) > 0
+        for ev in result["evidence"]:
+            assert "raw_line_id" in ev
+            assert isinstance(ev["raw_line_id"], str)
+            assert len(ev["raw_line_id"]) == 16
+
+    def test_lee_woodard_nurse_markers_stripped(self):
+        """Lee Woodard: nurse markers (A) stripped from answers."""
+        days = _load_days("Lee_Woodard")
+        result = extract_sbirt_screening({}, days)
+        for r in result["flowsheet_responses"]:
+            assert not r["answer"].endswith(" A"), f"Marker not stripped: {r}"
+
 
 # ====================================================================
 # 17b. End-to-end: REMOVED block type with flowsheet data
@@ -919,6 +962,75 @@ class TestEndToEndRemovedBlock:
         result = extract_sbirt_screening({}, days)
         assert result["sbirt_screening_present"] == "yes"
         assert len(result["flowsheet_responses"]) == 4
+
+
+# ====================================================================
+# 17c. Dos-format variant: parenthetical question phrasing + em-dash blanks
+# ====================================================================
+
+class TestDosFormatVariant:
+    """Verify Lee Woodard-style dos-format SBIRT flowsheet variant is handled.
+
+    This variant has:
+    - Parenthetical alternative phrasing: "(Or did the paient test positive...)"
+    - 8 question columns (injury + drug + alcohol + AUDIT-C q1/q2/q3 + score + history)
+    - Em-dash (U+2014) blanks for AUDIT-C columns
+    - Single data row with nurse marker suffixes
+    """
+
+    TEXT = (
+        "Date/Time\tDoes the patient have an injury?\t"
+        "Have you used drugs other than those required for medical reasons? "
+        "(Or did the paient test positive for un-prescribed drug use?)\t"
+        "Do you drink alcohol? (Or did the patient test positive on blood "
+        "alcohol testing?)\t"
+        "How often do you have a drink containing alcohol?\t"
+        "How many standard drinks containing alcohol do you have on a typical day?\t"
+        "How often do you have six or more drinks on one occasion?\t"
+        "Audit-C Score\t"
+        "Do you have a history of alcohol use or withdrawals?\n"
+        "01/01/26 0207\tYes A\tNo A\tNo A\t\u2014\t\u2014\t\u2014\t\u2014\tNo A\n"
+    )
+
+    def test_present(self):
+        days = _make_days(self.TEXT, "NURSING_NOTE")
+        result = extract_sbirt_screening({}, days)
+        assert result["sbirt_screening_present"] == "yes"
+
+    def test_four_responses(self):
+        days = _make_days(self.TEXT, "NURSING_NOTE")
+        result = extract_sbirt_screening({}, days)
+        assert len(result["flowsheet_responses"]) == 4
+
+    def test_answers_correct(self):
+        days = _make_days(self.TEXT, "NURSING_NOTE")
+        result = extract_sbirt_screening({}, days)
+        answers = {r["question_id"]: r["answer"] for r in result["flowsheet_responses"]}
+        assert answers["injury"] == "Yes"
+        assert answers["drug_use"] == "No"
+        assert answers["alcohol_testing"] == "No"
+        assert answers["alcohol_history"] == "No"
+
+    def test_em_dash_blanks_skipped(self):
+        """Em-dash (U+2014) values for AUDIT-C columns → correctly skipped."""
+        days = _make_days(self.TEXT, "NURSING_NOTE")
+        result = extract_sbirt_screening({}, days)
+        # No AUDIT-C responses despite column presence
+        assert result["audit_c"]["responses_present"] is False
+        assert result["audit_c"]["completion_status"] == "not_performed"
+
+    def test_instruments_detected(self):
+        """Both audit_c (from columns) and sbirt_flowsheet detected."""
+        days = _make_days(self.TEXT, "NURSING_NOTE")
+        result = extract_sbirt_screening({}, days)
+        assert "audit_c" in result["instruments_detected"]
+        assert "sbirt_flowsheet" in result["instruments_detected"]
+
+    def test_nurse_markers_stripped(self):
+        days = _make_days(self.TEXT, "NURSING_NOTE")
+        result = extract_sbirt_screening({}, days)
+        for r in result["flowsheet_responses"]:
+            assert not r["answer"].endswith(" A")
 
 
 # ====================================================================
