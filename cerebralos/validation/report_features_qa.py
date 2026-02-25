@@ -1417,8 +1417,29 @@ def main() -> int:
     print(f"  transfer_count: {adt_summary.get('transfer_count', 0)}")
     print(f"  discharge_ts: {adt_summary.get('discharge_ts', 'N/A')}")
     print(f"  los_hours: {adt_summary.get('los_hours', 'N/A')}")
+    los_days = adt_summary.get("los_days")
+    if los_days is not None:
+        print(f"  los_days: {los_days}")
     units = adt_summary.get("units_visited", [])
     print(f"  units_visited ({len(units)}): {', '.join(units[:10]) if units else 'none'}")
+    services = adt_summary.get("services_seen", [])
+    if services:
+        print(f"  services_seen ({len(services)}): {', '.join(services[:10])}")
+    rooms = adt_summary.get("rooms_visited", [])
+    if rooms:
+        print(f"  rooms_visited ({len(rooms)}): {', '.join(rooms[:10])}")
+    etc = adt_summary.get("event_type_counts", {})
+    if etc:
+        etc_str = ", ".join(f"{k}={v}" for k, v in sorted(etc.items()))
+        print(f"  event_type_counts: {etc_str}")
+    puc = adt_summary.get("patient_update_count")
+    if puc is not None and puc > 0:
+        print(f"  patient_update_count: {puc}")
+    last_unit = adt_summary.get("last_unit")
+    if last_unit:
+        last_room = adt_summary.get("last_room", "?")
+        last_bed = adt_summary.get("last_bed", "?")
+        print(f"  last_location: {last_unit} / {last_room} / {last_bed}")
     adt_events = adt.get("events", [])
     if adt_events:
         print(f"  events ({len(adt_events)}):")
