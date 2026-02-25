@@ -89,6 +89,7 @@ from cerebralos.features.spine_clearance_v1 import extract_spine_clearance
 from cerebralos.features.note_index_events_v1 import extract_note_index_events
 from cerebralos.features.patient_movement_v1 import extract_patient_movement
 from cerebralos.features.consultant_events_v1 import extract_consultant_events
+from cerebralos.features.consultant_plan_items_v1 import extract_consultant_plan_items
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -519,6 +520,10 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
     # ── Consultant Events v1 (consumes note_index_events_v1 from features) ──
     consultant_events = extract_consultant_events(features, days_data)
     features["consultant_events_v1"] = consultant_events
+
+    # ── Consultant Plan Items v1 (consumes consultant_events_v1 + note_index + timeline) ──
+    consultant_plan_items = extract_consultant_plan_items(features, days_data)
+    features["consultant_plan_items_v1"] = consultant_plan_items
 
     # ── Age extraction v1 (patient metadata from timeline text) ──
     age_extraction = extract_patient_age(days_data)
