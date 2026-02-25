@@ -1,10 +1,77 @@
 # Trauma Build-Forward Plan v1
 
-| Field   | Value            |
-|---------|------------------|
-| Date    | 2026-02-21       |
-| Owner   | Sarah            |
-| Status  | Draft            |
+| Field   | Value                          |
+|---------|--------------------------------|
+| Date    | 2026-02-21 (updated 2026-02-25)|
+| Owner   | Sarah                          |
+| Status  | Active                         |
+
+---
+
+## Execution Status (updated 2026-02-25)
+
+### Completed & Merged
+
+| #  | PR  | Branch / Item                         | Status    | Merged   |
+|----|-----|---------------------------------------|-----------|----------|
+| 1  | #40 | urine-output-events-v1                | MERGED    | ✅       |
+| 2  | #41 | daily-notes-v5-refinement-v1          | MERGED    | ✅       |
+| 3  | #42 | consultant-plan-items-v1              | MERGED    | ✅       |
+| 4  | #44 | consultant-plan-actionables-v1        | MERGED    | ✅       |
+| 5  | #45 | daily-notes-v5-refinement-v2          | MERGED    | ✅       |
+| 6  | #46 | patient-movement-v2                   | MERGED    | ✅       |
+| 7  | #47 | adt-transfer-timeline-v2              | MERGED    | ✅       |
+
+### In Flight
+
+| #  | PR  | Branch / Item                         | Status    | Notes                |
+|----|-----|---------------------------------------|-----------|----------------------|
+| 8  | #48 | tier1/lda-urine-v2                    | OPEN PR   | Tab-format B parser, cross-source dedup |
+
+### Revised Priority Queue (next items)
+
+| Priority | Branch / Item                         | Scope      | Rationale                  |
+|----------|---------------------------------------|------------|----------------------------|
+| **NEXT** | `arrival-vitals-selector-v2`          | 1 file + tests | Selector bug: NURSING_NOTE + TABULAR not in priority list; TRAUMA_HP window too tight. Fixes 4/5 patients immediately. Unblocks shock_trigger. |
+| 2        | `vitals-upstream-bittner-fix`         | Investigation | Ronald Bittner arrival-day 0 records (date assignment gap). Targeted, 1 patient. |
+| 3        | `sbirt_screening_v2`                  | Feature    | SBIRT extraction refinement |
+| 4        | `consultant-coverage-refinement`      | Feature    | Consultant plan actionables quality |
+| 5        | `daily-notes-v5-refinement-v3`        | Renderer   | Polish bundle (renderer cleanup) |
+| 6        | Decision fork: protocol checks OR NTDS protected-engine fix track | | After refinements stable |
+
+### Vitals Audit Findings (2026-02-25)
+
+See: `docs/audits/vitals_coverage_audit_2026-02-25.md`
+
+**TL;DR**: Vitals extraction pipeline works (per-day vitals + canonical records
+populated). The arrival vitals selector fails because:
+- `NURSING_NOTE` and `TABULAR` source types are not in `_ARRIVAL_SOURCE_PRIORITY`
+- `TRAUMA_HP` window (30 min) is too tight for Visit Vitals timestamps
+- Ronald Bittner has 0 arrival-day records (upstream date assignment issue)
+
+**Fix track**: `arrival-vitals-selector-v2` (selector-only, ~50 LOC, 1 file)
+
+### Definition of Project Completion (near-term)
+
+Before declaring v5 feature layer + notes stable enough to pivot to
+protocol/NTDS tracks, ALL of the following must be true:
+
+1. **Arrival Vitals**: ≥ 4/5 audit patients produce a selected arrival vital
+   (not DNA). Shock trigger evaluates for those patients.
+2. **LDA + Urine**: PR #48 merged. Snapshot dedup + cross-source dedup active.
+3. **Per-day vitals trending**: All patients with raw vitals data show populated
+   vitals trending in v5 output (already true today).
+4. **Gate passes**: All gate patients (Anna_Dennis, William_Simmons,
+   Timothy_Cowan, Timothy_Nachtwey) pass determinism + zero-drift gate.
+5. **No DNA cascades**: Arrival Vitals DNA should not cascade into downstream
+   feature DNA (shock trigger, neuro trigger) for patients that have vitals data.
+6. **Contract docs current**: All feature contracts reflect actual behavior.
+7. **Test coverage**: ≥ 80 feature-layer tests passing.
+
+Once these are met, the project can pivot to:
+- SBIRT screening refinement
+- Protocol checks / NTDS protected-engine work
+- Consultant coverage scoring
 
 ---
 
