@@ -1654,6 +1654,41 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Consultant Events v1 QA ──────────────────────────────────
+    ce = feats.get("consultant_events_v1", {})
+    print("CONSULTANT EVENTS v1 QA:")
+    print(f"  consultant_present: {ce.get('consultant_present', '(none)')}")
+    print(f"  consultant_services_count: {ce.get('consultant_services_count', 0)}")
+    print(f"  source_rule_id: {ce.get('source_rule_id', '(none)')}")
+    ce_services = ce.get("consultant_services", [])
+    if ce_services:
+        print(f"  consultant_services ({len(ce_services)}):")
+        for cs in ce_services[:15]:
+            authors_str = ", ".join(cs.get("authors", [])[:5])
+            types_str = ", ".join(cs.get("note_types", []))
+            print(
+                f"    {cs.get('service', '?'):30s} "
+                f"notes={cs.get('note_count', 0):2d}  "
+                f"first={cs.get('first_ts', '?')}  "
+                f"last={cs.get('last_ts', '?')}  "
+                f"types=[{types_str}]  "
+                f"authors=[{authors_str}]"
+            )
+        if len(ce_services) > 15:
+            print(f"    ... and {len(ce_services) - 15} more services")
+    ce_evidence_total = sum(len(cs.get("evidence", [])) for cs in ce_services)
+    print(f"  evidence_count: {ce_evidence_total}")
+    ce_warns = ce.get("warnings", [])
+    if ce_warns:
+        print(f"  warnings ({len(ce_warns)}):")
+        for w in ce_warns[:5]:
+            print(f"    - {w}")
+    ce_notes = ce.get("notes", [])
+    if ce_notes:
+        for n in ce_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     print("=" * 60)
     return 0
 
