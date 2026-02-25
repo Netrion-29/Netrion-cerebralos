@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from datetime import date
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -64,6 +65,41 @@ _MAX_URINE_SAMPLES = 8
 
 # Max length for a single plan item display line
 _MAX_PLAN_ITEM_LEN = 120
+
+# ── B7 Narrative Integration Constants ───────────────────────────
+
+# Timeline item types that carry clinically useful narrative text,
+# ordered by clinical priority (higher priority first for display).
+_NARRATIVE_SOURCE_TYPES = (
+    "TRAUMA_HP",
+    "PHYSICIAN_NOTE",
+    "CONSULT_NOTE",
+    "OP_NOTE",
+    "PROCEDURE",
+    "SIGNIFICANT_EVENT",
+    "ANESTHESIA_CONSULT",
+    "ANESTHESIA_PROCEDURE",
+    "ED_NOTE",
+    "CASE_MGMT",
+    "NURSING_NOTE",
+    "DISCHARGE",
+    "DISCHARGE_SUMMARY",
+)
+
+# Item types to exclude from narrative (no clinical story value)
+_NARRATIVE_SKIP_TYPES = frozenset({
+    "LAB", "RADIOLOGY", "REMOVED", "MAR", "TRIAGE",
+    "IS_FLOWSHEET", "PRE_PROCEDURE", "RT_ORDER", "ED_NURSING",
+})
+
+# Deterministic cap for narrative lines per day
+_MAX_NARRATIVE_LINES_PER_DAY = 40
+
+# Deterministic cap for narrative lines per single source note
+_MAX_NARRATIVE_LINES_PER_NOTE = 25
+
+# Max number of source notes rendered per day
+_MAX_NARRATIVE_NOTES_PER_DAY = 6
 
 # ── Formatting Helpers ──────────────────────────────────────────────
 
@@ -1272,6 +1308,258 @@ def _render_device_day_counts(counts: Dict[str, Any]) -> List[str]:
 
 
 # ════════════════════════════════════════════════════════════════════
+# B7 NARRATIVE: Noise Filtering + Per-Day Narrative Extraction
+# ════════════════════════════════════════════════════════════════════
+
+# Compiled noise-filter patterns (deterministic, order-independent).
+# Each is a (compiled_regex, description) tuple.  A line matching ANY
+# pattern is suppressed from the rendered narrative.
+_NOISE_PATTERNS: List[tuple] = [
+    # ── ROS / review-of-systems negative bullet blocks ──
+    (re.compile(
+        r"^\s*[-•]?\s*denies\b",
+        re.IGNORECASE,
+    ), "ROS denies line"),
+    (re.compile(
+        r"^\s*[-•]\s*(no |negative for |without |not present|normal |unremarkable)",
+        re.IGNORECASE,
+    ), "ROS negative bullet"),
+    (re.compile(
+        r"^\s*(review of systems|ros)\s*[:.]?\s*$",
+        re.IGNORECASE,
+    ), "ROS header"),
+
+    # ── MAR / medication administration boilerplate ──
+    (re.compile(
+        r"hold.{0,20}(sbp|systolic|bp|hr|pulse|rate)\s*[<>≤≥]",
+        re.IGNORECASE,
+    ), "MAR hold threshold"),
+    (re.compile(
+        r"^\s*(medication|med)\s+(administration|admin)\s+(record|report)",
+        re.IGNORECASE,
+    ), "MAR header"),
+
+    # ── Nursing device/line maintenance boilerplate ──
+    (re.compile(
+        r"^\s*[-•]\s*(site clean|dressing (clean|dry|intact)|patent|flushed|no redness|no swelling|no drainage)\b",
+        re.IGNORECASE,
+    ), "nursing line maintenance"),
+    (re.compile(
+        r"^\s*[-•]\s*(IV site|PIV|central line|catheter)\s+(clean|patent|intact|flushed|without)",
+        re.IGNORECASE,
+    ), "device status boilerplate"),
+
+    # ── Checklist / template / instructional boilerplate ──
+    (re.compile(
+        r"mychart.{0,30}(progress notes|visible to patients|will allow)",
+        re.IGNORECASE,
+    ), "MyChart disclaimer"),
+    (re.compile(
+        r"disclaimer.{0,60}(dictated|voice recognition|technology software)",
+        re.IGNORECASE,
+    ), "dictation disclaimer"),
+    (re.compile(
+        r"^\s*revision\s*history\s*toggle|^\s*routing\s*history\s*toggle",
+        re.IGNORECASE,
+    ), "Epic UI artifact"),
+    (re.compile(
+        r"^\s*(cosigned by|authenticated by)\s*:.{0,60}$",
+        re.IGNORECASE,
+    ), "signature line"),
+    (re.compile(
+        r"^\s*(signed|cosign needed|untitled image)\s*$",
+        re.IGNORECASE,
+    ), "signed/template marker"),
+
+    # ── Vitals block lines (already rendered in structured vitals) ──
+    (re.compile(
+        r"^\s*(visit vitals|vitals?:?)\s*$",
+        re.IGNORECASE,
+    ), "vitals header"),
+    (re.compile(
+        r"^\s*(BP|Pulse|Temp|Resp|SpO2|Ht|Wt|BMI|BSA|Smoking Status)\s*$",
+        re.IGNORECASE,
+    ), "vitals label-only line"),
+    (re.compile(
+        r"^\s*\d+(\.\d+)?\s*(bpm|°[FC]|%|kg|lb|m²|kg/m²)\s*$",
+        re.IGNORECASE,
+    ), "vitals value-only line"),
+    (re.compile(
+        r"^\s*\d{1,3}/\d{1,3}\s*$",
+    ), "BP value-only line"),
+    (re.compile(
+        r"^\s*\d+' \d+\"\s*$",
+    ), "height value-only line"),
+    (re.compile(
+        r"^\s*comment:.*$",
+        re.IGNORECASE,
+    ), "vitals comment"),
+
+    # ── Empty / whitespace-only lines ──
+    (re.compile(
+        r"^\s*$",
+    ), "blank line"),
+
+    # ── Header bracket lines already captured by type tag ──
+    (re.compile(
+        r"^\s*\[(PHYSICIAN_NOTE|CONSULT_NOTE|NURSING_NOTE|ED_NOTE|OP_NOTE|TRAUMA_HP|PROCEDURE|CASE_MGMT|DISCHARGE|DISCHARGE_SUMMARY|SIGNIFICANT_EVENT|ANESTHESIA_CONSULT|ANESTHESIA_PROCEDURE)\]\s",
+        re.IGNORECASE,
+    ), "source type header"),
+
+    # ── Radiology result headers (fully covered in injury catalog) ──
+    (re.compile(
+        r"^\s*(no results found\.?|radiology:?)\s*$",
+        re.IGNORECASE,
+    ), "radiology stub"),
+
+    # ── Solo vitals values (structured vitals already in Vitals Trending) ──
+    (re.compile(
+        r"^\s*\d{1,4}(\.\d+)?\s*$",
+    ), "solo numeric value"),
+    (re.compile(
+        r"^\s*\d+\.?\d*\s*°[FC]",
+        re.IGNORECASE,
+    ), "temperature reading"),
+    (re.compile(
+        r"^\s*\(!\)\s*\d+",
+    ), "EHR abnormal flag value"),
+    (re.compile(
+        r"^\s*(Never|Former|Current|Not Asked|Every Day|Some Days)\s*$",
+        re.IGNORECASE,
+    ), "smoking status value"),
+
+    # ── Attribution / boilerplate lines ──
+    (re.compile(
+        r"^\s*\d{1,2}/\d{1,2}/\d{2,4}\s*$",
+    ), "standalone date"),
+    (re.compile(
+        r"^\s*[A-Z][a-z]+(?:\s+[A-Z]\.?)?\s+[A-Z][a-z]+,?\s*(?:MD|DO|NP|PA-C|PA|RN|BSN|APRN|DPM|DPT|OT|PT|SLP|RD|PharmD|RPh|BCC)\s*$",
+    ), "author name line"),
+]
+
+
+def _is_noise_line(line: str) -> bool:
+    """Return True if *line* matches any known noise pattern."""
+    for pat, _desc in _NOISE_PATTERNS:
+        if pat.search(line):
+            return True
+    return False
+
+
+def _filter_narrative_text(raw_text: str) -> List[str]:
+    """Filter a raw note's text, returning only clinically meaningful lines.
+
+    Deterministic, order-preserving.  Noise patterns are suppressed;
+    remaining lines are stripped of trailing whitespace and returned.
+    Consecutive blank results after filtering are collapsed.
+    """
+    lines = raw_text.split("\n")
+    kept: List[str] = []
+    prev_blank = True  # Start True to suppress leading blanks
+    for ln in lines:
+        if _is_noise_line(ln):
+            continue
+        stripped = ln.rstrip()
+        if not stripped:
+            if prev_blank:
+                continue  # collapse consecutive blanks
+            prev_blank = True
+            # Don't add blank — we'll let the next non-blank reset
+            continue
+        prev_blank = False
+        kept.append(stripped)
+    return kept
+
+
+def _extract_day_narratives(
+    day_items: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """Extract narrative-worthy items from a day's timeline items.
+
+    Returns a list of dicts with keys: type, dt, filtered_lines.
+    Ordered by dt (timestamp), deterministic.
+    """
+    candidates: List[Dict[str, Any]] = []
+    for item in day_items:
+        itype = item.get("type", "")
+        if itype in _NARRATIVE_SKIP_TYPES:
+            continue
+        if itype not in _NARRATIVE_SOURCE_TYPES:
+            continue
+        raw_text = (item.get("payload") or {}).get("text", "")
+        if not raw_text.strip():
+            continue
+        filtered = _filter_narrative_text(raw_text)
+        if not filtered:
+            continue
+        dt = item.get("dt", "")
+        candidates.append({
+            "type": itype,
+            "dt": dt,
+            "filtered_lines": filtered,
+        })
+
+    # Sort by timestamp deterministically; ties broken by type priority
+    type_order = {t: i for i, t in enumerate(_NARRATIVE_SOURCE_TYPES)}
+    candidates.sort(key=lambda c: (c["dt"] or "", type_order.get(c["type"], 99)))
+    return candidates
+
+
+def _render_day_narrative(
+    day_items: List[Dict[str, Any]],
+) -> List[str]:
+    """Render per-day clinical narrative from timeline items.
+
+    Returns lines ready to append to the per-day block.
+    Deterministic, capped, noise-filtered.
+    """
+    narratives = _extract_day_narratives(day_items)
+    if not narratives:
+        return []
+
+    out: List[str] = []
+    out.append("Clinical Narrative:")
+
+    total_lines = 0
+    notes_rendered = 0
+
+    for narr in narratives:
+        if notes_rendered >= _MAX_NARRATIVE_NOTES_PER_DAY:
+            remaining = len(narratives) - notes_rendered
+            out.append(f"  ... +{remaining} additional note(s) suppressed (cap)")
+            break
+        if total_lines >= _MAX_NARRATIVE_LINES_PER_DAY:
+            out.append(f"  ... (narrative cap reached: {_MAX_NARRATIVE_LINES_PER_DAY} lines)")
+            break
+
+        ntype = narr["type"]
+        dt = narr["dt"] or "?"
+        lines = narr["filtered_lines"]
+
+        # Per-note cap
+        truncated = False
+        if len(lines) > _MAX_NARRATIVE_LINES_PER_NOTE:
+            lines = lines[:_MAX_NARRATIVE_LINES_PER_NOTE]
+            truncated = True
+
+        # Day-level cap
+        remaining_budget = _MAX_NARRATIVE_LINES_PER_DAY - total_lines
+        if len(lines) > remaining_budget:
+            lines = lines[:remaining_budget]
+            truncated = True
+
+        out.append(f"  [{ntype}] {dt}:")
+        for ln in lines:
+            out.append(f"    {ln}")
+            total_lines += 1
+        if truncated:
+            out.append(f"    ... (truncated)")
+        notes_rendered += 1
+
+    return out
+
+
+# ════════════════════════════════════════════════════════════════════
 # MAIN RENDER FUNCTION
 # ════════════════════════════════════════════════════════════════════
 
@@ -1291,8 +1579,10 @@ def render_v5(
     feats = features_data.get("features", {})
     feature_days = features_data.get("days", {})
     meta = {}
+    timeline_days: Dict[str, Any] = {}
     if days_data:
         meta = days_data.get("meta", {})
+        timeline_days = days_data.get("days", {})
 
     # Prefer patient_name from timeline meta over features patient_id
     display_id = meta.get("patient_name") or meta.get("patient_id") or patient_id
@@ -1373,6 +1663,14 @@ def render_v5(
         out.append("Device Day Counts:")
         out.extend(_render_device_day_counts(day.get("device_day_counts", {})))
         out.append("")
+
+        # B7 Clinical Narrative (from timeline items, noise-filtered)
+        tl_day = timeline_days.get(dk, {})
+        tl_items = tl_day.get("items", [])
+        narrative_lines = _render_day_narrative(tl_items)
+        if narrative_lines:
+            out.extend(narrative_lines)
+            out.append("")
 
     # ── Undated ──
     if "__UNDATED__" in feature_days:

@@ -1082,5 +1082,310 @@ class TestRenderV5RefinementV3(unittest.TestCase):
         self.assertNotIn("placed DATA NOT AVAILABLE", result)
 
 
+# ════════════════════════════════════════════════════════════════════
+# B7 — Clinical Narrative Integration
+# ════════════════════════════════════════════════════════════════════
+
+from cerebralos.reporting.render_trauma_daily_notes_v5 import (
+    _is_noise_line,
+    _filter_narrative_text,
+    _extract_day_narratives,
+    _render_day_narrative,
+    _MAX_NARRATIVE_LINES_PER_DAY,
+    _MAX_NARRATIVE_LINES_PER_NOTE,
+    _MAX_NARRATIVE_NOTES_PER_DAY,
+)
+
+
+def _timeline_item(itype, text, dt="2026-01-01T08:00:00"):
+    """Build a minimal timeline item for testing."""
+    return {"type": itype, "dt": dt, "payload": {"text": text}}
+
+
+def _days_data_with_items(items, day_key="2026-01-01"):
+    """Build a minimal days_data dict containing the given items."""
+    return {"days": {day_key: {"items": items}}, "meta": {}}
+
+
+class TestB7NoiseFilter(unittest.TestCase):
+    """Tests for _is_noise_line deterministic noise filtering."""
+
+    # ── Noise lines that MUST be suppressed ──
+
+    def test_ros_denies_bullet(self):
+        self.assertTrue(_is_noise_line("- denies chest pain"))
+        self.assertTrue(_is_noise_line("  denies nausea"))
+
+    def test_ros_header(self):
+        self.assertTrue(_is_noise_line("Review of Systems:"))
+        self.assertTrue(_is_noise_line("  ROS:"))
+
+    def test_mar_hold_threshold(self):
+        self.assertTrue(_is_noise_line("hold if SBP <90"))
+
+    def test_mar_header(self):
+        self.assertTrue(_is_noise_line("Medication Administration Record"))
+
+    def test_nursing_line_maintenance(self):
+        self.assertTrue(_is_noise_line("- site clean, dry, intact"))
+
+    def test_device_status(self):
+        self.assertTrue(_is_noise_line("- IV site clean and patent"))
+
+    def test_mychart_disclaimer(self):
+        self.assertTrue(_is_noise_line("MyChart progress notes will allow"))
+
+    def test_dictation_disclaimer(self):
+        self.assertTrue(_is_noise_line(
+            "DISCLAIMER: This report may be partly dictated by voice recognition technology software"
+        ))
+
+    def test_epic_ui_artifact(self):
+        self.assertTrue(_is_noise_line("Revision History Toggle"))
+
+    def test_signature_line(self):
+        self.assertTrue(_is_noise_line("Cosigned by: Dr. Smith"))
+
+    def test_signed_marker(self):
+        self.assertTrue(_is_noise_line("  Signed"))
+        self.assertTrue(_is_noise_line("  cosign needed"))
+
+    def test_vitals_header(self):
+        self.assertTrue(_is_noise_line("Visit Vitals"))
+        self.assertTrue(_is_noise_line("  Vitals:"))
+
+    def test_vitals_label_only(self):
+        self.assertTrue(_is_noise_line("  BP"))
+        self.assertTrue(_is_noise_line("Pulse"))
+        self.assertTrue(_is_noise_line("SpO2"))
+
+    def test_vitals_value_with_unit(self):
+        self.assertTrue(_is_noise_line("72 bpm"))
+        self.assertTrue(_is_noise_line("94%"))
+
+    def test_bp_value_only(self):
+        self.assertTrue(_is_noise_line("117/74"))
+
+    def test_height_value_only(self):
+        self.assertTrue(_is_noise_line("5' 8\""))
+
+    def test_blank_line(self):
+        self.assertTrue(_is_noise_line(""))
+        self.assertTrue(_is_noise_line("   "))
+
+    def test_source_type_header(self):
+        self.assertTrue(_is_noise_line("[PHYSICIAN_NOTE] something"))
+
+    def test_radiology_stub(self):
+        self.assertTrue(_is_noise_line("No results found."))
+        self.assertTrue(_is_noise_line("radiology"))
+
+    def test_solo_numeric_value(self):
+        self.assertTrue(_is_noise_line("69"))
+        self.assertTrue(_is_noise_line("21"))
+        self.assertTrue(_is_noise_line("  98.4"))
+
+    def test_temperature_reading(self):
+        self.assertTrue(_is_noise_line("98.4 \u00b0F (36.9 \u00b0C) (Oral)"))
+
+    def test_ehr_abnormal_flag(self):
+        self.assertTrue(_is_noise_line("(!) 304 lb 10.8 oz (138.2 kg)"))
+
+    def test_smoking_status_value(self):
+        self.assertTrue(_is_noise_line("Never"))
+        self.assertTrue(_is_noise_line("Former"))
+
+    def test_standalone_date(self):
+        self.assertTrue(_is_noise_line("1/5/2026"))
+        self.assertTrue(_is_noise_line("  12/31/2025"))
+
+    def test_author_name_line(self):
+        self.assertTrue(_is_noise_line("Ally Wood, NP"))
+        self.assertTrue(_is_noise_line("Rachel N Bertram, NP"))
+
+    # ── Clinical lines that MUST be kept ──
+
+    def test_keeps_chief_complaint(self):
+        self.assertFalse(_is_noise_line("CC: intubated and sedated"))
+
+    def test_keeps_assessment_plan(self):
+        self.assertFalse(_is_noise_line("A/P: This is a 72 y.o. male"))
+
+    def test_keeps_clinical_finding(self):
+        self.assertFalse(_is_noise_line("Lungs: Breath sounds present and equal bilaterally"))
+
+    def test_keeps_plan_bullet(self):
+        self.assertFalse(_is_noise_line("- Will plan to treat in a hard TLSO brace."))
+
+    def test_keeps_subjective(self):
+        self.assertFalse(_is_noise_line("S: Intubated for worsening hypercapnia"))
+
+    def test_keeps_gcs_inline(self):
+        self.assertFalse(_is_noise_line("GCS: 10T"))
+
+    def test_keeps_pe_header(self):
+        self.assertFalse(_is_noise_line("PE:"))
+
+    def test_keeps_embedded_vitals(self):
+        """Vitals embedded in prose (e.g., PE section) must survive."""
+        self.assertFalse(_is_noise_line(
+            "Vitals: Blood pressure 116/66, pulse 68, temperature 98.4 \u00b0F (36.9 \u00b0C)"
+        ))
+
+
+class TestB7FilterNarrativeText(unittest.TestCase):
+    """Tests for _filter_narrative_text (multi-line filtering)."""
+
+    def test_strips_noise_keeps_content(self):
+        raw = "Signed\nCC: intubated\n\n\n\nA/P: plan here\n117/74\n"
+        lines = _filter_narrative_text(raw)
+        self.assertIn("CC: intubated", lines)
+        self.assertIn("A/P: plan here", lines)
+        self.assertNotIn("Signed", lines)
+        self.assertNotIn("117/74", lines)
+
+    def test_collapses_consecutive_blanks(self):
+        raw = "line1\n\n\n\nline2"
+        lines = _filter_narrative_text(raw)
+        self.assertEqual(lines, ["line1", "line2"])
+
+    def test_empty_input_returns_empty(self):
+        self.assertEqual(_filter_narrative_text(""), [])
+        self.assertEqual(_filter_narrative_text("   \n  \n"), [])
+
+
+class TestB7ExtractDayNarratives(unittest.TestCase):
+    """Tests for _extract_day_narratives."""
+
+    def test_skips_lab_and_radiology(self):
+        items = [
+            _timeline_item("LAB", "WBC 12.3"),
+            _timeline_item("RADIOLOGY", "CT head normal"),
+        ]
+        result = _extract_day_narratives(items)
+        self.assertEqual(result, [])
+
+    def test_keeps_physician_note(self):
+        items = [_timeline_item("PHYSICIAN_NOTE", "CC: fall\nA/P: observe")]
+        result = _extract_day_narratives(items)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["type"], "PHYSICIAN_NOTE")
+
+    def test_sorted_by_dt(self):
+        items = [
+            _timeline_item("PHYSICIAN_NOTE", "Late note", dt="2026-01-01T14:00:00"),
+            _timeline_item("CONSULT_NOTE", "Early consult", dt="2026-01-01T08:00:00"),
+        ]
+        result = _extract_day_narratives(items)
+        self.assertEqual(result[0]["type"], "CONSULT_NOTE")
+        self.assertEqual(result[1]["type"], "PHYSICIAN_NOTE")
+
+    def test_empty_payload_skipped(self):
+        items = [_timeline_item("PHYSICIAN_NOTE", "")]
+        self.assertEqual(_extract_day_narratives(items), [])
+
+
+class TestB7RenderDayNarrative(unittest.TestCase):
+    """Tests for _render_day_narrative (full render path)."""
+
+    def test_narrative_renders_with_type_tag(self):
+        items = [_timeline_item("PHYSICIAN_NOTE", "S: fever\nA/P: antibiotics")]
+        lines = _render_day_narrative(items)
+        self.assertTrue(any("Clinical Narrative:" in l for l in lines))
+        self.assertTrue(any("[PHYSICIAN_NOTE]" in l for l in lines))
+        self.assertTrue(any("S: fever" in l for l in lines))
+
+    def test_empty_items_returns_empty(self):
+        self.assertEqual(_render_day_narrative([]), [])
+
+    def test_narrative_absent_for_skip_types_only(self):
+        items = [_timeline_item("LAB", "WBC 12"), _timeline_item("RADIOLOGY", "CT ok")]
+        self.assertEqual(_render_day_narrative(items), [])
+
+    def test_per_note_cap(self):
+        """Notes longer than _MAX_NARRATIVE_LINES_PER_NOTE get truncated."""
+        big_text = "\n".join(f"Clinical line {i}" for i in range(_MAX_NARRATIVE_LINES_PER_NOTE + 10))
+        items = [_timeline_item("PHYSICIAN_NOTE", big_text)]
+        lines = _render_day_narrative(items)
+        text = "\n".join(lines)
+        self.assertIn("truncated", text)
+        # Should not contain lines beyond the cap
+        self.assertNotIn(f"Clinical line {_MAX_NARRATIVE_LINES_PER_NOTE + 5}", text)
+
+    def test_per_day_cap(self):
+        """Total narrative lines across notes capped at _MAX_NARRATIVE_LINES_PER_DAY."""
+        items = []
+        for i in range(10):
+            text = "\n".join(f"Note{i} line{j}" for j in range(10))
+            items.append(_timeline_item("PHYSICIAN_NOTE", text, dt=f"2026-01-01T{8+i:02d}:00:00"))
+        lines = _render_day_narrative(items)
+        text = "\n".join(lines)
+        self.assertIn("narrative cap reached", text)
+
+    def test_notes_per_day_cap(self):
+        """No more than _MAX_NARRATIVE_NOTES_PER_DAY notes rendered."""
+        items = []
+        for i in range(_MAX_NARRATIVE_NOTES_PER_DAY + 3):
+            items.append(_timeline_item("PHYSICIAN_NOTE", f"Short note {i}", dt=f"2026-01-01T{8+i:02d}:00:00"))
+        lines = _render_day_narrative(items)
+        text = "\n".join(lines)
+        self.assertIn("suppressed", text)
+
+    def test_determinism(self):
+        """Same input produces identical output across runs."""
+        items = [
+            _timeline_item("PHYSICIAN_NOTE", "CC: fall\nA/P: observe", dt="2026-01-01T08:00:00"),
+            _timeline_item("CONSULT_NOTE", "Consult text here", dt="2026-01-01T10:00:00"),
+        ]
+        r1 = _render_day_narrative(items)
+        r2 = _render_day_narrative(items)
+        self.assertEqual(r1, r2)
+
+
+class TestB7NarrativeIntegration(unittest.TestCase):
+    """Integration: narrative renders in full render_v5 output."""
+
+    def test_narrative_renders_when_days_data_present(self):
+        data = _minimal_features()
+        items = [_timeline_item("PHYSICIAN_NOTE", "CC: trauma\nA/P: observe")]
+        days_data = _days_data_with_items(items)
+        result = render_v5(data, days_data=days_data)
+        self.assertIn("Clinical Narrative:", result)
+        self.assertIn("[PHYSICIAN_NOTE]", result)
+        self.assertIn("CC: trauma", result)
+
+    def test_narrative_absent_when_no_days_data(self):
+        data = _minimal_features()
+        result = render_v5(data)
+        self.assertNotIn("Clinical Narrative:", result)
+
+    def test_narrative_absent_when_days_data_empty(self):
+        data = _minimal_features()
+        result = render_v5(data, days_data={"days": {}, "meta": {}})
+        self.assertNotIn("Clinical Narrative:", result)
+
+    def test_narrative_absent_for_day_with_only_labs(self):
+        data = _minimal_features()
+        items = [_timeline_item("LAB", "WBC 12.3")]
+        days_data = _days_data_with_items(items)
+        result = render_v5(data, days_data=days_data)
+        self.assertNotIn("Clinical Narrative:", result)
+
+    def test_noise_suppressed_in_full_render(self):
+        data = _minimal_features()
+        text = "Signed\nCC: trauma\n117/74\nA/P: plan\nNever"
+        items = [_timeline_item("PHYSICIAN_NOTE", text)]
+        days_data = _days_data_with_items(items)
+        result = render_v5(data, days_data=days_data)
+        self.assertIn("CC: trauma", result)
+        self.assertIn("A/P: plan", result)
+        # Noise must be absent
+        lines = result.split("\n")
+        narrative_lines = [l.strip() for l in lines if l.strip()]
+        self.assertNotIn("Signed", narrative_lines)
+        self.assertNotIn("117/74", narrative_lines)
+        self.assertNotIn("Never", narrative_lines)
+
+
 if __name__ == "__main__":
     unittest.main()
