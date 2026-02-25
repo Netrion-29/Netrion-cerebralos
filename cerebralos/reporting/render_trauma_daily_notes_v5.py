@@ -1135,6 +1135,16 @@ def _render_incentive_spirometry(feats: Dict[str, Any]) -> List[str]:
 # §12  NOTE SECTIONS SUMMARY  (Impression / Plan excerpts)
 # ════════════════════════════════════════════════════════════════════
 
+# Display labels for note sections — ordered for rendering
+_NOTE_SECTION_RENDER_ORDER: tuple = (
+    ("hpi", "HPI"),
+    ("primary_survey", "PRIMARY SURVEY"),
+    ("secondary_survey", "SECONDARY SURVEY"),
+    ("impression", "IMPRESSION"),
+    ("plan", "PLAN"),
+)
+
+
 def _render_note_sections(feats: Dict[str, Any]) -> List[str]:
     out: List[str] = []
     ns = feats.get("note_sections_v1", {})
@@ -1144,12 +1154,17 @@ def _render_note_sections(feats: Dict[str, Any]) -> List[str]:
     out.append("NOTE SECTIONS (Trauma H&P)")
     out.append("-" * 60)
 
-    for section_key in ("impression", "plan"):
+    # Alert History — not yet extracted into note_sections_v1.
+    # Deferred to a future extractor PR.  When added, render here.
+    # (The raw Trauma H&P text contains "Alert History: ..." lines
+    #  but they are not broken out as a separate extracted field.)
+
+    for section_key, label in _NOTE_SECTION_RENDER_ORDER:
         sec = ns.get(section_key, {})
         if sec.get("present"):
             txt = sec.get("text", "")
             lines = txt.strip().split("\n") if txt else []
-            out.append(f"  {section_key.upper()} ({len(lines)} lines):")
+            out.append(f"  {label} ({len(lines)} lines):")
             # Show first 50 lines — clinical sections need higher cap
             _MAX_NOTE_SECTION_LINES = 50
             for ln in lines[:_MAX_NOTE_SECTION_LINES]:
@@ -1435,6 +1450,75 @@ _NOISE_PATTERNS: List[tuple] = [
     (re.compile(
         r"^\s*[A-Z][a-z]+(?:\s+[A-Z]\.?)?\s+[A-Z][a-z]+,?\s*(?:MD|DO|NP|PA-C|PA|RN|BSN|APRN|DPM|DPT|OT|PT|SLP|RD|PharmD|RPh|BCC)\s*$",
     ), "author name line"),
+
+    # ── Epic UI chrome ──
+    (re.compile(
+        r"^\s*expand\s+all\s+collapse\s+all\s*$",
+        re.IGNORECASE,
+    ), "Epic expand/collapse toggle"),
+
+    # ── Allergy block noise (already in patient summary) ──
+    (re.compile(
+        r"^\s*allerg(ies|en|y)\s*:?\s*$",
+        re.IGNORECASE,
+    ), "allergy header"),
+    (re.compile(
+        r"^\s*allergen\s+reactions?\s*$",
+        re.IGNORECASE,
+    ), "allergen table header"),
+
+    # ── PMH / medication list boilerplate (duplicated from patient summary) ──
+    (re.compile(
+        r"^\s*past\s+medical\s+history\s*:?\s*$",
+        re.IGNORECASE,
+    ), "PMH header"),
+    (re.compile(
+        r"^\s*diagnosis\s+date\s*$",
+        re.IGNORECASE,
+    ), "PMH table header"),
+    (re.compile(
+        r"^\s*(medications?\s+ordered\s+prior|current\s+outpatient\s+medications?|no\s+current\s+facility.administered\s+medications?)",
+        re.IGNORECASE,
+    ), "medication list boilerplate"),
+
+    # ── Social history template lines ──
+    (re.compile(
+        r"^\s*(marital\s+status|education|number\s+of\s+children|years\s+of\s+education|living\s+situation|sexual\s+orientation|gender\s+identity)\s*[:.]?\s*(\S.*)?$",
+        re.IGNORECASE,
+    ), "social history template field"),
+    (re.compile(
+        r"^\s*social\s+history\s*:?\s*$",
+        re.IGNORECASE,
+    ), "social history header"),
+    (re.compile(
+        r"^\s*(tobacco|alcohol|drug)\s+use\s*:?\s*$",
+        re.IGNORECASE,
+    ), "substance use label"),
+
+    # ── Demographics in consult notes ──
+    (re.compile(
+        r"^\s*(patient\s+name|mrn|dob)\s*:?\s*\S",
+        re.IGNORECASE,
+    ), "consult demographics line"),
+    (re.compile(
+        r"^\s*source\s+of\s+history\s*:",
+        re.IGNORECASE,
+    ), "source of history line"),
+
+    # ── Phone numbers / contact info ──
+    (re.compile(
+        r"^\s*\d{3}[-.\s]\d{3}[-.\s]\d{4}\s*$",
+    ), "phone number"),
+    (re.compile(
+        r"^\s*(or\s+)?secure\s+chat\s*$",
+        re.IGNORECASE,
+    ), "secure chat line"),
+
+    # ── Consult order boilerplate ──
+    (re.compile(
+        r"^\s*(inpatient\s+consult\s+to|consult\s+orders?)\s*",
+        re.IGNORECASE,
+    ), "consult order boilerplate"),
 ]
 
 
