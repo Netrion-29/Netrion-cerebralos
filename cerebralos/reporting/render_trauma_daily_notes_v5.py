@@ -1177,6 +1177,52 @@ def _render_note_sections(feats: Dict[str, Any]) -> List[str]:
 
 
 # ════════════════════════════════════════════════════════════════════
+# PER-DAY: Trauma Daily Plan (from trauma progress notes)
+# ════════════════════════════════════════════════════════════════════
+
+def _render_trauma_daily_plan(feats: Dict[str, Any], day_iso: str) -> List[str]:
+    """Render trauma daily plan notes for a specific day."""
+    out: List[str] = []
+    tdp = feats.get("trauma_daily_plan_by_day_v1", {})
+    if not tdp:
+        return out
+    days = tdp.get("days", {})
+    day_data = days.get(day_iso, {})
+    notes = day_data.get("notes", [])
+    if not notes:
+        return out
+
+    out.append("Trauma Daily Plan:")
+    for note in notes:
+        note_type = note.get("note_type", "Unknown")
+        dt = note.get("dt", "?")
+        author = note.get("author", "Unknown")
+        # Format time portion
+        time_str = dt.split("T")[1][:5] if "T" in str(dt) else str(dt)
+        out.append(f"  [{note_type}] {time_str} — {author}")
+
+        imp_lines = note.get("impression_lines", [])
+        if imp_lines:
+            out.append("    Impression:")
+            for ln in imp_lines[:15]:
+                out.append(f"      {ln.rstrip()}")
+            if len(imp_lines) > 15:
+                out.append(f"      ... (+{len(imp_lines) - 15} more lines)")
+
+        plan_lines = note.get("plan_lines", [])
+        if plan_lines:
+            out.append("    Plan:")
+            for ln in plan_lines[:40]:
+                out.append(f"      {ln.rstrip()}")
+            if len(plan_lines) > 40:
+                out.append(f"      ... (+{len(plan_lines) - 40} more lines)")
+
+        out.append("")
+
+    return out
+
+
+# ════════════════════════════════════════════════════════════════════
 # PER-DAY: Vitals Trending  (reused from v4 logic)
 # ════════════════════════════════════════════════════════════════════
 
@@ -1747,6 +1793,12 @@ def render_v5(
         out.append("Device Day Counts:")
         out.extend(_render_device_day_counts(day.get("device_day_counts", {})))
         out.append("")
+
+        # Trauma Daily Plan (from trauma progress notes)
+        tdp_lines = _render_trauma_daily_plan(feats, dk)
+        if tdp_lines:
+            out.extend(tdp_lines)
+            out.append("")
 
         # B7 Clinical Narrative (from timeline items, noise-filtered)
         tl_day = timeline_days.get(dk, {})
