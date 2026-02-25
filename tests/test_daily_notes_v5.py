@@ -1387,5 +1387,174 @@ class TestB7NarrativeIntegration(unittest.TestCase):
         self.assertNotIn("Never", narrative_lines)
 
 
+# ════════════════════════════════════════════════════════════════════
+# Refinement v4 — HPI / Surveys + Alert History + Noise Tuning
+# ════════════════════════════════════════════════════════════════════
+
+
+class TestNoteSectionsV4(unittest.TestCase):
+    """Tests for HPI, Primary Survey, Secondary Survey rendering."""
+
+    def _data_with_sections(self, **section_overrides):
+        """Build features with note_sections_v1 containing specified sections."""
+        ns = {
+            "sections_present": True,
+            "source_ts": "2026-01-01T08:00:00",
+            "source_type": "TRAUMA_HP",
+            "source_rule_id": "trauma_hp_sections",
+            "evidence": [],
+            "notes": [],
+            "warnings": [],
+        }
+        for key, text in section_overrides.items():
+            ns[key] = {"present": True, "text": text, "line_count": len(text.split("\n"))}
+        data = _minimal_features()
+        data["features"]["note_sections_v1"] = ns
+        return data
+
+    def test_hpi_renders(self):
+        data = self._data_with_sections(hpi="72 yo male fell from ladder")
+        result = render_v5(data)
+        self.assertIn("HPI (1 lines):", result)
+        self.assertIn("72 yo male fell from ladder", result)
+
+    def test_primary_survey_renders(self):
+        data = self._data_with_sections(primary_survey="Airway: patent\nBreathing: even")
+        result = render_v5(data)
+        self.assertIn("PRIMARY SURVEY (2 lines):", result)
+        self.assertIn("Airway: patent", result)
+
+    def test_secondary_survey_renders(self):
+        data = self._data_with_sections(secondary_survey="HEENT: NC/AT\nLungs: clear bilat")
+        result = render_v5(data)
+        self.assertIn("SECONDARY SURVEY (2 lines):", result)
+        self.assertIn("HEENT: NC/AT", result)
+
+    def test_impression_still_renders(self):
+        data = self._data_with_sections(impression="72 yo male s/p fall")
+        result = render_v5(data)
+        self.assertIn("IMPRESSION (1 lines):", result)
+
+    def test_plan_still_renders(self):
+        data = self._data_with_sections(plan="- CT head\n- Ortho consult")
+        result = render_v5(data)
+        self.assertIn("PLAN (2 lines):", result)
+
+    def test_render_order(self):
+        """HPI renders before IMPRESSION before PLAN."""
+        data = self._data_with_sections(
+            hpi="hpi text",
+            impression="impression text",
+            plan="plan text",
+        )
+        result = render_v5(data)
+        hpi_pos = result.index("HPI (")
+        imp_pos = result.index("IMPRESSION (")
+        plan_pos = result.index("PLAN (")
+        self.assertLess(hpi_pos, imp_pos)
+        self.assertLess(imp_pos, plan_pos)
+
+    def test_survey_between_hpi_and_impression(self):
+        data = self._data_with_sections(
+            hpi="hpi text",
+            primary_survey="ps text",
+            secondary_survey="ss text",
+            impression="imp text",
+        )
+        result = render_v5(data)
+        self.assertLess(result.index("PRIMARY SURVEY ("), result.index("SECONDARY SURVEY ("))
+        self.assertLess(result.index("SECONDARY SURVEY ("), result.index("IMPRESSION ("))
+
+    def test_missing_sections_graceful(self):
+        """If only impression is present, HPI/surveys just don't appear."""
+        data = self._data_with_sections(impression="72 yo male")
+        result = render_v5(data)
+        self.assertNotIn("HPI", result)
+        self.assertNotIn("PRIMARY SURVEY", result)
+        self.assertNotIn("SECONDARY SURVEY", result)
+        self.assertIn("IMPRESSION", result)
+
+    def test_alert_history_not_in_features(self):
+        """Alert history is NOT extracted — confirm it does NOT crash or appear."""
+        data = self._data_with_sections(hpi="some text")
+        result = render_v5(data)
+        # Should not crash, and should not show an "ALERT HISTORY" section
+        # (because it's not in extracted features — deferred to extractor PR)
+        self.assertNotIn("ALERT HISTORY", result)
+
+
+class TestB7NoiseFilterV4(unittest.TestCase):
+    """Tests for new noise patterns added in refinement-v4."""
+
+    def test_epic_expand_collapse(self):
+        self.assertTrue(_is_noise_line("Expand All Collapse All"))
+        self.assertTrue(_is_noise_line("  Expand All Collapse All"))
+
+    def test_allergy_header(self):
+        self.assertTrue(_is_noise_line("Allergies"))
+        self.assertTrue(_is_noise_line("  Allergies:"))
+
+    def test_allergen_table_header(self):
+        self.assertTrue(_is_noise_line("Allergen    Reactions"))
+
+    def test_allergy_inline_kept(self):
+        """Inline allergy mention in prose must survive."""
+        self.assertFalse(_is_noise_line("Allergies: Penicillin (rash)"))
+
+    def test_pmh_header(self):
+        self.assertTrue(_is_noise_line("Past Medical History:"))
+        self.assertTrue(_is_noise_line("Past Medical History"))
+
+    def test_pmh_table_header(self):
+        self.assertTrue(_is_noise_line("Diagnosis   Date"))
+
+    def test_medication_boilerplate(self):
+        self.assertTrue(_is_noise_line("Medications Ordered Prior to Encounter"))
+        self.assertTrue(_is_noise_line("Current Outpatient Medications on File Prior to Encounter"))
+        self.assertTrue(_is_noise_line(
+            "No current facility-administered medications on file prior to encounter."
+        ))
+
+    def test_social_history_template(self):
+        self.assertTrue(_is_noise_line("Social History:"))
+        self.assertTrue(_is_noise_line("Marital Status: Married"))
+        self.assertTrue(_is_noise_line("Education: High School"))
+        self.assertTrue(_is_noise_line("Number of Children: 3"))
+
+    def test_substance_use_labels(self):
+        self.assertTrue(_is_noise_line("Tobacco Use:"))
+        self.assertTrue(_is_noise_line("  Alcohol Use:"))
+        self.assertTrue(_is_noise_line("Drug Use:"))
+
+    def test_consult_demographics(self):
+        self.assertTrue(_is_noise_line("Patient Name: RONALD E BITTNER"))
+        self.assertTrue(_is_noise_line("DOB: 12/19/1953"))
+        self.assertTrue(_is_noise_line("MRN:886870"))
+
+    def test_source_of_history(self):
+        self.assertTrue(_is_noise_line("Source of History: Patient, RN, EPIC"))
+
+    def test_phone_number(self):
+        self.assertTrue(_is_noise_line("812-842-2368"))
+
+    def test_secure_chat(self):
+        self.assertTrue(_is_noise_line("Or Secure Chat"))
+        self.assertTrue(_is_noise_line("Secure Chat"))
+
+    def test_consult_order_boilerplate(self):
+        self.assertTrue(_is_noise_line("Consult Orders"))
+        self.assertTrue(_is_noise_line(
+            "Inpatient Consult to Hospitalist, Geriatric Trauma [466671400] ordered by Meehan"
+        ))
+
+    def test_clinical_content_preserved(self):
+        """Clinical lines must NOT be filtered by new patterns."""
+        self.assertFalse(_is_noise_line("Alert History: Category II alert at 0143"))
+        self.assertFalse(_is_noise_line("HPI: Ronald Bittner is a 72 yo male"))
+        self.assertFalse(_is_noise_line("Reason For Consult: Medical management"))
+        self.assertFalse(_is_noise_line("CC: intubated and sedated"))
+        self.assertFalse(_is_noise_line("A/P: This is a 72 y.o. male"))
+
+
 if __name__ == "__main__":
     unittest.main()
