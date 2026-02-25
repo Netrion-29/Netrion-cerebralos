@@ -1689,6 +1689,41 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Consultant Plan Items v1 QA ──────────────────────────────
+    cpi = feats.get("consultant_plan_items_v1", {})
+    print("CONSULTANT PLAN ITEMS v1 QA:")
+    print(f"  item_count: {cpi.get('item_count', 0)}")
+    print(f"  source_rule_id: {cpi.get('source_rule_id', '(none)')}")
+    cpi_services = cpi.get("services_with_plan_items", [])
+    if cpi_services:
+        print(f"  services_with_plan_items: {', '.join(cpi_services)}")
+    cpi_items = cpi.get("items", [])
+    if cpi_items:
+        print(f"  items ({len(cpi_items)}):")
+        for ci in cpi_items[:25]:
+            author_str = ci.get("author_name") or ""
+            author_part = f"  author={author_str}" if author_str else ""
+            print(
+                f"    [{ci.get('service', '?')}] "
+                f"({ci.get('item_type', '?')}) "
+                f"{ci.get('item_text', '?')[:80]}"
+                f"{author_part}"
+            )
+        if len(cpi_items) > 25:
+            print(f"    ... and {len(cpi_items) - 25} more items")
+    cpi_evidence_total = sum(len(ci.get("evidence", [])) for ci in cpi_items)
+    print(f"  evidence_count: {cpi_evidence_total}")
+    cpi_warns = cpi.get("warnings", [])
+    if cpi_warns:
+        print(f"  warnings ({len(cpi_warns)}):")
+        for w in cpi_warns[:5]:
+            print(f"    - {w}")
+    cpi_notes = cpi.get("notes", [])
+    if cpi_notes:
+        for n in cpi_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     print("=" * 60)
     return 0
 
