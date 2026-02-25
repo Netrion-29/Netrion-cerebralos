@@ -21,6 +21,7 @@ from cerebralos.features.consultant_plan_items_v1 import (
     _dt_matches,
     _extract_plan_sections,
     _is_noise_line,
+    _match_timeline_items_direct,
     _normalize_item_text,
     _parse_plan_items,
     extract_consultant_plan_items,
@@ -894,6 +895,361 @@ class TestExtractConsultantPlanItems(unittest.TestCase):
         result = extract_consultant_plan_items(features, days_data)
         self.assertEqual(result["item_count"], 0)
         self.assertEqual(result["source_rule_id"], "no_plan_sections_found")
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  _match_timeline_items_direct (fallback path)
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestMatchTimelineItemsDirect(unittest.TestCase):
+    """Test direct CONSULT_NOTE matching for timeline-scan fallback."""
+
+    @staticmethod
+    def _make_days_data(items_by_date):
+        days = {}
+        for date_key, items in items_by_date.items():
+            days[date_key] = {"items": items}
+        return {"days": days, "meta": {}}
+
+    def test_matches_known_service(self):
+        services = [{
+            "service": "Pulmonology",
+            "note_count": 1,
+            "first_ts": "01/01 0830",
+            "last_ts": "01/01 0830",
+            "authors": [],
+            "note_types": ["Consults"],
+            "evidence": [{
+                "role": "consultant_event",
+                "snippet": "Consults 01/01 0830  [Pulmonology]",
+                "raw_line_id": "abc123",
+            }],
+        }]
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "CONSULT_NOTE",
+                "dt": "2026-01-01T08:30:00",
+                "source_id": "42",
+                "payload": {
+                    "text": (
+                        "Consult to Pulmonology [order 123]\n"
+                        "Plan:\n- Continue BiPAP.\n- Wean O2.\n"
+                    ),
+                },
+            }],
+        })
+        matched = _match_timeline_items_direct(dd, services)
+        self.assertEqual(len(matched), 1)
+        self.assertEqual(matched[0]["service"], "Pulmonology")
+        self.assertIn("Continue BiPAP", matched[0]["text"])
+        self.assertTrue(len(matched[0]["raw_line_id"]) > 0)
+
+    def test_multiple_services(self):
+        services = [
+            {
+                "service": "Palliative Care",
+                "note_count": 1,
+                "first_ts": "01/01 0600",
+                "last_ts": "01/01 0600",
+                "authors": [],
+                "note_types": ["Consults"],
+                "evidence": [],
+            },
+            {
+                "service": "Pulmonology",
+                "note_count": 1,
+                "first_ts": "01/01 1400",
+                "last_ts": "01/01 1400",
+                "authors": [],
+                "note_types": ["Consults"],
+                "evidence": [],
+            },
+        ]
+        dd = self._make_days_data({
+            "2026-01-01": [
+                {
+                    "type": "CONSULT_NOTE",
+                    "dt": "2026-01-01T06:00:00",
+                    "source_id": "10",
+                    "payload": {
+                        "text": "Consult to Palliative Care [order 1]\nPlan:\n- Goals of care.\n"
+                    },
+                },
+                {
+                    "type": "CONSULT_NOTE",
+                    "dt": "2026-01-01T14:00:00",
+                    "source_id": "20",
+                    "payload": {
+                        "text": "Consult to Pulmonology [order 2]\nPlan:\n- Wean O2.\n"
+                    },
+                },
+            ],
+        })
+        matched = _match_timeline_items_direct(dd, services)
+        self.assertEqual(len(matched), 2)
+        svc_names = {m["service"] for m in matched}
+        self.assertEqual(svc_names, {"Palliative Care", "Pulmonology"})
+
+    def test_skips_unknown_service(self):
+        services = [{
+            "service": "Pulmonology",
+            "note_count": 1,
+            "first_ts": "01/01 0830",
+            "last_ts": "01/01 0830",
+            "authors": [],
+            "note_types": ["Consults"],
+            "evidence": [],
+        }]
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "CONSULT_NOTE",
+                "dt": "2026-01-01T08:30:00",
+                "source_id": "42",
+                "payload": {
+                    "text": "Consult to Cardiology [order 99]\nPlan:\n- Echo.\n"
+                },
+            }],
+        })
+        matched = _match_timeline_items_direct(dd, services)
+        self.assertEqual(len(matched), 0)
+
+    def test_empty_timeline(self):
+        services = [{
+            "service": "Pulmonology",
+            "note_count": 1,
+            "first_ts": "01/01 0830",
+            "last_ts": "01/01 0830",
+            "authors": [],
+            "note_types": ["Consults"],
+            "evidence": [],
+        }]
+        dd = {"days": {}, "meta": {}}
+        matched = _match_timeline_items_direct(dd, services)
+        self.assertEqual(matched, [])
+
+    def test_no_duplicate_matches(self):
+        """Same dt + service only matched once."""
+        services = [{
+            "service": "Pulmonology",
+            "note_count": 1,
+            "first_ts": "01/01 0830",
+            "last_ts": "01/01 0830",
+            "authors": [],
+            "note_types": ["Consults"],
+            "evidence": [],
+        }]
+        dd = self._make_days_data({
+            "2026-01-01": [
+                {
+                    "type": "CONSULT_NOTE",
+                    "dt": "2026-01-01T08:30:00",
+                    "source_id": "42",
+                    "payload": {
+                        "text": "Consult to Pulmonology [order 123]\nPlan:\n- Item A.\n"
+                    },
+                },
+                {
+                    "type": "CONSULT_NOTE",
+                    "dt": "2026-01-01T08:30:00",
+                    "source_id": "42",
+                    "payload": {
+                        "text": "Consult to Pulmonology [order 123]\nPlan:\n- Item A.\n"
+                    },
+                },
+            ],
+        })
+        matched = _match_timeline_items_direct(dd, services)
+        self.assertEqual(len(matched), 1)
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  Full extraction – fallback path integration
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestExtractConsultantPlanItemsFallback(unittest.TestCase):
+    """
+    End-to-end: consultant_events came from timeline-scan fallback,
+    plan_items should use _match_timeline_items_direct and extract plans.
+    """
+
+    @staticmethod
+    def _make_days_data(items_by_date):
+        days = {}
+        for date_key, items in items_by_date.items():
+            days[date_key] = {"items": items}
+        return {"days": days, "meta": {}}
+
+    def test_fallback_extracts_plan_items(self):
+        note_text = (
+            "Consult to Pulmonology [order 123]\n"
+            "Ordered by Dr. Smith on 01/01/2026\n\n"
+            "History of Present Illness:\nPatient with pneumonia.\n\n"
+            "Assessment and Plan:\n"
+            "1. Continue BiPAP at night.\n"
+            "2. Wean supplemental O2 as tolerated.\n"
+            "3. Repeat CT chest if no improvement.\n\n"
+            "Dr. Johnson, MD\n"
+        )
+        features = {
+            "consultant_events_v1": {
+                "consultant_present": "yes",
+                "consultant_services_count": 1,
+                "consultant_services": [{
+                    "service": "Pulmonology",
+                    "note_count": 1,
+                    "first_ts": "01/01 0830",
+                    "last_ts": "01/01 0830",
+                    "authors": [],
+                    "note_types": ["Consults"],
+                    "evidence": [{
+                        "role": "consultant_event",
+                        "snippet": "Consults 01/01 0830  [Pulmonology]",
+                        "raw_line_id": "abc123",
+                    }],
+                }],
+                "source_rule_id": "consultant_events_from_timeline_items",
+                "warnings": [],
+                "notes": [],
+            },
+            "note_index_events_v1": {
+                "entries": [],
+                "source_rule_id": "no_notes_section",
+            },
+        }
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "CONSULT_NOTE",
+                "dt": "2026-01-01T08:30:00",
+                "source_id": "42",
+                "payload": {"text": note_text},
+            }],
+        })
+        result = extract_consultant_plan_items(features, dd)
+        self.assertGreater(result["item_count"], 0)
+        self.assertEqual(
+            result["source_rule_id"], "consultant_plan_from_note_text"
+        )
+        self.assertIn("Pulmonology", result["services_with_plan_items"])
+        texts = [i["item_text"] for i in result["items"]]
+        self.assertTrue(any("BiPAP" in t for t in texts))
+        self.assertTrue(any("O2" in t for t in texts))
+
+    def test_fallback_no_matched_items(self):
+        features = {
+            "consultant_events_v1": {
+                "consultant_present": "yes",
+                "consultant_services_count": 1,
+                "consultant_services": [{
+                    "service": "Pulmonology",
+                    "note_count": 1,
+                    "first_ts": "01/01 0830",
+                    "last_ts": "01/01 0830",
+                    "authors": [],
+                    "note_types": ["Consults"],
+                    "evidence": [],
+                }],
+                "source_rule_id": "consultant_events_from_timeline_items",
+                "warnings": [],
+                "notes": [],
+            },
+            "note_index_events_v1": {
+                "entries": [],
+                "source_rule_id": "no_notes_section",
+            },
+        }
+        dd = {"days": {}, "meta": {}}  # no timeline items
+        result = extract_consultant_plan_items(features, dd)
+        self.assertEqual(result["item_count"], 0)
+        self.assertEqual(result["source_rule_id"], "no_plan_sections_found")
+
+    def test_fallback_evidence_traceability(self):
+        features = {
+            "consultant_events_v1": {
+                "consultant_present": "yes",
+                "consultant_services_count": 1,
+                "consultant_services": [{
+                    "service": "Neurosurgery",
+                    "note_count": 1,
+                    "first_ts": "01/01 1000",
+                    "last_ts": "01/01 1000",
+                    "authors": [],
+                    "note_types": ["Consults"],
+                    "evidence": [{
+                        "role": "consultant_event",
+                        "snippet": "Consults 01/01 1000  [Neurosurgery]",
+                        "raw_line_id": "def456",
+                    }],
+                }],
+                "source_rule_id": "consultant_events_from_timeline_items",
+                "warnings": [],
+                "notes": [],
+            },
+            "note_index_events_v1": {
+                "entries": [],
+                "source_rule_id": "no_notes_section",
+            },
+        }
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "CONSULT_NOTE",
+                "dt": "2026-01-01T10:00:00",
+                "source_id": "99",
+                "payload": {
+                    "text": (
+                        "Consult to Neurosurgery [order 888]\n"
+                        "Plan:\n- Serial CT head q6h.\n"
+                    ),
+                },
+            }],
+        })
+        result = extract_consultant_plan_items(features, dd)
+        self.assertGreater(result["item_count"], 0)
+        for item in result["items"]:
+            self.assertTrue(len(item["evidence"]) > 0)
+            self.assertEqual(item["evidence"][0]["role"], "consultant_plan_item")
+            self.assertTrue(len(item["evidence"][0]["raw_line_id"]) > 0)
+
+    def test_fallback_determinism(self):
+        features = {
+            "consultant_events_v1": {
+                "consultant_present": "yes",
+                "consultant_services_count": 1,
+                "consultant_services": [{
+                    "service": "Pulmonology",
+                    "note_count": 1,
+                    "first_ts": "01/01 0830",
+                    "last_ts": "01/01 0830",
+                    "authors": [],
+                    "note_types": ["Consults"],
+                    "evidence": [],
+                }],
+                "source_rule_id": "consultant_events_from_timeline_items",
+                "warnings": [],
+                "notes": [],
+            },
+            "note_index_events_v1": {
+                "entries": [],
+                "source_rule_id": "no_notes_section",
+            },
+        }
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "CONSULT_NOTE",
+                "dt": "2026-01-01T08:30:00",
+                "source_id": "42",
+                "payload": {
+                    "text": (
+                        "Consult to Pulmonology [order 123]\n"
+                        "Plan:\n- Continue BiPAP.\n- Wean O2.\n"
+                    ),
+                },
+            }],
+        })
+        r1 = extract_consultant_plan_items(features, dd)
+        r2 = extract_consultant_plan_items(features, dd)
+        self.assertEqual(r1, r2)
 
 
 if __name__ == "__main__":

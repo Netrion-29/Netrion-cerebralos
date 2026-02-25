@@ -782,6 +782,118 @@ def _dt_matches(dt_iso: str, date_raw: str, time_raw: str) -> bool:
             and hour == tr_hour and minute == tr_minute)
 
 
+def _match_timeline_items_direct(
+    days_data: Dict[str, Any],
+    consultant_services: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """
+    Direct matching: find CONSULT_NOTE timeline items that correspond
+    to consultant services discovered via the timeline-scan fallback.
+
+    Unlike ``_match_timeline_items_to_services`` (which uses note_index
+    timestamps for matching), this function matches CONSULT_NOTE items
+    by dt from the evidence entries in consultant_services.
+
+    Returns list of matched items with: service, ts, author_name,
+    text, raw_line_id.
+    """
+    # Collect all (dt, service) pairs from consultant events evidence
+    svc_dts: Dict[str, Set[str]] = {}
+    for svc_info in consultant_services:
+        svc_name = svc_info.get("service", "")
+        for ev in svc_info.get("evidence", []):
+            snippet = ev.get("snippet", "")
+            # Evidence snippet format from fallback:
+            # "Consults MM/DD HHMM  [Service]"
+            # Derive dt from date_raw/time_raw in the snippet
+            pass
+        # Also use first_ts/last_ts but these are "MM/DD HHMM" —
+        # not enough for direct matching.
+    # Better approach: scan timeline directly for CONSULT_NOTE items
+    # and match against known services
+    days = days_data.get("days", {})
+    consult_items: Dict[str, Dict[str, Any]] = {}
+    for date_key in sorted(days.keys()):
+        day_data = days[date_key]
+        for item in day_data.get("items", []):
+            if item.get("type") != "CONSULT_NOTE":
+                continue
+            dt = item.get("dt", "")
+            if dt and dt not in consult_items:
+                consult_items[dt] = item
+
+    # Build set of consultant service names (lowered for matching)
+    known_services: Dict[str, str] = {}
+    for svc_info in consultant_services:
+        svc_name = svc_info.get("service", "")
+        known_services[svc_name.lower()] = svc_name
+
+    # Match each CONSULT_NOTE against known services
+    import re as _re
+    _CONSULT_TO_RE_LOCAL = _re.compile(
+        r"[Cc]onsult\s+[Tt]o\s+([A-Z][A-Za-z/& ]+?)(?:\s*[\[(\n]|\s+ordered\s+by)",
+    )
+    _CONSULT_HEADING_RE_LOCAL = _re.compile(
+        r"^([A-Z][A-Za-z ]+?)\s+Consult(?:\s+Note)?\s*$",
+        _re.MULTILINE,
+    )
+
+    matched: List[Dict[str, Any]] = []
+    matched_keys: Set[Tuple[str, str]] = set()
+
+    for dt, item in sorted(consult_items.items()):
+        text = (item.get("payload") or {}).get("text", "")
+        if not text:
+            continue
+
+        # Extract service from text
+        service = None
+        for m in _CONSULT_TO_RE_LOCAL.finditer(text[:2000]):
+            candidate = m.group(1).strip()
+            if candidate.lower() in known_services:
+                service = known_services[candidate.lower()]
+                break
+            # Try partial match (service name starts with candidate)
+            for ks_lower, ks_name in known_services.items():
+                if ks_lower.startswith(candidate.lower()):
+                    service = ks_name
+                    break
+            if service:
+                break
+
+        if not service:
+            for m in _CONSULT_HEADING_RE_LOCAL.finditer(text[:2000]):
+                candidate = m.group(1).strip()
+                if candidate.lower() in known_services:
+                    service = known_services[candidate.lower()]
+                    break
+
+        if not service:
+            continue
+
+        key = (service, dt)
+        if key in matched_keys:
+            continue
+        matched_keys.add(key)
+
+        raw_line_id = hashlib.sha256(
+            f"{item.get('source_id', '')}|{dt}|CONSULT_NOTE|{service}".encode(
+                "utf-8", errors="replace"
+            )
+        ).hexdigest()[:16]
+
+        matched.append({
+            "service": service,
+            "ts": dt,
+            "author_name": "",
+            "text": text,
+            "raw_line_id": raw_line_id,
+            "source_id": item.get("source_id", ""),
+        })
+
+    return matched
+
+
 # ── Public API ──────────────────────────────────────────────────────
 
 def extract_consultant_plan_items(
@@ -843,10 +955,20 @@ def extract_consultant_plan_items(
     if not isinstance(ni_entries, list):
         ni_entries = []
 
+    ce_source_rule = ce.get("source_rule_id", "")
+
     # ── Match timeline items to consultant services ──
-    matched_items = _match_timeline_items_to_services(
-        days_data, consultant_services, ni_entries,
-    )
+    if ce_source_rule == "consultant_events_from_timeline_items":
+        # Fallback path: events came from direct timeline scan.
+        # Match CONSULT_NOTE items directly by dt + service.
+        matched_items = _match_timeline_items_direct(
+            days_data, consultant_services,
+        )
+    else:
+        # Primary path: events came from note_index.
+        matched_items = _match_timeline_items_to_services(
+            days_data, consultant_services, ni_entries,
+        )
 
     if not matched_items:
         notes.append(
