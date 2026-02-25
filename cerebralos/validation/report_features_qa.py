@@ -1599,6 +1599,61 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Patient Movement v1 QA ───────────────────────────────────
+    pm = feats.get("patient_movement_v1", {})
+    print("PATIENT MOVEMENT v1 QA:")
+    pm_summary = pm.get("summary", {})
+    print(f"  movement_event_count: {pm_summary.get('movement_event_count', 0)}")
+    print(f"  first_movement_ts: {pm_summary.get('first_movement_ts', '(none)')}")
+    print(f"  discharge_ts: {pm_summary.get('discharge_ts', '(none)')}")
+    print(f"  transfer_count: {pm_summary.get('transfer_count', 0)}")
+    pm_units = pm_summary.get("units_visited", [])
+    if pm_units:
+        print(f"  units_visited ({len(pm_units)}):")
+        for u in pm_units[:10]:
+            print(f"    - {u}")
+    pm_locs = pm_summary.get("levels_of_care", [])
+    if pm_locs:
+        print(f"  levels_of_care ({len(pm_locs)}):")
+        for loc in pm_locs[:10]:
+            print(f"    - {loc}")
+    pm_svcs = pm_summary.get("services_seen", [])
+    if pm_svcs:
+        print(f"  services_seen ({len(pm_svcs)}):")
+        for svc in pm_svcs[:10]:
+            print(f"    - {svc}")
+    print(f"  source_rule_id: {pm.get('source_rule_id', '(none)')}")
+    pm_entries = pm.get("entries", [])
+    if pm_entries:
+        print(f"  entries ({len(pm_entries)}):")
+        for e in pm_entries[:15]:
+            prov_strs = []
+            for role, name in (e.get("providers") or {}).items():
+                prov_strs.append(f"{role}={name}")
+            prov_part = f" [{', '.join(prov_strs)}]" if prov_strs else ""
+            disp_part = f" -> {e.get('discharge_disposition')}" if e.get("discharge_disposition") else ""
+            loc_part = f" LOC={e.get('level_of_care')}" if e.get("level_of_care") else ""
+            print(
+                f"    {e.get('date_raw', '??/??')} {e.get('time_raw', '????')} "
+                f"{e.get('event_type', '?'):15s} "
+                f"{e.get('unit', '?')}"
+                f"{loc_part}{prov_part}{disp_part}"
+            )
+        if len(pm_entries) > 15:
+            print(f"    ... and {len(pm_entries) - 15} more entries")
+    pm_evidence = pm.get("evidence", [])
+    print(f"  evidence_count: {len(pm_evidence)}")
+    pm_warns = pm.get("warnings", [])
+    if pm_warns:
+        print(f"  warnings ({len(pm_warns)}):")
+        for w in pm_warns[:5]:
+            print(f"    - {w}")
+    pm_notes = pm.get("notes", [])
+    if pm_notes:
+        for n in pm_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     print("=" * 60)
     return 0
 

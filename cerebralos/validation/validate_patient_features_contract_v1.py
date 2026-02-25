@@ -66,6 +66,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "anesthesia_case_metrics_v1",
     "spine_clearance_v1",
     "note_index_events_v1",
+    "patient_movement_v1",
     "vitals_qa",
 })
 
