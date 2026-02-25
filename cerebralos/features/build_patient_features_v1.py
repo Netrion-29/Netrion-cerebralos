@@ -90,6 +90,7 @@ from cerebralos.features.note_index_events_v1 import extract_note_index_events
 from cerebralos.features.patient_movement_v1 import extract_patient_movement
 from cerebralos.features.consultant_events_v1 import extract_consultant_events
 from cerebralos.features.consultant_plan_items_v1 import extract_consultant_plan_items
+from cerebralos.features.consultant_plan_actionables_v1 import extract_consultant_plan_actionables
 from cerebralos.features.lda_events_v1 import extract_lda_events
 from cerebralos.features.urine_output_events_v1 import extract_urine_output_events
 
@@ -540,6 +541,10 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
     # ── Consultant Plan Items v1 (consumes consultant_events_v1 + note_index + timeline) ──
     consultant_plan_items = extract_consultant_plan_items(features, days_data)
     features["consultant_plan_items_v1"] = consultant_plan_items
+
+    # ── Consultant Plan Actionables v1 (consumes consultant_plan_items_v1) ──
+    consultant_plan_actionables = extract_consultant_plan_actionables(features)
+    features["consultant_plan_actionables_v1"] = consultant_plan_actionables
 
     # ── Age extraction v1 (patient metadata from timeline text) ──
     age_extraction = extract_patient_age(days_data)

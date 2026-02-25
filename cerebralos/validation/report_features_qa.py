@@ -1825,6 +1825,44 @@ def main() -> int:
             print(f"  note: {n}")
     print()
 
+    # ── Consultant Plan Actionables v1 QA ────────────────────────
+    cpa = feats.get("consultant_plan_actionables_v1", {})
+    print("CONSULTANT PLAN ACTIONABLES v1 QA:")
+    print(f"  actionable_count: {cpa.get('actionable_count', 0)}")
+    print(f"  source_rule_id: {cpa.get('source_rule_id', '(none)')}")
+    cpa_services = cpa.get("services_with_actionables", [])
+    if cpa_services:
+        print(f"  services_with_actionables: {', '.join(cpa_services)}")
+    cat_counts = cpa.get("category_counts", {})
+    if cat_counts:
+        print(f"  category_counts: {cat_counts}")
+    cpa_items = cpa.get("actionables", [])
+    if cpa_items:
+        print(f"  actionables ({len(cpa_items)}):")
+        for ca in cpa_items[:25]:
+            author_str = ca.get("author_name") or ""
+            author_part = f"  author={author_str}" if author_str else ""
+            print(
+                f"    [{ca.get('service', '?')}] "
+                f"({ca.get('category', '?')}) "
+                f"{ca.get('action_text', '?')[:80]}"
+                f"{author_part}"
+            )
+        if len(cpa_items) > 25:
+            print(f"    ... and {len(cpa_items) - 25} more items")
+    cpa_evidence_total = sum(len(ca.get("evidence", [])) for ca in cpa_items)
+    print(f"  evidence_count: {cpa_evidence_total}")
+    cpa_warns = cpa.get("warnings", [])
+    if cpa_warns:
+        print(f"  warnings ({len(cpa_warns)}):")
+        for w in cpa_warns[:5]:
+            print(f"    - {w}")
+    cpa_notes = cpa.get("notes", [])
+    if cpa_notes:
+        for n in cpa_notes[:5]:
+            print(f"  note: {n}")
+    print()
+
     print("=" * 60)
     return 0
 

@@ -69,6 +69,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "patient_movement_v1",
     "consultant_events_v1",
     "consultant_plan_items_v1",
+    "consultant_plan_actionables_v1",
     "lda_events_v1",
     "urine_output_events_v1",
     "vitals_qa",
