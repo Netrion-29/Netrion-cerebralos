@@ -722,21 +722,67 @@ def _extract_lda_vertical_urine(
 
 # ── Deduplication ────────────────────────────────────────────────────
 
-def _deduplicate_events(events: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def _deduplicate_events(events: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], int]:
     """
-    Remove duplicate urine events based on (ts, output_ml, source_type).
-    Keep the first occurrence. This handles cases where the same data
-    appears in both flowsheet and LDA assessment blocks.
+    Remove duplicate urine events.
+
+    **Phase 1 — same-source dedup**: exact ``(ts, output_ml, source_type)``
+    tuple; first occurrence kept.
+
+    **Phase 2 — cross-source dedup**: when the same timestamp has events
+    from both ``flowsheet`` and ``lda_assessment``, and one reports 0/null
+    mL while the other reports a positive value, prefer the event with the
+    non-zero mL value.  This handles the common pattern where the
+    flowsheet records a "Voided" 0 mL row at the same time a catheter
+    actually measured output.
+
+    Returns ``(deduped_events, cross_source_drops)``.
     """
+    # ── Phase 1: same-source dedup ──────────────────────────────
     seen: set = set()
-    deduped: List[Dict[str, Any]] = []
+    phase1: List[Dict[str, Any]] = []
     for ev in events:
         key = (ev["ts"], ev.get("output_ml"), ev["source_type"])
         if key in seen:
             continue
         seen.add(key)
-        deduped.append(ev)
-    return deduped
+        phase1.append(ev)
+
+    # ── Phase 2: cross-source dedup ─────────────────────────────
+    # Group by timestamp
+    from collections import defaultdict
+    ts_groups: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for ev in phase1:
+        ts_groups[ev["ts"]].append(ev)
+
+    deduped: List[Dict[str, Any]] = []
+    cross_drops = 0
+
+    for ts, group in ts_groups.items():
+        if len(group) == 1:
+            deduped.append(group[0])
+            continue
+
+        # Check for cross-source collision (different source_type at same ts)
+        source_types = set(ev["source_type"] for ev in group)
+        if len(source_types) < 2:
+            # Same source type — keep all (already deduped by phase 1)
+            deduped.extend(group)
+            continue
+
+        # Cross-source collision: separate by source
+        positives = [ev for ev in group if ev.get("output_ml") and ev["output_ml"] > 0]
+        zeros = [ev for ev in group if not ev.get("output_ml") or ev["output_ml"] == 0]
+
+        if positives and zeros:
+            # Keep the positive-ml events; drop zero/null events
+            deduped.extend(positives)
+            cross_drops += len(zeros)
+        else:
+            # No clear winner — keep all
+            deduped.extend(group)
+
+    return deduped, cross_drops
 
 
 # ── Public API ───────────────────────────────────────────────────────
@@ -797,7 +843,7 @@ def extract_urine_output_events(
     all_warnings.extend(vert_warns)
 
     # Deduplicate
-    all_events = _deduplicate_events(all_events)
+    all_events, cross_source_drops = _deduplicate_events(all_events)
 
     # Sort by timestamp (chronological)
     all_events.sort(key=lambda e: e["ts"])
@@ -833,6 +879,11 @@ def extract_urine_output_events(
         subtypes = sorted(set(e.get("source_subtype", "") for e in all_events if e.get("source_subtype")))
         if subtypes:
             result["notes"].append(f"subtypes: {', '.join(subtypes)}")
+
+        if cross_source_drops:
+            result["notes"].append(
+                f"cross_source_duplicates_dropped: {cross_source_drops}"
+            )
     else:
         result["notes"].append("No explicit urine output data found in raw file")
 

@@ -124,10 +124,11 @@ RE_CATEGORY_LINE = re.compile(
     r"^(?:PIV Line|Drain|Wound|Peripheral Nerve Catheter|"
     r"Urethral Catheter|NHSN Urethral Catheter|"
     r"External Urinary Catheter|"
-    r"Line|Airway|Central Line|Arterial Line|"
+    r"Line|Airway|Central Line|CVC|Arterial Line|"
     r"PICC|Triple Lumen|Chest Tube|"
     r"JP Drain|Surgical Drain|"
     r"G-tube|J-tube|Feeding Tube|PEG|"
+    r"NG/OG Tube|Non-Surgical Airway|"
     r"Surgical Airway|Trach)"
 )
 
@@ -149,9 +150,10 @@ RE_DEVICE_LABEL_A_NO_ASSESS = re.compile(
 # or "PICC Triple Lumen" or "Urethral Catheter 16 fr Anchored"
 RE_DEVICE_LABEL_B = re.compile(
     r"^(?P<label>(?:Peripheral IV|Urethral Catheter|External Urinary Catheter|"
-    r"PICC|Arterial Line|Central Line|Chest Tube|"
-    r"Surgical Airway|G-tube|Continuous Nerve Block|J-tube|Feeding Tube|"
-    r"G-tube.*PEG|Wound|JP Drain|Surgical Drain).+?)\s*$",
+    r"PICC|Arterial Line|Central Line|CVC|Chest Tube|"
+    r"Surgical Airway|Non-Surgical Airway|NG/OG Tube|"
+    r"G-tube|Continuous Nerve Block|J-tube|Feeding Tube|"
+    r"G-tube.*PEG|Wound|JP Drain|Surgical Drain)(?:[;/,\s].+?)?)\s*$",
 )
 
 # ── Placed/Removed/Duration field patterns ─────────────────────
@@ -168,7 +170,15 @@ RE_ASSESS_TS = re.compile(r"^\t(\d{2}/\d{2})\t(\d{4})\t")
 
 # ── Event-log tabular header ──────────────────────────────────
 RE_EVENTLOG_TABLE_HEADER = re.compile(r"^Name\s*$")
+# ── Tab-delimited Format B header (single-row-per-device variant) ─
+# e.g. " \tName\tPlacement date\tPlacement time\tSite\tDays"
+RE_TAB_FORMAT_HEADER = re.compile(
+    r"^\s*\tName\tPlacement date\tPlacement time\tSite\tDays",
+    re.IGNORECASE,
+)
 
+# Em-dash variants used as "no data" in Site column
+_EM_DASH_CHARS = {"—", "\u2014", "\u2013", "-", "\u2015"}
 # ── Duration value line ──────────────────────────────────────
 RE_DURATION_VAL = re.compile(
     r"^(?:less than )?\d+\s+days?$|^<\d+\s+days?$",
@@ -199,6 +209,10 @@ _CATEGORY_MAP = {
     "drain": "Drain",
     "continuous nerve block": "Peripheral Nerve Catheter",
     "peripheral nerve catheter": "Peripheral Nerve Catheter",
+    "cvc": "Central Line",
+    "ng/og tube": "NG/OG Tube",
+    "ng/og": "NG/OG Tube",
+    "non-surgical airway": "Non-Surgical Airway",
 }
 
 _MAX_ASSESSMENT_ROWS = 50  # cap per device to keep output deterministic
@@ -643,32 +657,49 @@ def _parse_eventlog_lda(section_lines: List[Tuple[int, str]]) -> Tuple[List[Dict
     """
     Parse a Format B (event-log) LDA section.
 
-    Format B layout:
-      [Lines / Drains / Airways]
-      Patient Lines/Drains/Airways Status
-      [blank]
-      Active LDAs
-      [blank]
-      Name
-      Placement date
-      Placement time
-      Site
-      Days
-      [blank]
-      <device_label>
-      <MM/DD/YY>             ← placement date
-      <HHMM>                 ← placement time
-      <site>                 ← site/location
-      <days_count>           ← "less than 1" or N
-      [blank]
-      <next device_label or section end>
+    Two sub-formats exist:
+
+    **Newline-format B** (each field on its own line)::
+
+        Active LDAs
+        Name
+        Placement date
+        Placement time
+        Site
+        Days
+        <device_label>
+        <MM/DD/YY>
+        <HHMM>
+        <site>
+        <days>
+
+    **Tab-format B** (single tab-delimited row per device)::
+
+        Active LDAs
+         \\tName\\tPlacement date\\tPlacement time\\tSite\\tDays
+         \\t<device>\\t<date>\\t<time>\\t<site>\\t<days>
+         \\t<device>\\t<date>\\t<time>\\t<site>\\t<days>
     """
     devices: List[Dict] = []
     warnings: List[str] = []
 
-    # Skip header lines until after "Days" (the last column header)
     i = 0
     n = len(section_lines)
+
+    # ── Detect sub-format ──────────────────────────────────────
+    # Scan for the tab-format header first; if present use tab parser
+    tab_header_idx: Optional[int] = None
+    for idx in range(n):
+        _, line = section_lines[idx]
+        if RE_TAB_FORMAT_HEADER.match(line):
+            tab_header_idx = idx
+            break
+
+    if tab_header_idx is not None:
+        return _parse_eventlog_lda_tab(section_lines, tab_header_idx, warnings)
+
+    # ── Newline-format B parser (original logic) ───────────────
+    # Skip header lines until after "Days" (the last column header)
     found_days_header = False
     while i < n:
         _, line = section_lines[i]
@@ -772,7 +803,7 @@ def _parse_eventlog_lda(section_lines: List[Tuple[int, str]]) -> Tuple[List[Dict
                 "placed_ts": placed_ts,
                 "removed_ts": None,  # Event-log format doesn't include removal
                 "duration_text": duration_text,
-                "site": site if site != "—" else None,
+                "site": site if site and site not in _EM_DASH_CHARS else None,
                 "source_format": "event_log",
                 "assessment_count": 0,
                 "event_rows": [],
@@ -797,6 +828,111 @@ def _parse_eventlog_lda(section_lines: List[Tuple[int, str]]) -> Tuple[List[Dict
 
 
 # ─────────────────────────────────────────────────────────────────
+# Tab-format B parser (single tab-delimited row per device)
+# ─────────────────────────────────────────────────────────────────
+
+def _parse_eventlog_lda_tab(
+    section_lines: List[Tuple[int, str]],
+    header_idx: int,
+    warnings: List[str],
+) -> Tuple[List[Dict], List[str]]:
+    """
+    Parse tab-format B device rows.
+
+    Each device row: ``SPACE TAB name TAB date TAB time TAB site TAB days``
+
+    Splitting on ``\\t`` gives 6 parts: ``["", name, date, time, site, days]``
+    (first element is the leading space before the tab).
+    """
+    devices: List[Dict] = []
+    n = len(section_lines)
+
+    for i in range(header_idx + 1, n):
+        line_num, line = section_lines[i]
+        stripped = line.strip()
+
+        # Skip blank lines
+        if not stripped:
+            continue
+
+        # End on section boundary
+        if RE_SECTION_BOUNDARY.match(stripped):
+            break
+
+        # Tab-format device rows start with space+tab or just tab
+        if "\t" not in line:
+            continue
+
+        parts = line.split("\t")
+        # Expect at least 3 tab-separated parts (empty + name + date ...)
+        if len(parts) < 3:
+            continue
+
+        # First element is typically empty or whitespace (leading " \t")
+        name_raw = parts[1].strip() if len(parts) > 1 else ""
+        date_raw = parts[2].strip() if len(parts) > 2 else ""
+        time_raw = parts[3].strip() if len(parts) > 3 else ""
+        site_raw = parts[4].strip() if len(parts) > 4 else ""
+        days_raw = parts[5].strip() if len(parts) > 5 else ""
+
+        if not name_raw:
+            continue
+
+        # Skip the header row itself if it somehow wasn't caught
+        if name_raw == "Name":
+            continue
+
+        # Validate that this looks like a device (must match known prefixes)
+        m_dev = RE_DEVICE_LABEL_B.match(name_raw)
+        if not m_dev:
+            continue
+
+        label = m_dev.group("label").strip()
+        raw_id = _make_raw_line_id(line)
+
+        # Parse placement date/time
+        placed_ts = None
+        if re.match(r"^\d{2}/\d{2}/\d{2}\s*$", date_raw):
+            if re.match(r"^\d{3,4}\s*$", time_raw):
+                placed_ts = f"{date_raw} {time_raw}"
+            else:
+                placed_ts = date_raw
+
+        # Normalize site: em-dash → None
+        site = site_raw if site_raw and site_raw not in _EM_DASH_CHARS else None
+
+        # Duration text from days column
+        duration_text = None
+        if days_raw and re.match(r"^(?:less than )?\d+\s*$", days_raw, re.IGNORECASE):
+            duration_text = f"{days_raw} day(s)"
+
+        device_type = _classify_device_type(label)
+        category = _classify_device(label)
+
+        devices.append({
+            "device_type": device_type,
+            "device_label": label,
+            "category": category,
+            "placed_ts": placed_ts,
+            "removed_ts": None,
+            "duration_text": duration_text,
+            "site": site,
+            "source_format": "event_log",
+            "assessment_count": 0,
+            "event_rows": [],
+            "evidence": [
+                {
+                    "role": "lda_device_entry",
+                    "snippet": label[:120],
+                    "raw_line_id": raw_id,
+                }
+            ],
+        })
+
+    return devices, warnings
+
+
+# ─────────────────────────────────────────────────────────────────
 # Section classifier
 # ─────────────────────────────────────────────────────────────────
 
@@ -816,17 +952,21 @@ def _classify_section_format(section_lines: List[Tuple[int, str]]) -> str:
 # Deduplication
 # ─────────────────────────────────────────────────────────────────
 
-def _deduplicate_devices(devices: List[Dict]) -> List[Dict]:
+def _deduplicate_devices(devices: List[Dict]) -> Tuple[List[Dict], int]:
     """
     Merge duplicate device entries (same label) keeping the richest data.
     Event-log snapshots from different days may produce duplicates.
+
+    Returns (deduped_devices, merge_count).
     """
     seen: Dict[str, Dict] = {}  # label → best device dict
+    merge_count = 0
     for dev in devices:
         label = dev["device_label"]
         if label not in seen:
             seen[label] = dev
         else:
+            merge_count += 1
             existing = seen[label]
             # Prefer the entry with more data
             if dev.get("placed_ts") and not existing.get("placed_ts"):
@@ -854,7 +994,7 @@ def _deduplicate_devices(devices: List[Dict]) -> List[Dict]:
             for e in dev.get("evidence", []):
                 if e["raw_line_id"] not in existing_ids:
                     existing.setdefault("evidence", []).append(e)
-    return list(seen.values())
+    return list(seen.values()), merge_count
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -915,7 +1055,7 @@ def extract_lda_events(
         all_warnings.extend(warns)
 
     # Deduplicate across sections (event-log may repeat devices)
-    all_devices = _deduplicate_devices(all_devices)
+    all_devices, merge_count = _deduplicate_devices(all_devices)
 
     # Build summary fields
     categories = sorted(set(d["category"] for d in all_devices))
@@ -937,6 +1077,8 @@ def extract_lda_events(
     format_types = sorted(set(d["source_format"] for d in all_devices))
     if format_types:
         notes.append(f"source_formats: {', '.join(format_types)}")
+    if merge_count:
+        notes.append(f"snapshot_duplicates_merged: {merge_count}")
     notes.append(
         "Urine-output-specific analysis deferred to urine_output_events_v1"
     )

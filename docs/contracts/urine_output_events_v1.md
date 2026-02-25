@@ -141,9 +141,12 @@ Explicitly excluded:
 
 ## Deduplication
 
-Events are deduplicated by `(ts, output_ml, source_type)` tuple.
-First occurrence is kept.  This prevents double-counting when the same
-urine data appears in both flowsheet and LDA assessment blocks.
+Events are deduplicated in two phases:
+
+1. **Same-source dedup**: by `(ts, output_ml, source_type)` tuple.  First occurrence is kept.
+2. **Cross-source dedup**: when the same timestamp has events from both `flowsheet` and `lda_assessment`, and one reports 0/null mL while the other reports a positive value, the event with the non-zero mL value is preferred.  A `cross_source_duplicates_dropped: N` note is added to `notes[]` when drops occur.
+
+This prevents double-counting and ensures the more informative event is retained when flowsheet and LDA catheter data overlap.
 
 ---
 

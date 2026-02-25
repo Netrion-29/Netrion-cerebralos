@@ -155,6 +155,121 @@ Flowsheets
 Blood Glucose\t01/02\t1112
 """
 
+# ── Format B tab-delimited test data ──────────────────────────────
+
+FORMAT_B_TAB = """\
+ Lines / Drains / Airways
+
+Patient Lines/Drains/Airways Status 
+
+
+Active LDAs 
+ 
+\x20
+ \tName\tPlacement date\tPlacement time\tSite\tDays
+ \tPICC Triple Lumen\t01/22/26 \t1120 \t\u2014\t2
+ \tG-tube; J-tube, PEG; Feeding Tube Percutaneous endoscopic gastrostomy (PEG) LUQ 20 fr\t01/15/26 \t1255 \tLUQ \t9
+ \tExternal Urinary Catheter\t01/24/26 \t0700 \t\u2014 \tless than 1
+ \tSurgical Airway/Trach Shiley 8 mm Distal;Long\t01/23/26 \t1301 \t8 mm \t1
+ 
+
+
+ Exam
+
+Ventilator Settings
+"""
+
+# ── Snapshot dedup test: 3 sections with same devices ────────────
+
+FORMAT_B_SNAPSHOT_DEDUP = """\
+ Lines / Drains / Airways
+
+Patient Lines/Drains/Airways Status 
+
+
+Active LDAs 
+ 
+\x20
+ \tName\tPlacement date\tPlacement time\tSite\tDays
+ \tPICC Triple Lumen\t01/22/26 \t1120 \t\u2014\t1
+ \tUrethral Catheter 16 fr Anchored\t01/16/26 \t1030 \tAnchored \t7
+ 
+
+
+ Exam
+
+ Lines / Drains / Airways
+
+Patient Lines/Drains/Airways Status 
+
+
+Active LDAs 
+ 
+\x20
+ \tName\tPlacement date\tPlacement time\tSite\tDays
+ \tPICC Triple Lumen\t01/22/26 \t1120 \t\u2014\t2
+ \tUrethral Catheter 16 fr Anchored\t01/16/26 \t1030 \tAnchored \t8
+ 
+
+
+ Exam
+
+ Lines / Drains / Airways
+
+Patient Lines/Drains/Airways Status 
+
+
+Active LDAs 
+ 
+\x20
+ \tName\tPlacement date\tPlacement time\tSite\tDays
+ \tPICC Triple Lumen\t01/22/26 \t1120 \t\u2014\t3
+ \tUrethral Catheter 16 fr Anchored\t01/16/26 \t1030 \tAnchored \t9
+ 
+
+
+ Exam
+"""
+
+# ── New device types test data ────────────────────────────────────
+
+FORMAT_B_NEW_TYPES = """\
+ Lines / Drains / Airways
+
+Patient Lines/Drains/Airways Status 
+
+
+Active LDAs 
+ 
+
+Name
+Placement date
+Placement time
+Site
+Days
+
+CVC Triple Lumen 01/11/26 Right Internal jugular
+01/11/26 
+0753 
+Internal jugular 
+12
+
+NG/OG Tube Orogastric 16 fr Center mouth
+01/03/26 
+1113 
+Center mouth 
+20
+
+Non-Surgical Airway ETT- Cuffed
+01/03/26 
+1106 
+— 
+20
+
+
+ Exam
+"""
+
 
 # ═══════════════════════════════════════════════════════════════════
 # Test Cases
@@ -422,6 +537,26 @@ class TestRealData(unittest.TestCase):
         cats = result["categories_present"]
         self.assertIn("PICC", cats)
 
+    def test_ronald_bittner_dedup_quality(self):
+        """Ronald Bittner has 23 snapshot sections — after dedup, ~15-20 devices."""
+        path = self._patient_path("Ronald_Bittner")
+        if not path:
+            self.skipTest("Ronald_Bittner raw data not found")
+        result = extract_lda_events({}, _make_days_with_source(path))
+        # Before fix: 43 devices. After fix: ~19 unique.
+        self.assertLessEqual(result["lda_device_count"], 25)
+        self.assertGreaterEqual(result["lda_device_count"], 10)
+        # Should have snapshot_duplicates_merged note
+        merged_notes = [n for n in result["notes"] if "snapshot_duplicates_merged" in n]
+        self.assertTrue(len(merged_notes) > 0)
+        # All devices should have placed_ts (tab parser fixed)
+        for dev in result["devices"]:
+            self.assertIsNotNone(dev["placed_ts"], f"{dev['device_label']} missing placed_ts")
+        # New device types should be present
+        self.assertIn("NG/OG Tube", result["categories_present"])
+        self.assertIn("Non-Surgical Airway", result["categories_present"])
+        self.assertIn("External Urinary Catheter", result["categories_present"])
+
     def test_anna_dennis_no_lda(self):
         path = self._patient_path("Anna_Dennis")
         if not path:
@@ -440,6 +575,119 @@ class TestRealData(unittest.TestCase):
             json.dumps(r1, sort_keys=True),
             json.dumps(r2, sort_keys=True),
         )
+
+
+class TestFormatBTab(unittest.TestCase):
+    """Tests for Format B tab-delimited variant."""
+
+    def setUp(self):
+        self.path = _write_temp(FORMAT_B_TAB)
+
+    def tearDown(self):
+        os.unlink(self.path)
+
+    def test_device_count(self):
+        result = extract_lda_events({}, _make_days_with_source(self.path))
+        self.assertEqual(result["lda_device_count"], 4)
+
+    def test_picc_extracted(self):
+        result = extract_lda_events({}, _make_days_with_source(self.path))
+        picc = [d for d in result["devices"] if d["category"] == "PICC"]
+        self.assertEqual(len(picc), 1)
+        self.assertEqual(picc[0]["placed_ts"], "01/22/26 1120")
+        self.assertIsNone(picc[0]["site"])  # em-dash → None
+
+    def test_feeding_tube_site(self):
+        result = extract_lda_events({}, _make_days_with_source(self.path))
+        ft = [d for d in result["devices"] if d["category"] == "Feeding Tube"]
+        self.assertEqual(len(ft), 1)
+        self.assertEqual(ft[0]["site"], "LUQ")
+
+    def test_external_urinary_catheter(self):
+        result = extract_lda_events({}, _make_days_with_source(self.path))
+        euc = [d for d in result["devices"] if d["category"] == "External Urinary Catheter"]
+        self.assertEqual(len(euc), 1)
+        self.assertEqual(euc[0]["placed_ts"], "01/24/26 0700")
+        self.assertEqual(euc[0]["duration_text"], "less than 1 day(s)")
+
+    def test_trach_extracted(self):
+        result = extract_lda_events({}, _make_days_with_source(self.path))
+        trach = [d for d in result["devices"] if d["category"] == "Surgical Airway/Trach"]
+        self.assertEqual(len(trach), 1)
+        self.assertEqual(trach[0]["placed_ts"], "01/23/26 1301")
+
+    def test_source_format_event_log(self):
+        result = extract_lda_events({}, _make_days_with_source(self.path))
+        for dev in result["devices"]:
+            self.assertEqual(dev["source_format"], "event_log")
+
+    def test_evidence_has_raw_line_id(self):
+        result = extract_lda_events({}, _make_days_with_source(self.path))
+        for dev in result["devices"]:
+            self.assertTrue(len(dev["evidence"]) > 0)
+            for e in dev["evidence"]:
+                self.assertIn("raw_line_id", e)
+                self.assertEqual(len(e["raw_line_id"]), 64)
+
+
+class TestSnapshotDedup(unittest.TestCase):
+    """Tests for snapshot dedup across repeated daily LDA sections."""
+
+    def setUp(self):
+        self.path = _write_temp(FORMAT_B_SNAPSHOT_DEDUP)
+
+    def tearDown(self):
+        os.unlink(self.path)
+
+    def test_dedup_count(self):
+        """3 sections x 2 devices each → 2 unique after dedup."""
+        result = extract_lda_events({}, _make_days_with_source(self.path))
+        self.assertEqual(result["lda_device_count"], 2)
+
+    def test_merged_note(self):
+        result = extract_lda_events({}, _make_days_with_source(self.path))
+        merged_notes = [n for n in result["notes"] if "snapshot_duplicates_merged" in n]
+        self.assertTrue(len(merged_notes) > 0)
+        self.assertIn("4", merged_notes[0])  # 4 duplicates merged (6 total - 2 unique)
+
+    def test_evidence_merged(self):
+        """Each unique device should have 3 evidence entries (one per section)."""
+        result = extract_lda_events({}, _make_days_with_source(self.path))
+        for dev in result["devices"]:
+            self.assertEqual(len(dev["evidence"]), 3)
+
+
+class TestNewDeviceTypes(unittest.TestCase):
+    """Tests for newly recognized device types: CVC, NG/OG Tube, Non-Surgical Airway."""
+
+    def setUp(self):
+        self.path = _write_temp(FORMAT_B_NEW_TYPES)
+
+    def tearDown(self):
+        os.unlink(self.path)
+
+    def test_device_count(self):
+        result = extract_lda_events({}, _make_days_with_source(self.path))
+        self.assertEqual(result["lda_device_count"], 3)
+
+    def test_cvc_as_central_line(self):
+        result = extract_lda_events({}, _make_days_with_source(self.path))
+        cl = [d for d in result["devices"] if d["category"] == "Central Line"]
+        self.assertEqual(len(cl), 1)
+        self.assertIn("CVC", cl[0]["device_label"])
+        self.assertEqual(cl[0]["placed_ts"], "01/11/26 0753")
+
+    def test_ng_og_tube(self):
+        result = extract_lda_events({}, _make_days_with_source(self.path))
+        ng = [d for d in result["devices"] if d["category"] == "NG/OG Tube"]
+        self.assertEqual(len(ng), 1)
+        self.assertIn("01/03/26", ng[0]["placed_ts"])
+
+    def test_non_surgical_airway(self):
+        result = extract_lda_events({}, _make_days_with_source(self.path))
+        nsa = [d for d in result["devices"] if d["category"] == "Non-Surgical Airway"]
+        self.assertEqual(len(nsa), 1)
+        self.assertIsNone(nsa[0]["site"])  # em-dash normalized
 
 
 if __name__ == "__main__":

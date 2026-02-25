@@ -9,7 +9,9 @@ Raw data file (`meta.source_file`), **LDAs** (Lines / Drains / Airways) section.
 Two source formats are handled:
 
 - **Format A — Summary LDA** (newer event-log exports): `LDAs` header → device category → device label with assessment count → Placed/Removed/Duration fields → timestamped assessment rows.
-- **Format B — Event-log Active LDA** (daily-note–embedded): `Patient Lines/Drains/Airways Status` → `Active LDAs` → tabular Name/Placement date/Placement time/Site/Days rows.
+- **Format B — Event-log Active LDA** (daily-note–embedded): `Patient Lines/Drains/Airways Status` → `Active LDAs` → tabular Name/Placement date/Placement time/Site/Days rows.  Two sub-formats exist:
+  - **Newline-format B**: each field on its own line (5-line blocks per device)
+  - **Tab-format B**: single tab-delimited row per device: `\tName\tDate\tTime\tSite\tDays`
 
 ## Relationship to existing features
 - **Additive** — does NOT replace device-day-count logic (per-day `devices` in `days[]`).
@@ -72,18 +74,22 @@ Two source formats are handled:
 | Peripheral IV | PIV |
 | PICC | PICC |
 | Arterial Line | Arterial Line |
-| Central Line | Central Line |
+| Central Line, CVC | Central Line |
 | Urethral Catheter | Urethral Catheter |
 | External Urinary Catheter | External Urinary Catheter |
 | Chest Tube | Chest Tube |
 | Surgical Airway, Trach | Surgical Airway/Trach |
+| Non-Surgical Airway | Non-Surgical Airway |
 | G-tube, J-tube, Feeding Tube, PEG | Feeding Tube |
+| NG/OG Tube | NG/OG Tube |
 | Wound | Wound |
 | JP Drain, Surgical Drain, Drain | Drain |
 | Continuous Nerve Block | Peripheral Nerve Catheter |
 
 ## Deduplication
-Event-log format may repeat the same device across multiple daily snapshots. Devices are deduplicated by `device_label`, merging placement/removal/assessment data from the richest entry.
+Event-log format may repeat the same device across multiple daily snapshots. Devices are deduplicated by `device_label`, merging placement/removal/assessment data from the richest entry.  Evidence entries from all snapshot occurrences are preserved.  A `snapshot_duplicates_merged: N` note is added to `notes[]` when merges occur.
+
+Em-dash characters (U+2014, U+2013) in the `Site` column are normalized to `null`.
 
 ## Evidence traceability
 - Each device entry has `evidence[]` with `raw_line_id` (SHA-256 hash of the raw text line containing the device label).
