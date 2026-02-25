@@ -170,7 +170,7 @@ _SIGNATURE_RE = re.compile(
     r"|This\s+has\s+been\s+electronically\s+signed"
     r"|Signed\s+by"
     r"|Authenticated\s+by"
-    r"|Addendum:"
+    r"|Addendum\b"
     r")",
     re.IGNORECASE,
 )
@@ -187,7 +187,7 @@ _ATTESTATION_RE = re.compile(
 _CRED_LINE_RE = re.compile(
     r"^[A-Z][a-z]+\s+(?:[A-Z]\.?\s+)?[A-Z][a-z]+,?\s+"
     r"(?:MD|DO|NP|PA-C|PA|AGACNP|OTR|PT|DPT|RN|BSN|CWOCN|"
-    r"OTR/L|C/NDT|MS|FACS|FACP)\b",
+    r"OTR/L|C/NDT|MS|FACS|FACP|OTA|COTA|PTA|LCSW|LISW)\b",
 )
 
 # Date-only lines: "1/1/2026", "01/02/2026"
@@ -215,7 +215,7 @@ _UNTITLED_IMAGE_RE = re.compile(r"^\s*untitled\s+image\s*$", re.IGNORECASE)
 # Courtesy / thanks lines
 _COURTESY_RE = re.compile(
     r"^\s*(?:Thank\s+you\s+for|Please\s+feel\s+free|"
-    r"Please\s+contact\s+us|We\s+will\s+follow\s+along)\b",
+    r"Please\s+contact\b|We\s+will\s+follow\s+along)\b",
     re.IGNORECASE,
 )
 
@@ -233,7 +233,9 @@ _SERVICE_TITLE_RE = re.compile(
     r"^\s*(?:Deaconess\s+(?:Clinic|Care\s+Group|Health\s+System)\b.*"
     r"|Available\s+on\s+Haiku"
     r"|Ear\s+Nose\s+and\s+Throat\s+Surgery"
-    r"|Wound\s+Ostomy\s+and\s+Continence"
+    r"|Wound\s+Ostomy\s+and\s+Continence\b.*"
+    r"|Hospitalist"
+    r"|NEUROSURGERY\s+FRACTURE\s+INSTRUCTIONS\s*:?"
     r")\s*$",
     re.IGNORECASE,
 )
@@ -241,6 +243,127 @@ _SERVICE_TITLE_RE = re.compile(
 # "Code, full" / "Full code status" standalone — not a plan item
 _CODE_STATUS_RE = re.compile(
     r"^\s*(?:Code,?\s+full|Full\s+code\s+status)\b",
+    re.IGNORECASE,
+)
+
+# ── v2 noise filters ──────────────────────────────────────────────
+
+# PT/OT functional-assessment form fields: "Label: Level" where
+# Level is a standard functional assessment value.
+_FUNC_ASSESS_RE = re.compile(
+    r":\s*(?:Independent|Supervision|Partial/moderate|Substantial/Maximal"
+    r"|Not applicable|Needed\s+some\s+help|Dependent"
+    r"|Setup\s+or\s+clean-?up)"
+    r"(?:\s+(?:assistance|Assistance))?",
+    re.IGNORECASE,
+)
+
+# PT/OT assessment score lines: "Raw Score: 23", "T-Scale Score: 50.88"
+_ASSESS_SCORE_RE = re.compile(
+    r"(?:Raw\s+Score|T-Scale\s+Score|T\s+Scale\s+Score)\s*:\s*[\d.]+",
+    re.IGNORECASE,
+)
+
+# PT/OT form headings and field labels — section labels with no clinical action.
+_THERAPY_FORM_FIELD_RE = re.compile(
+    r"^\s*(?:"
+    r"Outcome\s+Measures?"
+    r"|Prior\s+Level\s+of\s+Function"
+    r"|ADL\s+Assist(?:ance)?"
+    r"|Functional\s+Transfers?"
+    r"|Home\s+Equipment\s+Available"
+    r"|Prior\s+Device\s+Use"
+    r"|Home\s+Layout\s*:"
+    r"|Permanent\s+Residence\s*:"
+    r"|Who\s+do\s+you\s+live\s+with\b"
+    r"|(?:PT|OT)\s+Frequency\s*:"
+    r"|Distance\s+Ambulated\b"
+    r"|Assistive\s+Device\s*:"
+    r"|Pattern\s*:\s*Within\s+functional"
+    r"|Progress\s*:\s*Progressing\s+toward"
+    r"|Home\s+Layout\b"
+    r"|Treatment(?:/| )Interventions\s*:"
+    r"|Treatment\s+Interventions\s*:"
+    r")",
+    re.IGNORECASE,
+)
+
+# PT/OT bare section-heading words (must match ENTIRE line)
+_THERAPY_HEADING_RE = re.compile(
+    r"^\s*(?:"
+    r"Transfers"
+    r"|Mobility"
+    r"|Balance"
+    r"|Stairs"
+    r"|Assessment"
+    r"|Skin\s+Integrity"
+    r"|Patient\s+[Ii]nstructions"
+    r")\.?\s*$",
+    re.IGNORECASE,
+)
+
+# Orthopedic / hospitalist problem-list template lines
+_PROBLEM_LIST_RE = re.compile(
+    r"^\s*(?:"
+    r"Problems\s*:\s*\(highlighted\s+problems"
+    r"|Active\s+Hospital\s+Problems"
+    r"|Resolved\s+Hospital\s+Problems"
+    r"|No\s+resolved\s+problems\s+to\s+display"
+    r"|Diagnosis\s+Date\s+Noted"
+    r")",
+    re.IGNORECASE,
+)
+
+# Lines ending with "(HCC)" — diagnosis heading with billing marker
+_HCC_DIAG_RE = re.compile(r"\(HCC\)\s*$")
+
+# ICD-style diagnosis lines ending with "initial encounter" / "subsequent encounter"
+_ICD_ENCOUNTER_RE = re.compile(
+    r",\s*(?:initial|subsequent)\s+encounter\b",
+    re.IGNORECASE,
+)
+
+# PT/OT activity assessment labels (specific transfer/mobility form fields)
+# followed by a colon — these are form data, not clinical recommendations.
+_THERAPY_ACTIVITY_LABEL_RE = re.compile(
+    r"^\s*(?:"
+    r"Sitting\s+to\s+lying"
+    r"|Lying\s+to\s+sitting"
+    r"|Sit\s+to\s+Stand"
+    r"|Chair/bed\s+to\s+chair"
+    r"|Eating\s+Assist"
+    r"|Oral\s+Hygiene"
+    r"|Shower/Bathe"
+    r"|[UL]E\s+Dressing"
+    r"|Toilet\s+Hygiene"
+    r"|Putting\s+on/Taking\s+off"
+    r"|Ambulation\s+Assist"
+    r"|Sitting\s+-\s+(?:Static|Dynamic)"
+    r"|Standing\s+-\s+(?:Static|Dynamic)"
+    r")\s*:",
+    re.IGNORECASE,
+)
+
+# Patient acknowledgment / understanding boilerplate
+_PATIENT_ACK_RE = re.compile(
+    r"(?:"
+    r"(?:patient|guardian).*(?:understanding|agrees\s+with\s+the\s+plan)"
+    r"|(?:questions?\s+(?:were\s+)?answered)"
+    r"|(?:patient\s+is\s+given\s+an\s+After\s+Visit\s+Summary)"
+    r"|(?:indicates?\s+understanding\s+of\s+these\s+issues)"
+    r")",
+    re.IGNORECASE,
+)
+
+# Bare "Signed:" line
+_SIGNED_BARE_RE = re.compile(r"^\s*Signed\s*:\s*$", re.IGNORECASE)
+
+# Generic instruction boilerplate (After Visit, medication instructions)
+_GENERIC_INSTRUCTION_RE = re.compile(
+    r"^\s*(?:"
+    r"If\s+medications\s+are\s+provided\b"
+    r"|Take\s+all\s+medications\s+as\s+(?:directed|prescribed)"
+    r")",
     re.IGNORECASE,
 )
 
@@ -361,6 +484,29 @@ def _is_noise_line(line: str) -> bool:
     if _CODE_STATUS_RE.match(stripped):
         return True
     if _LAB_ORDER_RE.match(stripped):
+        return True
+    # ── v2 noise filters ──
+    if _FUNC_ASSESS_RE.search(stripped):
+        return True
+    if _ASSESS_SCORE_RE.search(stripped):
+        return True
+    if _THERAPY_FORM_FIELD_RE.match(stripped):
+        return True
+    if _THERAPY_HEADING_RE.match(stripped):
+        return True
+    if _PROBLEM_LIST_RE.match(stripped):
+        return True
+    if _HCC_DIAG_RE.search(stripped):
+        return True
+    if _ICD_ENCOUNTER_RE.search(stripped):
+        return True
+    if _THERAPY_ACTIVITY_LABEL_RE.match(stripped):
+        return True
+    if _PATIENT_ACK_RE.search(stripped):
+        return True
+    if _SIGNED_BARE_RE.match(stripped):
+        return True
+    if _GENERIC_INSTRUCTION_RE.match(stripped):
         return True
     # Very short lines (≤2 chars) are noise
     if len(stripped) <= 2:

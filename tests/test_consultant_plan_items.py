@@ -191,6 +191,276 @@ class TestIsNoiseLine(unittest.TestCase):
             "This has been electronically signed by:"
         ))
 
+    # ── v2 noise filter tests ───────────────────────────────────────
+
+    def test_functional_assessment_independent(self):
+        self.assertTrue(_is_noise_line("Self Care (New): Independent"))
+
+    def test_functional_assessment_supervision(self):
+        self.assertTrue(_is_noise_line(
+            "Lying to sitting on side of bed: Supervision or touching assistance"
+        ))
+
+    def test_functional_assessment_partial(self):
+        self.assertTrue(_is_noise_line(
+            "Shower/Bathe self: Partial/moderate assistance, Less than 50% assist needed"
+        ))
+
+    def test_functional_assessment_substantial(self):
+        self.assertTrue(_is_noise_line(
+            "Putting on/Taking off footwear: Substantial/Maximal Assistance"
+        ))
+
+    def test_functional_assessment_not_applicable(self):
+        self.assertTrue(_is_noise_line(
+            "Chair/bed to chair transfer: Not applicable"
+        ))
+
+    def test_assessment_raw_score(self):
+        self.assertTrue(_is_noise_line(
+            "Basic Mobility Raw Score: 23 (01/01/26 1449)"
+        ))
+
+    def test_assessment_tscale_score(self):
+        self.assertTrue(_is_noise_line(
+            "Basic Mobility T-Scale Score: 50.88 (01/01/26 1449)"
+        ))
+
+    def test_daily_activity_score(self):
+        self.assertTrue(_is_noise_line("Daily Activity Raw Score : 15"))
+
+    def test_therapy_form_outcome_measure(self):
+        self.assertTrue(_is_noise_line("Outcome Measure"))
+
+    def test_therapy_form_outcome_measures(self):
+        self.assertTrue(_is_noise_line("Outcome Measures"))
+
+    def test_therapy_form_prior_level(self):
+        self.assertTrue(_is_noise_line("Prior Level of Function"))
+
+    def test_therapy_form_permanent_residence(self):
+        self.assertTrue(_is_noise_line("Permanent Residence: Home"))
+
+    def test_therapy_form_home_layout(self):
+        self.assertTrue(_is_noise_line(
+            "Home Layout: One level, Stairs to enter with rails (4 STE)"
+        ))
+
+    def test_therapy_form_who_live_with(self):
+        self.assertTrue(_is_noise_line("Who do you live with?: Spouse"))
+
+    def test_therapy_form_pt_frequency(self):
+        self.assertTrue(_is_noise_line("PT Frequency: One time visit"))
+
+    def test_therapy_form_ot_frequency(self):
+        self.assertTrue(_is_noise_line("OT Frequency: 6x/week"))
+
+    def test_therapy_form_distance_ambulated(self):
+        self.assertTrue(_is_noise_line("Distance Ambulated (ft): 80 ft"))
+
+    def test_therapy_form_assistive_device(self):
+        self.assertTrue(_is_noise_line("Assistive Device: None"))
+
+    def test_therapy_form_home_equipment(self):
+        self.assertTrue(_is_noise_line(
+            "Home Equipment Available : Rolling Walker, Rollator, Cane"
+        ))
+
+    def test_therapy_form_prior_device(self):
+        self.assertTrue(_is_noise_line(
+            "Prior Device Use: None of the given options"
+        ))
+
+    def test_therapy_form_treatment_interventions(self):
+        self.assertTrue(_is_noise_line(
+            "Treatment/Interventions: ADL retraining, Functional transfer training"
+        ))
+
+    def test_therapy_form_progress(self):
+        self.assertTrue(_is_noise_line("Progress: Progressing toward goals"))
+
+    def test_therapy_heading_transfers(self):
+        self.assertTrue(_is_noise_line("Transfers"))
+
+    def test_therapy_heading_mobility(self):
+        self.assertTrue(_is_noise_line("Mobility"))
+
+    def test_therapy_heading_balance(self):
+        self.assertTrue(_is_noise_line("Balance"))
+
+    def test_therapy_heading_stairs(self):
+        self.assertTrue(_is_noise_line("Stairs"))
+
+    def test_therapy_heading_assessment(self):
+        self.assertTrue(_is_noise_line("Assessment"))
+
+    def test_therapy_heading_patient_instructions(self):
+        self.assertTrue(_is_noise_line("Patient instructions"))
+
+    def test_problem_list_highlighted(self):
+        self.assertTrue(_is_noise_line(
+            "Problems: (highlighted problems were addressed today)"
+        ))
+
+    def test_problem_list_active(self):
+        self.assertTrue(_is_noise_line("Active Hospital Problems"))
+
+    def test_problem_list_resolved(self):
+        self.assertTrue(_is_noise_line("Resolved Hospital Problems"))
+
+    def test_problem_list_no_resolved(self):
+        self.assertTrue(_is_noise_line(
+            "No resolved problems to display."
+        ))
+
+    def test_problem_list_diagnosis_date(self):
+        self.assertTrue(_is_noise_line("Diagnosis Date Noted"))
+
+    def test_hcc_diagnosis_heading(self):
+        self.assertTrue(_is_noise_line(
+            "Closed compression fracture of body of L1 vertebra (HCC)"
+        ))
+
+    def test_hcc_diagnosis_heading_2(self):
+        self.assertTrue(_is_noise_line("Alzheimer's dementia (HCC)"))
+
+    def test_patient_ack_understanding(self):
+        self.assertTrue(_is_noise_line(
+            "Patient and/or patient's guardian understanding of diagnosis and plan."
+        ))
+
+    def test_patient_ack_questions_answered(self):
+        self.assertTrue(_is_noise_line("Any questions were answered."))
+
+    def test_patient_ack_agrees(self):
+        self.assertTrue(_is_noise_line(
+            "The patient indicates understanding of these issues and agrees with the plan."
+        ))
+
+    def test_patient_ack_avs(self):
+        self.assertTrue(_is_noise_line(
+            "The patient is given an After Visit Summary sheet that lists all of their medications"
+        ))
+
+    def test_signed_bare(self):
+        self.assertTrue(_is_noise_line("Signed:"))
+
+    def test_generic_instruction_medications(self):
+        self.assertTrue(_is_noise_line(
+            "If medications are provided, please take as directed."
+        ))
+
+    def test_credential_ota(self):
+        self.assertTrue(_is_noise_line("Kyra Hassman, COTA"))
+
+    def test_credential_pta(self):
+        self.assertTrue(_is_noise_line("Angela Evans, PTA"))
+
+    def test_courtesy_please_contact_me(self):
+        self.assertTrue(_is_noise_line(
+            "Please contact me if I can be of further assistance during this hospitalization."
+        ))
+
+    def test_service_title_wound_ostomy_nurse(self):
+        self.assertTrue(_is_noise_line("Wound Ostomy and Continence Nurse"))
+
+    def test_service_title_hospitalist(self):
+        self.assertTrue(_is_noise_line("Hospitalist"))
+
+    def test_functional_assessment_needed_help(self):
+        self.assertTrue(_is_noise_line("Self Care (New): Needed some help"))
+
+    def test_functional_assessment_dependent(self):
+        self.assertTrue(_is_noise_line("Toilet Hygiene: Dependent"))
+
+    def test_icd_initial_encounter(self):
+        self.assertTrue(_is_noise_line(
+            "Closed displaced fracture of right clavicle, unspecified part of clavicle, initial encounter 01/01/2026"
+        ))
+
+    def test_icd_subsequent_encounter(self):
+        self.assertTrue(_is_noise_line(
+            "Injury of low back, subsequent encounter"
+        ))
+
+    def test_therapy_activity_sit_to_stand(self):
+        self.assertTrue(_is_noise_line(
+            "Sit to Stand: Partial/Moderate assistance, Less than 25% assist needed"
+        ))
+
+    def test_therapy_activity_sitting_to_lying(self):
+        self.assertTrue(_is_noise_line(
+            "Sitting to lying: Up in chair after treatment"
+        ))
+
+    def test_therapy_activity_sitting_static(self):
+        self.assertTrue(_is_noise_line(
+            "Sitting - Static: Independent"
+        ))
+
+    def test_therapy_activity_standing_dynamic(self):
+        self.assertTrue(_is_noise_line(
+            "Standing - Dynamic: Partial/moderate assistance, Less than 25% assist needed"
+        ))
+
+    def test_therapy_activity_eating(self):
+        self.assertTrue(_is_noise_line(
+            "Eating Assistance: Supervision or touching assistance"
+        ))
+
+    def test_therapy_activity_ambulation(self):
+        self.assertTrue(_is_noise_line(
+            "Ambulation Assist: Partial/moderate assistance"
+        ))
+
+    def test_service_title_neurosurgery_instructions(self):
+        self.assertTrue(_is_noise_line("NEUROSURGERY FRACTURE INSTRUCTIONS:"))
+
+    # ── v2: verify real plan items NOT filtered ─────────────────────
+
+    def test_real_item_icu_admission(self):
+        self.assertFalse(_is_noise_line("ICU admission"))
+
+    def test_real_item_favor_mobilization(self):
+        self.assertFalse(_is_noise_line("Favor mobilization and pain control."))
+
+    def test_real_item_nonoperative(self):
+        self.assertFalse(_is_noise_line(
+            "R closed minimally displaced oblique medial clavicle fracture - "
+            "recommend nonoperative treatment."
+        ))
+
+    def test_real_item_fu_with_xr(self):
+        self.assertFalse(_is_noise_line(
+            "Recommend f/u in 1-2 weeks for repeat XR R clavicle"
+        ))
+
+    def test_real_item_dressing_instruction(self):
+        self.assertFalse(_is_noise_line(
+            "Leave foam dressing in place for 5 days."
+        ))
+
+    def test_real_item_labs_ordered(self):
+        self.assertFalse(_is_noise_line(
+            "Labs ordered: A1c, vitamin-D, lipid profile, TSH, free T4"
+        ))
+
+    def test_real_item_bp_goal(self):
+        self.assertFalse(_is_noise_line(
+            "Strict Blood pressure goal less than 140"
+        ))
+
+    def test_real_item_continue_amoxicillin(self):
+        self.assertFalse(_is_noise_line("Continue PO amoxicillin 5d"))
+
+    def test_real_item_skin_tear_instructions_header(self):
+        self.assertFalse(_is_noise_line("Skin Tear Instructions:"))
+
+    def test_real_item_discharge_reco(self):
+        self.assertFalse(_is_noise_line(
+            "Therapy Recommendations: Pt is safe to return home with assistance"
+        ))
+
 
 # ═══════════════════════════════════════════════════════════════════
 #  Item text normalization
