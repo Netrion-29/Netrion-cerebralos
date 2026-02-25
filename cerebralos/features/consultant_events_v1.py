@@ -78,6 +78,8 @@ Design:
 
 from __future__ import annotations
 
+import hashlib
+import re
 from typing import Any, Dict, List, Optional, Set
 
 _DNA = "DATA NOT AVAILABLE"
@@ -105,6 +107,167 @@ _NON_CONSULTANT_SERVICES: Set[str] = {
 # Only "Consults" and "Progress Notes" are eligible.
 # Everything else (ED Notes, H&P, Triage, Discharge Summary,
 # Plan of Care, ED Provider Notes) is excluded.
+
+# ── Service extraction from CONSULT_NOTE text (fallback path) ─────
+# Pattern: "consult to <SERVICE> [order_id]" or "Consult To <SERVICE>"
+_CONSULT_TO_RE = re.compile(
+    r"[Cc]onsult\s+[Tt]o\s+([A-Z][A-Za-z/& ]+?)(?:\s*[\[(\n]|\s+ordered\s+by)",
+)
+# Pattern: "<SERVICE> Consult Note" or "<SERVICE> Consult" as a heading
+_CONSULT_HEADING_RE = re.compile(
+    r"^([A-Z][A-Za-z ]+?)\s+Consult(?:\s+Note)?\s*$",
+    re.MULTILINE,
+)
+
+# ── Service name normalization for fallback path ───────────────────
+_SERVICE_ALIASES: Dict[str, str] = {
+    "orthopedic surgery": "Orthopedic Surgery",
+    "ortho": "Orthopedic Surgery",
+    "orthopedics": "Orthopedic Surgery",
+    "vascular surgery": "Vascular Surgery",
+    "vascular": "Vascular Surgery",
+    "neurosurgery": "Neurosurgery",
+    "pulmonology": "Pulmonology",
+    "ent": "ENT",
+    "infection control": "Infection Control",
+    "infectious disease": "Infectious Disease",
+    "palliative care": "Palliative Care",
+    "case management/social work": "Case Management",
+    "case management": "Case Management",
+}
+
+# Headings that are primary-service notes, NOT consultant notes
+_PRIMARY_NOTE_HEADINGS: Set[str] = {
+    "trauma h & p",
+    "trauma h&p",
+    "trauma hp",
+}
+
+
+def _extract_service_from_consult_note(text: str) -> Optional[str]:
+    """
+    Extract consultant service name from CONSULT_NOTE body text.
+
+    Tries (in order):
+      1. "consult to <SERVICE> [order_id]" / "Consult To <SERVICE>"
+      2. "<SERVICE> Consult Note" heading
+
+    Returns normalized service name or None if not extractable.
+    """
+    # Strategy: collect all "consult to" matches and pick the most
+    # specific one (longest service name, which helps with
+    # "Orthopedic Surgery" vs "Case Management/Social Work").
+    candidates: List[str] = []
+    for m in _CONSULT_TO_RE.finditer(text[:2000]):
+        raw = m.group(1).strip()
+        candidates.append(raw)
+
+    if not candidates:
+        # Try heading pattern
+        for m in _CONSULT_HEADING_RE.finditer(text[:2000]):
+            raw = m.group(1).strip()
+            if raw.lower() not in _PRIMARY_NOTE_HEADINGS:
+                candidates.append(raw)
+
+    if not candidates:
+        return None
+
+    # Pick longest candidate (most specific)
+    best = max(candidates, key=len)
+
+    # Normalize via alias map
+    key = best.lower().strip()
+    if key in _SERVICE_ALIASES:
+        return _SERVICE_ALIASES[key]
+
+    # Clean up trailing "Eval and" artifacts
+    best = re.sub(r"\s+Eval\s+and\s*$", "", best, flags=re.IGNORECASE)
+    return best.strip() or None
+
+
+def _is_primary_service_note(text: str) -> bool:
+    """
+    Detect CONSULT_NOTE items that are actually primary-service notes
+    (Trauma H&P) mislabeled as consult notes.
+    """
+    # Check first 500 chars for primary note heading
+    head = text[:500].lower()
+    for heading in _PRIMARY_NOTE_HEADINGS:
+        if heading in head:
+            return True
+    return False
+
+
+def _sha256_hex(text: str) -> str:
+    """Return SHA-256[:16] of text for raw_line_id."""
+    return hashlib.sha256(
+        text.encode("utf-8", errors="replace")
+    ).hexdigest()[:16]
+
+
+def _scan_timeline_for_consult_notes(
+    days_data: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    """
+    Fallback: scan timeline items for CONSULT_NOTE entries and extract
+    service names from their text.
+
+    Returns list of synthetic note_index-compatible entries with:
+    - service, date_raw, time_raw, note_type, author_name, author_raw,
+      raw_line_id, dt (ISO), source_id
+    """
+    entries: List[Dict[str, Any]] = []
+    days = days_data.get("days", {})
+    for date_key in sorted(days.keys()):
+        day_data = days[date_key]
+        for item in day_data.get("items", []):
+            if item.get("type") != "CONSULT_NOTE":
+                continue
+            text = (item.get("payload") or {}).get("text", "")
+            if not text:
+                continue
+
+            # Skip primary-service notes mislabeled as CONSULT_NOTE
+            if _is_primary_service_note(text):
+                continue
+
+            service = _extract_service_from_consult_note(text)
+            if not service:
+                continue
+
+            # Check exclusion
+            if service.lower() in _NON_CONSULTANT_SERVICES:
+                continue
+
+            dt = item.get("dt", "")
+            source_id = item.get("source_id", "")
+
+            # Derive date_raw / time_raw from ISO dt
+            dm = re.match(r"\d{4}-(\d{2})-(\d{2})T(\d{2}):(\d{2})", dt)
+            if dm:
+                date_raw = f"{dm.group(1)}/{dm.group(2)}"
+                time_raw = f"{dm.group(3)}{dm.group(4)}"
+            else:
+                date_raw = "??/??"
+                time_raw = "????"
+
+            raw_line_id = _sha256_hex(
+                f"{source_id}|{dt}|CONSULT_NOTE|{service}"
+            )
+
+            entries.append({
+                "note_type": "Consults",
+                "date_raw": date_raw,
+                "time_raw": time_raw,
+                "author_raw": "",
+                "author_name": "",
+                "service": service,
+                "raw_line_id": raw_line_id,
+                "dt": dt,
+                "source_id": source_id,
+            })
+
+    return entries
 
 
 def _is_consultant_entry(entry: Dict[str, Any]) -> bool:
@@ -255,12 +418,33 @@ def extract_consultant_events(
     ni_rule = ni.get("source_rule_id", "")
 
     if not ni_entries and ni_rule == "no_notes_section":
-        notes.append("note_index has no entries (no Notes section in raw file)")
+        # ── Fallback: scan timeline CONSULT_NOTE items directly ──
+        notes.append(
+            "note_index has no entries (no Notes section in raw file), "
+            "trying timeline CONSULT_NOTE fallback"
+        )
+        fallback_entries = _scan_timeline_for_consult_notes(days_data)
+        if not fallback_entries:
+            notes.append("timeline CONSULT_NOTE fallback: 0 items found")
+            return {
+                "consultant_present": _DNA,
+                "consultant_services_count": 0,
+                "consultant_services": [],
+                "source_rule_id": "no_note_index_available",
+                "warnings": warnings,
+                "notes": notes,
+            }
+
+        notes.append(
+            f"timeline CONSULT_NOTE fallback: "
+            f"{len(fallback_entries)} consultant items found"
+        )
+        consultant_services = _build_consultant_services(fallback_entries)
         return {
-            "consultant_present": _DNA,
-            "consultant_services_count": 0,
-            "consultant_services": [],
-            "source_rule_id": "no_note_index_available",
+            "consultant_present": "yes",
+            "consultant_services_count": len(consultant_services),
+            "consultant_services": consultant_services,
+            "source_rule_id": "consultant_events_from_timeline_items",
             "warnings": warnings,
             "notes": notes,
         }

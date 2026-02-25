@@ -18,6 +18,9 @@ import pytest
 from cerebralos.features.consultant_events_v1 import (
     _is_consultant_entry,
     _build_consultant_services,
+    _extract_service_from_consult_note,
+    _is_primary_service_note,
+    _scan_timeline_for_consult_notes,
     extract_consultant_events,
 )
 
@@ -312,6 +315,392 @@ class TestExtractConsultantEvents:
         result = extract_consultant_events(features, {})
         assert result["consultant_present"] == "no"
         assert result["consultant_services_count"] == 0
+
+
+# ── _extract_service_from_consult_note tests ───────────────────────
+
+class TestExtractServiceFromConsultNote:
+    """Tests for CONSULT_NOTE text → service extraction (fallback path)."""
+
+    def test_consult_to_pulmonology(self):
+        text = "Consult to Pulmonology [order 12345]\nOrdered by Dr. Smith"
+        assert _extract_service_from_consult_note(text) == "Pulmonology"
+
+    def test_consult_to_orthopedic_surgery(self):
+        text = "Consult to Orthopedic Surgery [ord 99]\nSome text follows."
+        assert _extract_service_from_consult_note(text) == "Orthopedic Surgery"
+
+    def test_consult_to_ent(self):
+        text = "Consult to ENT [order 555]\nordered by someone"
+        assert _extract_service_from_consult_note(text) == "ENT"
+
+    def test_consult_to_palliative_care(self):
+        text = "Consult to Palliative Care [order 777]\nOrdered by Dr. Jones"
+        assert _extract_service_from_consult_note(text) == "Palliative Care"
+
+    def test_heading_neurosurgery_consult_note(self):
+        text = "Neurosurgery Consult Note\n\nPatient seen and evaluated."
+        assert _extract_service_from_consult_note(text) == "Neurosurgery"
+
+    def test_heading_vascular_surgery_consult(self):
+        text = "Vascular Surgery Consult\n\nHistory of..."
+        assert _extract_service_from_consult_note(text) == "Vascular Surgery"
+
+    def test_no_service_in_random_text(self):
+        text = "This is just some random medical note text.\nNo consult header."
+        assert _extract_service_from_consult_note(text) is None
+
+    def test_consult_to_ordered_by(self):
+        text = "Consult to Infectious Disease ordered by Dr. Lee"
+        assert _extract_service_from_consult_note(text) == "Infectious Disease"
+
+    def test_picks_longest_candidate(self):
+        """When multiple 'consult to' matches exist, picks the longest."""
+        text = (
+            "Consult to Orthopedic Surgery [order 1]\n"
+            "Consult to Ortho [order 2]\n"
+        )
+        result = _extract_service_from_consult_note(text)
+        assert result == "Orthopedic Surgery"
+
+    def test_alias_normalization_orthopedics(self):
+        text = "Consult to Orthopedics [order 99]\n"
+        assert _extract_service_from_consult_note(text) == "Orthopedic Surgery"
+
+
+# ── _is_primary_service_note tests ─────────────────────────────────
+
+class TestIsPrimaryServiceNote:
+    """Tests for primary-service note detection (CONSULT_NOTE mislabel)."""
+
+    def test_trauma_h_and_p(self):
+        text = "Trauma H & P\n\nHistory:\nPatient presents with..."
+        assert _is_primary_service_note(text) is True
+
+    def test_trauma_hp(self):
+        text = "Trauma HP\n\nThis is a 45 year old male..."
+        assert _is_primary_service_note(text) is True
+
+    def test_trauma_hp_ampersand(self):
+        text = "Trauma H&P\n\nChief Complaint: Fall from height."
+        assert _is_primary_service_note(text) is True
+
+    def test_normal_consult_note(self):
+        text = "Pulmonology Consult Note\n\nConsult to Pulmonology [order 1]\n"
+        assert _is_primary_service_note(text) is False
+
+    def test_empty_text(self):
+        assert _is_primary_service_note("") is False
+
+    def test_trauma_in_body_not_heading(self):
+        """Trauma mentioned deep in note body doesn't trigger."""
+        text = "A" * 600 + "\nTrauma H & P"
+        assert _is_primary_service_note(text) is False
+
+
+# ── _scan_timeline_for_consult_notes tests ─────────────────────────
+
+class TestScanTimelineForConsultNotes:
+    """Tests for timeline CONSULT_NOTE fallback scanner."""
+
+    @staticmethod
+    def _make_days_data(items_by_date):
+        days = {}
+        for date_key, items in items_by_date.items():
+            days[date_key] = {"items": items}
+        return {"days": days, "meta": {}}
+
+    def test_single_consult_note(self):
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "CONSULT_NOTE",
+                "dt": "2026-01-01T08:30:00",
+                "source_id": "42",
+                "payload": {
+                    "text": "Consult to Pulmonology [order 123]\nPatient seen."
+                },
+            }],
+        })
+        entries = _scan_timeline_for_consult_notes(dd)
+        assert len(entries) == 1
+        assert entries[0]["service"] == "Pulmonology"
+        assert entries[0]["date_raw"] == "01/01"
+        assert entries[0]["time_raw"] == "0830"
+        assert entries[0]["note_type"] == "Consults"
+        assert len(entries[0]["raw_line_id"]) > 0
+
+    def test_multiple_services_across_days(self):
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "CONSULT_NOTE",
+                "dt": "2026-01-01T06:00:00",
+                "source_id": "10",
+                "payload": {
+                    "text": "Consult to Palliative Care [order 1]\nSeen."
+                },
+            }],
+            "2026-01-02": [{
+                "type": "CONSULT_NOTE",
+                "dt": "2026-01-02T14:30:00",
+                "source_id": "20",
+                "payload": {
+                    "text": "Consult to Pulmonology [order 2]\nEvaluated."
+                },
+            }],
+        })
+        entries = _scan_timeline_for_consult_notes(dd)
+        assert len(entries) == 2
+        services = {e["service"] for e in entries}
+        assert "Palliative Care" in services
+        assert "Pulmonology" in services
+
+    def test_skips_primary_service_note(self):
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "CONSULT_NOTE",
+                "dt": "2026-01-01T10:00:00",
+                "source_id": "99",
+                "payload": {
+                    "text": "Trauma H & P\n\nChief Complaint: MVC.\nPatient..."
+                },
+            }],
+        })
+        entries = _scan_timeline_for_consult_notes(dd)
+        assert len(entries) == 0
+
+    def test_skips_excluded_service(self):
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "CONSULT_NOTE",
+                "dt": "2026-01-01T10:00:00",
+                "source_id": "50",
+                "payload": {
+                    "text": "Consult to Hospitalist [order 5]\nAdmission."
+                },
+            }],
+        })
+        entries = _scan_timeline_for_consult_notes(dd)
+        assert len(entries) == 0
+
+    def test_skips_non_consult_note_types(self):
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "PHYSICIAN_NOTE",
+                "dt": "2026-01-01T10:00:00",
+                "source_id": "60",
+                "payload": {
+                    "text": "Consult to Neurosurgery [order 8]\nSeen."
+                },
+            }],
+        })
+        entries = _scan_timeline_for_consult_notes(dd)
+        assert len(entries) == 0
+
+    def test_empty_days(self):
+        dd = {"days": {}, "meta": {}}
+        entries = _scan_timeline_for_consult_notes(dd)
+        assert entries == []
+
+    def test_no_text_in_payload(self):
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "CONSULT_NOTE",
+                "dt": "2026-01-01T10:00:00",
+                "source_id": "70",
+                "payload": {"text": ""},
+            }],
+        })
+        entries = _scan_timeline_for_consult_notes(dd)
+        assert len(entries) == 0
+
+    def test_unextractable_service(self):
+        """CONSULT_NOTE with no recognisable service pattern → skipped."""
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "CONSULT_NOTE",
+                "dt": "2026-01-01T10:00:00",
+                "source_id": "80",
+                "payload": {
+                    "text": "Random clinical text without consult header."
+                },
+            }],
+        })
+        entries = _scan_timeline_for_consult_notes(dd)
+        assert len(entries) == 0
+
+
+# ── Fallback integration (extract_consultant_events) ───────────────
+
+class TestExtractConsultantEventsFallback:
+    """
+    Full fallback path: note_index has no_notes_section,
+    but timeline has CONSULT_NOTE items.
+    """
+
+    @staticmethod
+    def _make_days_data(items_by_date):
+        days = {}
+        for date_key, items in items_by_date.items():
+            days[date_key] = {"items": items}
+        return {"days": days, "meta": {}}
+
+    def test_fallback_discovers_services(self):
+        features = {
+            "note_index_events_v1": {
+                "entries": [],
+                "source_rule_id": "no_notes_section",
+            }
+        }
+        dd = self._make_days_data({
+            "2026-01-01": [
+                {
+                    "type": "CONSULT_NOTE",
+                    "dt": "2026-01-01T06:00:00",
+                    "source_id": "10",
+                    "payload": {
+                        "text": "Consult to Palliative Care [order 1]\nSeen."
+                    },
+                },
+                {
+                    "type": "CONSULT_NOTE",
+                    "dt": "2026-01-01T14:00:00",
+                    "source_id": "20",
+                    "payload": {
+                        "text": "Consult to Pulmonology [order 2]\nEval."
+                    },
+                },
+            ],
+        })
+        result = extract_consultant_events(features, dd)
+        assert result["consultant_present"] == "yes"
+        assert result["source_rule_id"] == "consultant_events_from_timeline_items"
+        assert result["consultant_services_count"] == 2
+        svc_names = [s["service"] for s in result["consultant_services"]]
+        assert "Palliative Care" in svc_names
+        assert "Pulmonology" in svc_names
+
+    def test_fallback_no_consult_notes_returns_dna(self):
+        features = {
+            "note_index_events_v1": {
+                "entries": [],
+                "source_rule_id": "no_notes_section",
+            }
+        }
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "PHYSICIAN_NOTE",
+                "dt": "2026-01-01T08:00:00",
+                "source_id": "30",
+                "payload": {"text": "Radiology report."},
+            }],
+        })
+        result = extract_consultant_events(features, dd)
+        assert result["consultant_present"] == "DATA NOT AVAILABLE"
+        assert result["source_rule_id"] == "no_note_index_available"
+
+    def test_fallback_excludes_primary_note(self):
+        features = {
+            "note_index_events_v1": {
+                "entries": [],
+                "source_rule_id": "no_notes_section",
+            }
+        }
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "CONSULT_NOTE",
+                "dt": "2026-01-01T10:00:00",
+                "source_id": "40",
+                "payload": {
+                    "text": "Trauma H & P\n\nChief Complaint: MVC.\nPatient..."
+                },
+            }],
+        })
+        result = extract_consultant_events(features, dd)
+        assert result["consultant_present"] == "DATA NOT AVAILABLE"
+
+    def test_fallback_evidence_has_raw_line_id(self):
+        features = {
+            "note_index_events_v1": {
+                "entries": [],
+                "source_rule_id": "no_notes_section",
+            }
+        }
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "CONSULT_NOTE",
+                "dt": "2026-01-01T08:30:00",
+                "source_id": "50",
+                "payload": {
+                    "text": "Consult to Neurosurgery [order 9]\nSeen."
+                },
+            }],
+        })
+        result = extract_consultant_events(features, dd)
+        assert result["consultant_present"] == "yes"
+        for svc in result["consultant_services"]:
+            for ev in svc["evidence"]:
+                assert "raw_line_id" in ev
+                assert len(ev["raw_line_id"]) > 0
+                assert ev["role"] == "consultant_event"
+
+    def test_fallback_determinism(self):
+        features = {
+            "note_index_events_v1": {
+                "entries": [],
+                "source_rule_id": "no_notes_section",
+            }
+        }
+        dd = self._make_days_data({
+            "2026-01-01": [
+                {
+                    "type": "CONSULT_NOTE",
+                    "dt": "2026-01-01T06:00:00",
+                    "source_id": "10",
+                    "payload": {
+                        "text": "Consult to Palliative Care [order 1]\nSeen."
+                    },
+                },
+                {
+                    "type": "CONSULT_NOTE",
+                    "dt": "2026-01-01T14:00:00",
+                    "source_id": "20",
+                    "payload": {
+                        "text": "Consult to Pulmonology [order 2]\nEval."
+                    },
+                },
+            ],
+        })
+        r1 = extract_consultant_events(features, dd)
+        r2 = extract_consultant_events(features, dd)
+        assert r1 == r2
+
+    def test_primary_path_unaffected(self):
+        """When note_index has entries, fallback is NOT triggered."""
+        features = {
+            "note_index_events_v1": {
+                "entries": [
+                    _make_entry("Consults", "Orthopedics",
+                                author_name="Doc A",
+                                date_raw="01/01", time_raw="0930",
+                                raw_line_id="x1"),
+                ],
+                "source_rule_id": "note_index_raw_file",
+            }
+        }
+        dd = self._make_days_data({
+            "2026-01-01": [{
+                "type": "CONSULT_NOTE",
+                "dt": "2026-01-01T09:30:00",
+                "source_id": "1",
+                "payload": {
+                    "text": "Consult to Neurosurgery [order 9]\n"
+                },
+            }],
+        })
+        result = extract_consultant_events(features, dd)
+        assert result["source_rule_id"] == "consultant_events_from_note_index"
+        assert result["consultant_services_count"] == 1
+        assert result["consultant_services"][0]["service"] == "Orthopedics"
 
 
 if __name__ == "__main__":

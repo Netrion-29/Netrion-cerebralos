@@ -18,12 +18,26 @@ actually recommended — not just their presence (which is covered by
 ## Detection strategy
 
 ### Matching timeline items to consultant services
+
+**Primary path** (note_index):
 1. Extract (date_raw, time_raw, service) from `note_index_events_v1` entries.
 2. For each consultant service in `consultant_events_v1`, collect the
    timestamps from evidence snippets.
 3. Find timeline items (CONSULT_NOTE or PHYSICIAN_NOTE) whose ISO dt
    matches the (month, day, hour, minute) of a note_index entry.
 4. Service attribution comes from the note_index entry, not text inference.
+
+**Fallback path** (timeline-scan, when `source_rule_id="consultant_events_from_timeline_items"`):
+1. Scan all days in `patient_days_v1.json` for CONSULT_NOTE items.
+2. Extract service name from each note's text using "consult to \<SERVICE\>"
+   or "\<SERVICE\> Consult Note" heading patterns.
+3. Match extracted service against the known consultant services from
+   `consultant_events_v1`.
+4. Service attribution via text pattern matching, not note_index timestamp.
+
+The fallback path is triggered automatically when `consultant_events_v1`
+has `source_rule_id="consultant_events_from_timeline_items"` (bracket-format
+files where `note_index_events_v1` found no Notes section).
 
 ### Plan section detection (explicit headers only)
 The following headers are used to identify plan/recommendation sections:
@@ -128,7 +142,9 @@ deduplicated.  Duplicates are logged as warnings.
 | Roscella_Weatherly | 2 consult notes (Hospitalist + ENT), plan items from both |
 | Lee_Woodard | 3 consult notes (Ortho + Wound/Ostomy + Hospitalist), rich plan content |
 | Margaret_Rudd | 3 consult notes (Hospitalist + Neurosurgery + Orthopedics) |
-| Anna_Dennis | DNA (no note_index_events, older format) |
+| Timothy_Nachtwey | 5 services via timeline fallback, Palliative Care + Pulmonology plan items |
+| Anna_Dennis | DNA (CONSULT_NOTE is primary-service Trauma consult) |
+| Timothy_Cowan | DNA (no CONSULT_NOTE items in file) |
 
 ## Relationship to `consultant_events_v1`
 - `consultant_events_v1` answers: *which* consultant services were involved?
