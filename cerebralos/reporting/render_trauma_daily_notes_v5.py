@@ -149,7 +149,52 @@ def _indent(lines: List[str], prefix: str = "  ") -> List[str]:
 # §1  PATIENT SUMMARY  (once, top of report)
 # ════════════════════════════════════════════════════════════════════
 
-def _render_patient_summary(feats: Dict[str, Any]) -> List[str]:
+
+def _gcs_summary_fallback(
+    feature_days: Optional[Dict[str, Any]],
+) -> tuple:
+    """
+    Fallback GCS lookup for the patient summary.
+
+    When neuro_trigger_v1 returns DATA NOT AVAILABLE, scan gcs_daily on the
+    arrival day (and the next day for cross-midnight) for any available GCS
+    reading.  Checks ``arrival_gcs_value`` first, then ``best_gcs``.
+
+    Returns (value, source_label) or (None, None).
+    """
+    if not feature_days:
+        return None, None
+
+    day_keys = sorted(k for k in feature_days if k != "__UNDATED__")
+    if not day_keys:
+        return None, None
+
+    # Scan arrival day and next day
+    scan_days = [day_keys[0]]
+    if len(day_keys) > 1:
+        scan_days.append(day_keys[1])
+
+    for dk in scan_days:
+        gcs = feature_days.get(dk, {}).get("gcs_daily", {})
+        if not isinstance(gcs, dict):
+            continue
+        # Prefer arrival_gcs_value (formal priority GCS)
+        agv = gcs.get("arrival_gcs_value")
+        if agv is not None:
+            src = gcs.get("arrival_gcs_source", "gcs_daily")
+            return agv, src
+        # Fall back to best_gcs on arrival day
+        if dk == day_keys[0]:
+            best = gcs.get("best_gcs")
+            if isinstance(best, dict) and best.get("value") is not None:
+                return best["value"], f"{best.get('source', 'gcs_daily')}:best_reading_fallback"
+
+    return None, None
+
+def _render_patient_summary(
+    feats: Dict[str, Any],
+    feature_days: Optional[Dict[str, Any]] = None,
+) -> List[str]:
     out: List[str] = []
     out.append("PATIENT SUMMARY")
     out.append("-" * 60)
@@ -209,7 +254,14 @@ def _render_patient_summary(feats: Dict[str, Any]) -> List[str]:
         intub = " (T)" if ti.get("arrival_gcs_intubated") else ""
         out.append(f"  Arrival GCS:      {arrival_gcs_val}{intub}  (source: {arrival_gcs_src})")
     else:
-        out.append(f"  Arrival GCS:      {_DNA}")
+        # ── Fallback: read gcs_daily directly from feature_days ────
+        # Covers cases where neuro_trigger returned DNA but gcs_daily
+        # has readings from non-priority sources (CONSULT_NOTE, etc.)
+        fallback_val, fallback_src = _gcs_summary_fallback(feature_days)
+        if fallback_val is not None:
+            out.append(f"  Arrival GCS:      {fallback_val}  (source: {fallback_src})")
+        else:
+            out.append(f"  Arrival GCS:      {_DNA}")
 
     # FAST exam
     fast = feats.get("fast_exam_v1", {})
@@ -1778,7 +1830,7 @@ def render_v5(
     out.append("")
 
     # ── Patient-level Sections ──
-    out.extend(_render_patient_summary(feats))
+    out.extend(_render_patient_summary(feats, feature_days=feature_days))
     out.extend(_render_injury_catalog(feats))
     out.extend(_render_movement_summary(feats))
     out.extend(_render_procedure_summary(feats))

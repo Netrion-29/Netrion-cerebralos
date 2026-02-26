@@ -1556,5 +1556,124 @@ class TestB7NoiseFilterV4(unittest.TestCase):
         self.assertFalse(_is_noise_line("A/P: This is a 72 y.o. male"))
 
 
+# ── arrival-gcs-summary-selector-alignment-v1 ──────────────────────
+
+class TestArrivalGcsSummaryFallback(unittest.TestCase):
+    """Summary should show GCS from per-day gcs_daily when neuro_trigger DNA."""
+
+    def test_summary_fallback_uses_arrival_gcs_from_feature_days(self):
+        """When neuro_trigger has no trigger_inputs, summary falls back
+        to gcs_daily.arrival_gcs_value on the arrival day."""
+        data = _minimal_features()
+        data["features"]["neuro_trigger_v1"] = {
+            "neuro_triggered": _DNA,
+            "trigger_inputs": None,
+            "evidence": [], "notes": [], "warnings": [],
+        }
+        data["days"] = {
+            "2026-01-01": {
+                "gcs_daily": {
+                    "arrival_gcs_value": 15,
+                    "arrival_gcs_source": "TRAUMA_HP:Primary_Survey:Disability",
+                    "arrival_gcs": {"value": 15, "source": "HP", "dt": "2026-01-01T02:00:00"},
+                    "best_gcs": {"value": 15, "source": "HP"},
+                    "worst_gcs": {"value": 15, "source": "HP"},
+                },
+                "vitals": {}, "labs_panel_daily": {}, "device_day_counts": {},
+            },
+        }
+        result = render_v5(data)
+        # The summary section (before PER-DAY) should show GCS 15 via fallback
+        summary_end = result.index("PER-DAY CLINICAL STATUS")
+        summary = result[:summary_end]
+        self.assertIn("Arrival GCS:", summary)
+        self.assertIn("15", summary)
+        self.assertNotIn("Arrival GCS:      DATA NOT AVAILABLE", summary)
+
+    def test_summary_fallback_uses_best_gcs(self):
+        """When no arrival_gcs_value but best_gcs exists, summary uses it."""
+        data = _minimal_features()
+        data["features"]["neuro_trigger_v1"] = {
+            "neuro_triggered": _DNA,
+            "trigger_inputs": None,
+            "evidence": [], "notes": [], "warnings": [],
+        }
+        data["days"] = {
+            "2026-01-01": {
+                "gcs_daily": {
+                    "arrival_gcs_value": None,
+                    "arrival_gcs_source": None,
+                    "arrival_gcs": _DNA,
+                    "best_gcs": {"value": 15, "source": "CONSULT_NOTE:simple"},
+                    "worst_gcs": {"value": 15, "source": "CONSULT_NOTE:simple"},
+                },
+                "vitals": {}, "labs_panel_daily": {}, "device_day_counts": {},
+            },
+        }
+        result = render_v5(data)
+        summary_end = result.index("PER-DAY CLINICAL STATUS")
+        summary = result[:summary_end]
+        self.assertIn("15", summary)
+        self.assertNotIn("Arrival GCS:      DATA NOT AVAILABLE", summary)
+
+    def test_summary_fallback_cross_midnight_next_day(self):
+        """When arrival day has no GCS but next day does, fallback finds it."""
+        data = _minimal_features()
+        data["features"]["neuro_trigger_v1"] = {
+            "neuro_triggered": _DNA,
+            "trigger_inputs": None,
+            "evidence": [], "notes": [], "warnings": [],
+        }
+        data["days"] = {
+            "2025-12-16": {
+                "gcs_daily": {
+                    "arrival_gcs_value": None,
+                    "arrival_gcs": _DNA,
+                    "best_gcs": _DNA,
+                    "worst_gcs": _DNA,
+                },
+                "vitals": {}, "labs_panel_daily": {}, "device_day_counts": {},
+            },
+            "2025-12-17": {
+                "gcs_daily": {
+                    "arrival_gcs_value": 15,
+                    "arrival_gcs_source": "TRAUMA_HP:Primary_Survey:Disability",
+                    "arrival_gcs": {"value": 15, "source": "HP"},
+                    "best_gcs": {"value": 15, "source": "HP"},
+                    "worst_gcs": {"value": 15, "source": "HP"},
+                },
+                "vitals": {}, "labs_panel_daily": {}, "device_day_counts": {},
+            },
+        }
+        result = render_v5(data)
+        summary_end = result.index("PER-DAY CLINICAL STATUS")
+        summary = result[:summary_end]
+        self.assertIn("15", summary)
+
+    def test_summary_shows_dna_when_truly_no_gcs(self):
+        """When no GCS data anywhere, summary correctly shows DNA."""
+        data = _minimal_features()
+        data["features"]["neuro_trigger_v1"] = {
+            "neuro_triggered": _DNA,
+            "trigger_inputs": None,
+            "evidence": [], "notes": [], "warnings": [],
+        }
+        data["days"] = {
+            "2026-01-01": {
+                "gcs_daily": {
+                    "arrival_gcs_value": None,
+                    "arrival_gcs": _DNA,
+                    "best_gcs": _DNA,
+                    "worst_gcs": _DNA,
+                },
+                "vitals": {}, "labs_panel_daily": {}, "device_day_counts": {},
+            },
+        }
+        result = render_v5(data)
+        summary_end = result.index("PER-DAY CLINICAL STATUS")
+        summary = result[:summary_end]
+        self.assertIn("Arrival GCS:      DATA NOT AVAILABLE", summary)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -34,6 +34,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from collections import Counter
 from datetime import date, datetime, timedelta, timezone
@@ -307,7 +308,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
 
     # ── arrival vitals selector (deterministic hierarchy) ───────
     arrival_ts_str = meta.get("arrival_datetime")
-    arrival_day_iso = arrival_ts_str[:10] if arrival_ts_str else None
+    # Validate that arrival_ts starts with a valid ISO date before slicing
+    arrival_day_iso = None
+    if arrival_ts_str and len(arrival_ts_str) >= 10:
+        _candidate = arrival_ts_str[:10]
+        if re.match(r"^\d{4}-\d{2}-\d{2}$", _candidate):
+            arrival_day_iso = _candidate
 
     # Gather candidate records: arrival day + next calendar day.
     # Cross-midnight transfers (late-evening arrival, note documented

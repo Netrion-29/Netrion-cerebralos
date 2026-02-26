@@ -55,7 +55,11 @@ Design:
 from __future__ import annotations
 
 import hashlib
+import re
+from datetime import date as _date, timedelta as _timedelta
 from typing import Any, Dict, List, Optional
+
+_RE_ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}")
 
 _DNA = "DATA NOT AVAILABLE"
 
@@ -95,6 +99,32 @@ def _make_dna_result(reason: str) -> Dict[str, Any]:
 
 # ── Core extraction ─────────────────────────────────────────────────
 
+
+def _next_day_iso(day_iso: str) -> Optional[str]:
+    """Return the next calendar day as YYYY-MM-DD, or None on parse error."""
+    try:
+        return (_date.fromisoformat(day_iso) + _timedelta(days=1)).isoformat()
+    except (ValueError, TypeError):
+        return None
+
+
+def _read_arrival_gcs_from_day(
+    feature_days: Dict[str, Dict[str, Any]],
+    day: str,
+) -> Optional[Dict[str, Any]]:
+    """
+    Read gcs_daily from *day* and return a gcs_block dict when that day
+    carries a non-null ``arrival_gcs_value``.  Returns ``None`` otherwise.
+    """
+    day_data = feature_days.get(day, {})
+    gcs_block = day_data.get("gcs_daily", {})
+    if not isinstance(gcs_block, dict):
+        return None
+    if gcs_block.get("arrival_gcs_value") is not None:
+        return gcs_block
+    return None
+
+
 def extract_neuro_trigger(
     feature_days: Dict[str, Dict[str, Any]],
     arrival_ts: Optional[str] = None,
@@ -131,27 +161,54 @@ def extract_neuro_trigger(
     if not dated_keys:
         return _make_dna_result("no dated days available")
 
-    if arrival_ts and len(arrival_ts) >= 10:
+    if arrival_ts and len(arrival_ts) >= 10 and _RE_ISO_DATE.match(arrival_ts):
         arrival_day = arrival_ts[:10]
     else:
         # Fallback: use earliest dated day
         arrival_day = dated_keys[0]
-        notes.append(
-            f"arrival_ts not available; using earliest day ({arrival_day}) "
-            "as arrival day for neuro trigger evaluation"
-        )
+        if arrival_ts:
+            notes.append(
+                f"arrival_ts '{arrival_ts[:30]}' is not a valid ISO date; "
+                f"using earliest day ({arrival_day}) as arrival day"
+            )
+        else:
+            notes.append(
+                f"arrival_ts not available; using earliest day ({arrival_day}) "
+                "as arrival day for neuro trigger evaluation"
+            )
 
     if arrival_day not in feature_days:
-        return _make_dna_result(
-            f"arrival day {arrival_day} not found in feature days"
+        # Arrival date not among feature days — fall back to earliest day
+        notes.append(
+            f"arrival day {arrival_day} not in feature days; "
+            f"falling back to earliest day ({dated_keys[0]})"
         )
+        arrival_day = dated_keys[0]
 
     # ── Extract arrival GCS from gcs_daily ──────────────────────
     gcs_block = feature_days[arrival_day].get("gcs_daily", {})
 
     if isinstance(gcs_block, str):
         # gcs_daily is "DATA NOT AVAILABLE" string
-        return _make_dna_result("gcs_daily is DATA NOT AVAILABLE on arrival day")
+        gcs_block = {}
+
+    arrival_gcs_value = gcs_block.get("arrival_gcs_value") if isinstance(gcs_block, dict) else None
+
+    # ── Cross-midnight fallback ─────────────────────────────────
+    # TRAUMA_HP is sometimes timestamped just after midnight (00:xx) on
+    # the next calendar day.  If arrival day has no formal arrival GCS,
+    # check the immediately following day before giving up.
+    if arrival_gcs_value is None:
+        next_d = _next_day_iso(arrival_day)
+        if next_d is not None:
+            next_gcs = _read_arrival_gcs_from_day(feature_days, next_d)
+            if next_gcs is not None:
+                gcs_block = next_gcs
+                arrival_gcs_value = next_gcs.get("arrival_gcs_value")
+                notes.append(
+                    f"arrival GCS not on {arrival_day}; found on next day "
+                    f"({next_d}) via cross-midnight fallback"
+                )
 
     arrival_gcs_value = gcs_block.get("arrival_gcs_value")
     arrival_gcs_ts = gcs_block.get("arrival_gcs_ts")
