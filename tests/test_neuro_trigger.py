@@ -227,13 +227,14 @@ class TestNeuroTriggerDNA:
         assert "no dated days" in result["notes"][0]
 
     def test_arrival_day_not_in_days(self) -> None:
-        """arrival_ts maps to day not in feature_days → DNA."""
+        """arrival_ts maps to day not in feature_days → falls back to earliest day."""
         gcs = _make_gcs_block(arrival_gcs_value=7)
         days = {"2025-12-19": {"gcs_daily": gcs}}  # different day
         result = extract_neuro_trigger(days, arrival_ts=ARRIVAL_TS)
         _assert_schema(result)
-        assert result["neuro_triggered"] == "DATA NOT AVAILABLE"
-        assert "not found" in result["notes"][0]
+        # Now falls back to earliest day (2025-12-19) instead of DNA
+        assert result["neuro_triggered"] == "yes"
+        assert any("falling back" in n for n in result["notes"])
 
     def test_gcs_daily_string_dna(self) -> None:
         """gcs_daily is literal string "DATA NOT AVAILABLE" → DNA."""
@@ -415,3 +416,133 @@ class TestNeuroThresholdConstant:
 
     def test_gcs_threshold(self) -> None:
         assert GCS_NEURO_THRESHOLD == 9
+
+
+# ── Tests: arrival-gcs-summary-selector-alignment-v1 ───────────────
+
+class TestArrivalTsValidation:
+    """Invalid arrival_ts values should fall back to earliest dated day."""
+
+    def test_data_not_available_arrival_ts(self) -> None:
+        """arrival_ts = 'DATA_NOT_AVAILABLE' → falls back to earliest day."""
+        gcs = _make_gcs_block(arrival_gcs_value=15)
+        days = {"2025-12-09": {"gcs_daily": gcs}}
+        result = extract_neuro_trigger(days, arrival_ts="DATA_NOT_AVAILABLE")
+        _assert_schema(result)
+        assert result["neuro_triggered"] == "no"
+        assert result["trigger_inputs"]["arrival_gcs_value"] == 15
+        assert any("not a valid ISO date" in n for n in result["notes"])
+
+    def test_garbage_arrival_ts(self) -> None:
+        """arrival_ts = 'garbage' → falls back to earliest day."""
+        gcs = _make_gcs_block(arrival_gcs_value=8, line_preview="GCS 8")
+        days = {"2025-12-18": {"gcs_daily": gcs}}
+        result = extract_neuro_trigger(days, arrival_ts="garbage_ts_str")
+        _assert_schema(result)
+        assert result["neuro_triggered"] == "yes"
+        assert result["trigger_inputs"]["arrival_gcs_value"] == 8
+
+    def test_empty_string_arrival_ts(self) -> None:
+        """arrival_ts = '' → same as None, falls back to earliest day."""
+        gcs = _make_gcs_block(arrival_gcs_value=15)
+        days = {"2025-12-18": {"gcs_daily": gcs}}
+        result = extract_neuro_trigger(days, arrival_ts="")
+        _assert_schema(result)
+        assert result["neuro_triggered"] == "no"
+
+
+class TestCrossMidnightFallback:
+    """Cross-midnight TRAUMA_HP: arrival day has no GCS but next day does."""
+
+    def test_cross_midnight_finds_gcs_on_next_day(self) -> None:
+        """TRAUMA_HP at 00:23 next day → cross-midnight fallback resolves."""
+        arrival_gcs_block = _make_gcs_block(
+            arrival_gcs_value=None,
+            arrival_gcs_source=None,
+            arrival_gcs_source_rule_id=None,
+        )
+        next_gcs_block = _make_gcs_block(
+            arrival_gcs_value=15,
+            arrival_gcs_source="TRAUMA_HP:Primary_Survey:Disability",
+            arrival_gcs_ts="2025-12-17T00:23:00",
+            line_preview="GCS 15",
+        )
+        days = {
+            "2025-12-16": {"gcs_daily": arrival_gcs_block},
+            "2025-12-17": {"gcs_daily": next_gcs_block},
+        }
+        result = extract_neuro_trigger(days, arrival_ts="2025-12-16T22:30:00")
+        _assert_schema(result)
+        assert result["neuro_triggered"] == "no"
+        assert result["trigger_inputs"]["arrival_gcs_value"] == 15
+        assert any("cross-midnight" in n for n in result["notes"])
+
+    def test_cross_midnight_does_not_skip_arrival_day_gcs(self) -> None:
+        """When arrival day HAS GCS, cross-midnight should NOT override."""
+        arrival_gcs_block = _make_gcs_block(
+            arrival_gcs_value=14,
+            arrival_gcs_source="TRAUMA_HP:Primary_Survey:Disability",
+            line_preview="GCS 14",
+        )
+        next_gcs_block = _make_gcs_block(
+            arrival_gcs_value=15,
+            line_preview="GCS 15",
+        )
+        days = {
+            "2025-12-16": {"gcs_daily": arrival_gcs_block},
+            "2025-12-17": {"gcs_daily": next_gcs_block},
+        }
+        result = extract_neuro_trigger(days, arrival_ts="2025-12-16T22:30:00")
+        assert result["trigger_inputs"]["arrival_gcs_value"] == 14
+        assert not any("cross-midnight" in n for n in result["notes"])
+
+    def test_cross_midnight_severe_gcs_triggers(self) -> None:
+        """Cross-midnight GCS < 9 → neuro trigger fires."""
+        arrival_gcs_block = _make_gcs_block(
+            arrival_gcs_value=None,
+            arrival_gcs_source=None,
+            arrival_gcs_source_rule_id=None,
+        )
+        next_gcs_block = _make_gcs_block(
+            arrival_gcs_value=6,
+            arrival_gcs_source="TRAUMA_HP:Primary_Survey:Disability",
+            arrival_gcs_ts="2025-12-13T00:59:00",
+            line_preview="GCS 6",
+        )
+        days = {
+            "2025-12-12": {"gcs_daily": arrival_gcs_block},
+            "2025-12-13": {"gcs_daily": next_gcs_block},
+        }
+        result = extract_neuro_trigger(days, arrival_ts="2025-12-12T23:00:00")
+        _assert_schema(result)
+        assert result["neuro_triggered"] == "yes"
+        assert result["trigger_inputs"]["arrival_gcs_value"] == 6
+
+    def test_cross_midnight_no_gcs_on_next_day_either(self) -> None:
+        """Both arrival and next day have no GCS → still DNA."""
+        empty_gcs = _make_gcs_block(
+            arrival_gcs_value=None,
+            arrival_gcs_source=None,
+            arrival_gcs_source_rule_id=None,
+        )
+        days = {
+            "2025-12-16": {"gcs_daily": empty_gcs},
+            "2025-12-17": {"gcs_daily": empty_gcs},
+        }
+        result = extract_neuro_trigger(days, arrival_ts="2025-12-16T22:30:00")
+        _assert_schema(result)
+        assert result["neuro_triggered"] == _DNA
+        assert result["trigger_inputs"] is None
+
+    def test_arrival_day_not_found_falls_back_to_earliest(self) -> None:
+        """arrival_ts maps to non-existent day → falls back to earliest."""
+        gcs = _make_gcs_block(arrival_gcs_value=15)
+        days = {"2025-12-20": {"gcs_daily": gcs}}
+        result = extract_neuro_trigger(days, arrival_ts="2025-12-18T14:00:00")
+        _assert_schema(result)
+        assert result["neuro_triggered"] == "no"
+        assert result["trigger_inputs"]["arrival_gcs_value"] == 15
+        assert any("falling back" in n for n in result["notes"])
+
+
+_DNA = "DATA NOT AVAILABLE"
