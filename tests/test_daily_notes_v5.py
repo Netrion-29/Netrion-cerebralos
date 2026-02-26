@@ -156,7 +156,7 @@ class TestRenderV5WithData(unittest.TestCase):
             "category": "I",
         }
         result = render_v5(data)
-        self.assertIn("I activation", result)
+        self.assertIn("Category:         I", result)
 
     def test_mechanism_renders(self):
         data = _minimal_features()

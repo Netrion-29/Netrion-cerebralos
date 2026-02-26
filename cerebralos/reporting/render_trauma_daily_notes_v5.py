@@ -164,7 +164,8 @@ def _render_patient_summary(feats: Dict[str, Any]) -> List[str]:
     cat = feats.get("category_activation_v1", {})
     if cat.get("detected"):
         cat_label = cat.get("category", "I")
-        out.append(f"  Category:         {cat_label} activation")
+        cat_source = cat.get("source_rule_id", "")
+        out.append(f"  Category:         {cat_label}")
     elif cat:
         out.append(f"  Category:         Not detected")
     else:

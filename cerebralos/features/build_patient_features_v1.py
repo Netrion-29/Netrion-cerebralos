@@ -629,6 +629,10 @@ def main() -> int:
             ev_source = (ev_data.get("meta") or {}).get("source_file")
             if ev_source:
                 days_data.setdefault("meta", {})["source_file"] = ev_source
+            # Inject evidence-level trauma_category for category_activation_v1
+            ev_trauma_cat = (ev_data.get("meta") or {}).get("trauma_category")
+            if ev_trauma_cat:
+                days_data.setdefault("meta", {})["evidence_trauma_category"] = ev_trauma_cat
         except (json.JSONDecodeError, OSError):
             pass  # fail-closed: no header lines available
 
