@@ -32,6 +32,16 @@ Parsers applied in priority order:
    Handles missing values (' -- '), dual values ('1.0 | 0.8'),
    flagged values ('12.3*'), and optional 'Lab' prefix column.
 
+6) "Recent Results" tabular block:
+   Epic "Recent Results (from the past 24 hours)" format.
+   Structured as sequential panels, each with:
+     - Panel name (e.g. "CBC W AUTO DIFF", "RENAL PROFILE")
+     - Collection Time: MM/DD/YY  H:MM AM/PM
+     - Result/Value/Ref Range column header
+     - Tab-delimited data rows with full analyte names
+       (e.g. "White Blood Cell Count", "Hemoglobin")
+   Handles (H)/(L)/(A) flags and ref-range+unit extraction.
+
 Design:
 - Fail-closed: unparseable lab-like lines captured with warning
   ``unparsed_lab_line``.
@@ -97,6 +107,28 @@ SINGLE_LINE_RE = re.compile(
 RECENT_LABS_HEADER_RE = re.compile(r"^\s*Recent Labs\s*$", re.IGNORECASE)
 RECENT_LABS_DATE_RE = re.compile(r"^\s*\d{1,2}/\d{1,2}/\d{2}\s*$")
 RECENT_LABS_TIME_RE = re.compile(r"^\s*\d{3,4}\s*$")
+
+# --- Priority 6: Recent Results tabular format ---
+RECENT_RESULTS_HEADER_RE = re.compile(
+    r"^\s*Recent Results\s*$", re.IGNORECASE
+)
+RECENT_RESULTS_SUBTITLE_RE = re.compile(
+    r"^\s*Recent Results\s*\(", re.IGNORECASE
+)
+RECENT_RESULTS_RESULTS_FOR_RE = re.compile(
+    r"^\s*Results for orders placed", re.IGNORECASE
+)
+RECENT_RESULTS_COLLECTION_RE = re.compile(
+    r"^\s*Collection Time:\s*"
+    r"(?P<date>\d{1,2}/\d{1,2}/\d{2,4})\s+"
+    r"(?P<time>\d{1,2}:\d{2})\s*(?P<ampm>[AaPp][Mm])\s*$"
+)
+RECENT_RESULTS_COLS_RE = re.compile(
+    r"^\s*Result\s*\t\s*Value", re.IGNORECASE
+)
+RECENT_RESULTS_SPECIMEN_RE = re.compile(
+    r"^\s*Specimen:", re.IGNORECASE
+)
 
 # Component names used in Epic Recent Labs matrices (upper-case).
 # This is used to detect the boundary between the datetime header block
@@ -678,6 +710,234 @@ def _parse_recent_labs_matrix(
 
 
 # ----------------------------------------------------------------
+# Recent Results block parser (Priority 6)
+# ----------------------------------------------------------------
+
+def _parse_collection_time_12h(date_s: str, time_s: str, ampm: str) -> Optional[str]:
+    """
+    Parse 12-hour collection time: MM/DD/YY H:MM AM/PM → ISO string.
+    """
+    try:
+        parts = date_s.strip().split("/")
+        if len(parts) != 3:
+            return None
+        mm, dd = int(parts[0]), int(parts[1])
+        yr_s = parts[2]
+        if len(yr_s) == 4:
+            year = int(yr_s)
+        else:
+            yy = int(yr_s)
+            year = 2000 + yy if yy < 70 else 1900 + yy
+
+        time_parts = time_s.strip().split(":")
+        hh = int(time_parts[0])
+        mi = int(time_parts[1]) if len(time_parts) > 1 else 0
+        ampm_upper = ampm.strip().upper()
+
+        if ampm_upper == "AM":
+            if hh == 12:
+                hh = 0
+        elif ampm_upper == "PM":
+            if hh != 12:
+                hh += 12
+
+        dt = datetime(year, mm, dd, hh, mi)
+        return dt.isoformat()
+    except Exception:
+        return None
+
+
+def _parse_recent_results_block(
+    lines: List[Dict[str, Any]],
+    start_idx: int,
+) -> Tuple[List[Dict[str, Any]], List[str], int]:
+    """
+    Parse an Epic "Recent Results" tabular block.
+
+    Format:
+        Recent Results
+        [Recent Results (from the past 24 hours)]
+        PANEL NAME
+         \\tCollection Time: MM/DD/YY  H:MM AM/PM
+         [\\tSpecimen: ...]
+        Result\\tValue[\\tRef Range]
+         \\tAnalyte Name\\tValue[ (Flag)]\\tRef Range UNIT
+         ...
+        NEXT PANEL NAME
+        ...
+
+    Each panel has its own collection time and a set of tab-delimited
+    result rows.  Panels repeat until end of block.
+    """
+    labs: List[Dict[str, Any]] = []
+    warnings: List[str] = []
+    j = start_idx + 1  # skip "Recent Results" header
+
+    # Skip blanks, tab-only lines, and subtitle
+    while j < len(lines):
+        t = (lines[j].get("text") or "").strip()
+        if not t:
+            j += 1
+            continue
+        if RECENT_RESULTS_SUBTITLE_RE.match(t):
+            j += 1
+            continue
+        break
+
+    if j >= len(lines):
+        return labs, ["recent_results_block_empty"], j
+
+    # ── Parse panels sequentially ─────────────────────────────────
+    MAX_PANELS = 50
+    panel_count = 0
+    current_collection_dt: Optional[str] = None
+
+    while j < len(lines) and panel_count < MAX_PANELS:
+        t = (lines[j].get("text") or "").strip()
+
+        # Skip blanks
+        if not t:
+            j += 1
+            continue
+
+        # End-of-block markers
+        if t.startswith("[") and re.search(r"NOTE|PHYSICIAN|NURSING|MED|ALLERGY", t, re.IGNORECASE):
+            break
+        if re.match(r"^\s*(?:Impression|Plan|Assessment|Prophylaxis|Antibiotics|Objective)\s*:", t, re.IGNORECASE):
+            break
+        # Another "Recent Results" header restarts
+        if RECENT_RESULTS_HEADER_RE.match(t) and j > start_idx:
+            break
+
+        # "Results for orders placed..." is a subsection header — continue
+        if RECENT_RESULTS_RESULTS_FOR_RE.match(t):
+            j += 1
+            continue
+
+        # Column header line: "Result\tValue[\tRef Range]" — skip it
+        if RECENT_RESULTS_COLS_RE.match(t):
+            j += 1
+            continue
+
+        # Specimen line — skip
+        if RECENT_RESULTS_SPECIMEN_RE.match(t):
+            j += 1
+            continue
+
+        # Collection Time line (with leading space/tab prefix)
+        raw_line = (lines[j].get("text") or "").rstrip("\n")
+        # Strip leading space/tab prefix from collection time
+        ct_text = raw_line.lstrip(" \t")
+        ct_match = RECENT_RESULTS_COLLECTION_RE.match(ct_text)
+        if ct_match:
+            iso = _parse_collection_time_12h(
+                ct_match.group("date"),
+                ct_match.group("time"),
+                ct_match.group("ampm"),
+            )
+            if iso:
+                current_collection_dt = iso
+            else:
+                warnings.append("recent_results_collection_time_parse_failed")
+            j += 1
+            continue
+
+        # ── Data row: space+tab prefix, then tab-separated fields ──
+        # Format: " \tComponent\tValue[ (Flag)]\tRef Range Unit"
+        # OR leading tab(s)
+        if "\t" in raw_line:
+            cells = raw_line.split("\t")
+            # Find first non-empty cell as the component
+            comp = ""
+            comp_idx = -1
+            for ci, cell in enumerate(cells):
+                cell_s = cell.strip()
+                if cell_s:
+                    comp = cell_s
+                    comp_idx = ci
+                    break
+
+            if not comp:
+                j += 1
+                continue
+
+            # If the first non-empty cell looks like a panel name (all upper,
+            # no digits except parens) AND there's no value after it in
+            # the expected data-row position, treat it as a panel header.
+            # Actually panel names are NOT tab-indented — they are plain lines
+            # without leading tab.  Data rows have leading space+tab.
+            # But let's be flexible: if it looks like a column header or
+            # is a known skip, skip it.
+
+            # Data rows have at least 2 fields after the comp
+            remaining_cells = cells[comp_idx + 1:] if comp_idx >= 0 else []
+            remaining_values = [c.strip() for c in remaining_cells if c.strip()]
+
+            if not remaining_values:
+                # No value — might be a comment continuation or panel name
+                j += 1
+                continue
+
+            value_raw_full = remaining_values[0] if remaining_values else ""
+            ref_range_raw = remaining_values[1] if len(remaining_values) > 1 else ""
+
+            # Skip GFR Comment and similar descriptive-only rows
+            if comp.lower() in ("gfr comment",):
+                j += 1
+                continue
+            # Skip rows where value looks like a long comment (> 50 chars)
+            if len(value_raw_full) > 50:
+                j += 1
+                continue
+
+            # Extract value and flags
+            value_clean, val_flags = _extract_value_and_flags(value_raw_full)
+            # Also check for (A) = abnormal flag in Epic
+            m_a = re.search(r"\s*\(A\)\s*$", value_clean, re.IGNORECASE)
+            if m_a:
+                val_flags.append("ABNORMAL")
+                value_clean = value_clean[:m_a.start()].strip()
+
+            # Extract unit from ref range
+            unit = _extract_unit_from_range(ref_range_raw) if ref_range_raw else ""
+
+            # Try to get numeric value
+            value_num = _to_float(value_clean)
+
+            labs.append({
+                "component": comp,
+                "observed_dt": current_collection_dt,
+                "value_raw": value_clean,
+                "value_num": value_num,
+                "unit": unit,
+                "range_unit": ref_range_raw,
+                "flags": val_flags,
+                "source_block_type": "recent_results",
+                "source_line": j,
+            })
+            j += 1
+            continue
+
+        # ── Non-tab line: could be a panel name or end of block ────
+        # Panel names: "CBC W AUTO DIFF", "RENAL PROFILE", "PROTIME (...)"
+        # These are plain text without tabs.
+        # We just skip them (the collection time following them will update
+        # current_collection_dt).
+        # Check if this looks like a section-ending line
+        t_lower = t.lower()
+        if t_lower.startswith(("hospital course", "discharge", "the patient",
+                                "history", "allergies", "medications",
+                                "vital signs", "nursing")):
+            break
+
+        # Otherwise assume panel name or non-data line — skip it
+        j += 1
+        panel_count += 1
+
+    return labs, warnings, j
+
+
+# ----------------------------------------------------------------
 # Main extraction
 # ----------------------------------------------------------------
 
@@ -843,6 +1103,18 @@ def extract_labs_from_lines(lines, _all_lab_context=False):
             labs.extend(matrix_labs)
             all_warnings_ext = matrix_warnings
             warnings.extend(all_warnings_ext)
+            i = j
+            continue
+
+        # ============================================================
+        # Priority 6: Recent Results tabular block
+        # ============================================================
+        if RECENT_RESULTS_HEADER_RE.match(text):
+            rr_labs, rr_warnings, j = _parse_recent_results_block(
+                lines, i,
+            )
+            labs.extend(rr_labs)
+            warnings.extend(rr_warnings)
             i = j
             continue
 

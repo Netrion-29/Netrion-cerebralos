@@ -40,7 +40,7 @@ _BMP_MAP = {
     "Na":      ["Sodium", "Na"],
     "K":       ["Potassium", "K"],
     "Cl":      ["Chloride", "Cl"],
-    "CO2":     ["Co2", "CO2", "Co2 Content"],
+    "CO2":     ["Co2", "CO2", "Co2 Content", "Renal CO2", "Bicarbonate"],
     "BUN":     ["Blood Urea Nitrogen", "BUN"],
     "Cr":      ["Creatinine", "Cr"],
     "Glucose": ["Glucose"],
