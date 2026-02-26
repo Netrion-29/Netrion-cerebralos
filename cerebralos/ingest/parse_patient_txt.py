@@ -218,6 +218,18 @@ RE_IS_FLOWSHEET_ROW = re.compile(r"^\d{2}/\d{2}\s+\d{4}\b")
 # Order page date field: "Date: M/D/YYYY"
 RE_ORDER_PAGE_DATE = re.compile(r"Date:\s*(\d{1,2}/\d{1,2}/\d{4})")
 
+# Supplemental: Spine Clearance order detail inline line
+# "Spine Clearance Cervical Spine Clearance: Yes; Thoracic/Spine Lumbar Clearance: No [NUR1015] (Order 466671395)"
+RE_SPINE_CLEARANCE_INLINE = re.compile(
+    r"^Spine Clearance\s+Cervical Spine Clearance:\s*(?:Yes|No)",
+    re.IGNORECASE,
+)
+
+# "Ordered On" timestamp in order detail pages: "M/D/YYYY HHMM" (military, no colon)
+RE_ORDERED_ON_HHMM = re.compile(
+    r"^\s*(\d{1,2}/\d{1,2}/\d{2,4})\s+(\d{4})\s",
+)
+
 
 # ============================================================
 # New-format (Date of Service) -- regex and mapping
@@ -1253,6 +1265,88 @@ def _parse_supplemental_dos(lines, last_dos_idx, arrival_dt_str, start_idx=0):
         )
         idx += 1
         for j in range(i, block_end):
+            claimed.add(j)
+
+    # ── NURSING_ORDER: Spine Clearance order detail pages ─────
+    # In DoS-format files, Epic "Spine Clearance" order detail pages
+    # appear in the supplemental region.  The inline summary line
+    # ("Spine Clearance Cervical Spine Clearance: Yes; ...") is
+    # followed by metadata and an "Order Questions" block with the
+    # same answers.  Capture from the inline line through the next
+    # "Print Order Requisition" marker so the downstream spine-
+    # clearance feature extractor can parse both inline and
+    # structured formats, plus the "Ordered On" timestamp.
+    for i in range(scan_start, n):
+        if i in claimed:
+            continue
+        stripped = lines[i].strip()
+        if not RE_SPINE_CLEARANCE_INLINE.match(stripped):
+            continue
+
+        block_start = i
+        block_end = i + 1
+
+        # Scan forward through the order detail block.
+        # Stop at the second "Print Order Requisition" (first ends
+        # the inline summary block; second ends the OQ block) or
+        # at another spine-clearance inline line.
+        pror_count = 0
+        for j in range(i + 1, min(n, i + 100)):
+            jl = lines[j].strip()
+            # Another spine clearance order starts → stop
+            if j > i + 3 and RE_SPINE_CLEARANCE_INLINE.match(jl):
+                block_end = j
+                break
+            if jl == "Print Order Requisition":
+                pror_count += 1
+                if pror_count >= 2:
+                    block_end = j + 1
+                    break
+            block_end = j + 1
+
+        block_text = "\n".join(lines[block_start:block_end]).strip()
+
+        # Timestamp: prefer "Ordered On" line (military HHMM),
+        # fall back to "Date:" field.
+        sc_dt: Optional[str] = None
+        ordered_on_next = False
+        for j in range(block_start, block_end):
+            jl = lines[j].strip()
+            if jl.startswith("Ordered On"):
+                ordered_on_next = True
+                continue
+            if ordered_on_next:
+                m = RE_ORDERED_ON_HHMM.match(jl)
+                if m:
+                    sc_dt = _parse_dt_slash_hhmm(m.group(1), m.group(2))
+                    if sc_dt:
+                        _ts_count("MM/DD/YY HHMM (Spine Clearance order)")
+                        break
+                ordered_on_next = False
+
+        if sc_dt is None:
+            for j in range(block_start, min(block_end, block_start + 15)):
+                dm = RE_ORDER_PAGE_DATE.search(lines[j])
+                if dm:
+                    sc_dt = _date_only_iso(dm.group(1))
+                    if sc_dt:
+                        _ts_count("M/D/YYYY (Spine Clearance Date)")
+                        break
+
+        warns: List[str] = []
+        if sc_dt is None:
+            _ts_fail()
+            warns.append("ts_missing")
+
+        items.append(
+            EvidenceItem(
+                idx=idx, kind="NURSING_ORDER", datetime=sc_dt,
+                line_start=block_start + 1, line_end=block_end,
+                text=block_text, warnings=tuple(warns), header_dt=sc_dt,
+            )
+        )
+        idx += 1
+        for j in range(block_start, block_end):
             claimed.add(j)
 
     return items
