@@ -29,6 +29,16 @@ v2 refinements:
   - Enriched summary: event_type_counts, services_seen, rooms_visited,
     patient_update_count, last_unit/room/bed, los_days.
 
+discharge-summary-recognition-v1:
+  - Source 3 fallback: when no ADT Events table is found, scans
+    timeline items for type="DISCHARGE" bracket items
+    (e.g. ``[DISCHARGE] 2026-01-04 09:08:00``).
+  - Extracts discharge_ts from the item header_dt.
+  - Optionally extracts first_admission_ts from "Admit Date:" line
+    inside the Discharge Summary text body.
+  - Produces synthetic Admission/Discharge events so _build_summary
+    picks up the timestamps naturally.
+
 Output key: ``adt_transfer_timeline_v1``
 """
 
@@ -296,6 +306,125 @@ def _extract_adt_from_lines(
     return events
 
 
+# ── Source 3: [DISCHARGE] bracket item fallback ────────────────────
+
+# Matches "Admit Date: M/D/YYYY" or "Admit Date: MM/DD/YYYY" in
+# Discharge Summary body text.
+_RE_ADMIT_DATE = re.compile(
+    r"^\s*Admit\s+Date:\s*(\d{1,2}/\d{1,2}/\d{4})\s*$",
+    re.IGNORECASE,
+)
+
+# Matches "Discharge Date: M/D/YYYY" or "Discharge Date: MM/DD/YYYY"
+# in Discharge Summary body text.
+_RE_DISCHARGE_DATE = re.compile(
+    r"^\s*Discharge\s+Date:\s*(\d{1,2}/\d{1,2}/\d{4})\s*$",
+    re.IGNORECASE,
+)
+
+
+def _parse_date_mdy(date_str: str) -> Optional[str]:
+    """
+    Parse M/D/YYYY → ISO date string YYYY-MM-DD.
+
+    Returns None on failure (fail-closed).
+    """
+    parts = date_str.strip().split("/")
+    if len(parts) != 3:
+        return None
+    try:
+        month = int(parts[0])
+        day = int(parts[1])
+        year = int(parts[2])
+        dt = datetime(year, month, day)
+        return dt.strftime("%Y-%m-%d")
+    except (ValueError, TypeError):
+        return None
+
+
+def _extract_discharge_from_items(
+    days_data: Dict[str, Any],
+) -> Tuple[List[Dict[str, Any]], List[str]]:
+    """
+    Source 3 fallback: scan timeline items for type="DISCHARGE" bracket
+    items and produce synthetic Admission/Discharge events.
+
+    Extracts:
+      - discharge_ts from the item ``header_dt`` field
+      - admission date from "Admit Date:" line in the Discharge Summary
+        text body (if present)
+
+    Returns (events, notes).  Events list may contain 0–2 synthetic events
+    (one Admission, one Discharge).  Only the first DISCHARGE item found is
+    used (fail-closed, deterministic).
+    """
+    events: List[Dict[str, Any]] = []
+    notes_out: List[str] = []
+
+    days_map = days_data.get("days") or {}
+    for day_iso in sorted(days_map.keys()):
+        day_info = days_map[day_iso]
+        for item_idx, item in enumerate(day_info.get("items") or []):
+            item_type = item.get("type", "")
+            if item_type != "DISCHARGE":
+                continue
+
+            # ── Extract discharge timestamp from header_dt ──
+            header_dt = item.get("header_dt") or ""
+            if not header_dt:
+                continue
+
+            discharge_ts_iso = header_dt.strip()
+            discharge_ts_raw = discharge_ts_iso  # already ISO from ingest
+
+            # ── Parse Discharge Summary text for Admit Date ──
+            payload_text = (item.get("payload") or {}).get("text", "")
+            admit_date_iso: Optional[str] = None
+            for line in payload_text.split("\n"):
+                m_admit = _RE_ADMIT_DATE.match(line)
+                if m_admit:
+                    admit_date_iso = _parse_date_mdy(m_admit.group(1))
+                    break
+
+            raw_line_prefix = f"discharge_item:{day_iso}:{item_idx}"
+
+            # ── Synthetic Admission event (if Admit Date found) ──
+            if admit_date_iso:
+                events.append({
+                    "timestamp_raw": admit_date_iso,
+                    "timestamp_iso": f"{admit_date_iso} 00:00:00",
+                    "unit": "UNKNOWN",
+                    "room": "UNKNOWN",
+                    "bed": "UNKNOWN",
+                    "service": "UNKNOWN",
+                    "event_type": "Admission",
+                    "raw_line_id": f"{raw_line_prefix}:admit",
+                })
+
+            # ── Synthetic Discharge event ──
+            events.append({
+                "timestamp_raw": discharge_ts_raw,
+                "timestamp_iso": discharge_ts_iso,
+                "unit": "UNKNOWN",
+                "room": "UNKNOWN",
+                "bed": "UNKNOWN",
+                "service": "UNKNOWN",
+                "event_type": "Discharge",
+                "raw_line_id": f"{raw_line_prefix}:discharge",
+            })
+
+            notes_out.append(
+                f"source=discharge_bracket_item, day={day_iso}, "
+                f"item_idx={item_idx}, discharge_ts={discharge_ts_iso}"
+                + (f", admit_date={admit_date_iso}" if admit_date_iso else "")
+            )
+
+            # First DISCHARGE item wins — deterministic, no merging
+            return events, notes_out
+
+    return events, notes_out
+
+
 def _build_summary(events: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Derive summary fields from extracted ADT events.
@@ -423,10 +552,13 @@ def extract_adt_transfer_timeline(
     """
     Extract ADT transfer timeline from patient data.
 
-    Strategy (dual source, deterministic):
+    Strategy (triple source, deterministic):
       1. Check meta.raw_header_lines (from evidence JSON header) for ADT table.
-      2. If not found, scan all timeline item payload texts.
-      3. First source that yields events wins (no merging).
+      2. If not found, scan all timeline item payload texts for ADT Events.
+      3. If still not found, scan timeline items for type="DISCHARGE" bracket
+         items and extract discharge/admission timestamps from the
+         Discharge Summary.
+      4. First source that yields events wins (no merging).
 
     Parameters
     ----------
@@ -485,6 +617,15 @@ def extract_adt_transfer_timeline(
                     break  # first source wins
             if events:
                 break
+
+    # ── Source 3: [DISCHARGE] bracket item fallback ────────────────
+    if not events:
+        discharge_events, discharge_notes = _extract_discharge_from_items(
+            days_data,
+        )
+        if discharge_events:
+            events = discharge_events
+            notes.extend(discharge_notes)
 
     # ── Dedup & chronology validation (v2) ───────────────────────
     if events:

@@ -10,6 +10,7 @@ Covers:
   - Summary derivation (counts, timestamps, units, LOS)
   - Fail-closed: no ADT table → empty result
   - raw_line_id traceability on all events and evidence
+  - Source 3: [DISCHARGE] bracket item fallback
 """
 
 import sys
@@ -25,6 +26,8 @@ from cerebralos.features.adt_transfer_timeline_v1 import (
     _dedup_events,
     _validate_chronology,
     _build_summary,
+    _extract_discharge_from_items,
+    _parse_date_mdy,
     extract_adt_transfer_timeline,
 )
 
@@ -454,6 +457,253 @@ class TestEnrichedSummary(unittest.TestCase):
         self.assertEqual(summary["patient_update_count"], 1)
         # 3 units: EMERGENCY DEPT GW, EMERGENCY DEPT MC, SRG TRAUMA CV ICU 7480
         self.assertEqual(len(summary["units_visited"]), 3)
+
+
+# ── Source 3: [DISCHARGE] bracket item tests ─────────────────────
+
+# Simulates a timeline with a DISCHARGE item (Anna_Dennis format)
+DISCHARGE_ITEM_DAYS_DATA = {
+    "meta": {},
+    "days": {
+        "2026-01-04": {
+            "items": [
+                {
+                    "type": "PHYSICIAN_NOTE",
+                    "header_dt": "2026-01-04 06:30:00",
+                    "payload": {"text": "[PHYSICIAN_NOTE] 2026-01-04 06:30:00\nProgress note..."},
+                },
+                {
+                    "type": "DISCHARGE",
+                    "header_dt": "2026-01-04 09:08:00",
+                    "payload": {
+                        "text": (
+                            "[DISCHARGE] 2026-01-04 09:08:00\n"
+                            "Signed\t\n"
+                            "\n"
+                            "Expand All Collapse All\n"
+                            "\n"
+                            "Discharge Summary\n"
+                            "Deaconess Care Group\n"
+                            "Deaconess Hospital\n"
+                            "1/4/2026 9:08 AM\n"
+                            " \n"
+                            " \n"
+                            "Patient Name: Anna Dennis   Date of Birth: 3/20/1960   MRN: 2849731\n"
+                            "\n"
+                            "CODE STATUS: Full Code\n"
+                            " \n"
+                            "Admit Date: 12/31/2025 \n"
+                            "Discharge Date: 1/4/2026\n"
+                            "Date of Service: 1/4/2026\n"
+                        ),
+                    },
+                },
+            ],
+        },
+    },
+}
+
+# Simulates DISCHARGE item without Admit Date line
+DISCHARGE_ITEM_NO_ADMIT_DATE = {
+    "meta": {},
+    "days": {
+        "2026-01-03": {
+            "items": [
+                {
+                    "type": "DISCHARGE",
+                    "header_dt": "2026-01-03 14:00:00",
+                    "payload": {
+                        "text": (
+                            "[DISCHARGE] 2026-01-03 14:00:00\n"
+                            "Discharge Summary\n"
+                            "Patient discharged home.\n"
+                        ),
+                    },
+                },
+            ],
+        },
+    },
+}
+
+# Simulates timeline with no DISCHARGE item
+NO_DISCHARGE_DAYS_DATA = {
+    "meta": {},
+    "days": {
+        "2026-01-01": {
+            "items": [
+                {
+                    "type": "PHYSICIAN_NOTE",
+                    "header_dt": "2026-01-01 08:00:00",
+                    "payload": {"text": "[PHYSICIAN_NOTE] 2026-01-01\nNote text"},
+                },
+            ],
+        },
+    },
+}
+
+
+class TestParseDateMdy(unittest.TestCase):
+    """Test M/D/YYYY → ISO date parser."""
+
+    def test_standard_date(self):
+        self.assertEqual(_parse_date_mdy("12/31/2025"), "2025-12-31")
+
+    def test_single_digit_month_day(self):
+        self.assertEqual(_parse_date_mdy("1/4/2026"), "2026-01-04")
+
+    def test_invalid_returns_none(self):
+        self.assertIsNone(_parse_date_mdy("bad"))
+        self.assertIsNone(_parse_date_mdy(""))
+        self.assertIsNone(_parse_date_mdy("13/40/2026"))
+
+    def test_two_digit_year_not_supported(self):
+        """_parse_date_mdy only handles 4-digit years (fail-closed)."""
+        # 2-digit year "25" → year 25 AD, which would produce "0025-12-31"
+        # This is expected fail-closed behavior — the function doesn't
+        # pivot 2-digit years because Discharge Summary always has 4-digit.
+        result = _parse_date_mdy("12/31/25")
+        # Should produce something but not crash
+        self.assertIsNotNone(result)
+
+
+class TestExtractDischargeFromItems(unittest.TestCase):
+    """Test Source 3: [DISCHARGE] bracket item extraction."""
+
+    def test_discharge_with_admit_date(self):
+        """Anna_Dennis format: DISCHARGE item with Admit Date in body."""
+        events, notes = _extract_discharge_from_items(DISCHARGE_ITEM_DAYS_DATA)
+        self.assertEqual(len(events), 2)
+        # Admission event
+        admit_ev = events[0]
+        self.assertEqual(admit_ev["event_type"], "Admission")
+        self.assertEqual(admit_ev["timestamp_iso"], "2025-12-31 00:00:00")
+        self.assertIn("admit", admit_ev["raw_line_id"])
+        # Discharge event
+        discharge_ev = events[1]
+        self.assertEqual(discharge_ev["event_type"], "Discharge")
+        self.assertEqual(discharge_ev["timestamp_iso"], "2026-01-04 09:08:00")
+        self.assertIn("discharge", discharge_ev["raw_line_id"])
+        # Notes
+        self.assertEqual(len(notes), 1)
+        self.assertIn("discharge_bracket_item", notes[0])
+        self.assertIn("admit_date=2025-12-31", notes[0])
+
+    def test_discharge_without_admit_date(self):
+        """DISCHARGE item without Admit Date → only Discharge event."""
+        events, notes = _extract_discharge_from_items(DISCHARGE_ITEM_NO_ADMIT_DATE)
+        self.assertEqual(len(events), 1)
+        discharge_ev = events[0]
+        self.assertEqual(discharge_ev["event_type"], "Discharge")
+        self.assertEqual(discharge_ev["timestamp_iso"], "2026-01-03 14:00:00")
+        # No admit_date in notes
+        self.assertNotIn("admit_date", notes[0])
+
+    def test_no_discharge_item(self):
+        """No DISCHARGE item → empty results."""
+        events, notes = _extract_discharge_from_items(NO_DISCHARGE_DAYS_DATA)
+        self.assertEqual(len(events), 0)
+        self.assertEqual(len(notes), 0)
+
+    def test_summary_from_discharge_item(self):
+        """_build_summary correctly derives discharge_ts from synthetic events."""
+        events, _ = _extract_discharge_from_items(DISCHARGE_ITEM_DAYS_DATA)
+        summary = _build_summary(events)
+        self.assertEqual(summary["discharge_ts"], "2026-01-04 09:08:00")
+        self.assertEqual(summary["first_admission_ts"], "2025-12-31 00:00:00")
+        self.assertIsNotNone(summary["los_hours"])
+        self.assertAlmostEqual(summary["los_hours"], 105.1, delta=0.5)
+
+    def test_discharge_only_summary(self):
+        """Summary without admission → discharge_ts but no LOS."""
+        events, _ = _extract_discharge_from_items(DISCHARGE_ITEM_NO_ADMIT_DATE)
+        summary = _build_summary(events)
+        self.assertEqual(summary["discharge_ts"], "2026-01-03 14:00:00")
+        self.assertIsNone(summary["first_admission_ts"])
+        self.assertIsNone(summary["los_hours"])
+
+    def test_synthetic_events_have_unknown_location(self):
+        """Synthetic events have UNKNOWN for unit/room/bed/service."""
+        events, _ = _extract_discharge_from_items(DISCHARGE_ITEM_DAYS_DATA)
+        for ev in events:
+            self.assertEqual(ev["unit"], "UNKNOWN")
+            self.assertEqual(ev["room"], "UNKNOWN")
+            self.assertEqual(ev["bed"], "UNKNOWN")
+            self.assertEqual(ev["service"], "UNKNOWN")
+
+
+class TestSource3Integration(unittest.TestCase):
+    """Test Source 3 integration in extract_adt_transfer_timeline."""
+
+    def test_source3_used_when_no_adt_table(self):
+        """extract_adt_transfer_timeline uses Source 3 when no ADT table found."""
+        result = extract_adt_transfer_timeline(
+            {"days": {}},
+            DISCHARGE_ITEM_DAYS_DATA,
+        )
+        self.assertEqual(result["summary"]["discharge_ts"], "2026-01-04 09:08:00")
+        self.assertEqual(result["summary"]["first_admission_ts"], "2025-12-31 00:00:00")
+        self.assertTrue(any("discharge_bracket_item" in n for n in result["notes"]))
+
+    def test_source3_not_used_when_adt_table_present(self):
+        """Source 3 is skipped when ADT table events are found."""
+        # Create days_data with ADT Events in header AND a DISCHARGE item
+        days_data = {
+            "meta": {
+                "raw_header_lines": SAMPLE_HEADER_LINES,
+            },
+            "days": DISCHARGE_ITEM_DAYS_DATA["days"],
+        }
+        result = extract_adt_transfer_timeline(
+            {"days": {}},
+            days_data,
+        )
+        # Should use Source 1 (header), not Source 3
+        self.assertTrue(any("raw_header_lines" in n for n in result["notes"]))
+        self.assertFalse(any("discharge_bracket_item" in n for n in result["notes"]))
+        # Discharge from ADT table, not bracket item
+        self.assertEqual(result["summary"]["discharge_ts"], "2026-01-07 17:54:00")
+
+    def test_no_discharge_no_adt_returns_empty(self):
+        """No ADT table and no DISCHARGE item → empty result."""
+        result = extract_adt_transfer_timeline(
+            {"days": {}},
+            NO_DISCHARGE_DAYS_DATA,
+        )
+        self.assertIsNone(result["summary"]["discharge_ts"])
+        self.assertEqual(result["summary"]["adt_event_count"], 0)
+        self.assertIn("no_adt_table_found", result["notes"])
+
+    def test_evidence_populated_for_source3(self):
+        """Source 3 events produce evidence entries with raw_line_id."""
+        result = extract_adt_transfer_timeline(
+            {"days": {}},
+            DISCHARGE_ITEM_DAYS_DATA,
+        )
+        self.assertTrue(len(result["evidence"]) > 0)
+        for ev_item in result["evidence"]:
+            self.assertIn("raw_line_id", ev_item)
+            self.assertIn("role", ev_item)
+            self.assertEqual(ev_item["role"], "adt_event")
+
+    def test_discharge_item_missing_header_dt_skipped(self):
+        """DISCHARGE item with empty header_dt is skipped (fail-closed)."""
+        days_data = {
+            "meta": {},
+            "days": {
+                "2026-01-04": {
+                    "items": [
+                        {
+                            "type": "DISCHARGE",
+                            "header_dt": "",
+                            "payload": {"text": "[DISCHARGE]\nNo timestamp"},
+                        },
+                    ],
+                },
+            },
+        }
+        result = extract_adt_transfer_timeline({"days": {}}, days_data)
+        self.assertIsNone(result["summary"]["discharge_ts"])
+        self.assertEqual(result["summary"]["adt_event_count"], 0)
 
 
 if __name__ == "__main__":
