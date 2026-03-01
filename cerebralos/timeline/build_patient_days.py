@@ -107,6 +107,7 @@ def build_patient_days(evidence: Dict[str, Any]) -> Dict[str, Any]:
     tz_name = meta_in.get("timezone") or DEFAULT_TZ
     patient_id = meta_in.get("patient_id") or "DATA_NOT_AVAILABLE"
     arrival_datetime = meta_in.get("arrival_datetime") or "DATA_NOT_AVAILABLE"
+    discharge_datetime = meta_in.get("discharge_datetime")  # None when absent
 
     # Compute day0 if possible
     day0_date = "DATA_NOT_AVAILABLE"
@@ -120,6 +121,7 @@ def build_patient_days(evidence: Dict[str, Any]) -> Dict[str, Any]:
             "patient_id": patient_id,
             "timezone": tz_name,
             "arrival_datetime": arrival_datetime,
+            "discharge_datetime": discharge_datetime,
             "day0_date": day0_date,
         },
         "days": {}
