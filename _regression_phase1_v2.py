@@ -48,7 +48,7 @@ BASELINE_HASHES = {
     "green_card_init":   None,   # green_card not yet populated
     "green_card_adj":    None,   # green_card not yet populated
     "ntds_engine":       "19a7e89c7c3296193066bba2f5796c6b",
-    "protocol_engine":   "82298c298385405ba88c1c2412d9b363",
+    "protocol_engine":   "a088a2ff84d2df8440ccbdbebf81179f",
 }
 PROTECTED_FILES = {
     "v3_renderer":       REPO / "cerebralos" / "reporting" / "render_trauma_daily_notes_v3.py",
