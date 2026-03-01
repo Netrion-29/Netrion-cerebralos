@@ -120,8 +120,8 @@ def _event_slug(event_id: int) -> str:
     mapping = {
         1: "aki",
         2: "ards",
-        3: "alcohol_withdrawal",
-        4: "cardiac_arrest_cpr",
+        3: "alcohol_withdrawal_syndrome",
+        4: "cardiac_arrest_with_cpr",
         5: "cauti",
         6: "clabsi",
         7: "deep_ssi",

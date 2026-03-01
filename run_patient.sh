@@ -109,3 +109,11 @@ if [[ "${CEREBRAL_DASHBOARD:-0}" == "1" ]]; then
   echo "---- trauma excellence dashboard ----"
   python3 -m cerebralos.reporting.excel_trauma_dashboard_v2 --patient "$SLUG" || true
 fi
+
+# NTDS Hospital Events — all 21 events (opt-in via CEREBRAL_NTDS=1)
+if [[ "${CEREBRAL_NTDS:-0}" == "1" ]]; then
+  echo ""
+  echo "---- NTDS hospital events (2026, all 21) ----"
+  python3 -m cerebralos.ntds_logic.run_all_events \
+    --year 2026 --patient "data_raw/$PAT.txt" || true
+fi

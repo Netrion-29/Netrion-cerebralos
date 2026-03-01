@@ -26,7 +26,7 @@
       "gate_type": "evidence_any",
       "gate_id": "pe_negative_study",
       "gate_name": "Imaging explicitly negative for PE",
-      "required": true,
+      "required": false,
       "min_count": 1,
       "query_keys": ["pe_dx_negative"],
       "allowed_sources": ["IMAGING"],
