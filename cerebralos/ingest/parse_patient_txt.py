@@ -731,7 +731,8 @@ def _extract_header_dos(lines):
     """
     Extract metadata from new-format (Date of Service) files.
     Line 1: patient name, Line 2: "NN year old male/female", Line 3: DOB.
-    ADT Events table: first 'Admission' row → ARRIVAL_TIME.
+    ADT Events table: first 'Admission' row → ARRIVAL_TIME,
+                      last 'Discharge' row  → DISCHARGE_DATETIME.
     """
     header: Dict[str, str] = {}
     # Line 1: patient name
@@ -746,7 +747,8 @@ def _extract_header_dos(lines):
     # Line 3: DOB
     if len(lines) >= 3 and re.match(r"\d{1,2}/\d{1,2}/\d{4}", lines[2].strip()):
         header["DOB"] = lines[2].strip()
-    # ADT Events: first "Admission" row → ARRIVAL_TIME
+    # ADT Events: first "Admission" row → ARRIVAL_TIME,
+    #             last  "Discharge" row  → DISCHARGE_DATETIME
     adt_re = re.compile(r"^(\d{1,2}/\d{1,2}/\d{2})\s+(\d{4})\s+")
     for line in lines[:60]:
         if "Admission" in line:
@@ -756,6 +758,19 @@ def _extract_header_dos(lines):
                 if ts:
                     header["ARRIVAL_TIME"] = ts
             break
+    # Scan for last Discharge row (there may be multiple; last wins).
+    # Only rows with event column exactly "Discharge" qualify —
+    # "Transfer Out", "Transfer In" etc. are excluded by the keyword check.
+    discharge_ts: Optional[str] = None
+    for line in lines[:60]:
+        if "Discharge" in line and "Transfer" not in line:
+            m = adt_re.match(line.strip())
+            if m:
+                ts = _parse_dt_slash_hhmm(m.group(1), m.group(2))
+                if ts:
+                    discharge_ts = ts  # last wins
+    if discharge_ts:
+        header["DISCHARGE_DATETIME"] = discharge_ts
     return header
 
 
@@ -1487,6 +1502,7 @@ def _build_evidence_object(src_path, patient_slug):
             "patient_name": patient_name or "DATA_NOT_AVAILABLE",
             "dob": dob or "DATA_NOT_AVAILABLE",
             "arrival_datetime": arrival_dt or "DATA_NOT_AVAILABLE",
+            "discharge_datetime": header.get("DISCHARGE_DATETIME"),
             "trauma_category": trauma_category or "DATA_NOT_AVAILABLE",
             "timezone": "America/Chicago",
         },
@@ -1568,6 +1584,7 @@ def main():
     print("   unique dates:      {}  {}".format(len(unique_dates), sorted(unique_dates)))
     print("   patient_id:        {}".format(evidence["meta"].get("patient_id")))
     print("   arrival_datetime:  {}".format(evidence["meta"].get("arrival_datetime")))
+    print("   discharge_datetime: {}".format(evidence["meta"].get("discharge_datetime")))
     return 0
 
 
