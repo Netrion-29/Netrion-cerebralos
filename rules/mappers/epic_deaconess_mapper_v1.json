@@ -63,7 +63,16 @@
 			"\\bto\\s+the\\s+or\\b",
 			"\\bwent\\s+to\\s+or\\b",
 			"\\bprocedure:\\b",
-			"\\bop\\s+note:\\b"
+			"\\bop\\s+note:\\b",
+			"\\btaken\\s+to\\s+(the\\s+)?or\\b",
+			"\\bbrought\\s+to\\s+(the\\s+)?or\\b",
+			"\\bORIF\\b",
+			"\\bopen\\s+reduction\\b",
+			"\\bexploratory\\s+laparotomy\\b",
+			"\\bxlap\\b",
+			"\\bsurgical\\s+procedure\\b",
+			"\\bunderwent\\s+surgery\\b",
+			"\\boperative\\s+procedure\\b"
 		],
 		"or_return_unplanned": [
 			"\\breturn\\s+to\\s+or\\b",
@@ -73,7 +82,19 @@
 			"\\breoperation\\b",
 			"\\bre-?exploration\\b",
 			"\\bwashout\\b",
-			"\\btakeback\\b"
+			"\\btakeback\\b",
+			"\\breturned\\s+to\\s+(the\\s+)?operating\\s+room\\b",
+			"\\bbrought\\s+back\\s+to\\s+(the\\s+)?or\\b",
+			"\\bbrought\\s+back\\s+to\\s+(the\\s+)?operating\\s+room\\b",
+			"\\bemergent\\s+return\\b",
+			"\\bunplanned\\s+return\\b",
+			"\\bunplanned\\s+reoperation\\b",
+			"\\brequired\\s+additional\\s+surgery\\b",
+			"\\badditional\\s+operative\\s+intervention\\b",
+			"\\bsubsequent\\s+surgery\\b",
+			"\\bsubsequent\\s+operation\\b",
+			"\\bwound\\s+exploration\\b",
+			"\\bevacuation\\s+of\\s+hematoma\\b"
 		],
 		"or_planned_staged": [
 			"\\bplanned\\s+return\\b",
@@ -81,7 +102,10 @@
 			"\\bsecond\\s+look\\b",
 			"\\bdamage\\s+control\\s+planned\\b",
 			"\\bplanned\\s+re-?exploration\\b",
-			"\\bpre-?planned\\b"
+			"\\bpre-?planned\\b",
+			"\\bplanned\\s+washout\\b",
+			"\\bscheduled\\s+return\\b",
+			"\\bdelayed\\s+primary\\s+closure\\b"
 		],
 		"or_same_site": [
 			"\\bsame\\s+operative\\s+site\\b",
@@ -89,12 +113,24 @@
 			"\\bre-?open\\b",
 			"\\breopen\\b",
 			"\\bre-?opening\\b",
-			"\\btakeback\\s+for\\s+same\\s+site\\b"
+			"\\btakeback\\s+for\\s+same\\s+site\\b",
+			"\\bprevious\\s+incision\\b",
+			"\\bprior\\s+incision\\b",
+			"\\bsame\\s+incision\\b",
+			"\\bprevious\\s+surgical\\s+site\\b",
+			"\\bprior\\s+operative\\s+site\\b",
+			"\\bwound\\s+dehiscence\\b",
+			"\\brevision\\s+of\\b",
+			"\\bsurgical\\s+wound\\b",
+			"\\boperative\\s+wound\\b"
 		],
 		"or_ir": [
 			"\\binterventional\\s+radiology\\b",
 			"\\bir\\s+suite\\b",
-			"\\bangiography\\s+suite\\b"
+			"\\bangiography\\s+suite\\b",
+			"\\bfluoroscopy\\s+suite\\b",
+			"\\binterventional\\s+suite\\b",
+			"\\bangio\\s+suite\\b"
 		],
 		"osh_or": [
 			"\\boutside\\s+hospital\\b",
