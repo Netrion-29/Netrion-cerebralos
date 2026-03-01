@@ -647,3 +647,75 @@ class TestMixedScenarios:
         assert result["uds_panel"]["cocaine"] == "NEGATIVE"
         # Should have 2 evidence entries (one ETOH, one UDS)
         assert len(result["evidence"]) == 2
+
+
+# ── Tests: discharge upper-bound enforcement via extract_etoh_uds ───
+
+class TestDischargeUpperBound:
+    """Prove that extract_etoh_uds enforces discharge_datetime from days_data meta."""
+
+    def test_etoh_after_discharge_flagged_out_of_window(self):
+        """ETOH timestamp after discharge → OUT_OF_WINDOW via meta path."""
+        series = {
+            "Alcohol Serum": [{
+                "observed_dt": "2026-01-04T10:00:00",
+                "value_num": 150.0,
+                "value_raw": "150",
+                "flags": [],
+                "source_line": 1,
+            }],
+        }
+        pat_features = _make_pat_features({
+            "2026-01-04": {"series": series, "daily": {}},
+        })
+        # Discharge is BEFORE the ETOH timestamp
+        days_data = _make_days_data(
+            arrival_datetime="2026-01-01 08:00:00",
+            discharge_datetime="2026-01-03 10:00:00",
+        )
+        result = extract_etoh_uds(pat_features, days_data)
+        assert result["etoh_ts_validation"] == "OUT_OF_WINDOW"
+        assert any("after discharge" in w for w in result["warnings"])
+
+    def test_etoh_before_discharge_valid(self):
+        """ETOH timestamp before discharge → VALID when discharge present."""
+        series = {
+            "Alcohol Serum": [{
+                "observed_dt": "2026-01-02T10:00:00",
+                "value_num": 10.0,
+                "value_raw": "<10",
+                "flags": [],
+                "source_line": 1,
+            }],
+        }
+        pat_features = _make_pat_features({
+            "2026-01-02": {"series": series, "daily": {}},
+        })
+        days_data = _make_days_data(
+            arrival_datetime="2026-01-01 08:00:00",
+            discharge_datetime="2026-01-05 14:00:00",
+        )
+        result = extract_etoh_uds(pat_features, days_data)
+        assert result["etoh_ts_validation"] == "VALID"
+
+    def test_no_discharge_skips_upper_bound(self):
+        """No discharge_datetime → upper-bound check skipped (backward compat)."""
+        series = {
+            "Alcohol Serum": [{
+                "observed_dt": "2026-01-10T10:00:00",
+                "value_num": 50.0,
+                "value_raw": "50",
+                "flags": [],
+                "source_line": 1,
+            }],
+        }
+        pat_features = _make_pat_features({
+            "2026-01-10": {"series": series, "daily": {}},
+        })
+        # No discharge — should not flag OUT_OF_WINDOW
+        days_data = _make_days_data(
+            arrival_datetime="2026-01-01 08:00:00",
+            discharge_datetime=None,
+        )
+        result = extract_etoh_uds(pat_features, days_data)
+        assert result["etoh_ts_validation"] == "VALID"
