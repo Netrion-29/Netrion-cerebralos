@@ -78,14 +78,25 @@ def load_protocol_shared() -> Dict[str, Any]:
 
     # Support action_buckets (canonical) or legacy "buckets" key
     if "action_buckets" in obj and isinstance(obj["action_buckets"], dict):
-        return obj
-    if "buckets" in obj and isinstance(obj["buckets"], dict):
+        pass  # canonical format
+    elif "buckets" in obj and isinstance(obj["buckets"], dict):
         # Normalize legacy format
-        normalized = dict(obj)
-        normalized["action_buckets"] = dict(normalized["buckets"])
-        return normalized
+        obj = dict(obj)
+        obj["action_buckets"] = dict(obj["buckets"])
+    else:
+        raise SystemExit("protocol_shared_v1.json missing action_buckets dict")
 
-    raise SystemExit("protocol_shared_v1.json missing action_buckets dict")
+    # Merge Deaconess-specific protocol gate patterns
+    # (protocol_tbi_gate, protocol_rib_fx_gate, etc.)
+    deaconess_path = REPO_ROOT / "rules" / "deaconess" / "shared_action_buckets_v1.json"
+    if deaconess_path.is_file():
+        deaconess_obj = _read_json(deaconess_path)
+        deaconess_buckets = deaconess_obj.get("action_buckets", {})
+        if isinstance(deaconess_buckets, dict):
+            # Deaconess keys override shared keys on collision (more specific)
+            obj["action_buckets"].update(deaconess_buckets)
+
+    return obj
 
 
 def load_mapper() -> Dict[str, Any]:

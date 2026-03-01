@@ -422,6 +422,7 @@ def match_evidence_with_details(
                     continue
 
         txt = e.text or ""
+        matched_block = False
         for p in compiled:
             for m in p.finditer(txt):
                 if negation_aware and _is_negated(txt, m.start(), m.end()):
@@ -438,8 +439,9 @@ def match_evidence_with_details(
                     matched_text=m.group(0),
                     context=txt[ctx_start:ctx_end].strip(),
                 ))
+                matched_block = True
                 break  # One match per pattern is enough
-            if len(hits) > len(details) - 1:
+            if matched_block:
                 break  # Already matched this evidence block
         if len(hits) >= max_hits:
             break
@@ -930,8 +932,8 @@ def eval_trigger_criteria(
                     continue
                 if condition_lower in (e.text or "").lower():
                     hits.append(e)
-                found = True
-                break
+                    found = True
+                    break
 
         if not found:
             if i == 0:
