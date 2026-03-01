@@ -1320,6 +1320,54 @@ def _render_consultant_day_plans(feats: Dict[str, Any], day_iso: str) -> List[st
 
 
 # ════════════════════════════════════════════════════════════════════
+# PER-DAY: Non-Trauma Team Day Plans
+# ════════════════════════════════════════════════════════════════════
+
+# Deterministic cap for brief lines per note in the per-day view
+_MAX_NON_TRAUMA_BRIEF_LINES = 8
+
+# Deterministic cap for notes per service in the per-day view
+_MAX_NON_TRAUMA_NOTES_PER_SERVICE = 6
+
+
+def _render_non_trauma_day_plans(feats: Dict[str, Any], day_iso: str) -> List[str]:
+    """Render non-trauma team day plan/update entries for a specific day."""
+    out: List[str] = []
+    ntp = feats.get("non_trauma_team_day_plans_v1", {})
+    if not ntp:
+        return out
+    days = ntp.get("days", {})
+    day_data = days.get(day_iso, {})
+    services = day_data.get("services", {})
+    if not services:
+        return out
+
+    out.append("Non-Trauma Day Plans:")
+    for svc_name in sorted(services.keys()):
+        svc = services[svc_name]
+        notes = svc.get("notes", [])
+        if not notes:
+            continue
+        cap = _MAX_NON_TRAUMA_NOTES_PER_SERVICE
+        for note in notes[:cap]:
+            dt = note.get("dt", "?")
+            author = note.get("author", "Unknown")
+            time_str = dt.split("T")[1][:5] if "T" in str(dt) else str(dt)
+            out.append(f"  [{svc_name}] {time_str} — {author}")
+            brief_lines = note.get("brief_lines", [])
+            line_cap = _MAX_NON_TRAUMA_BRIEF_LINES
+            for ln in brief_lines[:line_cap]:
+                out.append(f"    {ln.rstrip()}")
+            if len(brief_lines) > line_cap:
+                out.append(f"    ... (+{len(brief_lines) - line_cap} more lines)")
+            out.append("")
+        if len(notes) > cap:
+            out.append(f"  ... (+{len(notes) - cap} more {svc_name} notes)")
+
+    return out
+
+
+# ════════════════════════════════════════════════════════════════════
 # PER-DAY: Vitals Trending  (reused from v4 logic)
 # ════════════════════════════════════════════════════════════════════
 
@@ -1901,6 +1949,12 @@ def render_v5(
         cdp_lines = _render_consultant_day_plans(feats, dk)
         if cdp_lines:
             out.extend(cdp_lines)
+            out.append("")
+
+        # Non-Trauma Team Day Plans (hospitalist, critical care, etc.)
+        ntp_lines = _render_non_trauma_day_plans(feats, dk)
+        if ntp_lines:
+            out.extend(ntp_lines)
             out.append("")
 
         # B7 Clinical Narrative (from timeline items, noise-filtered)
