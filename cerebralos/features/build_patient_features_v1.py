@@ -96,6 +96,7 @@ from cerebralos.features.lda_events_v1 import extract_lda_events
 from cerebralos.features.urine_output_events_v1 import extract_urine_output_events
 from cerebralos.features.trauma_daily_plan_by_day_v1 import extract_trauma_daily_plan_by_day
 from cerebralos.features.consultant_day_plans_by_day_v1 import extract_consultant_day_plans_by_day
+from cerebralos.features.non_trauma_team_day_plans_v1 import extract_non_trauma_team_day_plans
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -577,6 +578,13 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
     # ── Consultant Day Plans by Day v1 (consumes consultant_plan_items_v1 + events) ──
     consultant_day_plans = extract_consultant_day_plans_by_day(features)
     features["consultant_day_plans_by_day_v1"] = consultant_day_plans
+
+    # ── Non-Trauma Team Day Plans v1 (cross-day, patient-level) ──
+    non_trauma_day_plans = extract_non_trauma_team_day_plans(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+    features["non_trauma_team_day_plans_v1"] = non_trauma_day_plans
 
     # ── Age extraction v1 (patient metadata from timeline text) ──
     age_extraction = extract_patient_age(days_data)
