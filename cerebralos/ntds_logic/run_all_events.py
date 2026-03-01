@@ -116,7 +116,13 @@ def main() -> int:
         return 1
 
     print(f"== NTDS Batch Evaluation — {args.year} — {p.stem} ==\n")
-    run_all(args.year, p, arrival=args.arrival)
+    rows = run_all(args.year, p, arrival=args.arrival)
+
+    # Fail-closed: any SKIPPED or ERROR event → non-zero exit
+    failed = [r for r in rows if r.get("outcome") in ("SKIPPED", "ERROR")]
+    if failed:
+        print(f"\nFAIL-CLOSED: {len(failed)} event(s) SKIPPED/ERROR — exit 1", file=sys.stderr)
+        return 1
     return 0
 
 

@@ -111,9 +111,10 @@ if [[ "${CEREBRAL_DASHBOARD:-0}" == "1" ]]; then
 fi
 
 # NTDS Hospital Events — all 21 events (opt-in via CEREBRAL_NTDS=1)
+# Fail-closed: no || true — NTDS failures propagate to caller.
 if [[ "${CEREBRAL_NTDS:-0}" == "1" ]]; then
   echo ""
   echo "---- NTDS hospital events (2026, all 21) ----"
   python3 -m cerebralos.ntds_logic.run_all_events \
-    --year 2026 --patient "data_raw/$PAT.txt" || true
+    --year 2026 --patient "data_raw/$PAT.txt"
 fi
