@@ -3,7 +3,7 @@
     "event_id": 8,
     "canonical_name": "Deep Vein Thrombosis (DVT)",
     "ntds_year": 2026,
-    "version": "1.0.1",
+    "version": "1.0.2",
     "source": "NTDS Hospital Events (STRUCTURED)"
   },
   "element_values": {
@@ -22,6 +22,17 @@
     }
   ],
   "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "dvt_negative_study",
+      "gate_name": "Imaging explicitly negative for DVT",
+      "required": false,
+      "min_count": 1,
+      "query_keys": ["dvt_dx_negative"],
+      "allowed_sources": ["IMAGING"],
+      "pass_outcome": "NO",
+      "pass_reason": "Imaging explicitly negative for DVT."
+    },
     {
       "gate_type": "evidence_any",
       "gate_id": "dvt_dx",

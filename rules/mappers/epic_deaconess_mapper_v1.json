@@ -21,6 +21,17 @@
 			"\\bvenogram\\b.*\\bpositive\\b",
 			"\\bct\\b.*\\bvenogram\\b.*\\bthrombus\\b"
 		],
+		"dvt_dx_negative": [
+			"\\bno\\s+evidence\\b.*\\bdeep\\s+vein\\s+thrombosis\\b",
+			"\\bno\\s+evidence\\b.*\\bvenous\\s+thrombosis\\b",
+			"\\bnegative\\b.*\\bdeep\\s+vein\\s+thrombosis\\b",
+			"\\bnegative\\s+(for\\s+)?DVT\\b",
+			"\\bno\\s+DVT\\b",
+			"\\bno\\s+deep\\s+vein\\s+thrombosis\\b",
+			"\\bwithout\\b.*\\bdeep\\s+ven(ous|ein)\\s+thrombosis\\b",
+			"\\bno\\s+acute\\b.*\\bdeep\\s+vein\\s+thrombosis\\b",
+			"\\bno\\s+evidence\\b.*\\b(DVT|dvt)\\b"
+		],
 		"dvt_dx_noise_prophylaxis": [
 			"\\bppx\\b",
 			"\\bprophylaxis\\b",
