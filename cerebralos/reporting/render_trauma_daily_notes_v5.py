@@ -400,12 +400,21 @@ def _render_injury_catalog(feats: Dict[str, Any]) -> List[str]:
         return out
 
     def _any_present(items: Any) -> bool:
-        """Check if any item in a findings list is marked present."""
-        if not items or not isinstance(items, list):
+        """Check if any item in a findings list/dict is marked present.
+
+        Handles both scalar dicts (pneumothorax, hemothorax, etc.) and
+        list-of-dicts (solid_organ_injuries, intracranial_hemorrhage, etc.).
+        """
+        if not items:
             return False
-        for item in items:
-            if isinstance(item, dict) and item.get("present"):
-                return True
+        # Scalar finding dict — e.g. {"present": True, "subtype": "tension"}
+        if isinstance(items, dict):
+            return bool(items.get("present"))
+        # List of finding dicts
+        if isinstance(items, list):
+            for item in items:
+                if isinstance(item, dict) and item.get("present"):
+                    return True
         return False
 
     out.append("ESTABLISHED INJURY CATALOG")
@@ -448,6 +457,14 @@ def _render_injury_catalog(feats: Dict[str, Any]) -> List[str]:
     # Spinal fracture
     if _any_present(rad.get("spinal_fracture")):
         out.append(f"  Spinal Fracture:  present")
+
+    # Extremity / long-bone fracture
+    ext_fx = rad.get("extremity_fracture", [])
+    if isinstance(ext_fx, list):
+        bones = sorted({e.get("bone", "unspecified") for e in ext_fx
+                        if isinstance(e, dict) and e.get("present")})
+        if bones:
+            out.append(f"  Extremity Fx:     {', '.join(bones)}")
 
     out.append("")
     return out
