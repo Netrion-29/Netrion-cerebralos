@@ -50,6 +50,8 @@
     ]
   },
   "ett_vent": {
+    "absent_wins": true,
+    "_comment_absent_wins": "When both present and absent patterns match on the same day, absent wins. Prevents historical narrative (was intubated, copied CXR ETT in place) from overriding explicit extubation documentation.",
     "present": [
       "\\bett\\b",
       "\\bintubat(ed|ion)\\b",
@@ -72,7 +74,37 @@
       "\\bDNR.{0,5}DNI\\b",
       "\\bno intubation\\b",
       "\\btrach removed\\b",
-      "\\bdecannulat(ed|ion)\\b"
+      "\\bdecannulat(ed|ion)\\b",
+      "\\bextubated to BiPAP\\b",
+      "\\bextubated to NIV\\b",
+      "\\bextubated to (nasal )?cannula\\b",
+      "\\bextubated to (high[- ]?flow|HFNC)\\b",
+      "\\bDNI[\\b\\-]"
+    ],
+    "absent_exclude": [
+      "\\b(?:once|possible|pending|consider|plan|if|when|eventually|should)\\b.{0,30}\\bextubat",
+      "\\b(?:will|may|can|could|would)\\b.{0,20}\\b(?:need|be)\\b.{0,20}\\bextubat",
+      "\\bpossible extubation\\b"
+    ]
+  },
+  "bipap_niv": {
+    "absent_wins": true,
+    "present": [
+      "\\b[Bb]i[Pp][Aa][Pp]\\b",
+      "\\bCPAP\\b",
+      "\\bNIV\\b",
+      "\\bnon[- ]?invasive ventilation\\b",
+      "\\bHFNC\\b",
+      "\\bhigh[- ]?flow nasal cannula\\b"
+    ],
+    "absent": [
+      "\\bBiPAP (removed|discontinued|off|weaned|stopped)\\b",
+      "\\b(off|wean(ed)?|discontinue(d)?) BiPAP\\b",
+      "\\bCPAP (removed|discontinued|off|weaned|stopped)\\b",
+      "\\b(off|wean(ed)?|discontinue(d)?) CPAP\\b",
+      "\\bHFNC (removed|discontinued|off|weaned|stopped)\\b",
+      "\\b(off|wean(ed)?|discontinue(d)?) (HFNC|high[- ]?flow)\\b",
+      "\\broom air\\b"
     ]
   },
   "chest_tube": {

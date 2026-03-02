@@ -28,7 +28,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Tuple
 
 # ── tracked devices (must match canonical keys) ────────────────────
-_TRACKED_DEVICES = ("foley", "central_line", "ett_vent", "chest_tube", "drain")
+_TRACKED_DEVICES = ("foley", "central_line", "ett_vent", "bipap_niv", "chest_tube", "drain")
 
 _DEFAULT_MAX_CARRY_DAYS = 7
 
