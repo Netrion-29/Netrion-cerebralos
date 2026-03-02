@@ -43,6 +43,10 @@ def _compile_patterns(
         compiled[device_key] = {
             "present": [re.compile(p, re.IGNORECASE) for p in spec.get("present", [])],
             "absent": [re.compile(p, re.IGNORECASE) for p in spec.get("absent", [])],
+            "absent_exclude": [
+                re.compile(p, re.IGNORECASE)
+                for p in spec.get("absent_exclude", [])
+            ],
         }
     return compiled
 
@@ -109,14 +113,40 @@ def evaluate_devices_for_day(
             for pat in pats["absent"]:
                 m = pat.search(text)
                 if m:
-                    absent_matches.append({
-                        "line_id": block.get("source_id"),
-                        "text_preview": text[max(0, m.start() - 30):m.end() + 50].strip()[:120],
-                    })
+                    # If absent_exclude patterns are defined, check whether
+                    # the SAME text block contains planning/hypothetical
+                    # context that invalidates this absent match.
+                    # Example: "Once extubated the patient will need NIV"
+                    # matches the absent pattern "extubated" but is a plan,
+                    # not an actual event.
+                    excluded = False
+                    if pats.get("absent_exclude"):
+                        for excl in pats["absent_exclude"]:
+                            if excl.search(text):
+                                excluded = True
+                                break
+                    if not excluded:
+                        absent_matches.append({
+                            "line_id": block.get("source_id"),
+                            "text_preview": text[max(0, m.start() - 30):m.end() + 50].strip()[:120],
+                        })
                     break
 
-        # Tri-state logic: PRESENT wins over NOT_PRESENT wins over UNKNOWN
-        if present_matches:
+        # Tri-state resolution.
+        # Default: PRESENT wins over NOT_PRESENT wins over UNKNOWN.
+        # If the device spec sets "absent_wins": true (e.g. ett_vent),
+        # NOT_PRESENT wins when BOTH present and absent patterns match.
+        # This prevents historical narrative ("was intubated", copied
+        # CXR "ETT in place") from overriding explicit extubation.
+        absent_wins = bool(
+            config.get(device_key, {}).get("absent_wins", False)
+        )
+
+        if present_matches and absent_matches and absent_wins:
+            # Explicit removal/stop evidence overrides historical mentions
+            tri_state[device_key] = "NOT_PRESENT"
+            evidence[device_key] = absent_matches
+        elif present_matches:
             tri_state[device_key] = "PRESENT"
             evidence[device_key] = present_matches
         elif absent_matches:

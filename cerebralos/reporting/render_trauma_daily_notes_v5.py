@@ -43,10 +43,11 @@ _DEVICE_LABELS = {
     "foley": "Foley catheter",
     "central_line": "Central line",
     "ett_vent": "ETT/Ventilator",
+    "bipap_niv": "BiPAP/NIV",
     "chest_tube": "Chest tube",
     "drain": "Drain",
 }
-_TRACKED_DEVICES = ("foley", "central_line", "ett_vent", "chest_tube", "drain")
+_TRACKED_DEVICES = ("foley", "central_line", "ett_vent", "bipap_niv", "chest_tube", "drain")
 
 # Deterministic truncation limit for consultant plan items per service
 _MAX_PLAN_ITEMS_PER_SERVICE = 15

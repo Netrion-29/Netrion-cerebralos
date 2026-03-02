@@ -31,6 +31,8 @@ _DEVICE_PATTERNS: List[Tuple[str, "re.Pattern[str]"]] = [
     ("ett",                 re.compile(r"\b(ETT|endotracheal\s+tube)\b", re.I)),
     ("trach",               re.compile(r"\b(trach(?:eostomy)?)\b", re.I)),
     ("ventilator",          re.compile(r"\b(ventilator|mechanical\s+ventilation|vent\s+settings?)\b", re.I)),
+    ("bipap",               re.compile(r"\b(BiPAP|CPAP|NIV|non-?invasive\s+ventilation)\b", re.I)),
+    ("hfnc",                re.compile(r"\b(HFNC|high[- ]?flow\s+nasal\s+cannula)\b", re.I)),
     ("jp_drain",            re.compile(r"\b(JP\s*drain|Jackson[\-\s]?Pratt)\b", re.I)),
     ("chest_drain",         re.compile(r"\bchest\s*drain\b", re.I)),
     ("wound_vac",           re.compile(r"\b(wound\s*vac|negative\s*pressure\s*wound|NPWT|VAC\s+dressing)\b", re.I)),
