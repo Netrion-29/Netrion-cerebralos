@@ -650,6 +650,17 @@ def main() -> int:
         except (json.JSONDecodeError, OSError):
             pass  # fail-closed: no header lines available
 
+    # ── Fallback: derive source_file from slug when evidence didn't provide it ──
+    # Ensures raw-file features (LDA, note_index, urine_output) can still
+    # extract data even if the evidence JSON was absent or incomplete.
+    if not (days_data.get("meta") or {}).get("source_file"):
+        project_root = in_path.parent.parent.parent.parent
+        for candidate_name in (slug.replace("_", " "), slug):
+            candidate = project_root / "data_raw" / f"{candidate_name}.txt"
+            if candidate.is_file():
+                days_data.setdefault("meta", {})["source_file"] = str(candidate)
+                break
+
     features = build_patient_features(days_data)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
