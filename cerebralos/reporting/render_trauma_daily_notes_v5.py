@@ -1248,6 +1248,92 @@ def _render_note_sections(feats: Dict[str, Any]) -> List[str]:
 
 
 # ════════════════════════════════════════════════════════════════════
+# §13  NTDS SIGNAL SUMMARY
+# ════════════════════════════════════════════════════════════════════
+
+# Canonical outcome ordering for deterministic rendering
+_NTDS_OUTCOME_ORDER = ["YES", "NO", "EXCLUDED", "UNABLE_TO_DETERMINE", "ERROR"]
+
+_NTDS_OUTCOME_LABELS = {
+    "YES": "YES (event occurred)",
+    "NO": "NO",
+    "EXCLUDED": "EXCLUDED",
+    "UNABLE_TO_DETERMINE": "UNABLE TO DETERMINE",
+    "ERROR": "ERROR",
+}
+
+
+def _render_ntds_signal_summary(
+    ntds_results: Optional[List[Dict[str, Any]]],
+) -> List[str]:
+    """
+    Render NTDS Signal Summary section.
+
+    Parameters
+    ----------
+    ntds_results : list of NTDS event result dicts (from batch_eval),
+                   or None if NTDS data was not provided.
+
+    Returns
+    -------
+    List of lines.  Empty list when ntds_results is None (section omitted).
+    Section with DATA NOT AVAILABLE when ntds_results is an empty list.
+    Full summary when results are present.
+    """
+    if ntds_results is None:
+        return []  # NTDS data not provided — omit section entirely
+
+    out: List[str] = []
+    out.append("NTDS SIGNAL SUMMARY")
+    out.append("-" * 60)
+
+    if not ntds_results:
+        out.append(f"  {_DNA}")
+        out.append("")
+        return out
+
+    # ── Outcome counts ──
+    counts: Dict[str, int] = {}
+    for r in ntds_results:
+        oc = r.get("outcome", "ERROR")
+        counts[oc] = counts.get(oc, 0) + 1
+
+    out.append(f"  Events evaluated:       {len(ntds_results)}")
+    for oc in _NTDS_OUTCOME_ORDER:
+        cnt = counts.get(oc, 0)
+        if cnt > 0 or oc in ("YES", "NO"):
+            label = _NTDS_OUTCOME_LABELS.get(oc, oc)
+            out.append(f"    {label + ':':<26s}{cnt}")
+    out.append("")
+
+    # ── Non-NO events (actionable for PI review) ──
+    non_no = [
+        r for r in ntds_results
+        if r.get("outcome") != "NO"
+    ]
+    # Sort by outcome priority then event_id for determinism
+    outcome_rank = {oc: i for i, oc in enumerate(_NTDS_OUTCOME_ORDER)}
+    non_no.sort(key=lambda r: (
+        outcome_rank.get(r.get("outcome", "ERROR"), 99),
+        r.get("event_id", 0),
+    ))
+
+    if non_no:
+        out.append("  Non-NO Events:")
+        for r in non_no:
+            eid = r.get("event_id", "?")
+            name = r.get("canonical_name", "Unknown")
+            oc = r.get("outcome", "?")
+            out.append(f"    [{oc}] Event {eid}: {name}")
+        out.append("")
+    else:
+        out.append("  Non-NO Events:          (none)")
+        out.append("")
+
+    return out
+
+
+# ════════════════════════════════════════════════════════════════════
 # ════════════════════════════════════════════════════════════════════
 # PER-DAY: Trauma Daily Plan (from trauma progress notes)
 # ════════════════════════════════════════════════════════════════════
@@ -1859,6 +1945,7 @@ def _render_day_narrative(
 def render_v5(
     features_data: Dict[str, Any],
     days_data: Optional[Dict[str, Any]] = None,
+    ntds_results: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     """
     Render Daily Notes v5 text.
@@ -1867,6 +1954,7 @@ def render_v5(
     ----------
     features_data : loaded patient_features_v1.json
     days_data     : loaded patient_days_v1.json (optional, for metadata)
+    ntds_results  : list of NTDS event result dicts (optional, from batch_eval)
     """
     patient_id = features_data.get("patient_id", _DNA)
     feats = features_data.get("features", {})
@@ -1910,6 +1998,7 @@ def render_v5(
     out.extend(_render_spine_clearance(feats))
     out.extend(_render_incentive_spirometry(feats))
     out.extend(_render_note_sections(feats))
+    out.extend(_render_ntds_signal_summary(ntds_results))
 
     # ── Per-Day Clinical Status ──
     out.append("=" * 60)
@@ -2010,6 +2099,8 @@ def main() -> int:
                     help="Path to patient_features_v1.json")
     ap.add_argument("--days", dest="days_path", required=False, default=None,
                     help="Path to patient_days_v1.json (optional, for metadata)")
+    ap.add_argument("--ntds", dest="ntds_path", required=False, default=None,
+                    help="Path to evaluation JSON containing ntds_results (optional)")
     ap.add_argument("--out", dest="out_path", required=True,
                     help="Path for output TRAUMA_DAILY_NOTES_v5.txt")
     args = ap.parse_args()
@@ -2031,7 +2122,19 @@ def main() -> int:
             with open(days_path, encoding="utf-8", errors="replace") as f:
                 days_data = json.load(f)
 
-    text = render_v5(features_data, days_data)
+    ntds_results = None
+    if args.ntds_path:
+        ntds_path = Path(args.ntds_path).expanduser().resolve()
+        if ntds_path.is_file():
+            with open(ntds_path, encoding="utf-8", errors="replace") as f:
+                eval_data = json.load(f)
+            # Accept either a top-level evaluation dict or a bare list
+            if isinstance(eval_data, list):
+                ntds_results = eval_data
+            else:
+                ntds_results = eval_data.get("ntds_results")
+
+    text = render_v5(features_data, days_data, ntds_results=ntds_results)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(text, encoding="utf-8")

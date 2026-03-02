@@ -1846,5 +1846,165 @@ class TestArrivalGcsSummaryFallback(unittest.TestCase):
         self.assertIn("Arrival GCS:      DATA NOT AVAILABLE", summary)
 
 
+# ════════════════════════════════════════════════════════════════════
+# NTDS Signal Summary Tests
+# ════════════════════════════════════════════════════════════════════
+
+def _ntds_result(event_id: int, canonical_name: str, outcome: str, **kw):
+    """Helper to build a single NTDS event result dict."""
+    base = {
+        "event_id": event_id,
+        "canonical_name": canonical_name,
+        "outcome": outcome,
+        "gate_trace": [],
+        "warnings": [],
+    }
+    base.update(kw)
+    return base
+
+
+class TestNTDSSignalSummary(unittest.TestCase):
+    """Tests for the NTDS SIGNAL SUMMARY section in v5 renderer."""
+
+    def test_section_omitted_when_ntds_not_provided(self):
+        """When ntds_results is None (default), section must not appear."""
+        data = _minimal_features()
+        result = render_v5(data)
+        self.assertNotIn("NTDS SIGNAL SUMMARY", result)
+
+    def test_section_omitted_when_ntds_none_explicit(self):
+        """Explicit None must also omit the section."""
+        data = _minimal_features()
+        result = render_v5(data, ntds_results=None)
+        self.assertNotIn("NTDS SIGNAL SUMMARY", result)
+
+    def test_section_dna_when_empty_list(self):
+        """Empty list → section renders with DATA NOT AVAILABLE."""
+        data = _minimal_features()
+        result = render_v5(data, ntds_results=[])
+        self.assertIn("NTDS SIGNAL SUMMARY", result)
+        self.assertIn("DATA NOT AVAILABLE", result)
+
+    def test_counts_rendered(self):
+        """Outcome counts are shown correctly."""
+        results = [
+            _ntds_result(1, "AKI", "NO"),
+            _ntds_result(2, "DVT", "NO"),
+            _ntds_result(3, "PE", "YES"),
+            _ntds_result(4, "ARDS", "EXCLUDED"),
+            _ntds_result(5, "Sepsis", "UNABLE_TO_DETERMINE"),
+        ]
+        data = _minimal_features()
+        result = render_v5(data, ntds_results=results)
+        self.assertIn("Events evaluated:       5", result)
+        self.assertIn("YES (event occurred):", result)
+        self.assertIn("NO:", result)
+
+    def test_non_no_events_listed(self):
+        """Non-NO events are listed with outcome, event_id, and name."""
+        results = [
+            _ntds_result(1, "AKI", "NO"),
+            _ntds_result(3, "PE", "YES"),
+            _ntds_result(5, "Sepsis", "UNABLE_TO_DETERMINE"),
+        ]
+        data = _minimal_features()
+        result = render_v5(data, ntds_results=results)
+        self.assertIn("[YES] Event 3: PE", result)
+        self.assertIn("[UNABLE_TO_DETERMINE] Event 5: Sepsis", result)
+        # NO events should NOT appear in non-NO listing
+        self.assertNotIn("[NO] Event 1", result)
+
+    def test_all_no_shows_none_message(self):
+        """When all outcomes are NO, non-NO section shows '(none)'."""
+        results = [
+            _ntds_result(1, "AKI", "NO"),
+            _ntds_result(2, "DVT", "NO"),
+        ]
+        data = _minimal_features()
+        result = render_v5(data, ntds_results=results)
+        self.assertIn("(none)", result)
+        self.assertIn("Non-NO Events:", result)
+
+    def test_yes_events_sorted_before_excluded(self):
+        """YES events render before EXCLUDED in non-NO listing."""
+        results = [
+            _ntds_result(4, "ARDS", "EXCLUDED"),
+            _ntds_result(3, "PE", "YES"),
+            _ntds_result(1, "AKI", "NO"),
+        ]
+        data = _minimal_features()
+        result = render_v5(data, ntds_results=results)
+        yes_pos = result.index("[YES] Event 3: PE")
+        excluded_pos = result.index("[EXCLUDED] Event 4: ARDS")
+        self.assertLess(yes_pos, excluded_pos)
+
+    def test_error_events_rendered(self):
+        """ERROR outcome events appear in the summary."""
+        results = [
+            _ntds_result(1, "AKI", "NO"),
+            _ntds_result(7, "Broken Event", "ERROR", error="eval failed"),
+        ]
+        data = _minimal_features()
+        result = render_v5(data, ntds_results=results)
+        self.assertIn("[ERROR] Event 7: Broken Event", result)
+
+    def test_section_appears_before_per_day(self):
+        """NTDS section must appear before PER-DAY CLINICAL STATUS."""
+        results = [_ntds_result(1, "AKI", "NO")]
+        data = _minimal_features()
+        result = render_v5(data, ntds_results=results)
+        ntds_pos = result.index("NTDS SIGNAL SUMMARY")
+        perday_pos = result.index("PER-DAY CLINICAL STATUS")
+        self.assertLess(ntds_pos, perday_pos)
+
+    def test_determinism(self):
+        """Two renders with same NTDS data must produce identical output."""
+        results = [
+            _ntds_result(1, "AKI", "YES"),
+            _ntds_result(2, "DVT", "NO"),
+            _ntds_result(3, "PE", "EXCLUDED"),
+        ]
+        data = _minimal_features()
+        r1 = render_v5(data, ntds_results=results)
+        r2 = render_v5(data, ntds_results=results)
+        self.assertEqual(r1, r2)
+
+    def test_existing_sections_stable(self):
+        """Adding NTDS data must not alter other sections."""
+        data = _minimal_features()
+        baseline = render_v5(data)
+        # Now render with NTDS
+        results = [_ntds_result(1, "AKI", "YES")]
+        with_ntds = render_v5(data, ntds_results=results)
+        # Patient Summary, PER-DAY should still be present
+        self.assertIn("PATIENT SUMMARY", with_ntds)
+        self.assertIn("PER-DAY CLINICAL STATUS", with_ntds)
+        self.assertIn("END OF PI DAILY NOTES (v5)", with_ntds)
+        # Everything after PER-DAY CLINICAL STATUS should be identical
+        baseline_perday = baseline[baseline.index("PER-DAY CLINICAL STATUS"):]
+        with_ntds_perday = with_ntds[with_ntds.index("PER-DAY CLINICAL STATUS"):]
+        self.assertEqual(baseline_perday, with_ntds_perday)
+
+    def test_full_21_events(self):
+        """Render with a realistic 21-event NTDS result set."""
+        results = []
+        for i in range(1, 22):
+            if i == 5:
+                results.append(_ntds_result(i, f"Event_{i}", "YES"))
+            elif i == 12:
+                results.append(_ntds_result(i, f"Event_{i}", "EXCLUDED"))
+            elif i == 18:
+                results.append(_ntds_result(i, f"Event_{i}", "UNABLE_TO_DETERMINE"))
+            else:
+                results.append(_ntds_result(i, f"Event_{i}", "NO"))
+        data = _minimal_features()
+        result = render_v5(data, ntds_results=results)
+        self.assertIn("Events evaluated:       21", result)
+        # 18 NO, 1 YES, 1 EXCLUDED, 1 UTD → 3 non-NO
+        self.assertIn("[YES] Event 5: Event_5", result)
+        self.assertIn("[EXCLUDED] Event 12: Event_12", result)
+        self.assertIn("[UNABLE_TO_DETERMINE] Event 18: Event_18", result)
+
+
 if __name__ == "__main__":
     unittest.main()
