@@ -1,4 +1,4 @@
-name: NTDS mapper regression tests
+name: CerebralOS test suite
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  ntds-tests:
+  tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,11 +19,7 @@ jobs:
       - name: Install dependencies
         run: pip install pytest
 
-      - name: Run NTDS mapper regression tests
+      - name: Run full test suite
         env:
           PYTHONPATH: .
-        run: |
-          python -m pytest -q \
-            tests/test_mapper_no_duplicate_keys.py \
-            tests/test_pe_mapper_regex_regression.py \
-            tests/test_exclude_noise.py
+        run: python -m pytest tests/ -q
