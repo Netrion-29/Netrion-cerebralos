@@ -185,7 +185,6 @@ def eval_evidence_any(gate: Dict[str, Any], patient: PatientFacts, contract: Dic
 
     passed = len(hits) >= min_count
     reason = "Evidence found." if passed else str(gate.get("fail_reason") or "Required evidence not found.")
-    reason += f" ev_count={len(hits)}"
     max_items = int(contract.get("evidence", {}).get("max_items_per_gate", 8))
 
     return GateResult(gate=str(gate.get("gate_id")), passed=passed, reason=reason, evidence=hits[:max_items])
