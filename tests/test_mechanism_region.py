@@ -296,6 +296,182 @@ class TestMechanismOther:
 
 
 # ═══════════════════════════════════════════════════════════════════
+# § Assault false-positive suppression
+# ═══════════════════════════════════════════════════════════════════
+
+class TestAssaultFalsePositiveSuppression:
+    """Assault-family matches must be suppressed in medical/denial context."""
+
+    # ── Medical compound term exclusions ("attack") ─────────────────
+
+    def test_heart_attack_suppressed(self):
+        """'Heart attack' in PMH context must NOT trigger assault label."""
+        text = _hp_text(
+            "85 yo female with history of heart attack presents after a fall today."
+        )
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert "assault" not in result["mechanism_labels"]
+        assert "fall" in result["mechanism_labels"]
+
+    def test_panic_attack_suppressed(self):
+        """'Panic attack' must NOT trigger assault label."""
+        text = _hp_text(
+            "32 yo male fell down stairs during a panic attack at home."
+        )
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert "assault" not in result["mechanism_labels"]
+        assert "fall" in result["mechanism_labels"]
+
+    def test_ischemic_attack_suppressed(self):
+        """'Transient ischemic attack' must NOT trigger assault label."""
+        text = _hp_text(
+            "78 yo male with prior transient ischemic attack presents after "
+            "a fall from standing height."
+        )
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert "assault" not in result["mechanism_labels"]
+
+    def test_asthma_attack_suppressed(self):
+        """'Asthma attack' must NOT trigger assault label."""
+        text = _hp_text(
+            "25 yo female fell off bicycle during an asthma attack."
+        )
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert "assault" not in result["mechanism_labels"]
+
+    def test_cardiac_attack_suppressed(self):
+        """'Cardiac attack' must NOT trigger assault label."""
+        text = _hp_text(
+            "70 yo male with cardiac attack presents after fall at home."
+        )
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert "assault" not in result["mechanism_labels"]
+
+    # ── Cardiac "beating" exclusion ─────────────────────────────────
+
+    def test_heart_beating_suppressed(self):
+        """'Heart beating fast' must NOT trigger assault label."""
+        text = _hp_text(
+            "Patient reports heart beating fast prior to the fall today."
+        )
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert "assault" not in result["mechanism_labels"]
+
+    # ── Denial context ──────────────────────────────────────────────
+
+    def test_denies_assault_suppressed(self):
+        """'Denies assault' must NOT trigger assault label."""
+        text = _hp_text(
+            "45 yo female presents after fall at home. Denies assault."
+        )
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert "assault" not in result["mechanism_labels"]
+        assert "fall" in result["mechanism_labels"]
+
+    def test_no_history_of_assault_suppressed(self):
+        """'No history of assault' must NOT trigger assault label."""
+        text = _hp_text(
+            "22 yo male fell off ladder. No history of assault."
+        )
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert "assault" not in result["mechanism_labels"]
+
+    def test_negative_for_altercation_suppressed(self):
+        """'Negative for altercation' must NOT trigger assault label."""
+        text = _hp_text(
+            "30 yo male presents after MVC. Negative for altercation."
+        )
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert "assault" not in result["mechanism_labels"]
+
+    # ── History context exclusion for assault ───────────────────────
+
+    def test_history_of_assault_excluded(self):
+        """'History of assault' must be excluded by assault-specific context check."""
+        text = _hp_text(
+            "40 yo male with history of assault. Presents after fall today."
+        )
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert "assault" not in result["mechanism_labels"]
+        assert "fall" in result["mechanism_labels"]
+
+    def test_hx_of_altercation_excluded(self):
+        """'h/o altercation' must be excluded by history context check."""
+        text = _hp_text(
+            "28 yo female with h/o altercation, now presents after MVC."
+        )
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert "assault" not in result["mechanism_labels"]
+        assert "mvc" in result["mechanism_labels"]
+
+    # ── True positives still detected ───────────────────────────────
+
+    def test_true_assault_still_detected(self):
+        """Direct assault mechanism must still be detected."""
+        text = _hp_text("22 yo male presents after being assaulted outside a bar.")
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert result["mechanism_present"] == "yes"
+        assert "assault" in result["mechanism_labels"]
+
+    def test_true_altercation_still_detected(self):
+        """Direct altercation mechanism must still be detected."""
+        text = _hp_text(
+            "35 yo male sustained injuries during an altercation at a nightclub."
+        )
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert result["mechanism_present"] == "yes"
+        assert "assault" in result["mechanism_labels"]
+
+    def test_true_beaten_still_detected(self):
+        """Direct beaten mechanism must still be detected."""
+        text = _hp_text(
+            "19 yo female found on sidewalk, states she was beaten by unknown assailant."
+        )
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert result["mechanism_present"] == "yes"
+        assert "assault" in result["mechanism_labels"]
+
+    def test_true_attacked_still_detected(self):
+        """Direct 'attacked' mechanism must still be detected."""
+        text = _hp_text(
+            "55 yo male who was attacked with a blunt object."
+        )
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert result["mechanism_present"] == "yes"
+        assert "assault" in result["mechanism_labels"]
+
+    # ── Fall mechanism preserved alongside suppression ──────────────
+
+    def test_fall_preserved_when_heart_attack_suppressed(self):
+        """Fall must still be detected when heart attack is suppressed."""
+        text = _hp_text(
+            "Patient with history of heart attack presents after fall "
+            "from standing height, striking head on floor."
+        )
+        days_data = _make_days_data({"2025-12-18": [_make_trauma_hp_item(text)]})
+        result = extract_mechanism_region({"days": {}}, days_data)
+        assert result["mechanism_present"] == "yes"
+        assert "fall" in result["mechanism_labels"]
+        assert "assault" not in result["mechanism_labels"]
+        assert result["mechanism_primary"] == "fall"
+
+
+# ═══════════════════════════════════════════════════════════════════
 # § Body region extraction
 # ═══════════════════════════════════════════════════════════════════
 
