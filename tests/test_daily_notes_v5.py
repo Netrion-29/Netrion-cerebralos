@@ -541,12 +541,183 @@ class TestRenderV5WithData(unittest.TestCase):
             "findings_present": True,
             "findings_labels": ["ICH", "rib_fracture"],
             "intracranial_hemorrhage": [{"present": True, "subtype": "SDH"}],
-            "rib_fracture": [{"present": True}],
+            "rib_fracture": {"present": True, "count": "multiple"},
         }
         result = render_v5(data)
         self.assertIn("ESTABLISHED INJURY CATALOG", result)
         self.assertIn("SDH", result)
         self.assertIn("Rib Fractures", result)
+
+
+class TestInjuryCatalogScalarFindings(unittest.TestCase):
+    """Tests for scalar (dict) finding types rendered through _any_present."""
+
+    def _render_with_finding(self, key, finding_dict, **extra):
+        data = _minimal_features()
+        rad = {
+            "findings_present": True,
+            "findings_labels": [key],
+            key: finding_dict,
+        }
+        rad.update(extra)
+        data["features"]["radiology_findings_v1"] = rad
+        return render_v5(data)
+
+    # ── pneumothorax ──────────────────────────────────────────────
+
+    def test_pneumothorax_present_renders(self):
+        result = self._render_with_finding(
+            "pneumothorax", {"present": True, "subtype": "tension"})
+        self.assertIn("Pneumothorax:     present", result)
+
+    def test_pneumothorax_not_present_omitted(self):
+        result = self._render_with_finding(
+            "pneumothorax", {"present": False, "subtype": "simple"})
+        self.assertNotIn("Pneumothorax", result)
+
+    def test_pneumothorax_null_omitted(self):
+        result = self._render_with_finding("pneumothorax", None)
+        self.assertNotIn("Pneumothorax", result)
+
+    # ── hemothorax ────────────────────────────────────────────────
+
+    def test_hemothorax_present_renders(self):
+        result = self._render_with_finding(
+            "hemothorax", {"present": True})
+        self.assertIn("Hemothorax:       present", result)
+
+    def test_hemothorax_not_present_omitted(self):
+        result = self._render_with_finding(
+            "hemothorax", {"present": False})
+        self.assertNotIn("Hemothorax", result)
+
+    # ── rib_fracture ──────────────────────────────────────────────
+
+    def test_rib_fracture_present_renders(self):
+        result = self._render_with_finding(
+            "rib_fracture", {"present": True, "count": "multiple"})
+        self.assertIn("Rib Fractures:    present", result)
+
+    def test_rib_fracture_not_present_omitted(self):
+        result = self._render_with_finding(
+            "rib_fracture", {"present": False})
+        self.assertNotIn("Rib Fractures", result)
+
+    # ── flail_chest ───────────────────────────────────────────────
+
+    def test_flail_chest_present_renders(self):
+        result = self._render_with_finding(
+            "flail_chest", {"present": True})
+        self.assertIn("Flail Chest:      present", result)
+
+    def test_flail_chest_not_present_omitted(self):
+        result = self._render_with_finding(
+            "flail_chest", {"present": False})
+        self.assertNotIn("Flail Chest", result)
+
+    # ── pelvic_fracture ───────────────────────────────────────────
+
+    def test_pelvic_fracture_present_renders(self):
+        result = self._render_with_finding(
+            "pelvic_fracture", {"present": True})
+        self.assertIn("Pelvic Fracture:  present", result)
+
+    def test_pelvic_fracture_not_present_omitted(self):
+        result = self._render_with_finding(
+            "pelvic_fracture", {"present": False})
+        self.assertNotIn("Pelvic Fracture", result)
+
+    # ── spinal_fracture ───────────────────────────────────────────
+
+    def test_spinal_fracture_present_renders(self):
+        result = self._render_with_finding(
+            "spinal_fracture", {"present": True})
+        self.assertIn("Spinal Fracture:  present", result)
+
+    def test_spinal_fracture_not_present_omitted(self):
+        result = self._render_with_finding(
+            "spinal_fracture", {"present": False})
+        self.assertNotIn("Spinal Fracture", result)
+
+    # ── multiple scalars at once ──────────────────────────────────
+
+    def test_multiple_scalar_findings_render(self):
+        """All present scalar findings render together."""
+        data = _minimal_features()
+        data["features"]["radiology_findings_v1"] = {
+            "findings_present": True,
+            "findings_labels": ["pneumothorax", "hemothorax", "rib_fracture"],
+            "pneumothorax": {"present": True, "subtype": "simple"},
+            "hemothorax": {"present": True},
+            "rib_fracture": {"present": True, "count": "bilateral"},
+            "flail_chest": {"present": False},
+            "pelvic_fracture": None,
+            "spinal_fracture": None,
+        }
+        result = render_v5(data)
+        self.assertIn("Pneumothorax:     present", result)
+        self.assertIn("Hemothorax:       present", result)
+        self.assertIn("Rib Fractures:    present", result)
+        self.assertNotIn("Flail Chest", result)
+        self.assertNotIn("Pelvic Fracture", result)
+        self.assertNotIn("Spinal Fracture", result)
+
+
+class TestInjuryCatalogExtremityFracture(unittest.TestCase):
+    """Tests for extremity_fracture list rendering in injury catalog."""
+
+    def test_extremity_fracture_single_bone(self):
+        data = _minimal_features()
+        data["features"]["radiology_findings_v1"] = {
+            "findings_present": True,
+            "findings_labels": ["extremity_fracture"],
+            "extremity_fracture": [
+                {"bone": "femur", "present": True, "laterality": "left",
+                 "pathologic": False, "raw_line_id": "L42"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("Extremity Fx:     femur", result)
+
+    def test_extremity_fracture_multiple_bones(self):
+        data = _minimal_features()
+        data["features"]["radiology_findings_v1"] = {
+            "findings_present": True,
+            "findings_labels": ["extremity_fracture"],
+            "extremity_fracture": [
+                {"bone": "tibia", "present": True, "laterality": "right",
+                 "pathologic": False, "raw_line_id": "L10"},
+                {"bone": "femur", "present": True, "laterality": "left",
+                 "pathologic": False, "raw_line_id": "L15"},
+                {"bone": "tibia", "present": True, "laterality": "left",
+                 "pathologic": False, "raw_line_id": "L20"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("Extremity Fx:     femur, tibia", result)
+
+    def test_extremity_fracture_not_present_omitted(self):
+        data = _minimal_features()
+        data["features"]["radiology_findings_v1"] = {
+            "findings_present": True,
+            "findings_labels": [],
+            "extremity_fracture": [
+                {"bone": "humerus", "present": False, "laterality": None,
+                 "pathologic": False, "raw_line_id": "L5"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertNotIn("Extremity Fx", result)
+
+    def test_extremity_fracture_empty_list_omitted(self):
+        data = _minimal_features()
+        data["features"]["radiology_findings_v1"] = {
+            "findings_present": True,
+            "findings_labels": [],
+            "extremity_fracture": [],
+        }
+        result = render_v5(data)
+        self.assertNotIn("Extremity Fx", result)
 
 
 class TestRenderV5ConsultantActionables(unittest.TestCase):
