@@ -232,7 +232,8 @@
 			"\\bhistory\\s+of\\s+(pulmonary\\s+embol|PE)\\b",
 			"\\bprior\\s+(pulmonary\\s+embol|PE)\\b",
 			"\\bold\\s+(pulmonary\\s+embol|PE)\\b",
-			"\\bon\\s+(eliquis|apixaban|xarelto|rivaroxaban|warfarin|coumadin)\\b.*\\bfor\\b.*\\b(pulmonary\\s+embol|PE)\\b"
+			"\\bon\\s+(eliquis|apixaban|xarelto|rivaroxaban|warfarin|coumadin)\\b.*\\bfor\\b.*\\b(pulmonary\\s+embol|PE)\\b",
+			"\\b(pulmonary\\s+embol\\w*|PE)\\b.*\\(HCC\\)"
 		],
 		"pe_ruleout_noise": [
 			"CTA CHEST FOR PULMONARY EMBOLISM",

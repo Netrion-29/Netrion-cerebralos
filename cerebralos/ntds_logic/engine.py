@@ -168,8 +168,24 @@ def eval_evidence_any(gate: Dict[str, Any], patient: PatientFacts, contract: Dic
     for qk in qks:
         hits.extend(match_evidence(patient, str(qk), allowed_sources=allowed_sources, max_hits=8))
 
+    # ── exclude_noise_keys enforcement ──────────────────────────────
+    # If the gate declares exclude_noise_keys, remove any hit whose text
+    # matches ANY of those noise patterns.  This prevents historical /
+    # prophylaxis / rule-out language from satisfying a positive-dx gate.
+    exclude_keys = gate.get("exclude_noise_keys", []) or []
+    if exclude_keys and hits:
+        filtered: List[Evidence] = []
+        for h in hits:
+            txt = h.text or ""
+            if any(line_matches_any(patient, txt, str(ek)) for ek in exclude_keys):
+                continue  # noise match → drop this hit
+            filtered.append(h)
+        hits = filtered
+    # ────────────────────────────────────────────────────────────────
+
     passed = len(hits) >= min_count
     reason = "Evidence found." if passed else str(gate.get("fail_reason") or "Required evidence not found.")
+    reason += f" ev_count={len(hits)}"
     max_items = int(contract.get("evidence", {}).get("max_items_per_gate", 8))
 
     return GateResult(gate=str(gate.get("gate_id")), passed=passed, reason=reason, evidence=hits[:max_items])
