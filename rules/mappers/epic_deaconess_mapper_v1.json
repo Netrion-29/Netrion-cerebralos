@@ -263,8 +263,8 @@
 			"\\bacute\\s+(pulmonary\\s+embol(?:ism)?|PE)\\b.*\\b(during|after)\\b.*\\b(admission|hospitalization|stay|arrival)\\b"
 		],
 		"pe_subsegmental_only": [
-			"\\bsubsegmental\\b.*\\bpulmonary\\s+embol",
-			"\\bsubsegmental\\s+pulmonary\\s+embol\\b"
+			"\\bsubsegmental\\b.*\\bpulmonary\\s+embol\\w*",
+			"\\bsubsegmental\\s+pulmonary\\s+embol\\w*\\b"
 		]
 	}
 }
