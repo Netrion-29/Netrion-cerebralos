@@ -149,6 +149,32 @@ _HISTORY_EXCLUSION_PATTERNS: List[re.Pattern[str]] = [
     re.compile(r"\bprevious\s+(?:SDH|subdural)\s+from\s+fall\b", re.IGNORECASE),
 ]
 
+# ── Assault false-positive suppression ──────────────────────────────
+# Medical compound terms where "attack" is NOT violence-related
+_MEDICAL_ATTACK_RE = re.compile(
+    r"\b(?:heart|cardiac|ischemic|transient\s+ischemic|panic|anxiety|asthma)\s+attack",
+    re.IGNORECASE,
+)
+
+# "beating" in cardiac context (not violence-related)
+_CARDIAC_BEATING_RE = re.compile(
+    r"\bheart\s+beat(?:en|ing)\b",
+    re.IGNORECASE,
+)
+
+# Denial/screening context that negates assault words
+_ASSAULT_DENIAL_RE = re.compile(
+    r"\b(?:den(?:y|ies|ied)|no\s+(?:history\s+of\s+)?|does\s+not\s+report|negative\s+for)\s*"
+    r"(?:\w+\s+){0,2}(?:assault|attack|altercation|beat(?:en|ing))\b",
+    re.IGNORECASE,
+)
+
+# History context for assault-family words (checked only for assault labels)
+_ASSAULT_HISTORY_RE = re.compile(
+    r"\b(?:history\s+of|h/o|hx\s+of|previous|prior)\s+(?:\w+\s+){0,3}(?:assault|attack|altercation|beat(?:en|ing))\b",
+    re.IGNORECASE,
+)
+
 # ── Body region patterns ───────────────────────────────────────────
 # Each: (compiled_regex, canonical_label)
 # Applied to HPI + Secondary Survey text.
@@ -258,6 +284,52 @@ def _is_history_context(line: str, match_start: int, match_end: int) -> bool:
     return False
 
 
+def _is_assault_false_positive(
+    text: str,
+    match: re.Match,  # type: ignore[type-arg]
+    label: str,
+) -> bool:
+    """
+    Check whether an assault-family match is a false positive.
+
+    Suppresses:
+      - "attack" in medical compound terms (heart attack, panic attack, …)
+      - "beating" in cardiac context (heart beating)
+      - assault-family words in explicit denial context ("denies assault")
+    """
+    match_start = match.start()
+    match_end = match.end()
+    matched_word = text[match_start:match_end].lower()
+
+    # "attack"/"attacked" preceded by a medical modifier → suppress
+    if matched_word.startswith("attack"):
+        window_start = max(0, match_start - 40)
+        preceding = text[window_start:match_end]
+        if _MEDICAL_ATTACK_RE.search(preceding):
+            return True
+
+    # "beaten"/"beating" preceded by "heart" → suppress
+    if matched_word.startswith("beat"):
+        window_start = max(0, match_start - 20)
+        preceding = text[window_start:match_end]
+        if _CARDIAC_BEATING_RE.search(preceding):
+            return True
+
+    # Denial / screening context → suppress
+    window_start = max(0, match_start - 60)
+    preceding = text[window_start:match_end]
+    if _ASSAULT_DENIAL_RE.search(preceding):
+        return True
+
+    # History context for assault-family words → suppress
+    window_start = max(0, match_start - 80)
+    preceding = text[window_start:match_end]
+    if _ASSAULT_HISTORY_RE.search(preceding):
+        return True
+
+    return False
+
+
 def _extract_mechanisms_from_text(
     hpi_text: str,
     source_type: str,
@@ -282,6 +354,14 @@ def _extract_mechanisms_from_text(
                 notes.append(
                     f"history_context_excluded: '{label}' matched but "
                     f"appears in history/chronic context"
+                )
+                continue
+
+            # Assault-family false-positive suppression
+            if label == "assault" and _is_assault_false_positive(hpi_text, m, label):
+                notes.append(
+                    f"assault_fp_excluded: '{label}' matched but "
+                    f"appears in medical/denial context"
                 )
                 continue
 
