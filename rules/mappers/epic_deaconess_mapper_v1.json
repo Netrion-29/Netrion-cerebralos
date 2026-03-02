@@ -184,7 +184,7 @@
 			"\\b(pulmonary\\s+embol(?:ism)?|PE)\\b.*\\b(positive|confirmed|diagnos)\\b",
 			"\\b(positive|confirmed|diagnos)\\b.*\\b(pulmonary\\s+embol(?:ism)?|PE)\\b",
 			"\\bfilling\\s+defect\\b.*\\bpulmonary\\s+arter",
-			"\\b(?:segmental|subsegmental)\\b.*\\b(pulmonary\\s+embol|PE)\\b",
+			"\\b(?:segmental|subsegmental)\\b.*\\b(pulmonary\\s+embol\\w*|PE)\\b",
 			"\\bembolus\\b.*\\bpulmonary\\b"
 		],
 		"pe_dx_positive": [
@@ -192,7 +192,7 @@
 			"\\b(pulmonary\\s+embol(?:ism)?|PE)\\b.*\\b(positive|confirmed|diagnos)\\b",
 			"\\b(positive|confirmed|diagnos)\\b.*\\b(pulmonary\\s+embol(?:ism)?|PE)\\b",
 			"\\bfilling\\s+defect\\b.*\\bpulmonary\\s+arter",
-			"\\b(?:segmental|subsegmental)\\b.*\\b(pulmonary\\s+embol|PE)\\b",
+			"\\b(?:segmental|subsegmental)\\b.*\\b(pulmonary\\s+embol\\w*|PE)\\b",
 			"\\bembolus\\b.*\\bpulmonary\\b"
 		],
 		"pe_dx_negative": [
