@@ -111,6 +111,13 @@ print("No v4 drift relative to stored baseline.")
 PY
 
 echo
+echo "---- Running NTDS mapper regression tests (pytest) ----"
+PYTHONPATH=. python3 -m pytest -q \
+  tests/test_mapper_no_duplicate_keys.py \
+  tests/test_pe_mapper_regex_regression.py \
+  tests/test_exclude_noise.py
+
+echo
 echo "---- Running regression ----"
 python3 _regression_phase1_v2.py
 
