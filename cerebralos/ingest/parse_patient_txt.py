@@ -272,6 +272,13 @@ _RAD_STUDY_PREFIXES = (
 # Chronological results-summary timestamp: "MM/DD/YY HH:MM" (colon, standalone)
 RE_RESULTS_TS = re.compile(r"^(\d{2}/\d{2}/\d{2})\s+(\d{2}:\d{2})$")
 
+# History-section markers that precede duplicate note blocks in Epic exports.
+# If such a marker appears between two consecutive DoS boundaries, the second
+# boundary is a Routing/Revision History copy and should be skipped.
+RE_HISTORY_MARKER = re.compile(
+    r"^(?:Routing History|Revision History)", re.IGNORECASE,
+)
+
 
 # ============================================================
 # Timestamp parsing helpers
@@ -786,6 +793,12 @@ def _parse_items_dos(lines, arrival_dt_str=None):
 
     The last clinical note's body is trimmed to exclude supplemental data
     so that vitals/labs are not duplicated from note bodies.
+
+    Dedup:
+    - Phase 1b: skip DoS boundaries preceded by "Routing History" or
+      "Revision History" markers (Epic export duplicates).
+    - Phase 2b: content-hash dedup on (kind, datetime, text_hash) as
+      defense-in-depth for any remaining duplicates.
     """
     items: List[EvidenceItem] = []
 
@@ -807,7 +820,25 @@ def _parse_items_dos(lines, arrival_dt_str=None):
     if not boundaries:
         return items
 
+    # ── Phase 1b: filter out history-section duplicates ─────
+    # If "Routing History" or "Revision History" appears between two
+    # consecutive DoS boundaries, the later one is a duplicate.
+    filtered: List[Tuple[int, Optional[str], str]] = [boundaries[0]]
+    for b_idx in range(1, len(boundaries)):
+        prev_dos_idx = boundaries[b_idx - 1][0]
+        curr_dos_idx = boundaries[b_idx][0]
+        # Scan lines between the previous DoS line and this one
+        is_history_copy = False
+        for scan_i in range(prev_dos_idx + 1, curr_dos_idx):
+            if RE_HISTORY_MARKER.match(lines[scan_i].strip()):
+                is_history_copy = True
+                break
+        if not is_history_copy:
+            filtered.append(boundaries[b_idx])
+    boundaries = filtered
+
     # ── Phase 2: create clinical-note items ─────────────────
+    seen_hashes: set = set()   # (kind, datetime, text_hash) for content dedup
     for b_idx, (dos_idx, dos_dt, kind) in enumerate(boundaries):
         body_start = dos_idx + 1
         if b_idx + 1 < len(boundaries):
@@ -818,6 +849,14 @@ def _parse_items_dos(lines, arrival_dt_str=None):
             body_end = len(lines)
 
         text = "\n".join(lines[body_start:body_end]).strip("\n")
+
+        # Phase 2b: content-hash dedup (defense-in-depth)
+        text_hash = _sha256_text(text)
+        dedup_key = (kind, dos_dt, text_hash)
+        if dedup_key in seen_hashes:
+            continue
+        seen_hashes.add(dedup_key)
+
         warns: List[str] = []
         if dos_dt is None:
             warns.append("ts_missing")
