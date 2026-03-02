@@ -253,13 +253,13 @@
 			"\\bdeveloped\\b.*\\bpulmonary\\s+embolism\\b.*\\bduring\\b.*\\bstay\\b",
 			"\\bdeveloped\\b.*\\bpulmonary\\s+embol",
 			"\\bafter\\s+arrival\\b.*\\bpulmonary\\s+embol",
-			"\\bhospital[\\s-]?acquired\\b.*\\b(pulmonary\\s+embol|PE\\b)",
-			"\\bpost[\\s-]?op(erative)?\\b.*\\b(pulmonary\\s+embol|PE\\b)",
+			"\\bhospital[\\s-]?acquired\\b.*\\b(pulmonary\\s+embol\\w*|PE\\b)",
+			"\\bpost[\\s-]?op(erative)?\\b.*\\b(pulmonary\\s+embol\\w*|PE\\b)",
 			"\\b(pulmonary\\s+embol(?:ism)?|PE)\\b.*\\bnot\\s+present\\s+on\\s+admission\\b",
 			"\\bnot\\s+present\\s+on\\s+admission\\b.*\\b(pulmonary\\s+embol(?:ism)?|PE)\\b",
-			"\\bnew(ly)?\\s+(diagnosed|identified|detected)\\b.*\\b(pulmonary\\s+embol|PE\\b)",
-			"\\binterval\\s+development\\b.*\\b(pulmonary\\s+embol|PE\\b)",
-			"\\bin[\\s-]?hospital\\b.*\\b(pulmonary\\s+embol|PE\\b)",
+			"\\bnew(ly)?\\s+(diagnosed|identified|detected)\\b.*\\b(pulmonary\\s+embol\\w*|PE\\b)",
+			"\\binterval\\s+development\\b.*\\b(pulmonary\\s+embol\\w*|PE\\b)",
+			"\\bin[\\s-]?hospital\\b.*\\b(pulmonary\\s+embol\\w*|PE\\b)",
 			"\\bacute\\s+(pulmonary\\s+embol(?:ism)?|PE)\\b.*\\b(during|after)\\b.*\\b(admission|hospitalization|stay|arrival)\\b"
 		],
 		"pe_subsegmental_only": [
