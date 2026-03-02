@@ -1,0 +1,29 @@
+name: NTDS mapper regression tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ntds-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pytest
+
+      - name: Run NTDS mapper regression tests
+        env:
+          PYTHONPATH: .
+        run: |
+          python -m pytest -q \
+            tests/test_mapper_no_duplicate_keys.py \
+            tests/test_pe_mapper_regex_regression.py \
+            tests/test_exclude_noise.py
