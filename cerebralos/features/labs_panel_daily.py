@@ -58,17 +58,26 @@ _SINGLE_MAP = {
 }
 
 
+# Candidate names that represent Base Excess (need negation for BD).
+_BE_CANDIDATES = {"base excess"}
+
+
 def _find_component(
     daily_labs: Dict[str, Dict[str, Any]],
     series_labs: Dict[str, Any],
     candidates: list,
-) -> Optional[Dict[str, Any]]:
+) -> tuple[Optional[Dict[str, Any]], Optional[str]]:
     """
     Find the best match for a lab component from extracted data.
-    Returns the daily summary dict if found (containing 'last', 'first', etc.)
-    or None.
 
-    Uses case-insensitive matching against the extracted component keys.
+    Returns
+    -------
+    (match_dict, matched_candidate_name)
+        match_dict: the daily summary dict (containing 'last', 'first', etc.)
+                    or None if not found.
+        matched_candidate_name: the candidate string that matched (preserving
+                                original case from the candidates list), or
+                                None if not found.
     """
     # Build a lowercase lookup for daily labs
     daily_lower = {k.lower(): v for k, v in daily_labs.items()}
@@ -76,8 +85,8 @@ def _find_component(
     for candidate in candidates:
         key_lower = candidate.lower()
         if key_lower in daily_lower:
-            return daily_lower[key_lower]
-    return None
+            return daily_lower[key_lower], candidate
+    return None, None
 
 
 def build_labs_panel_daily(
@@ -106,7 +115,7 @@ def build_labs_panel_daily(
     def _resolve(panel_map: Dict[str, list]) -> Dict[str, Any]:
         result: Dict[str, Any] = {}
         for short_name, candidates in panel_map.items():
-            comp = _find_component(daily, series, candidates)
+            comp, _ = _find_component(daily, series, candidates)
             if comp is not None and comp.get("last") is not None:
                 result[short_name] = {
                     "value": comp["last"],
@@ -125,7 +134,7 @@ def build_labs_panel_daily(
 
     # Single-value components
     def _resolve_single(candidates: list) -> Any:
-        comp = _find_component(daily, series, candidates)
+        comp, _ = _find_component(daily, series, candidates)
         if comp is not None and comp.get("last") is not None:
             return {
                 "value": comp["last"],
@@ -134,7 +143,21 @@ def build_labs_panel_daily(
         return _DNA
 
     lactate = _resolve_single(_SINGLE_MAP["Lactate"])
-    base_deficit = _resolve_single(_SINGLE_MAP["Base Deficit"])
+
+    # Base deficit: if matched via Base Excess, negate (BD = -BE).
+    bd_comp, bd_matched = _find_component(
+        daily, series, _SINGLE_MAP["Base Deficit"]
+    )
+    if bd_comp is not None and bd_comp.get("last") is not None:
+        bd_val = bd_comp["last"]
+        if bd_matched is not None and bd_matched.lower() in _BE_CANDIDATES:
+            bd_val = -bd_val
+        base_deficit = {
+            "value": round(bd_val, 2) if isinstance(bd_val, float) else bd_val,
+            "abnormal": bd_comp.get("abnormal_flag_present", False),
+        }
+    else:
+        base_deficit = _DNA
 
     return {
         "cbc": cbc,
