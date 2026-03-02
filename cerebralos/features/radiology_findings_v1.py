@@ -14,6 +14,9 @@ Targeted finding categories (fail-closed on every subtype/count/grade):
   - Intracranial hemorrhage subtypes (EDH / SDH / SAH / ICH / IVH)
   - Pelvic fracture (presence)
   - Spinal fracture (presence + explicit level)
+  - Extremity/long-bone fracture — femur / tibia / fibula / humerus /
+    radius / ulna / clavicle / ankle / wrist / patella / scapula
+    (presence + laterality + pathologic qualifier)
 
 Sources (priority order):
   1. RADIOLOGY items — IMPRESSION section preferred, FINDINGS fallback
@@ -36,6 +39,7 @@ Output schema::
       "intracranial_hemorrhage": [ ... ] | [],
       "pelvic_fracture": { ... } | null,
       "spinal_fracture": { ... } | null,
+      "extremity_fracture": [ { "bone", "present", "laterality", "pathologic", "raw_line_id" } ] | [],
       "source_rule_id": "radiology_impression" | ... | "no_qualifying_source",
       "evidence": [ { "raw_line_id", "source", "ts", "snippet", "role" } ],
       "notes": [ ... ],
@@ -222,6 +226,128 @@ RE_PELVIC_FRACTURE = re.compile(
 # Also catch "left hip fracture", "hip fracture" as pelvic category
 RE_HIP_FRACTURE = re.compile(
     r"\b(?:hip\s+fracture|fractured?\s+hip|fracture[sd]?\s+(?:of\s+)?(?:the\s+)?(?:left\s+|right\s+)?hip)\b",
+    re.IGNORECASE,
+)
+
+# --- Extremity / long-bone fracture ---
+# Femur (shaft, neck, proximal, distal, intertrochanteric, subtrochanteric)
+RE_FEMUR_FRACTURE = re.compile(
+    r"\b(?:femur|femoral)(?:\s+(?:shaft|neck|head|proximal|distal"
+    r"|intertrochanteric|subtrochanteric|supracondylar|trochanter(?:ic)?"
+    r"|greater\s+trochanter|lesser\s+trochanter))?\s+fracture"
+    r"|fracture[sd]?\s+(?:(?:of|in|through)\s+)?(?:the\s+)?"
+    r"(?:(?:right|left)\s+)?(?:proximal\s+|distal\s+)?"
+    r"(?:femur|femoral\s+(?:neck|shaft|head))"
+    r"|(?:intertrochanteric|subtrochanteric|supracondylar|trochanteric)"
+    r"\s+(?:femur\s+)?fracture\b",
+    re.IGNORECASE,
+)
+# Tibia (plateau, shaft, proximal, distal, pilon)
+RE_TIBIA_FRACTURE = re.compile(
+    r"\b(?:tibia[l]?|tibial)(?:\s+(?:plateau|shaft|proximal|distal|pilon"
+    r"|eminence|spine|tubercle))?\s+fracture"
+    r"|fracture[sd]?\s+(?:(?:of|in|through)\s+)?(?:the\s+)?"
+    r"(?:(?:right|left)\s+)?(?:proximal\s+|distal\s+)?tibia"
+    r"|tibial\s+plateau\s+fracture\b",
+    re.IGNORECASE,
+)
+# Fibula
+RE_FIBULA_FRACTURE = re.compile(
+    r"\b(?:fibula[r]?|fibular)(?:\s+(?:shaft|head|proximal|distal|styloid))?"
+    r"\s+fracture"
+    r"|fracture[sd]?\s+(?:(?:of|in|through)\s+)?(?:the\s+)?"
+    r"(?:(?:right|left)\s+)?fibu?la\b",
+    re.IGNORECASE,
+)
+# Humerus (shaft, proximal, distal, supracondylar, surgical-neck)
+RE_HUMERUS_FRACTURE = re.compile(
+    r"\b(?:humer(?:us|al))(?:\s+(?:shaft|head|proximal|distal"
+    r"|supracondylar|surgical\s+neck|anatomical\s+neck|greater\s+tuberosity"
+    r"|lesser\s+tuberosity))?\s+fracture"
+    r"|fracture[sd]?\s+(?:(?:of|in|through)\s+)?(?:the\s+)?"
+    r"(?:(?:right|left)\s+)?(?:proximal\s+|distal\s+)?humerus\b",
+    re.IGNORECASE,
+)
+# Radius (distal, head, shaft, Colles, Smith)
+RE_RADIUS_FRACTURE = re.compile(
+    r"\b(?:radi(?:us|al))(?:\s+(?:shaft|head|proximal|distal|styloid))?"
+    r"\s+fracture"
+    r"|fracture[sd]?\s+(?:(?:of|in|through)\s+)?(?:the\s+)?"
+    r"(?:(?:right|left)\s+)?(?:distal\s+)?radius"
+    r"|(?:Colles|Smith)(?:'s)?\s+fracture\b",
+    re.IGNORECASE,
+)
+# Ulna (olecranon, shaft, coronoid, Monteggia)
+RE_ULNA_FRACTURE = re.compile(
+    r"\b(?:uln(?:a[r]?|ar))(?:\s+(?:shaft|proximal|distal|coronoid|olecranon))?"
+    r"\s+fracture"
+    r"|fracture[sd]?\s+(?:(?:of|in|through)\s+)?(?:the\s+)?"
+    r"(?:(?:right|left)\s+)?ulna"
+    r"|olecranon\s+fracture"
+    r"|Monteggia(?:'s)?\s+fracture\b",
+    re.IGNORECASE,
+)
+# Clavicle
+RE_CLAVICLE_FRACTURE = re.compile(
+    r"\b(?:clavicle|clavicular)(?:\s+(?:shaft|mid[\s-]?shaft|proximal|distal|lateral))?"
+    r"\s+fracture"
+    r"|fracture[sd]?\s+(?:(?:of|in|through)\s+)?(?:the\s+)?"
+    r"(?:(?:right|left)\s+)?clavicle\b",
+    re.IGNORECASE,
+)
+# Ankle (malleolus, bimalleolar, trimalleolar)
+RE_ANKLE_FRACTURE = re.compile(
+    r"\b(?:ankle\s+fracture|fractured?\s+ankle"
+    r"|(?:lateral|medial|posterior)\s+malleol(?:us|ar)\s+fracture"
+    r"|(?:bi|tri)malleolar\s+fracture"
+    r"|malleol(?:us|ar)\s+fracture"
+    r"|fracture[sd]?\s+(?:(?:of|in|through)\s+)?(?:the\s+)?ankle)\b",
+    re.IGNORECASE,
+)
+# Wrist (scaphoid, distal-radius already above, generic wrist fracture)
+RE_WRIST_FRACTURE = re.compile(
+    r"\b(?:wrist\s+fracture|fractured?\s+wrist"
+    r"|scaphoid\s+fracture"
+    r"|fracture[sd]?\s+(?:(?:of|in|through)\s+)?(?:the\s+)?wrist)\b",
+    re.IGNORECASE,
+)
+# Patella
+RE_PATELLA_FRACTURE = re.compile(
+    r"\b(?:patell(?:a[r]?|ar)\s+fracture"
+    r"|fracture[sd]?\s+(?:(?:of|in|through)\s+)?(?:the\s+)?patella)\b",
+    re.IGNORECASE,
+)
+# Scapula
+RE_SCAPULA_FRACTURE = re.compile(
+    r"\b(?:scapul(?:a[r]?|ar)\s+fracture"
+    r"|fracture[sd]?\s+(?:(?:of|in|through)\s+)?(?:the\s+)?scapula)\b",
+    re.IGNORECASE,
+)
+
+# All extremity fracture patterns: (regex, bone_label)
+_EXTREMITY_FRACTURE_PATTERNS: List[Tuple[re.Pattern[str], str]] = [
+    (RE_FEMUR_FRACTURE, "femur"),
+    (RE_TIBIA_FRACTURE, "tibia"),
+    (RE_FIBULA_FRACTURE, "fibula"),
+    (RE_HUMERUS_FRACTURE, "humerus"),
+    (RE_RADIUS_FRACTURE, "radius"),
+    (RE_ULNA_FRACTURE, "ulna"),
+    (RE_CLAVICLE_FRACTURE, "clavicle"),
+    (RE_ANKLE_FRACTURE, "ankle"),
+    (RE_WRIST_FRACTURE, "wrist"),
+    (RE_PATELLA_FRACTURE, "patella"),
+    (RE_SCAPULA_FRACTURE, "scapula"),
+]
+
+# Pathologic-fracture qualifier (applied to any fracture context)
+RE_PATHOLOGIC_QUALIFIER = re.compile(
+    r"\bpathologic(?:al)?\s+fracture\b",
+    re.IGNORECASE,
+)
+
+# Laterality for extremity fractures
+RE_EXTREMITY_LATERALITY = re.compile(
+    r"\b(right|left|bilateral)\b",
     re.IGNORECASE,
 )
 
@@ -662,6 +788,43 @@ def _extract_findings_from_text(
             pelvic_found = True
             break
 
+    # ── Extremity / long-bone fracture ──────────────────────────
+    extremity_entries: List[Dict[str, Any]] = []
+    seen_bones: set = set()
+    for ext_re, bone_label in _EXTREMITY_FRACTURE_PATTERNS:
+        for m in ext_re.finditer(scan_text):
+            if _is_negated(scan_text, m.start(), m.end()):
+                continue
+            if _is_chronic(scan_text, m.start(), m.end()):
+                notes.append(
+                    f"chronic_context_excluded: {bone_label} fracture "
+                    f"appears in chronic context"
+                )
+                continue
+            if bone_label in seen_bones:
+                break  # one per bone per text block
+            seen_bones.add(bone_label)
+            # Laterality
+            lat_window = scan_text[max(0, m.start() - 30):m.end() + 10]
+            m_lat = RE_EXTREMITY_LATERALITY.search(lat_window)
+            laterality = m_lat.group(1).lower() if m_lat else None
+            # Pathologic qualifier
+            path_window = scan_text[max(0, m.start() - 80):m.end() + 40]
+            pathologic = bool(RE_PATHOLOGIC_QUALIFIER.search(path_window))
+            raw_id = _add_evidence(
+                "finding", f"{bone_label}_fracture", m, scan_text,
+            )
+            extremity_entries.append({
+                "bone": bone_label,
+                "present": True,
+                "laterality": laterality,
+                "pathologic": pathologic,
+                "raw_line_id": raw_id,
+            })
+            break  # first non-negated, non-chronic match per bone
+    if extremity_entries:
+        categories["extremity_fracture"] = extremity_entries
+
     # ── Spinal fracture ─────────────────────────────────────────
     for m in RE_SPINAL_FRACTURE.finditer(scan_text):
         if _is_negated(scan_text, m.start(), m.end()):
@@ -743,6 +906,7 @@ def extract_radiology_findings(
             "intracranial_hemorrhage": [],
             "pelvic_fracture": None,
             "spinal_fracture": None,
+            "extremity_fracture": [],
             "source_rule_id": "no_qualifying_source",
             "evidence": [],
             "notes": ["no RADIOLOGY, TRAUMA_HP, ED_NOTE, or PHYSICIAN_NOTE items found"],
@@ -778,13 +942,18 @@ def extract_radiology_findings(
 
         # Merge categories — first occurrence wins for scalar categories
         for cat_key, cat_val in cats.items():
-            if cat_key in ("solid_organ_injuries", "intracranial_hemorrhage"):
+            if cat_key in ("solid_organ_injuries", "intracranial_hemorrhage",
+                           "extremity_fracture"):
                 # Merge lists, dedup by organ/subtype
                 existing = merged_categories.setdefault(cat_key, [])
                 if isinstance(cat_val, list):
                     for entry in cat_val:
-                        # Check if organ/subtype already seen
-                        key_field = "organ" if cat_key == "solid_organ_injuries" else "subtype"
+                        # Check if organ/subtype/bone already seen
+                        key_field = (
+                            "organ" if cat_key == "solid_organ_injuries"
+                            else "bone" if cat_key == "extremity_fracture"
+                            else "subtype"
+                        )
                         existing_keys = [e.get(key_field) for e in existing]
                         if entry.get(key_field) not in existing_keys:
                             existing.append(entry)
@@ -797,10 +966,18 @@ def extract_radiology_findings(
     findings_labels: List[str] = []
     for label in [
         "pneumothorax", "hemothorax", "rib_fracture", "flail_chest",
-        "pelvic_fracture", "spinal_fracture",
+        "pelvic_fracture", "spinal_fracture", "extremity_fracture",
     ]:
         if label in merged_categories:
             findings_labels.append(label)
+
+    # Add individual extremity bone labels
+    for entry in merged_categories.get("extremity_fracture", []):
+        bone = entry.get("bone")
+        if bone:
+            label = f"{bone}_fracture"
+            if label not in findings_labels:
+                findings_labels.append(label)
 
     # Add solid organ labels
     for entry in merged_categories.get("solid_organ_injuries", []):
@@ -838,6 +1015,7 @@ def extract_radiology_findings(
         "intracranial_hemorrhage": merged_categories.get("intracranial_hemorrhage", []),
         "pelvic_fracture": merged_categories.get("pelvic_fracture"),
         "spinal_fracture": merged_categories.get("spinal_fracture"),
+        "extremity_fracture": merged_categories.get("extremity_fracture", []),
         "source_rule_id": source_rule_id,
         "evidence": all_evidence,
         "notes": all_notes,

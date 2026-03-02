@@ -859,3 +859,292 @@ class TestRonaldBittner:
         assert nums == ["5", "6", "7", "9", "10"]
         assert rf["count"] == 5
         assert rf["laterality"] == "right"
+
+
+# ═══════════════════════════════════════════════════════════════════
+# § Extremity / long-bone fracture extraction
+# ═══════════════════════════════════════════════════════════════════
+
+class TestExtremityFractureFemur:
+    """Femur fracture family — shaft, neck, proximal, pathologic."""
+
+    def test_femur_fracture_positive(self):
+        text = "IMPRESSION: Right femur fracture."
+        result = _run_single_radiology(text)
+        assert result["findings_present"] == "yes"
+        assert "femur_fracture" in result["findings_labels"]
+        ext = result["extremity_fracture"]
+        assert len(ext) == 1
+        assert ext[0]["bone"] == "femur"
+        assert ext[0]["present"] is True
+        assert ext[0]["laterality"] == "right"
+        assert ext[0]["raw_line_id"]  # traceability
+
+    def test_femoral_neck_fracture(self):
+        text = "IMPRESSION: Left femoral neck fracture."
+        result = _run_single_radiology(text)
+        assert "femur_fracture" in result["findings_labels"]
+        assert result["extremity_fracture"][0]["bone"] == "femur"
+        assert result["extremity_fracture"][0]["laterality"] == "left"
+
+    def test_proximal_femur_fracture(self):
+        text = "IMPRESSION: Right proximal femur fracture status post total hip arthroplasty."
+        result = _run_single_radiology(text)
+        assert "femur_fracture" in result["findings_labels"]
+
+    def test_pathologic_femur_fracture(self):
+        """Pathologic qualifier should be captured."""
+        text = (
+            "IMPRESSION: pathologic fracture through one of these lesions "
+            "in the right proximal femur fracture."
+        )
+        result = _run_single_radiology(text)
+        assert "femur_fracture" in result["findings_labels"]
+        ext = result["extremity_fracture"]
+        femur = [e for e in ext if e["bone"] == "femur"][0]
+        assert femur["pathologic"] is True
+
+    def test_intertrochanteric_femur_fracture(self):
+        text = "IMPRESSION: Right intertrochanteric fracture."
+        result = _run_single_radiology(text)
+        assert "femur_fracture" in result["findings_labels"]
+
+    def test_femur_fracture_negated(self):
+        text = "IMPRESSION: No femur fracture identified."
+        result = _run_single_radiology(text)
+        assert "femur_fracture" not in result["findings_labels"]
+
+    def test_femur_fracture_chronic_excluded(self):
+        text = "IMPRESSION: Old healed femur fracture."
+        result = _run_single_radiology(text)
+        assert "femur_fracture" not in result["findings_labels"]
+
+    def test_fracture_of_the_femur(self):
+        """Reversed syntax: 'fracture of the femur'."""
+        text = "IMPRESSION: Non-displaced fracture of the right femur."
+        result = _run_single_radiology(text)
+        assert "femur_fracture" in result["findings_labels"]
+
+
+class TestExtremityFractureTibiaFibula:
+    """Tibia / fibula fracture family."""
+
+    def test_tibia_fracture(self):
+        text = "IMPRESSION: Left tibial plateau fracture."
+        result = _run_single_radiology(text)
+        assert "tibia_fracture" in result["findings_labels"]
+        ext = result["extremity_fracture"]
+        tibia = [e for e in ext if e["bone"] == "tibia"][0]
+        assert tibia["laterality"] == "left"
+
+    def test_tibia_shaft_fracture(self):
+        text = "IMPRESSION: Comminuted tibial shaft fracture."
+        result = _run_single_radiology(text)
+        assert "tibia_fracture" in result["findings_labels"]
+
+    def test_tibia_negated(self):
+        text = "IMPRESSION: No tibial fracture."
+        result = _run_single_radiology(text)
+        assert "tibia_fracture" not in result["findings_labels"]
+
+    def test_fibula_fracture(self):
+        text = "IMPRESSION: Distal fibular fracture."
+        result = _run_single_radiology(text)
+        assert "fibula_fracture" in result["findings_labels"]
+        ext = result["extremity_fracture"]
+        fib = [e for e in ext if e["bone"] == "fibula"][0]
+        assert fib["present"] is True
+
+    def test_tib_fib_combined(self):
+        """Both tibia and fibula in same impression."""
+        text = (
+            "IMPRESSION: 1. Tibial shaft fracture. "
+            "2. Fibular shaft fracture."
+        )
+        result = _run_single_radiology(text)
+        assert "tibia_fracture" in result["findings_labels"]
+        assert "fibula_fracture" in result["findings_labels"]
+        bones = {e["bone"] for e in result["extremity_fracture"]}
+        assert bones == {"tibia", "fibula"}
+
+
+class TestExtremityFractureUpperExtremity:
+    """Humerus, radius, ulna, clavicle fracture family."""
+
+    def test_humerus_fracture(self):
+        text = "IMPRESSION: Right proximal humerus fracture."
+        result = _run_single_radiology(text)
+        assert "humerus_fracture" in result["findings_labels"]
+        ext = result["extremity_fracture"]
+        assert ext[0]["bone"] == "humerus"
+        assert ext[0]["laterality"] == "right"
+
+    def test_humeral_shaft_fracture(self):
+        text = "IMPRESSION: Humeral shaft fracture."
+        result = _run_single_radiology(text)
+        assert "humerus_fracture" in result["findings_labels"]
+
+    def test_humerus_negated(self):
+        text = "IMPRESSION: No acute humerus fracture."
+        result = _run_single_radiology(text)
+        assert "humerus_fracture" not in result["findings_labels"]
+
+    def test_radius_fracture(self):
+        text = "IMPRESSION: Distal radius fracture."
+        result = _run_single_radiology(text)
+        assert "radius_fracture" in result["findings_labels"]
+
+    def test_colles_fracture(self):
+        text = "IMPRESSION: Colles fracture of the right wrist."
+        result = _run_single_radiology(text)
+        assert "radius_fracture" in result["findings_labels"]
+
+    def test_radius_negated(self):
+        text = "IMPRESSION: No radius fracture."
+        result = _run_single_radiology(text)
+        assert "radius_fracture" not in result["findings_labels"]
+
+    def test_ulna_fracture(self):
+        text = "IMPRESSION: Left ulna fracture."
+        result = _run_single_radiology(text)
+        assert "ulna_fracture" in result["findings_labels"]
+
+    def test_olecranon_fracture(self):
+        text = "IMPRESSION: Olecranon fracture, left elbow."
+        result = _run_single_radiology(text)
+        assert "ulna_fracture" in result["findings_labels"]
+
+    def test_monteggia_fracture(self):
+        text = "IMPRESSION: Monteggia fracture dislocation."
+        result = _run_single_radiology(text)
+        assert "ulna_fracture" in result["findings_labels"]
+
+    def test_clavicle_fracture(self):
+        text = "IMPRESSION: Right clavicle fracture."
+        result = _run_single_radiology(text)
+        assert "clavicle_fracture" in result["findings_labels"]
+        ext = result["extremity_fracture"]
+        assert ext[0]["bone"] == "clavicle"
+
+    def test_clavicle_negated(self):
+        text = "IMPRESSION: No clavicle fracture."
+        result = _run_single_radiology(text)
+        assert "clavicle_fracture" not in result["findings_labels"]
+
+    def test_clavicular_midshaft_fracture(self):
+        text = "IMPRESSION: Left clavicular mid-shaft fracture."
+        result = _run_single_radiology(text)
+        assert "clavicle_fracture" in result["findings_labels"]
+
+
+class TestExtremityFractureAnkleWrist:
+    """Ankle and wrist fracture family."""
+
+    def test_ankle_fracture(self):
+        text = "IMPRESSION: Right ankle fracture."
+        result = _run_single_radiology(text)
+        assert "ankle_fracture" in result["findings_labels"]
+
+    def test_bimalleolar_fracture(self):
+        text = "IMPRESSION: Left bimalleolar fracture."
+        result = _run_single_radiology(text)
+        assert "ankle_fracture" in result["findings_labels"]
+
+    def test_trimalleolar_fracture(self):
+        text = "IMPRESSION: Right trimalleolar fracture."
+        result = _run_single_radiology(text)
+        assert "ankle_fracture" in result["findings_labels"]
+
+    def test_lateral_malleolus_fracture(self):
+        text = "IMPRESSION: Lateral malleolar fracture."
+        result = _run_single_radiology(text)
+        assert "ankle_fracture" in result["findings_labels"]
+
+    def test_ankle_negated(self):
+        text = "IMPRESSION: No ankle fracture."
+        result = _run_single_radiology(text)
+        assert "ankle_fracture" not in result["findings_labels"]
+
+    def test_wrist_fracture(self):
+        text = "IMPRESSION: Right wrist fracture."
+        result = _run_single_radiology(text)
+        assert "wrist_fracture" in result["findings_labels"]
+
+    def test_scaphoid_fracture(self):
+        text = "IMPRESSION: Scaphoid fracture."
+        result = _run_single_radiology(text)
+        assert "wrist_fracture" in result["findings_labels"]
+
+    def test_wrist_negated(self):
+        text = "IMPRESSION: No wrist fracture."
+        result = _run_single_radiology(text)
+        assert "wrist_fracture" not in result["findings_labels"]
+
+
+class TestExtremityFractureOther:
+    """Patella and scapula fracture families."""
+
+    def test_patella_fracture(self):
+        text = "IMPRESSION: Right patellar fracture."
+        result = _run_single_radiology(text)
+        assert "patella_fracture" in result["findings_labels"]
+
+    def test_patella_negated(self):
+        text = "IMPRESSION: No patellar fracture."
+        result = _run_single_radiology(text)
+        assert "patella_fracture" not in result["findings_labels"]
+
+    def test_scapula_fracture(self):
+        text = "IMPRESSION: Left scapular fracture."
+        result = _run_single_radiology(text)
+        assert "scapula_fracture" in result["findings_labels"]
+
+    def test_scapula_negated(self):
+        text = "IMPRESSION: No scapula fracture."
+        result = _run_single_radiology(text)
+        assert "scapula_fracture" not in result["findings_labels"]
+
+
+class TestExtremityFractureEvidence:
+    """Evidence traceability for extremity fractures."""
+
+    def test_raw_line_id_present(self):
+        text = "IMPRESSION: Right femur fracture."
+        result = _run_single_radiology(text)
+        ext = result["extremity_fracture"]
+        assert len(ext) == 1
+        assert ext[0]["raw_line_id"]
+        # Also check evidence list
+        ev = [e for e in result["evidence"] if e["label"] == "femur_fracture"]
+        assert len(ev) == 1
+        assert ev[0]["raw_line_id"]
+
+    def test_multiple_bones_have_separate_evidence(self):
+        text = (
+            "IMPRESSION: 1. Right femur fracture. "
+            "2. Left tibial plateau fracture. "
+            "3. Right clavicle fracture."
+        )
+        result = _run_single_radiology(text)
+        ext = result["extremity_fracture"]
+        assert len(ext) == 3
+        bones = {e["bone"] for e in ext}
+        assert bones == {"femur", "tibia", "clavicle"}
+        # Each has a distinct raw_line_id
+        ids = {e["raw_line_id"] for e in ext}
+        assert len(ids) == 3
+
+
+class TestExtremityFractureDnaOutput:
+    """DNA output includes extremity_fracture key."""
+
+    def test_no_qualifying_source_has_empty_extremity(self):
+        days_data = _make_days_data({})
+        result = extract_radiology_findings({"days": {}}, days_data)
+        assert result["extremity_fracture"] == []
+
+    def test_no_findings_has_empty_extremity(self):
+        text = "IMPRESSION: Normal study."
+        result = _run_single_radiology(text)
+        assert result["extremity_fracture"] == []
+        assert "extremity_fracture" not in result["findings_labels"]
