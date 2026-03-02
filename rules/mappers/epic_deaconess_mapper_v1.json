@@ -221,11 +221,11 @@
 			"\\bno\\s+PE\\b"
 		],
 		"pe_history_noise": [
-			"\\bhx\\b.*\\b(pulmonary\\s+embol|PE)\\b",
-			"\\bhistory\\s+of\\s+(pulmonary\\s+embol|PE)\\b",
-			"\\bprior\\s+(pulmonary\\s+embol|PE)\\b",
-			"\\bold\\s+(pulmonary\\s+embol|PE)\\b",
-			"\\bon\\s+(eliquis|apixaban|xarelto|rivaroxaban|warfarin|coumadin)\\b.*\\bfor\\b.*\\b(pulmonary\\s+embol|PE)\\b",
+			"\\bhx\\b.*\\b(pulmonary\\s+embol\\w*|PE)\\b",
+			"\\bhistory\\s+of\\s+(pulmonary\\s+embol\\w*|PE)\\b",
+			"\\bprior\\s+(pulmonary\\s+embol\\w*|PE)\\b",
+			"\\bold\\s+(pulmonary\\s+embol\\w*|PE)\\b",
+			"\\bon\\s+(eliquis|apixaban|xarelto|rivaroxaban|warfarin|coumadin)\\b.*\\bfor\\b.*\\b(pulmonary\\s+embol\\w*|PE)\\b",
 			"\\b(pulmonary\\s+embol\\w*|PE)\\b.*\\(HCC\\)"
 		],
 		"pe_ruleout_noise": [
