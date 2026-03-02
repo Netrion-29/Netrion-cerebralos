@@ -1,0 +1,10 @@
+PATIENT_ID: TEST_PE_HISTORY_003
+ARRIVAL_TIME: 2026-01-01 01:00:00
+
+[IMAGING] 2026-01-01 01:58:00
+Problem list:
+•	Acute pulmonary embolism (HCC)
+
+[PHYSICIAN_NOTE] 2026-01-01 10:00:00
+Hx of acute PE from 2022 hospitalization.
+Currently on anticoagulation for VTE prophylaxis.
