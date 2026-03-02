@@ -2006,5 +2006,131 @@ class TestNTDSSignalSummary(unittest.TestCase):
         self.assertIn("[UNABLE_TO_DETERMINE] Event 18: Event_18", result)
 
 
+# ════════════════════════════════════════════════════════════════════
+# CLI Wiring Tests (--ntds flag integration)
+# ════════════════════════════════════════════════════════════════════
+
+import tempfile
+import os
+
+
+class TestNTDSCLIWiring(unittest.TestCase):
+    """Tests that CLI --ntds flag correctly wires NTDS data into v5 output."""
+
+    def _write_json(self, tmpdir, filename, data):
+        path = os.path.join(tmpdir, filename)
+        with open(path, "w") as f:
+            json.dump(data, f)
+        return path
+
+    def test_cli_no_ntds_flag_omits_section(self):
+        """Without --ntds, output must not contain NTDS SIGNAL SUMMARY."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            feat_path = self._write_json(tmpdir, "features.json", _minimal_features())
+            out_path = os.path.join(tmpdir, "v5.txt")
+            import sys
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    "render_trauma_daily_notes_v5.py",
+                    "--features", feat_path,
+                    "--out", out_path,
+                ]
+                from cerebralos.reporting.render_trauma_daily_notes_v5 import main
+                rc = main()
+            finally:
+                sys.argv = old_argv
+            self.assertEqual(rc, 0)
+            with open(out_path) as f:
+                text = f.read()
+            self.assertNotIn("NTDS SIGNAL SUMMARY", text)
+            self.assertIn("PI DAILY NOTES (v5)", text)
+
+    def test_cli_ntds_bare_list(self):
+        """--ntds with bare JSON list of results renders NTDS section."""
+        ntds_data = [
+            _ntds_result(1, "AKI", "NO"),
+            _ntds_result(3, "PE", "YES"),
+        ]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            feat_path = self._write_json(tmpdir, "features.json", _minimal_features())
+            ntds_path = self._write_json(tmpdir, "ntds_summary.json", ntds_data)
+            out_path = os.path.join(tmpdir, "v5.txt")
+            import sys
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    "render_trauma_daily_notes_v5.py",
+                    "--features", feat_path,
+                    "--ntds", ntds_path,
+                    "--out", out_path,
+                ]
+                from cerebralos.reporting.render_trauma_daily_notes_v5 import main
+                rc = main()
+            finally:
+                sys.argv = old_argv
+            self.assertEqual(rc, 0)
+            with open(out_path) as f:
+                text = f.read()
+            self.assertIn("NTDS SIGNAL SUMMARY", text)
+            self.assertIn("[YES] Event 3: PE", text)
+            self.assertIn("Events evaluated:       2", text)
+
+    def test_cli_ntds_eval_dict(self):
+        """--ntds with evaluation dict wrapper extracts ntds_results key."""
+        ntds_data = {
+            "patient_id": "Test",
+            "ntds_results": [
+                _ntds_result(1, "AKI", "YES"),
+                _ntds_result(2, "DVT", "NO"),
+            ],
+        }
+        with tempfile.TemporaryDirectory() as tmpdir:
+            feat_path = self._write_json(tmpdir, "features.json", _minimal_features())
+            ntds_path = self._write_json(tmpdir, "eval.json", ntds_data)
+            out_path = os.path.join(tmpdir, "v5.txt")
+            import sys
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    "render_trauma_daily_notes_v5.py",
+                    "--features", feat_path,
+                    "--ntds", ntds_path,
+                    "--out", out_path,
+                ]
+                from cerebralos.reporting.render_trauma_daily_notes_v5 import main
+                rc = main()
+            finally:
+                sys.argv = old_argv
+            self.assertEqual(rc, 0)
+            with open(out_path) as f:
+                text = f.read()
+            self.assertIn("NTDS SIGNAL SUMMARY", text)
+            self.assertIn("[YES] Event 1: AKI", text)
+
+    def test_cli_ntds_missing_file_renders_without_section(self):
+        """--ntds pointing to non-existent file → section omitted (fail-closed)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            feat_path = self._write_json(tmpdir, "features.json", _minimal_features())
+            out_path = os.path.join(tmpdir, "v5.txt")
+            import sys
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    "render_trauma_daily_notes_v5.py",
+                    "--features", feat_path,
+                    "--ntds", os.path.join(tmpdir, "no_such_file.json"),
+                    "--out", out_path,
+                ]
+                from cerebralos.reporting.render_trauma_daily_notes_v5 import main
+                rc = main()
+            finally:
+                sys.argv = old_argv
+            self.assertEqual(rc, 0)
+            with open(out_path) as f:
+                text = f.read()
+            self.assertNotIn("NTDS SIGNAL SUMMARY", text)
+
+
 if __name__ == "__main__":
     unittest.main()
