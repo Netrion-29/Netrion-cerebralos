@@ -50,7 +50,12 @@ def _resolve_patient_file(name: str) -> Path:
 
 
 def _open_file(path: Path) -> None:
-    """Open a file with the platform default application."""
+    """Open a file with the platform default application.
+
+    Skipped when CEREBRAL_NO_OPEN=1 (sandboxed / CI runs).
+    """
+    if os.environ.get("CEREBRAL_NO_OPEN") == "1":
+        return
     system = platform.system()
     try:
         if system == "Darwin":

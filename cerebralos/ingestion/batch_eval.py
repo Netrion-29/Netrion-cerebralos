@@ -919,7 +919,13 @@ def main():
 
 
 def _open_file(path: Path) -> None:
-    """Open a file using the platform's default application."""
+    """Open a file using the platform's default application.
+
+    Skipped when CEREBRAL_NO_OPEN=1 (sandboxed / CI runs).
+    """
+    import os
+    if os.environ.get("CEREBRAL_NO_OPEN") == "1":
+        return
     import platform
     import subprocess
     system = platform.system()

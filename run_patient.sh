@@ -19,6 +19,7 @@ done
 SLUG="${PAT// /_}"
 
 export PYTHONPATH="$(pwd)"
+export CEREBRAL_NO_OPEN=1
 
 echo "== Running patient: $PAT (slug: $SLUG) =="
 
