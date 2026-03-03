@@ -65,8 +65,12 @@ def _open_file(path: Path) -> None:
 
 def cmd_run(args: list) -> int:
     """Run evaluation on a single patient."""
+    # Consume --protocols flag before positional args
+    protocols_flag = "--protocols" in args
+    args = [a for a in args if a != "--protocols"]
+
     if not args:
-        print("Usage: python -m cerebralos run <patient_file>")
+        print("Usage: python -m cerebralos run <patient_file> [--protocols]")
         return 1
 
     patient_path = _resolve_patient_file(args[0])
@@ -123,10 +127,14 @@ def cmd_run(args: list) -> int:
     # V5 daily notes with NTDS signal summary and protocol results
     try:
         v5_path = _OUTPUT_DIR / f"{patient_path.stem}_TRAUMA_DAILY_NOTES_v5.txt"
-        # Gate protocol section on CEREBRAL_PROTOCOLS=1 (parity with run_patient.sh)
+        # Gate protocol section: --protocols flag OR CEREBRAL_PROTOCOLS=1 env var
+        _proto_enabled = (
+            protocols_flag
+            or os.environ.get("CEREBRAL_PROTOCOLS") == "1"
+        )
         _proto_results = (
             evaluation.get("results", [])
-            if os.environ.get("CEREBRAL_PROTOCOLS") == "1"
+            if _proto_enabled
             else None
         )
         _generate_v5_report(
@@ -249,7 +257,9 @@ def cmd_help(args: list) -> int:
     print("Usage: python -m cerebralos <command> [args]")
     print()
     print("Commands:")
-    print("  run <patient.txt>    Evaluate a single patient (generates all reports)")
+    print("  run <patient.txt> [--protocols]")
+    print("                       Evaluate a single patient (generates all reports)")
+    print("                       --protocols: include PROTOCOL SIGNAL SUMMARY in v5")
     print("  run-all              Evaluate all patients in data_raw/")
     print("  live <patient.txt>   Evaluate an in-hospital patient (provisional mode)")
     print("  excel                Regenerate Excel dashboard from all patients")
