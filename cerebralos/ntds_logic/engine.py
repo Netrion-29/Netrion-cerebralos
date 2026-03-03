@@ -113,6 +113,67 @@ def line_matches_any(patient: PatientFacts, text: str, query_key: str) -> bool:
     return any(p.search(t) for p in compiled)
 
 
+# ---------------------------------------------------------------------------
+# Proximity helpers — sentence-level co-occurrence for exclusion gates
+# ---------------------------------------------------------------------------
+
+def _split_sentences(text: str) -> List[str]:
+    """Split *text* into sentence-like segments for proximity matching.
+
+    Deterministic heuristic:
+      1. Split on newlines.
+      2. Within each line, split on sentence-ending punctuation (``.``, ``!``,
+         ``?``) followed by whitespace and an uppercase letter.
+    Returns at least ``[text]`` when *text* is non-empty so callers always
+    get a non-empty list.
+    """
+    if not text or not text.strip():
+        return []
+    segments: List[str] = []
+    for chunk in text.split("\n"):
+        chunk = chunk.strip()
+        if not chunk:
+            continue
+        parts = re.split(r"(?<=[.!?])\s+(?=[A-Z])", chunk)
+        segments.extend(p.strip() for p in parts if p.strip())
+    return segments if segments else [text]
+
+
+def _sentence_window_matches(
+    patient: PatientFacts,
+    text: str,
+    query_key: str,
+    context_keys: List[str],
+) -> bool:
+    """Return True when *query_key* and any *context_key* co-occur within ±1
+    sentence of each other inside *text*.
+
+    Fail-closed: if *text* is empty or produces no sentences, returns False
+    (exclusion will not fire).
+    """
+    sentences = _split_sentences(text)
+    if not sentences:
+        return False
+
+    qk_patterns = _patterns_for_key(patient, query_key)
+    if not qk_patterns:
+        return False
+
+    for i, sent in enumerate(sentences):
+        if not any(p.search(sent) for p in qk_patterns):
+            continue
+        # query_key matched sentence *i* — check ±1 window for context_key
+        window = sentences[max(0, i - 1) : min(len(sentences), i + 2)]
+        for ctx_key in context_keys:
+            ctx_patterns = _patterns_for_key(patient, str(ctx_key))
+            if not ctx_patterns:
+                continue
+            if any(p.search(s) for s in window for p in ctx_patterns):
+                return True
+
+    return False
+
+
 def eval_exclude_if_any(gate: Dict[str, Any], patient: PatientFacts, contract: Dict[str, Any]) -> Optional[HardStop]:
     """
     Hard-stop exclusion.
@@ -121,6 +182,10 @@ def eval_exclude_if_any(gate: Dict[str, Any], patient: PatientFacts, contract: D
       - query_keys: patterns that indicate the exclusion condition
       - require_context_keys: patterns that MUST ALSO match the same line
         (prevents false positives like POA=Power of Attorney)
+      - proximity_mode: optional refinement for require_context_keys matching
+            "sentence_window" — query_key and context_key must co-occur
+            within the same sentence or ±1 adjacent sentences.
+            Absent / unknown values fall back to whole-line matching.
     """
     query_keys = gate.get("query_keys", [])
     if not isinstance(query_keys, list):
@@ -132,10 +197,13 @@ def eval_exclude_if_any(gate: Dict[str, Any], patient: PatientFacts, contract: D
     if not isinstance(require_context_keys, list):
         require_context_keys = []
 
+    proximity_mode = gate.get("proximity_mode")
+
     max_items = int(contract.get("evidence", {}).get("max_items_per_gate", 8))
 
     # For each query_key, collect matching evidence lines.
     # If require_context_keys is present, keep only lines that ALSO match ANY context key.
+    # When proximity_mode == "sentence_window", co-occurrence is checked within ±1 sentence.
     for qk in query_keys:
         hits = match_evidence(patient, str(qk), allowed_sources=None, max_hits=50)
         if not hits:
@@ -143,9 +211,14 @@ def eval_exclude_if_any(gate: Dict[str, Any], patient: PatientFacts, contract: D
 
         filtered: List[Evidence] = []
         if require_context_keys:
-            for e in hits:
-                if any(line_matches_any(patient, e.text or "", str(ctx)) for ctx in require_context_keys):
-                    filtered.append(e)
+            if proximity_mode == "sentence_window":
+                for e in hits:
+                    if _sentence_window_matches(patient, e.text or "", str(qk), require_context_keys):
+                        filtered.append(e)
+            else:
+                for e in hits:
+                    if any(line_matches_any(patient, e.text or "", str(ctx)) for ctx in require_context_keys):
+                        filtered.append(e)
         else:
             filtered = hits
 
