@@ -1334,6 +1334,102 @@ def _render_ntds_signal_summary(
 
 
 # ════════════════════════════════════════════════════════════════════
+# §14  PROTOCOL SIGNAL SUMMARY
+# ════════════════════════════════════════════════════════════════════
+
+# Canonical outcome ordering for deterministic rendering
+_PROTOCOL_OUTCOME_ORDER = [
+    "NON_COMPLIANT",
+    "INDETERMINATE",
+    "COMPLIANT",
+    "NOT_TRIGGERED",
+    "ERROR",
+]
+
+_PROTOCOL_OUTCOME_LABELS = {
+    "NON_COMPLIANT": "NON-COMPLIANT",
+    "INDETERMINATE": "INDETERMINATE",
+    "COMPLIANT": "COMPLIANT",
+    "NOT_TRIGGERED": "NOT TRIGGERED",
+    "ERROR": "ERROR",
+}
+
+
+def _render_protocol_signal_summary(
+    protocol_results: Optional[List[Dict[str, Any]]],
+) -> List[str]:
+    """
+    Render Protocol Signal Summary section.
+
+    Parameters
+    ----------
+    protocol_results : list of protocol result dicts (from batch_eval),
+                       or None if protocol data was not provided.
+
+    Returns
+    -------
+    List of lines.  Empty list when protocol_results is None (section omitted).
+    Section with DATA NOT AVAILABLE when protocol_results is an empty list.
+    Full summary when results are present.
+    """
+    if protocol_results is None:
+        return []  # Protocol data not provided — omit section entirely
+
+    out: List[str] = []
+    out.append("PROTOCOL SIGNAL SUMMARY")
+    out.append("-" * 60)
+
+    if not protocol_results:
+        out.append(f"  {_DNA}")
+        out.append("")
+        return out
+
+    # ── Outcome counts ──
+    counts: Dict[str, int] = {}
+    for r in protocol_results:
+        oc = r.get("outcome", "ERROR")
+        counts[oc] = counts.get(oc, 0) + 1
+
+    triggered = sum(
+        cnt for oc, cnt in counts.items() if oc != "NOT_TRIGGERED"
+    )
+    out.append(f"  Protocols evaluated:    {len(protocol_results)}")
+    out.append(f"  Triggered:              {triggered}")
+    for oc in _PROTOCOL_OUTCOME_ORDER:
+        cnt = counts.get(oc, 0)
+        if cnt > 0 or oc in ("COMPLIANT", "NON_COMPLIANT"):
+            label = _PROTOCOL_OUTCOME_LABELS.get(oc, oc)
+            out.append(f"    {label + ':':<22s}{cnt}")
+    out.append("")
+
+    # ── Actionable protocols (NON_COMPLIANT / INDETERMINATE) ──
+    actionable = [
+        r for r in protocol_results
+        if r.get("outcome") in ("NON_COMPLIANT", "INDETERMINATE", "ERROR")
+    ]
+    # Sort by outcome priority then protocol_id for determinism
+    outcome_rank = {oc: i for i, oc in enumerate(_PROTOCOL_OUTCOME_ORDER)}
+    actionable.sort(key=lambda r: (
+        outcome_rank.get(r.get("outcome", "ERROR"), 99),
+        r.get("protocol_id", ""),
+    ))
+
+    if actionable:
+        out.append("  Actionable Protocols:")
+        for r in actionable:
+            pid = r.get("protocol_id", "?")
+            name = r.get("protocol_name", "Unknown")
+            oc = _PROTOCOL_OUTCOME_LABELS.get(r.get("outcome", "ERROR"), r.get("outcome", "?"))
+            out.append(f"    [{oc}] {pid}: {name}")
+        out.append("")
+    else:
+        out.append("  Actionable Protocols:   (none)")
+        out.append("")
+
+    return out
+
+
+# ════════════════════════════════════════════════════════════════════
 # ════════════════════════════════════════════════════════════════════
 # PER-DAY: Trauma Daily Plan (from trauma progress notes)
 # ════════════════════════════════════════════════════════════════════
@@ -1946,15 +2042,17 @@ def render_v5(
     features_data: Dict[str, Any],
     days_data: Optional[Dict[str, Any]] = None,
     ntds_results: Optional[List[Dict[str, Any]]] = None,
+    protocol_results: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     """
     Render Daily Notes v5 text.
 
     Parameters
     ----------
-    features_data : loaded patient_features_v1.json
-    days_data     : loaded patient_days_v1.json (optional, for metadata)
-    ntds_results  : list of NTDS event result dicts (optional, from batch_eval)
+    features_data    : loaded patient_features_v1.json
+    days_data        : loaded patient_days_v1.json (optional, for metadata)
+    ntds_results     : list of NTDS event result dicts (optional, from batch_eval)
+    protocol_results : list of protocol result dicts (optional, from batch_eval)
     """
     patient_id = features_data.get("patient_id", _DNA)
     feats = features_data.get("features", {})
@@ -1999,6 +2097,7 @@ def render_v5(
     out.extend(_render_incentive_spirometry(feats))
     out.extend(_render_note_sections(feats))
     out.extend(_render_ntds_signal_summary(ntds_results))
+    out.extend(_render_protocol_signal_summary(protocol_results))
 
     # ── Per-Day Clinical Status ──
     out.append("=" * 60)
@@ -2101,6 +2200,8 @@ def main() -> int:
                     help="Path to patient_days_v1.json (optional, for metadata)")
     ap.add_argument("--ntds", dest="ntds_path", required=False, default=None,
                     help="Path to evaluation JSON containing ntds_results (optional)")
+    ap.add_argument("--protocols", dest="protocols_path", required=False, default=None,
+                    help="Path to evaluation JSON containing protocol results (optional)")
     ap.add_argument("--out", dest="out_path", required=True,
                     help="Path for output TRAUMA_DAILY_NOTES_v5.txt")
     args = ap.parse_args()
@@ -2134,7 +2235,20 @@ def main() -> int:
             else:
                 ntds_results = eval_data.get("ntds_results")
 
-    text = render_v5(features_data, days_data, ntds_results=ntds_results)
+    protocol_results = None
+    if args.protocols_path:
+        protocols_path = Path(args.protocols_path).expanduser().resolve()
+        if protocols_path.is_file():
+            with open(protocols_path, encoding="utf-8", errors="replace") as f:
+                proto_data = json.load(f)
+            # Accept either a top-level evaluation dict or a bare list
+            if isinstance(proto_data, list):
+                protocol_results = proto_data
+            else:
+                protocol_results = proto_data.get("results")
+
+    text = render_v5(features_data, days_data, ntds_results=ntds_results,
+                     protocol_results=protocol_results)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(text, encoding="utf-8")

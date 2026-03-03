@@ -57,7 +57,20 @@ def _ntds_result(event_id: int, canonical_name: str, outcome: str, **kw):
     return base
 
 
-def _fake_evaluation(ntds_results=None):
+def _protocol_result(protocol_id: str, protocol_name: str, outcome: str, **kw):
+    """Helper to build a single protocol result dict."""
+    base = {
+        "protocol_id": protocol_id,
+        "protocol_name": protocol_name,
+        "outcome": outcome,
+        "step_trace": [],
+        "warnings": [],
+    }
+    base.update(kw)
+    return base
+
+
+def _fake_evaluation(ntds_results=None, protocol_results=None):
     """Return a minimal evaluation dict matching evaluate_patient() shape."""
     return {
         "patient_id": "TP001",
@@ -71,7 +84,7 @@ def _fake_evaluation(ntds_results=None):
         "is_live": True,
         "all_evidence_snippets": [],
         "protocols_evaluated": 0,
-        "results": [],
+        "results": protocol_results if protocol_results is not None else [],
         "ntds_results": ntds_results if ntds_results is not None else [],
         "governance_version": "test",
         "engine_version": "test",
@@ -86,7 +99,8 @@ def _fake_evaluation(ntds_results=None):
 class TestCmdRunV5NTDSWiring(unittest.TestCase):
     """Tests that cmd_run() correctly wires v5 + NTDS in __main__.py."""
 
-    def _run_cmd_run(self, tmpdir, patient_path, ntds_results=None):
+    def _run_cmd_run(self, tmpdir, patient_path, ntds_results=None,
+                    protocol_results=None):
         """
         Invoke cmd_run() with mocked output dir and evaluate_patient.
 
@@ -97,7 +111,7 @@ class TestCmdRunV5NTDSWiring(unittest.TestCase):
 
         out_dir = Path(tmpdir) / "pi_reports"
 
-        eval_dict = _fake_evaluation(ntds_results)
+        eval_dict = _fake_evaluation(ntds_results, protocol_results)
 
         with patch.object(main_mod, '_OUTPUT_DIR', out_dir), \
              patch.object(main_mod, '_open_file', lambda p: None), \
@@ -276,6 +290,59 @@ class TestCmdRunV5NTDSWiring(unittest.TestCase):
             self.assertTrue((out_dir / "Test_Patient_pi_report.txt").exists())
             self.assertTrue((out_dir / "Test_Patient_results.json").exists())
             self.assertTrue((out_dir / "Test_Patient_TRAUMA_DAILY_NOTES_v5.txt").exists())
+
+    # ── Protocol results passthrough ─────────────────────────────────────────
+
+    def test_v5_contains_protocol_section_when_results_present(self):
+        """When evaluation has protocol results, v5 includes PROTOCOL SIGNAL SUMMARY."""
+        protos = [
+            _protocol_result("P001", "DVT Prophylaxis", "COMPLIANT"),
+            _protocol_result("P002", "TBI Protocol", "NON_COMPLIANT"),
+        ]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = Path(tmpdir) / "Test_Patient.txt"
+            patient_path.write_text(_MINIMAL_PATIENT_TXT, encoding="utf-8")
+
+            rc, out_dir = self._run_cmd_run(
+                tmpdir, patient_path, ntds_results=[], protocol_results=protos,
+            )
+
+            v5_path = out_dir / "Test_Patient_TRAUMA_DAILY_NOTES_v5.txt"
+            text = v5_path.read_text(encoding="utf-8")
+            self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+            self.assertIn("[NON-COMPLIANT] P002: TBI Protocol", text)
+            self.assertIn("Protocols evaluated:    2", text)
+
+    def test_v5_omits_protocol_section_when_results_empty(self):
+        """When evaluation has empty results, v5 omits protocol section."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = Path(tmpdir) / "Test_Patient.txt"
+            patient_path.write_text(_MINIMAL_PATIENT_TXT, encoding="utf-8")
+
+            rc, out_dir = self._run_cmd_run(
+                tmpdir, patient_path, ntds_results=[], protocol_results=[],
+            )
+
+            v5_path = out_dir / "Test_Patient_TRAUMA_DAILY_NOTES_v5.txt"
+            text = v5_path.read_text(encoding="utf-8")
+            self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    def test_both_ntds_and_protocol_sections_rendered(self):
+        """When both NTDS and protocol results present, both sections render."""
+        ntds = [_ntds_result(1, "AKI", "YES")]
+        protos = [_protocol_result("P001", "DVT Prophylaxis", "COMPLIANT")]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = Path(tmpdir) / "Test_Patient.txt"
+            patient_path.write_text(_MINIMAL_PATIENT_TXT, encoding="utf-8")
+
+            rc, out_dir = self._run_cmd_run(
+                tmpdir, patient_path, ntds_results=ntds, protocol_results=protos,
+            )
+
+            v5_path = out_dir / "Test_Patient_TRAUMA_DAILY_NOTES_v5.txt"
+            text = v5_path.read_text(encoding="utf-8")
+            self.assertIn("NTDS SIGNAL SUMMARY", text)
+            self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
 
 
 if __name__ == "__main__":
