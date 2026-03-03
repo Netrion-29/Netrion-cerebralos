@@ -40,3 +40,15 @@ cat > docs/build_plan_locked_v1.json << 'EOF'
   ]
 }
 EOF
+
+## Local Scratch Policy
+
+To keep PRs auditable and deterministic:
+
+- Never stage or commit local scratch files such as `_tmp_*.py`, `_validate_*.py`, or `docs/handoffs/`.
+- Keep exploratory local tests untracked unless they are promoted to a real CI-backed test.
+- Before commit, verify staged scope with:
+  - `git diff --name-only`
+  - `git diff --stat`
+  - `git diff --check`
+  - `git status --short`
