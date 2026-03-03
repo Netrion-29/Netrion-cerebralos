@@ -497,5 +497,216 @@ class TestCmdRunProtocolEnvVarGating(unittest.TestCase):
         self.assertEqual(rc, 0)
 
 
+# ════════════════════════════════════════════════════════════════════
+# cmd_run --protocols CLI flag tests
+# ════════════════════════════════════════════════════════════════════
+
+class TestCmdRunProtocolsCLIFlag(unittest.TestCase):
+    """Tests for --protocols CLI flag as alternative to CEREBRAL_PROTOCOLS env var."""
+
+    def _run_cmd_run(self, tmpdir, patient_path, ntds_results=None,
+                    protocol_results=None, use_flag=False):
+        """Invoke cmd_run() with mocked output dir and evaluate_patient."""
+        import cerebralos.__main__ as main_mod
+        from cerebralos.ingestion import batch_eval as be_mod
+
+        out_dir = Path(tmpdir) / "pi_reports"
+        eval_dict = _fake_evaluation(ntds_results, protocol_results)
+
+        cmd_args = ["--protocols", str(patient_path)] if use_flag else [str(patient_path)]
+
+        with patch.object(main_mod, '_OUTPUT_DIR', out_dir), \
+             patch.object(main_mod, '_open_file', lambda p: None), \
+             patch.object(main_mod, '_resolve_patient_file', return_value=patient_path), \
+             patch.object(be_mod, 'evaluate_patient', return_value=eval_dict), \
+             patch.object(be_mod, '_load_resources', return_value={
+                 "protocols": {"protocols": []},
+                 "action_patterns": {},
+                 "contract": {},
+                 "ntds_rulesets": {},
+                 "query_patterns": {},
+             }):
+            rc = main_mod.cmd_run(cmd_args)
+
+        return rc, out_dir
+
+    def _read_v5(self, out_dir):
+        return (out_dir / "Test_Patient_TRAUMA_DAILY_NOTES_v5.txt").read_text(encoding="utf-8")
+
+    # ── --protocols flag only (no env var) ────────────────────────
+
+    def test_flag_enables_section(self):
+        """--protocols flag → PROTOCOL SIGNAL SUMMARY present (no env var)."""
+        protos = [
+            _protocol_result("P001", "DVT Prophylaxis", "COMPLIANT"),
+            _protocol_result("P002", "TBI Protocol", "NON_COMPLIANT"),
+        ]
+        env = os.environ.copy()
+        env.pop("CEREBRAL_PROTOCOLS", None)
+        with tempfile.TemporaryDirectory() as tmpdir, \
+             patch.dict(os.environ, env, clear=True):
+            patient_path = Path(tmpdir) / "Test_Patient.txt"
+            patient_path.write_text(_MINIMAL_PATIENT_TXT, encoding="utf-8")
+            rc, out_dir = self._run_cmd_run(
+                tmpdir, patient_path, protocol_results=protos, use_flag=True,
+            )
+            text = self._read_v5(out_dir)
+
+        self.assertEqual(rc, 0)
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+        self.assertIn("Protocols evaluated:    2", text)
+
+    def test_flag_has_triggered_count(self):
+        """--protocols flag → triggered count rendered."""
+        protos = [
+            _protocol_result("P001", "DVT Prophylaxis", "COMPLIANT"),
+        ]
+        env = os.environ.copy()
+        env.pop("CEREBRAL_PROTOCOLS", None)
+        with tempfile.TemporaryDirectory() as tmpdir, \
+             patch.dict(os.environ, env, clear=True):
+            patient_path = Path(tmpdir) / "Test_Patient.txt"
+            patient_path.write_text(_MINIMAL_PATIENT_TXT, encoding="utf-8")
+            rc, out_dir = self._run_cmd_run(
+                tmpdir, patient_path, protocol_results=protos, use_flag=True,
+            )
+            text = self._read_v5(out_dir)
+
+        self.assertIn("Triggered:", text)
+
+    # ── flag overrides env=0 ──────────────────────────────────────
+
+    def test_flag_overrides_env_0(self):
+        """--protocols flag enables section even when CEREBRAL_PROTOCOLS=0."""
+        protos = [
+            _protocol_result("P001", "DVT Prophylaxis", "COMPLIANT"),
+        ]
+        with tempfile.TemporaryDirectory() as tmpdir, \
+             patch.dict(os.environ, {"CEREBRAL_PROTOCOLS": "0"}):
+            patient_path = Path(tmpdir) / "Test_Patient.txt"
+            patient_path.write_text(_MINIMAL_PATIENT_TXT, encoding="utf-8")
+            rc, out_dir = self._run_cmd_run(
+                tmpdir, patient_path, protocol_results=protos, use_flag=True,
+            )
+            text = self._read_v5(out_dir)
+
+        self.assertEqual(rc, 0)
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    # ── env var only (no flag) ────────────────────────────────────
+
+    def test_env_var_only_still_works(self):
+        """CEREBRAL_PROTOCOLS=1 without --protocols flag → section present."""
+        protos = [
+            _protocol_result("P001", "DVT Prophylaxis", "COMPLIANT"),
+        ]
+        with tempfile.TemporaryDirectory() as tmpdir, \
+             patch.dict(os.environ, {"CEREBRAL_PROTOCOLS": "1"}):
+            patient_path = Path(tmpdir) / "Test_Patient.txt"
+            patient_path.write_text(_MINIMAL_PATIENT_TXT, encoding="utf-8")
+            rc, out_dir = self._run_cmd_run(
+                tmpdir, patient_path, protocol_results=protos, use_flag=False,
+            )
+            text = self._read_v5(out_dir)
+
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    # ── neither flag nor env ──────────────────────────────────────
+
+    def test_neither_flag_nor_env(self):
+        """No --protocols and no env var → section omitted."""
+        protos = [
+            _protocol_result("P001", "DVT Prophylaxis", "COMPLIANT"),
+        ]
+        env = os.environ.copy()
+        env.pop("CEREBRAL_PROTOCOLS", None)
+        with tempfile.TemporaryDirectory() as tmpdir, \
+             patch.dict(os.environ, env, clear=True):
+            patient_path = Path(tmpdir) / "Test_Patient.txt"
+            patient_path.write_text(_MINIMAL_PATIENT_TXT, encoding="utf-8")
+            rc, out_dir = self._run_cmd_run(
+                tmpdir, patient_path, protocol_results=protos, use_flag=False,
+            )
+            text = self._read_v5(out_dir)
+
+        self.assertEqual(rc, 0)
+        self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
+        self.assertIn("PI DAILY NOTES (v5)", text)
+
+    # ── both flag + env var ───────────────────────────────────────
+
+    def test_both_flag_and_env_var(self):
+        """--protocols + CEREBRAL_PROTOCOLS=1 → section present (no conflict)."""
+        protos = [
+            _protocol_result("P001", "DVT Prophylaxis", "COMPLIANT"),
+        ]
+        with tempfile.TemporaryDirectory() as tmpdir, \
+             patch.dict(os.environ, {"CEREBRAL_PROTOCOLS": "1"}):
+            patient_path = Path(tmpdir) / "Test_Patient.txt"
+            patient_path.write_text(_MINIMAL_PATIENT_TXT, encoding="utf-8")
+            rc, out_dir = self._run_cmd_run(
+                tmpdir, patient_path, protocol_results=protos, use_flag=True,
+            )
+            text = self._read_v5(out_dir)
+
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    # ── NTDS unaffected by --protocols flag ───────────────────────
+
+    def test_ntds_unaffected_by_protocols_flag(self):
+        """--protocols flag does not interfere with NTDS section."""
+        ntds = [_ntds_result(1, "AKI", "YES")]
+        env = os.environ.copy()
+        env.pop("CEREBRAL_PROTOCOLS", None)
+        with tempfile.TemporaryDirectory() as tmpdir, \
+             patch.dict(os.environ, env, clear=True):
+            patient_path = Path(tmpdir) / "Test_Patient.txt"
+            patient_path.write_text(_MINIMAL_PATIENT_TXT, encoding="utf-8")
+            rc, out_dir = self._run_cmd_run(
+                tmpdir, patient_path, ntds_results=ntds, use_flag=True,
+            )
+            text = self._read_v5(out_dir)
+
+        self.assertIn("NTDS SIGNAL SUMMARY", text)
+        self.assertIn("[YES] Event 1: AKI", text)
+
+    # ── Standard sections stable ──────────────────────────────────
+
+    def test_standard_sections_with_flag(self):
+        """V5 standard sections present when --protocols is used."""
+        protos = [_protocol_result("P001", "DVT Prophylaxis", "COMPLIANT")]
+        env = os.environ.copy()
+        env.pop("CEREBRAL_PROTOCOLS", None)
+        with tempfile.TemporaryDirectory() as tmpdir, \
+             patch.dict(os.environ, env, clear=True):
+            patient_path = Path(tmpdir) / "Test_Patient.txt"
+            patient_path.write_text(_MINIMAL_PATIENT_TXT, encoding="utf-8")
+            rc, out_dir = self._run_cmd_run(
+                tmpdir, patient_path, protocol_results=protos, use_flag=True,
+            )
+            text = self._read_v5(out_dir)
+
+        self.assertIn("PI DAILY NOTES (v5)", text)
+        self.assertIn("PER-DAY", text)
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    # ── Exit code ─────────────────────────────────────────────────
+
+    def test_exit_code_zero_with_flag(self):
+        """cmd_run returns 0 when --protocols flag is used."""
+        protos = [_protocol_result("P001", "DVT Prophylaxis", "COMPLIANT")]
+        env = os.environ.copy()
+        env.pop("CEREBRAL_PROTOCOLS", None)
+        with tempfile.TemporaryDirectory() as tmpdir, \
+             patch.dict(os.environ, env, clear=True):
+            patient_path = Path(tmpdir) / "Test_Patient.txt"
+            patient_path.write_text(_MINIMAL_PATIENT_TXT, encoding="utf-8")
+            rc, _ = self._run_cmd_run(
+                tmpdir, patient_path, protocol_results=protos, use_flag=True,
+            )
+
+        self.assertEqual(rc, 0)
+
+
 if __name__ == "__main__":
     unittest.main()
