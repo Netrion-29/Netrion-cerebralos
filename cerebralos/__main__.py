@@ -3,7 +3,7 @@
 CerebralOS CLI — Pure Python entry point.
 
 Usage:
-    python -m cerebralos run <patient.txt>
+    python -m cerebralos run <patient.txt> [--protocols] [--ntds]
     python -m cerebralos run-all
     python -m cerebralos live <patient.txt>
     python -m cerebralos excel
@@ -65,12 +65,13 @@ def _open_file(path: Path) -> None:
 
 def cmd_run(args: list) -> int:
     """Run evaluation on a single patient."""
-    # Consume --protocols flag before positional args
+    # Consume --protocols and --ntds flags before positional args
     protocols_flag = "--protocols" in args
-    args = [a for a in args if a != "--protocols"]
+    ntds_flag = "--ntds" in args
+    args = [a for a in args if a not in ("--protocols", "--ntds")]
 
     if not args:
-        print("Usage: python -m cerebralos run <patient_file> [--protocols]")
+        print("Usage: python -m cerebralos run <patient_file> [--protocols] [--ntds]")
         return 1
 
     patient_path = _resolve_patient_file(args[0])
@@ -127,6 +128,16 @@ def cmd_run(args: list) -> int:
     # V5 daily notes with NTDS signal summary and protocol results
     try:
         v5_path = _OUTPUT_DIR / f"{patient_path.stem}_TRAUMA_DAILY_NOTES_v5.txt"
+        # Gate NTDS section: --ntds flag OR CEREBRAL_NTDS=1 env var
+        _ntds_enabled = (
+            ntds_flag
+            or os.environ.get("CEREBRAL_NTDS") == "1"
+        )
+        _ntds_results = (
+            evaluation.get("ntds_results", [])
+            if _ntds_enabled
+            else []
+        )
         # Gate protocol section: --protocols flag OR CEREBRAL_PROTOCOLS=1 env var
         _proto_enabled = (
             protocols_flag
@@ -139,7 +150,7 @@ def cmd_run(args: list) -> int:
         )
         _generate_v5_report(
             patient_path,
-            evaluation.get("ntds_results", []),
+            _ntds_results,
             v5_path,
             protocol_results=_proto_results,
         )
@@ -257,9 +268,10 @@ def cmd_help(args: list) -> int:
     print("Usage: python -m cerebralos <command> [args]")
     print()
     print("Commands:")
-    print("  run <patient.txt> [--protocols]")
+    print("  run <patient.txt> [--protocols] [--ntds]")
     print("                       Evaluate a single patient (generates all reports)")
     print("                       --protocols: include PROTOCOL SIGNAL SUMMARY in v5")
+    print("                       --ntds:      include NTDS SIGNAL SUMMARY in v5")
     print("  run-all              Evaluate all patients in data_raw/")
     print("  live <patient.txt>   Evaluate an in-hospital patient (provisional mode)")
     print("  excel                Regenerate Excel dashboard from all patients")
