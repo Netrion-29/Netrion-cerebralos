@@ -572,5 +572,193 @@ class TestBatchEvalProtocolsCLIFlag(unittest.TestCase):
         self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
 
 
+# ════════════════════════════════════════════════════════════════════
+# Batch CLI --ntds flag tests
+# ════════════════════════════════════════════════════════════════════
+
+class TestBatchEvalNTDSCLIFlag(unittest.TestCase):
+    """Tests for --ntds CLI flag as alternative to CEREBRAL_NTDS env var."""
+
+    def _run_batch_with_args(self, tmpdir, patient_path, extra_argv=None,
+                             env_dict=None):
+        """Run batch_eval main() with custom argv and env, return v5 text."""
+        report_dir = Path(tmpdir) / "reports"
+        argv = [
+            "batch_eval",
+            "--patient", str(patient_path),
+            "--v5",
+            "--output-dir", str(report_dir),
+        ]
+        if extra_argv:
+            argv.extend(extra_argv)
+
+        old_argv = sys.argv
+        try:
+            sys.argv = argv
+            if env_dict is not None:
+                with patch.dict(os.environ, env_dict):
+                    from cerebralos.ingestion.batch_eval import main
+                    main()
+            else:
+                env = os.environ.copy()
+                env.pop("CEREBRAL_NTDS", None)
+                env.pop("CEREBRAL_PROTOCOLS", None)
+                with patch.dict(os.environ, env, clear=True):
+                    from cerebralos.ingestion.batch_eval import main
+                    main()
+        finally:
+            sys.argv = old_argv
+
+        v5_path = report_dir / "Test_Patient_TRAUMA_DAILY_NOTES_v5.txt"
+        return v5_path.read_text(encoding="utf-8") if v5_path.exists() else None
+
+    # ── --ntds flag accepted ──────────────────────────────────────
+
+    def test_ntds_flag_accepted(self):
+        """--ntds flag is accepted without argparse error."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch_with_args(
+                tmpdir, patient_path, extra_argv=["--ntds"],
+            )
+
+        self.assertIsNotNone(text)
+        self.assertIn("PI DAILY NOTES (v5)", text)
+
+    # ── --ntds flag + --v5 ────────────────────────────────────────
+
+    def test_ntds_flag_with_v5(self):
+        """--ntds + --v5 → v5 file created and standard sections present."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch_with_args(
+                tmpdir, patient_path, extra_argv=["--ntds"],
+            )
+
+        self.assertIsNotNone(text)
+        self.assertIn("PER-DAY", text)
+
+    # ── env var only (no flag) ────────────────────────────────────
+
+    def test_ntds_env_var_only(self):
+        """CEREBRAL_NTDS=1 without --ntds → v5 still created."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch_with_args(
+                tmpdir, patient_path,
+                env_dict={"CEREBRAL_NTDS": "1"},
+            )
+
+        self.assertIsNotNone(text)
+        self.assertIn("PI DAILY NOTES (v5)", text)
+
+    # ── both flag + env var ───────────────────────────────────────
+
+    def test_both_ntds_flag_and_env(self):
+        """--ntds + CEREBRAL_NTDS=1 → no conflict, v5 created."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch_with_args(
+                tmpdir, patient_path,
+                extra_argv=["--ntds"],
+                env_dict={"CEREBRAL_NTDS": "1"},
+            )
+
+        self.assertIsNotNone(text)
+        self.assertIn("PI DAILY NOTES (v5)", text)
+
+    # ── neither flag nor env ──────────────────────────────────────
+
+    def test_neither_ntds_flag_nor_env(self):
+        """No --ntds and no env var → v5 present but NTDS section absent."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch_with_args(tmpdir, patient_path)
+
+        self.assertIsNotNone(text)
+        self.assertNotIn("NTDS SIGNAL SUMMARY", text)
+        self.assertIn("PI DAILY NOTES (v5)", text)
+
+    # ── --ntds + --protocols coexistence ──────────────────────────
+
+    def test_ntds_and_protocols_flags_coexist(self):
+        """--ntds + --protocols → both accepted, v5 created."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch_with_args(
+                tmpdir, patient_path,
+                extra_argv=["--ntds", "--protocols"],
+            )
+
+        self.assertIsNotNone(text)
+        self.assertIn("PI DAILY NOTES (v5)", text)
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    # ── Standard sections stable ──────────────────────────────────
+
+    def test_standard_sections_with_ntds_flag(self):
+        """V5 standard sections present when --ntds is used."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch_with_args(
+                tmpdir, patient_path, extra_argv=["--ntds"],
+            )
+
+        self.assertIn("PI DAILY NOTES (v5)", text)
+        self.assertIn("PER-DAY", text)
+
+
+# ════════════════════════════════════════════════════════════════════
+# Batch CLI help text / argparse verification
+# ════════════════════════════════════════════════════════════════════
+
+class TestBatchEvalHelpText(unittest.TestCase):
+    """Tests that batch_eval argparse has --protocols and --ntds flags."""
+
+    def _get_parser_actions(self):
+        """Build the argparse parser and return its option_strings."""
+        import argparse
+        # Re-create the parser inline to inspect it
+        from cerebralos.ingestion.batch_eval import main as _  # ensure importable
+        # Build a fresh parser by importing and checking argparse
+        import importlib
+        mod = importlib.import_module("cerebralos.ingestion.batch_eval")
+        # Read the source to find add_argument calls — or just instantiate
+        # We test by running with --help and capturing
+        return None  # not needed — we test via argv below
+
+    def test_argparse_has_protocols(self):
+        """batch_eval argparse includes --protocols flag."""
+        import io
+        old_argv = sys.argv
+        try:
+            sys.argv = ["batch_eval", "--help"]
+            buf = io.StringIO()
+            with patch('sys.stdout', buf), \
+                 self.assertRaises(SystemExit) as ctx:
+                from cerebralos.ingestion.batch_eval import main
+                main()
+            output = buf.getvalue()
+        finally:
+            sys.argv = old_argv
+        self.assertIn("--protocols", output)
+
+    def test_argparse_has_ntds(self):
+        """batch_eval argparse includes --ntds flag."""
+        import io
+        old_argv = sys.argv
+        try:
+            sys.argv = ["batch_eval", "--help"]
+            buf = io.StringIO()
+            with patch('sys.stdout', buf), \
+                 self.assertRaises(SystemExit) as ctx:
+                from cerebralos.ingestion.batch_eval import main
+                main()
+            output = buf.getvalue()
+        finally:
+            sys.argv = old_argv
+        self.assertIn("--ntds", output)
+
+
 if __name__ == "__main__":
     unittest.main()
