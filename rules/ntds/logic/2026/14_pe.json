@@ -18,7 +18,8 @@
       "rule_id": "PE_EXCL_POA",
       "reason": "PE documented as present on arrival / prior to arrival (not a hospital event).",
       "query_keys": ["pe_poa_strict"],
-      "require_context_keys": ["pe_dx_positive"]
+      "require_context_keys": ["pe_dx_positive"],
+      "proximity_mode": "sentence_window"
     }
   ],
   "gates": [

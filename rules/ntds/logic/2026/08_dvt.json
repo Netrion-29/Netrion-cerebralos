@@ -18,7 +18,8 @@
       "rule_id": "DVT_EXCL_POA",
       "reason": "DVT documented as present on arrival / prior to arrival (not a hospital event).",
       "query_keys": ["dvt_poa_phrase"],
-      "require_context_keys": ["dvt_dx"]
+      "require_context_keys": ["dvt_dx"],
+      "proximity_mode": "sentence_window"
     }
   ],
   "gates": [
