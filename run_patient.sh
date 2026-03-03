@@ -49,10 +49,28 @@ python3 cerebralos/reporting/render_trauma_daily_notes_v4.py \
   --days "outputs/timeline/$SLUG/patient_days_v1.json" \
   --out "outputs/reporting/$SLUG/TRAUMA_DAILY_NOTES_v4.txt"
 
+# NTDS Hospital Events — all 21 events (opt-in via CEREBRAL_NTDS=1)
+# Runs BEFORE v5 rendering so results can feed into the report.
+# Fail-closed: no || true — NTDS failures propagate to caller.
+NTDS_SUMMARY=""
+if [[ "${CEREBRAL_NTDS:-0}" == "1" ]]; then
+  echo ""
+  echo "---- NTDS hospital events (2026, all 21) ----"
+  python3 -m cerebralos.ntds_logic.run_all_events \
+    --year 2026 --patient "data_raw/$PAT.txt"
+  NTDS_SUMMARY="outputs/ntds/$SLUG/ntds_summary_2026_v1.json"
+fi
+
 # Render v5 (feature-layer clinical narrative — additive, does not replace v3/v4)
+# When CEREBRAL_NTDS=1, pass NTDS summary so v5 renders the NTDS SIGNAL SUMMARY section.
+V5_NTDS_FLAG=""
+if [[ -n "$NTDS_SUMMARY" && -f "$NTDS_SUMMARY" ]]; then
+  V5_NTDS_FLAG="--ntds $NTDS_SUMMARY"
+fi
 python3 cerebralos/reporting/render_trauma_daily_notes_v5.py \
   --features "outputs/features/$SLUG/patient_features_v1.json" \
   --days "outputs/timeline/$SLUG/patient_days_v1.json" \
+  $V5_NTDS_FLAG \
   --out "outputs/reporting/$SLUG/TRAUMA_DAILY_NOTES_v5.txt"
 
 echo "---- sanity checks ----"
@@ -110,11 +128,3 @@ if [[ "${CEREBRAL_DASHBOARD:-0}" == "1" ]]; then
   python3 -m cerebralos.reporting.excel_trauma_dashboard_v2 --patient "$SLUG" || true
 fi
 
-# NTDS Hospital Events — all 21 events (opt-in via CEREBRAL_NTDS=1)
-# Fail-closed: no || true — NTDS failures propagate to caller.
-if [[ "${CEREBRAL_NTDS:-0}" == "1" ]]; then
-  echo ""
-  echo "---- NTDS hospital events (2026, all 21) ----"
-  python3 -m cerebralos.ntds_logic.run_all_events \
-    --year 2026 --patient "data_raw/$PAT.txt"
-fi
