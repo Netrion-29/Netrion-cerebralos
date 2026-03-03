@@ -13,6 +13,7 @@ Works on Windows, macOS, and Linux without bash.
 """
 from __future__ import annotations
 
+import os
 import sys
 import platform
 import subprocess
@@ -122,11 +123,17 @@ def cmd_run(args: list) -> int:
     # V5 daily notes with NTDS signal summary and protocol results
     try:
         v5_path = _OUTPUT_DIR / f"{patient_path.stem}_TRAUMA_DAILY_NOTES_v5.txt"
+        # Gate protocol section on CEREBRAL_PROTOCOLS=1 (parity with run_patient.sh)
+        _proto_results = (
+            evaluation.get("results", [])
+            if os.environ.get("CEREBRAL_PROTOCOLS") == "1"
+            else None
+        )
         _generate_v5_report(
             patient_path,
             evaluation.get("ntds_results", []),
             v5_path,
-            protocol_results=evaluation.get("results", []),
+            protocol_results=_proto_results,
         )
         print(f"  V5:    {v5_path}")
     except Exception as exc:
