@@ -743,6 +743,7 @@ def main():
     ap.add_argument("--excel", action="store_true", help="Update Excel trauma dashboard")
     ap.add_argument("--live", action="store_true", help="Force live mode display on all patients")
     ap.add_argument("--v5", action="store_true", help="Generate TRAUMA_DAILY_NOTES_v5 with NTDS signal summary")
+    ap.add_argument("--protocols", action="store_true", help="Include PROTOCOL SIGNAL SUMMARY in v5 output (alternative to CEREBRAL_PROTOCOLS=1 env var)")
     ap.add_argument("--all-reports", action="store_true", help="Generate all formats (text + HTML + JSON + v5 + dashboard + Excel)")
     ap.add_argument("--output-dir", help="Custom output directory (default: outputs/pi_reports)")
     ap.add_argument("--open", action="store_true", default=False, help="Auto-open HTML report in browser")
@@ -842,10 +843,14 @@ def main():
         if args.v5:
             v5_path = report_dir / f"{pf.stem}_TRAUMA_DAILY_NOTES_v5.txt"
             try:
-                # Gate protocol section on CEREBRAL_PROTOCOLS=1 (parity with run_patient.sh)
+                # Gate protocol section: --protocols flag OR CEREBRAL_PROTOCOLS=1 env var
+                _proto_enabled = (
+                    getattr(args, "protocols", False)
+                    or os.environ.get("CEREBRAL_PROTOCOLS") == "1"
+                )
                 _proto_results = (
                     evaluation.get("results", [])
-                    if os.environ.get("CEREBRAL_PROTOCOLS") == "1"
+                    if _proto_enabled
                     else None
                 )
                 _generate_v5_report(

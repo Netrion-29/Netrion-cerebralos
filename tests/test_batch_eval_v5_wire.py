@@ -423,5 +423,154 @@ class TestBatchEvalProtocolEnvVarGating(unittest.TestCase):
         self.assertIn("PER-DAY", text)
 
 
+# ════════════════════════════════════════════════════════════════════
+# Batch CLI --protocols flag tests
+# ════════════════════════════════════════════════════════════════════
+
+class TestBatchEvalProtocolsCLIFlag(unittest.TestCase):
+    """Tests for --protocols CLI flag as alternative to CEREBRAL_PROTOCOLS env var."""
+
+    def _run_batch_with_args(self, tmpdir, patient_path, extra_argv=None,
+                             env_dict=None):
+        """Run batch_eval main() with custom argv and env, return v5 text."""
+        report_dir = Path(tmpdir) / "reports"
+        argv = [
+            "batch_eval",
+            "--patient", str(patient_path),
+            "--v5",
+            "--output-dir", str(report_dir),
+        ]
+        if extra_argv:
+            argv.extend(extra_argv)
+
+        old_argv = sys.argv
+        try:
+            sys.argv = argv
+            if env_dict is not None:
+                with patch.dict(os.environ, env_dict):
+                    from cerebralos.ingestion.batch_eval import main
+                    main()
+            else:
+                # Ensure CEREBRAL_PROTOCOLS is NOT set
+                env = os.environ.copy()
+                env.pop("CEREBRAL_PROTOCOLS", None)
+                with patch.dict(os.environ, env, clear=True):
+                    from cerebralos.ingestion.batch_eval import main
+                    main()
+        finally:
+            sys.argv = old_argv
+
+        v5_path = report_dir / "Test_Patient_TRAUMA_DAILY_NOTES_v5.txt"
+        return v5_path.read_text(encoding="utf-8") if v5_path.exists() else None
+
+    # ── --protocols flag only (no env var) ────────────────────────
+
+    def test_protocols_flag_enables_section(self):
+        """--protocols flag → PROTOCOL SIGNAL SUMMARY present (no env var)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch_with_args(
+                tmpdir, patient_path, extra_argv=["--protocols"],
+            )
+
+        self.assertIsNotNone(text)
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+        self.assertIn("Protocols evaluated:", text)
+
+    def test_protocols_flag_has_counts(self):
+        """--protocols flag → protocol counts rendered."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch_with_args(
+                tmpdir, patient_path, extra_argv=["--protocols"],
+            )
+
+        self.assertIn("Protocols evaluated:", text)
+        self.assertIn("Triggered:", text)
+
+    # ── env var only (no flag) ────────────────────────────────────
+
+    def test_env_var_only_enables_section(self):
+        """CEREBRAL_PROTOCOLS=1 without --protocols → section still present."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch_with_args(
+                tmpdir, patient_path,
+                env_dict={"CEREBRAL_PROTOCOLS": "1"},
+            )
+
+        self.assertIsNotNone(text)
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    # ── both flag + env var ───────────────────────────────────────
+
+    def test_both_flag_and_env_var(self):
+        """--protocols + CEREBRAL_PROTOCOLS=1 → section present (no conflict)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch_with_args(
+                tmpdir, patient_path,
+                extra_argv=["--protocols"],
+                env_dict={"CEREBRAL_PROTOCOLS": "1"},
+            )
+
+        self.assertIsNotNone(text)
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    def test_flag_overrides_env_0(self):
+        """--protocols flag enables section even when CEREBRAL_PROTOCOLS=0."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch_with_args(
+                tmpdir, patient_path,
+                extra_argv=["--protocols"],
+                env_dict={"CEREBRAL_PROTOCOLS": "0"},
+            )
+
+        self.assertIsNotNone(text)
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    # ── neither flag nor env var ──────────────────────────────────
+
+    def test_neither_flag_nor_env(self):
+        """No --protocols and no env var → section omitted."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch_with_args(tmpdir, patient_path)
+
+        self.assertIsNotNone(text)
+        self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
+        self.assertIn("PI DAILY NOTES (v5)", text)
+
+    # ── NTDS unaffected by --protocols flag ───────────────────────
+
+    def test_ntds_unaffected_by_protocols_flag(self):
+        """--protocols flag does not interfere with NTDS section."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch_with_args(
+                tmpdir, patient_path, extra_argv=["--protocols"],
+            )
+
+        self.assertIsNotNone(text)
+        # Standard sections still present
+        self.assertIn("PI DAILY NOTES (v5)", text)
+        self.assertIn("PER-DAY", text)
+
+    # ── Standard sections stable ──────────────────────────────────
+
+    def test_standard_sections_with_flag(self):
+        """V5 standard sections present when --protocols is used."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch_with_args(
+                tmpdir, patient_path, extra_argv=["--protocols"],
+            )
+
+        self.assertIn("PI DAILY NOTES (v5)", text)
+        self.assertIn("PER-DAY", text)
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+
+
 if __name__ == "__main__":
     unittest.main()
