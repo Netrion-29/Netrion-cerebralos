@@ -321,5 +321,107 @@ class TestBatchEvalV5CLIFlags(unittest.TestCase):
             self.assertFalse(v5_path.exists(), "V5 file should NOT exist without --v5")
 
 
+# ════════════════════════════════════════════════════════════════════
+# Batch CLI CEREBRAL_PROTOCOLS env-var gating tests
+# ════════════════════════════════════════════════════════════════════
+
+class TestBatchEvalProtocolEnvVarGating(unittest.TestCase):
+    """Tests that batch CLI gates PROTOCOL SIGNAL SUMMARY on CEREBRAL_PROTOCOLS env var."""
+
+    def _run_batch(self, tmpdir, patient_path, env_dict):
+        """Run batch_eval main() with --v5, return v5 text."""
+        report_dir = Path(tmpdir) / "reports"
+        old_argv = sys.argv
+        try:
+            sys.argv = [
+                "batch_eval",
+                "--patient", str(patient_path),
+                "--v5",
+                "--output-dir", str(report_dir),
+            ]
+            with patch.dict(os.environ, env_dict):
+                from cerebralos.ingestion.batch_eval import main
+                main()
+        finally:
+            sys.argv = old_argv
+        v5_path = report_dir / "Test_Patient_TRAUMA_DAILY_NOTES_v5.txt"
+        return v5_path.read_text(encoding="utf-8") if v5_path.exists() else None
+
+    # ── CEREBRAL_PROTOCOLS=1 ──────────────────────────────────────
+
+    def test_batch_protocol_section_present_when_env_1(self):
+        """CEREBRAL_PROTOCOLS=1 + --v5 → PROTOCOL SIGNAL SUMMARY present."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch(tmpdir, patient_path, {"CEREBRAL_PROTOCOLS": "1"})
+
+        self.assertIsNotNone(text)
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+        self.assertIn("Protocols evaluated:", text)
+
+    # ── CEREBRAL_PROTOCOLS=0 ──────────────────────────────────────
+
+    def test_batch_protocol_section_absent_when_env_0(self):
+        """CEREBRAL_PROTOCOLS=0 + --v5 → PROTOCOL SIGNAL SUMMARY omitted."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch(tmpdir, patient_path, {"CEREBRAL_PROTOCOLS": "0"})
+
+        self.assertIsNotNone(text)
+        self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
+        self.assertIn("PI DAILY NOTES (v5)", text)
+
+    # ── CEREBRAL_PROTOCOLS unset ──────────────────────────────────
+
+    def test_batch_protocol_section_absent_when_env_unset(self):
+        """CEREBRAL_PROTOCOLS unset + --v5 → PROTOCOL SIGNAL SUMMARY omitted."""
+        env = os.environ.copy()
+        env.pop("CEREBRAL_PROTOCOLS", None)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            report_dir = Path(tmpdir) / "reports"
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    "batch_eval",
+                    "--patient", str(patient_path),
+                    "--v5",
+                    "--output-dir", str(report_dir),
+                ]
+                with patch.dict(os.environ, env, clear=True):
+                    from cerebralos.ingestion.batch_eval import main
+                    main()
+            finally:
+                sys.argv = old_argv
+            v5_path = report_dir / "Test_Patient_TRAUMA_DAILY_NOTES_v5.txt"
+            text = v5_path.read_text(encoding="utf-8")
+
+        self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    # ── NTDS unaffected ───────────────────────────────────────────
+
+    def test_batch_ntds_unaffected_by_protocol_env_off(self):
+        """CEREBRAL_PROTOCOLS=0 does not suppress NTDS section in batch v5."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch(tmpdir, patient_path, {"CEREBRAL_PROTOCOLS": "0"})
+
+        self.assertIsNotNone(text)
+        # NTDS section depends on real evaluation — just verify protocol is NOT present
+        self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
+        self.assertIn("PI DAILY NOTES (v5)", text)
+
+    # ── Standard sections stable ──────────────────────────────────
+
+    def test_batch_standard_sections_stable(self):
+        """V5 standard sections present regardless of protocol env var."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = self._run_batch(tmpdir, patient_path, {"CEREBRAL_PROTOCOLS": "0"})
+
+        self.assertIn("PI DAILY NOTES (v5)", text)
+        self.assertIn("PER-DAY", text)
+
+
 if __name__ == "__main__":
     unittest.main()

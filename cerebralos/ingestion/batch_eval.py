@@ -12,6 +12,7 @@ Usage:
 from __future__ import annotations
 
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -841,11 +842,17 @@ def main():
         if args.v5:
             v5_path = report_dir / f"{pf.stem}_TRAUMA_DAILY_NOTES_v5.txt"
             try:
+                # Gate protocol section on CEREBRAL_PROTOCOLS=1 (parity with run_patient.sh)
+                _proto_results = (
+                    evaluation.get("results", [])
+                    if os.environ.get("CEREBRAL_PROTOCOLS") == "1"
+                    else None
+                )
                 _generate_v5_report(
                     pf,
                     evaluation.get("ntds_results", []),
                     v5_path,
-                    protocol_results=evaluation.get("results", []),
+                    protocol_results=_proto_results,
                 )
                 print(f"  → V5:   {v5_path}")
             except Exception as exc:
