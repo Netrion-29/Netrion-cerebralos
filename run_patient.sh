@@ -61,16 +61,45 @@ if [[ "${CEREBRAL_NTDS:-0}" == "1" ]]; then
   NTDS_SUMMARY="outputs/ntds/$SLUG/ntds_summary_2026_v1.json"
 fi
 
+# Protocol Evaluation (opt-in via CEREBRAL_PROTOCOLS=1)
+# Runs BEFORE v5 rendering so results can feed into the report.
+# Fail-closed: no || true — protocol evaluation failures propagate to caller.
+PROTOCOL_RESULTS=""
+if [[ "${CEREBRAL_PROTOCOLS:-0}" == "1" ]]; then
+  echo ""
+  echo "---- protocol evaluation ----"
+  mkdir -p "outputs/protocols/$SLUG"
+  python3 -c "
+import json, sys
+from pathlib import Path
+from cerebralos.ingestion.batch_eval import _load_resources, evaluate_patient
+pat_file = Path(sys.argv[1])
+out_path = Path(sys.argv[2])
+resources = _load_resources()
+evaluation = evaluate_patient(pat_file, resources)
+out_path.parent.mkdir(parents=True, exist_ok=True)
+out_path.write_text(json.dumps(evaluation['results'], indent=2, default=str))
+print(f'OK  Wrote {len(evaluation[\"results\"])} protocol results: {out_path}')
+" "data_raw/$PAT.txt" "outputs/protocols/$SLUG/protocol_results_v1.json"
+  PROTOCOL_RESULTS="outputs/protocols/$SLUG/protocol_results_v1.json"
+fi
+
 # Render v5 (feature-layer clinical narrative — additive, does not replace v3/v4)
 # When CEREBRAL_NTDS=1, pass NTDS summary so v5 renders the NTDS SIGNAL SUMMARY section.
+# When CEREBRAL_PROTOCOLS=1, pass protocol results for PROTOCOL SIGNAL SUMMARY section.
 V5_NTDS_FLAG=""
 if [[ -n "$NTDS_SUMMARY" && -f "$NTDS_SUMMARY" ]]; then
   V5_NTDS_FLAG="--ntds $NTDS_SUMMARY"
+fi
+V5_PROTOCOLS_FLAG=""
+if [[ -n "$PROTOCOL_RESULTS" && -f "$PROTOCOL_RESULTS" ]]; then
+  V5_PROTOCOLS_FLAG="--protocols $PROTOCOL_RESULTS"
 fi
 python3 cerebralos/reporting/render_trauma_daily_notes_v5.py \
   --features "outputs/features/$SLUG/patient_features_v1.json" \
   --days "outputs/timeline/$SLUG/patient_days_v1.json" \
   $V5_NTDS_FLAG \
+  $V5_PROTOCOLS_FLAG \
   --out "outputs/reporting/$SLUG/TRAUMA_DAILY_NOTES_v5.txt"
 
 echo "---- sanity checks ----"
