@@ -144,7 +144,12 @@ Verify the push succeeded and note the branch name for tomorrow.
 
 ## Planning docs
 
-- [Trauma Build-Forward Plan v1](roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md)
+- **[Whole-Project State and Roadmap v1](roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md)** ← primary context-recovery doc
+- [Trauma Build-Forward Plan v1](roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md) (historical)
+
+> **Dev-loop default:** use the 12-patient sentinel cohort for fast validation.
+> Full 33-patient cohort runs only at the pre-merge gate (`./scripts/gate_pr.sh`).
+> See the Whole-Project State doc §4 for the sentinel patient list.
 
 ---
 
@@ -231,9 +236,10 @@ You decide scope/triage (current PR vs doc note vs future fix track).
 Claude executes code changes.
 Give detailed step-by-step terminal + GitHub UI instructions.
 
-At chat start, first determine current roadmap status from
-docs/roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md, current branch,
-merged PR state, and repo diffs before recommending next work.
+At chat start, first read
+docs/roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md,
+then determine current branch, merged PR state, and repo diffs
+before recommending next work.
 
 If side-track findings appear (NTDS/protocol/archive audits),
 triage them: current PR vs doc-only note vs future dedicated
