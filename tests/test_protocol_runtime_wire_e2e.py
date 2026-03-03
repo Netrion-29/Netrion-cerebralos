@@ -229,8 +229,14 @@ class TestProtocolRuntimeWireE2E(unittest.TestCase):
 def _run_shell_pipeline(
     cerebral_protocols: str | None = None,
     cerebral_ntds: str | None = None,
+    *,
+    protocols_flag: bool = False,
 ) -> subprocess.CompletedProcess:
-    """Run run_patient.sh for Anna_Dennis with specified env vars."""
+    """Run run_patient.sh for Anna_Dennis with specified env vars.
+
+    When *protocols_flag* is True, ``--protocols`` is appended to the
+    command line (just like a user would type it).
+    """
     env = os.environ.copy()
     # Explicitly clear both flags first so tests are isolated
     env.pop("CEREBRAL_PROTOCOLS", None)
@@ -240,8 +246,11 @@ def _run_shell_pipeline(
     if cerebral_ntds is not None:
         env["CEREBRAL_NTDS"] = cerebral_ntds
     env["PYTHONPATH"] = str(REPO_ROOT)
+    cmd = ["bash", str(RUN_PATIENT), "Anna_Dennis"]
+    if protocols_flag:
+        cmd.append("--protocols")
     return subprocess.run(
-        ["bash", str(RUN_PATIENT), "Anna_Dennis"],
+        cmd,
         cwd=str(REPO_ROOT),
         env=env,
         capture_output=True,
@@ -362,6 +371,98 @@ class TestProtocolShellPipelineE2E(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         text = _read_v5()
         self.assertIn("NTDS SIGNAL SUMMARY", text)
+        self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
+
+
+# ════════════════════════════════════════════════════════════════════
+# Shell pipeline tests (run_patient.sh with --protocols CLI flag)
+# ════════════════════════════════════════════════════════════════════
+
+
+@unittest.skipUnless(_HAS_PATIENT_DATA, "requires data_raw/Anna_Dennis.txt")
+class TestProtocolShellPipelineCLIFlagE2E(unittest.TestCase):
+    """End-to-end tests for --protocols CLI flag in run_patient.sh."""
+
+    # ── Flag-only (no env var) ────────────────────────────────────
+
+    def test_flag_produces_signal_summary(self):
+        """--protocols flag (no env var) → v5 must contain PROTOCOL SIGNAL SUMMARY."""
+        result = _run_shell_pipeline(protocols_flag=True)
+        self.assertEqual(result.returncode, 0, f"Pipeline failed:\n{result.stderr[-500:]}")
+        text = _read_v5()
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    def test_flag_has_evaluated_count(self):
+        """--protocols flag → section must show 'Protocols evaluated:' count line."""
+        _run_shell_pipeline(protocols_flag=True)
+        text = _read_v5()
+        self.assertIn("Protocols evaluated:", text)
+
+    def test_flag_has_triggered_count(self):
+        """--protocols flag → section must show 'Triggered:' count line."""
+        _run_shell_pipeline(protocols_flag=True)
+        text = _read_v5()
+        self.assertIn("Triggered:", text)
+
+    def test_flag_section_before_perday(self):
+        """--protocols flag → PROTOCOL SIGNAL SUMMARY before PER-DAY CLINICAL STATUS."""
+        _run_shell_pipeline(protocols_flag=True)
+        text = _read_v5()
+        proto_pos = text.index("PROTOCOL SIGNAL SUMMARY")
+        perday_pos = text.index("PER-DAY CLINICAL STATUS")
+        self.assertLess(proto_pos, perday_pos)
+
+    def test_flag_exit_zero(self):
+        """Pipeline with --protocols flag must exit 0."""
+        result = _run_shell_pipeline(protocols_flag=True)
+        self.assertEqual(result.returncode, 0)
+
+    # ── Flag + env var interactions ───────────────────────────────
+
+    def test_flag_overrides_env_off(self):
+        """--protocols flag + CEREBRAL_PROTOCOLS=0 → flag wins, section present."""
+        result = _run_shell_pipeline(cerebral_protocols="0", protocols_flag=True)
+        self.assertEqual(result.returncode, 0)
+        text = _read_v5()
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    def test_flag_and_env_both_on(self):
+        """--protocols flag + CEREBRAL_PROTOCOLS=1 → section present (both enabled)."""
+        result = _run_shell_pipeline(cerebral_protocols="1", protocols_flag=True)
+        self.assertEqual(result.returncode, 0)
+        text = _read_v5()
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    # ── NTDS coexistence with flag ────────────────────────────────
+
+    def test_flag_with_ntds(self):
+        """--protocols flag + CEREBRAL_NTDS=1 → both NTDS and protocol sections."""
+        result = _run_shell_pipeline(cerebral_ntds="1", protocols_flag=True)
+        self.assertEqual(result.returncode, 0, f"Pipeline failed:\n{result.stderr[-500:]}")
+        text = _read_v5()
+        self.assertIn("NTDS SIGNAL SUMMARY", text)
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+        ntds_pos = text.index("NTDS SIGNAL SUMMARY")
+        proto_pos = text.index("PROTOCOL SIGNAL SUMMARY")
+        self.assertLess(ntds_pos, proto_pos)
+
+    # ── Determinism ───────────────────────────────────────────────
+
+    def test_flag_deterministic(self):
+        """Two consecutive --protocols runs produce identical v5 output."""
+        _run_shell_pipeline(protocols_flag=True)
+        text1 = _read_v5()
+        _run_shell_pipeline(protocols_flag=True)
+        text2 = _read_v5()
+        self.assertEqual(text1, text2)
+
+    # ── No flag, no env → absent ──────────────────────────────────
+
+    def test_no_flag_no_env_omits_section(self):
+        """No --protocols flag, no env var → v5 must NOT contain PROTOCOL SIGNAL SUMMARY."""
+        result = _run_shell_pipeline()
+        self.assertEqual(result.returncode, 0)
+        text = _read_v5()
         self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
 
 
