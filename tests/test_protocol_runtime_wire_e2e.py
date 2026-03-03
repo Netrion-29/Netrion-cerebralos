@@ -8,22 +8,28 @@ Verifies:
   - Section ordering: PROTOCOL SIGNAL SUMMARY appears after NTDS (when present)
     and before PER-DAY CLINICAL STATUS
   - Deterministic output across two runs
+  - CEREBRAL_PROTOCOLS=1 via run_patient.sh includes PROTOCOL SIGNAL SUMMARY
+  - CEREBRAL_PROTOCOLS=0 or unset via run_patient.sh omits the section
 
 These tests run the real evaluation + rendering pipeline against a real
 patient file (Anna_Dennis).  Each test takes ~2-5 seconds.
 
-Runtime path exercised:
-  evaluate_patient() → evaluation["results"] → _generate_v5_report(protocol_results=...)
-  This matches the wiring in __main__.cmd_run() and batch_eval --v5.
+Runtime paths exercised:
+  1. Python API: evaluate_patient() → _generate_v5_report(protocol_results=...)
+  2. Shell pipeline: CEREBRAL_PROTOCOLS=1 ./run_patient.sh Anna_Dennis
 """
 
 from __future__ import annotations
 
+import os
+import subprocess
 import unittest
 from pathlib import Path
 
 # Repo root — two levels up from tests/
 REPO_ROOT = Path(__file__).resolve().parents[1]
+RUN_PATIENT = REPO_ROOT / "run_patient.sh"
+V5_OUTPUT = REPO_ROOT / "outputs" / "reporting" / "Anna_Dennis" / "TRAUMA_DAILY_NOTES_v5.txt"
 PATIENT_FILE = REPO_ROOT / "data_raw" / "Anna_Dennis.txt"
 
 # Skip the entire module if the patient data file is missing
@@ -214,6 +220,149 @@ class TestProtocolRuntimeWireE2E(unittest.TestCase):
             _cached_v5_without_protocols.index("PER-DAY CLINICAL STATUS"):
         ]
         self.assertEqual(with_perday, without_perday)
+
+
+# ════════════════════════════════════════════════════════════════════
+# Shell pipeline tests (run_patient.sh with CEREBRAL_PROTOCOLS env var)
+# ════════════════════════════════════════════════════════════════════
+
+def _run_shell_pipeline(
+    cerebral_protocols: str | None = None,
+    cerebral_ntds: str | None = None,
+) -> subprocess.CompletedProcess:
+    """Run run_patient.sh for Anna_Dennis with specified env vars."""
+    env = os.environ.copy()
+    # Explicitly clear both flags first so tests are isolated
+    env.pop("CEREBRAL_PROTOCOLS", None)
+    env.pop("CEREBRAL_NTDS", None)
+    if cerebral_protocols is not None:
+        env["CEREBRAL_PROTOCOLS"] = cerebral_protocols
+    if cerebral_ntds is not None:
+        env["CEREBRAL_NTDS"] = cerebral_ntds
+    env["PYTHONPATH"] = str(REPO_ROOT)
+    return subprocess.run(
+        ["bash", str(RUN_PATIENT), "Anna_Dennis"],
+        cwd=str(REPO_ROOT),
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+
+
+def _read_v5() -> str:
+    """Read the v5 output file."""
+    return V5_OUTPUT.read_text(encoding="utf-8")
+
+
+@unittest.skipUnless(_HAS_PATIENT_DATA, "requires data_raw/Anna_Dennis.txt")
+class TestProtocolShellPipelineE2E(unittest.TestCase):
+    """End-to-end tests for CEREBRAL_PROTOCOLS wiring in run_patient.sh."""
+
+    # ── PROTOCOLS=1 tests ─────────────────────────────────────────
+
+    def test_protocols_on_produces_signal_summary(self):
+        """CEREBRAL_PROTOCOLS=1 → v5 output must contain PROTOCOL SIGNAL SUMMARY."""
+        result = _run_shell_pipeline(cerebral_protocols="1")
+        self.assertEqual(result.returncode, 0, f"Pipeline failed:\n{result.stderr[-500:]}")
+        text = _read_v5()
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    def test_protocols_on_has_evaluated_count(self):
+        """Protocol section must show 'Protocols evaluated:' count line."""
+        _run_shell_pipeline(cerebral_protocols="1")
+        text = _read_v5()
+        self.assertIn("Protocols evaluated:", text)
+
+    def test_protocols_on_has_triggered_count(self):
+        """Protocol section must show 'Triggered:' count line."""
+        _run_shell_pipeline(cerebral_protocols="1")
+        text = _read_v5()
+        self.assertIn("Triggered:", text)
+
+    def test_protocols_on_has_actionable_line(self):
+        """Protocol section must include 'Actionable Protocols:' line."""
+        _run_shell_pipeline(cerebral_protocols="1")
+        text = _read_v5()
+        self.assertIn("Actionable Protocols:", text)
+
+    def test_protocols_on_section_before_perday(self):
+        """PROTOCOL SIGNAL SUMMARY must appear before PER-DAY CLINICAL STATUS."""
+        _run_shell_pipeline(cerebral_protocols="1")
+        text = _read_v5()
+        proto_pos = text.index("PROTOCOL SIGNAL SUMMARY")
+        perday_pos = text.index("PER-DAY CLINICAL STATUS")
+        self.assertLess(proto_pos, perday_pos)
+
+    # ── PROTOCOLS=0 tests ─────────────────────────────────────────
+
+    def test_protocols_off_omits_signal_summary(self):
+        """CEREBRAL_PROTOCOLS=0 → v5 must NOT contain PROTOCOL SIGNAL SUMMARY."""
+        result = _run_shell_pipeline(cerebral_protocols="0")
+        self.assertEqual(result.returncode, 0, f"Pipeline failed:\n{result.stderr[-500:]}")
+        text = _read_v5()
+        self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    def test_protocols_off_still_has_standard_sections(self):
+        """Without protocols, v5 still renders all standard sections."""
+        _run_shell_pipeline(cerebral_protocols="0")
+        text = _read_v5()
+        self.assertIn("PATIENT SUMMARY", text)
+        self.assertIn("PER-DAY CLINICAL STATUS", text)
+        self.assertIn("END OF PI DAILY NOTES (v5)", text)
+
+    # ── Unset env var tests ───────────────────────────────────────
+
+    def test_protocols_unset_omits_signal_summary(self):
+        """CEREBRAL_PROTOCOLS not set → v5 must NOT contain PROTOCOL SIGNAL SUMMARY."""
+        result = _run_shell_pipeline()  # no cerebral_protocols arg
+        self.assertEqual(result.returncode, 0)
+        text = _read_v5()
+        self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    # ── Determinism ───────────────────────────────────────────────
+
+    def test_protocols_on_deterministic(self):
+        """Two consecutive PROTOCOLS=1 runs produce identical v5 output."""
+        _run_shell_pipeline(cerebral_protocols="1")
+        text1 = _read_v5()
+        _run_shell_pipeline(cerebral_protocols="1")
+        text2 = _read_v5()
+        self.assertEqual(text1, text2)
+
+    # ── Pipeline exit code ────────────────────────────────────────
+
+    def test_protocols_on_exit_zero(self):
+        """Pipeline with CEREBRAL_PROTOCOLS=1 must exit 0."""
+        result = _run_shell_pipeline(cerebral_protocols="1")
+        self.assertEqual(result.returncode, 0)
+
+    def test_protocols_off_exit_zero(self):
+        """Pipeline with CEREBRAL_PROTOCOLS=0 must exit 0."""
+        result = _run_shell_pipeline(cerebral_protocols="0")
+        self.assertEqual(result.returncode, 0)
+
+    # ── NTDS coexistence ──────────────────────────────────────────
+
+    def test_both_ntds_and_protocols_on(self):
+        """CEREBRAL_NTDS=1 + CEREBRAL_PROTOCOLS=1 → both sections in v5."""
+        result = _run_shell_pipeline(cerebral_protocols="1", cerebral_ntds="1")
+        self.assertEqual(result.returncode, 0, f"Pipeline failed:\n{result.stderr[-500:]}")
+        text = _read_v5()
+        self.assertIn("NTDS SIGNAL SUMMARY", text)
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+        # Ordering: NTDS before protocol
+        ntds_pos = text.index("NTDS SIGNAL SUMMARY")
+        proto_pos = text.index("PROTOCOL SIGNAL SUMMARY")
+        self.assertLess(ntds_pos, proto_pos)
+
+    def test_ntds_on_protocols_off(self):
+        """CEREBRAL_NTDS=1 + CEREBRAL_PROTOCOLS=0 → only NTDS in v5."""
+        result = _run_shell_pipeline(cerebral_protocols="0", cerebral_ntds="1")
+        self.assertEqual(result.returncode, 0)
+        text = _read_v5()
+        self.assertIn("NTDS SIGNAL SUMMARY", text)
+        self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
 
 
 if __name__ == "__main__":
