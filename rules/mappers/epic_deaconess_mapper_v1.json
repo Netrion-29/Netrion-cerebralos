@@ -144,11 +144,10 @@
 			"\\bangio\\s+suite\\b"
 		],
 		"osh_or": [
-			"\\boutside\\s+hospital\\b",
-			"\\bosh\\b",
-			"\\btransferred\\s+from\\b",
 			"\\bperformed\\s+at\\s+outside\\b",
-			"\\bprior\\s+facility\\b"
+			"\\b(surgery|procedure|operation|or)\\s+(at|done at|performed at)\\s+(outside|osh|prior)\\s+(hospital|facility)\\b",
+			"\\b(outside|osh|prior)\\s+(hospital|facility)\\s+(surgery|procedure|operation|or)\\b",
+			"\\bprior\\s+facility\\s+(surgery|procedure|operation|or)\\b"
 		]
 		,
 		"or_context": [
