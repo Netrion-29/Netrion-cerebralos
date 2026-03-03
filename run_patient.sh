@@ -3,9 +3,16 @@ set -euo pipefail
 
 PAT="${1:-}"
 if [[ -z "$PAT" ]]; then
-  echo "Usage: ./run_patient.sh Anna_Dennis"
+  echo "Usage: ./run_patient.sh Anna_Dennis [--protocols]"
   exit 1
 fi
+
+# Parse optional flags from remaining arguments
+for arg in "${@:2}"; do
+  case "$arg" in
+    --protocols) export CEREBRAL_PROTOCOLS="1" ;;
+  esac
+done
 
 # Slug: filesystem-safe name (spaces → underscores), matches parser's _slugify.
 SLUG="${PAT// /_}"
