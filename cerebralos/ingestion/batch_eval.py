@@ -364,12 +364,13 @@ def _generate_v5_report(
     patient_path: Path,
     ntds_results: Optional[List[Dict[str, Any]]],
     output_path: Optional[Path] = None,
+    protocol_results: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     """
     Generate TRAUMA_DAILY_NOTES_v5 report for a patient.
 
     Runs the evidence → timeline → features pipeline, then calls
-    render_v5() with optional NTDS signal summary results.
+    render_v5() with optional NTDS signal summary and protocol results.
 
     Args:
         patient_path: Path to patient .txt file.
@@ -377,6 +378,9 @@ def _generate_v5_report(
             Non-empty list → NTDS SIGNAL SUMMARY section rendered.
             Empty list or None → section omitted.
         output_path: Optional path to write v5 text file.
+        protocol_results: Protocol evaluation results list (may be empty).
+            Non-empty list → PROTOCOL SIGNAL SUMMARY section rendered.
+            Empty list or None → section omitted.
 
     Returns:
         The rendered v5 text.
@@ -393,8 +397,10 @@ def _generate_v5_report(
 
     # Only pass ntds_results when non-empty; None → section omitted
     effective_ntds = ntds_results if ntds_results else None
+    effective_proto = protocol_results if protocol_results else None
 
-    text = render_v5(features_data, days_data, ntds_results=effective_ntds)
+    text = render_v5(features_data, days_data, ntds_results=effective_ntds,
+                     protocol_results=effective_proto)
 
     if output_path:
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -831,7 +837,7 @@ def main():
             last_html_path = html_path
             print(f"  → HTML: {html_path}")
 
-        # Generate v5 daily notes with NTDS signal summary
+        # Generate v5 daily notes with NTDS signal summary and protocol results
         if args.v5:
             v5_path = report_dir / f"{pf.stem}_TRAUMA_DAILY_NOTES_v5.txt"
             try:
@@ -839,6 +845,7 @@ def main():
                     pf,
                     evaluation.get("ntds_results", []),
                     v5_path,
+                    protocol_results=evaluation.get("results", []),
                 )
                 print(f"  → V5:   {v5_path}")
             except Exception as exc:

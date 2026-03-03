@@ -2132,5 +2132,288 @@ class TestNTDSCLIWiring(unittest.TestCase):
             self.assertNotIn("NTDS SIGNAL SUMMARY", text)
 
 
+# ════════════════════════════════════════════════════════════════════
+# Protocol Signal Summary Tests
+# ════════════════════════════════════════════════════════════════════
+
+def _protocol_result(protocol_id: str, protocol_name: str, outcome: str, **kw):
+    """Helper to build a single protocol result dict."""
+    base = {
+        "protocol_id": protocol_id,
+        "protocol_name": protocol_name,
+        "outcome": outcome,
+        "step_trace": [],
+        "warnings": [],
+    }
+    base.update(kw)
+    return base
+
+
+class TestProtocolSignalSummary(unittest.TestCase):
+    """Tests for the PROTOCOL SIGNAL SUMMARY section in v5 renderer."""
+
+    def test_section_omitted_when_protocol_results_not_provided(self):
+        """When protocol_results is None (default), section must not appear."""
+        data = _minimal_features()
+        result = render_v5(data)
+        self.assertNotIn("PROTOCOL SIGNAL SUMMARY", result)
+
+    def test_section_omitted_when_protocol_results_none_explicit(self):
+        """Explicit None must also omit the section."""
+        data = _minimal_features()
+        result = render_v5(data, protocol_results=None)
+        self.assertNotIn("PROTOCOL SIGNAL SUMMARY", result)
+
+    def test_section_dna_when_empty_list(self):
+        """Empty list → section renders with DATA NOT AVAILABLE."""
+        data = _minimal_features()
+        result = render_v5(data, protocol_results=[])
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", result)
+        self.assertIn("DATA NOT AVAILABLE", result)
+
+    def test_counts_rendered(self):
+        """Outcome counts are shown correctly."""
+        results = [
+            _protocol_result("P001", "DVT Prophylaxis", "COMPLIANT"),
+            _protocol_result("P002", "TBI Protocol", "NON_COMPLIANT"),
+            _protocol_result("P003", "Spine Clearance", "INDETERMINATE"),
+            _protocol_result("P004", "SBIRT", "NOT_TRIGGERED"),
+            _protocol_result("P005", "Rib Fracture", "COMPLIANT"),
+        ]
+        data = _minimal_features()
+        result = render_v5(data, protocol_results=results)
+        self.assertIn("Protocols evaluated:    5", result)
+        self.assertIn("Triggered:              4", result)
+        self.assertIn("COMPLIANT:", result)
+        self.assertIn("NON-COMPLIANT:", result)
+
+    def test_actionable_protocols_listed(self):
+        """NON_COMPLIANT and INDETERMINATE protocols are listed."""
+        results = [
+            _protocol_result("P001", "DVT Prophylaxis", "COMPLIANT"),
+            _protocol_result("P002", "TBI Protocol", "NON_COMPLIANT"),
+            _protocol_result("P003", "Spine Clearance", "INDETERMINATE"),
+        ]
+        data = _minimal_features()
+        result = render_v5(data, protocol_results=results)
+        self.assertIn("[NON-COMPLIANT] P002: TBI Protocol", result)
+        self.assertIn("[INDETERMINATE] P003: Spine Clearance", result)
+        # COMPLIANT should NOT appear in actionable listing
+        self.assertNotIn("[COMPLIANT] P001", result)
+
+    def test_all_compliant_shows_none_message(self):
+        """When all triggered protocols are compliant, actionable shows '(none)'."""
+        results = [
+            _protocol_result("P001", "DVT Prophylaxis", "COMPLIANT"),
+            _protocol_result("P002", "TBI Protocol", "COMPLIANT"),
+        ]
+        data = _minimal_features()
+        result = render_v5(data, protocol_results=results)
+        self.assertIn("(none)", result)
+        self.assertIn("Actionable Protocols:", result)
+
+    def test_non_compliant_sorted_before_indeterminate(self):
+        """NON_COMPLIANT protocols render before INDETERMINATE in actionable."""
+        results = [
+            _protocol_result("P003", "Spine Clearance", "INDETERMINATE"),
+            _protocol_result("P002", "TBI Protocol", "NON_COMPLIANT"),
+        ]
+        data = _minimal_features()
+        result = render_v5(data, protocol_results=results)
+        nc_pos = result.index("[NON-COMPLIANT] P002: TBI Protocol")
+        ind_pos = result.index("[INDETERMINATE] P003: Spine Clearance")
+        self.assertLess(nc_pos, ind_pos)
+
+    def test_error_protocols_rendered(self):
+        """ERROR outcome protocols appear in the actionable section."""
+        results = [
+            _protocol_result("P001", "DVT Prophylaxis", "COMPLIANT"),
+            _protocol_result("P099", "Broken Protocol", "ERROR", error="eval failed"),
+        ]
+        data = _minimal_features()
+        result = render_v5(data, protocol_results=results)
+        self.assertIn("[ERROR] P099: Broken Protocol", result)
+
+    def test_section_appears_before_per_day(self):
+        """Protocol section must appear before PER-DAY CLINICAL STATUS."""
+        results = [_protocol_result("P001", "DVT Prophylaxis", "COMPLIANT")]
+        data = _minimal_features()
+        result = render_v5(data, protocol_results=results)
+        proto_pos = result.index("PROTOCOL SIGNAL SUMMARY")
+        perday_pos = result.index("PER-DAY CLINICAL STATUS")
+        self.assertLess(proto_pos, perday_pos)
+
+    def test_section_appears_after_ntds_when_both_present(self):
+        """When both NTDS and protocol results exist, protocol comes after NTDS."""
+        ntds = [_ntds_result(1, "AKI", "NO")]
+        protos = [_protocol_result("P001", "DVT Prophylaxis", "COMPLIANT")]
+        data = _minimal_features()
+        result = render_v5(data, ntds_results=ntds, protocol_results=protos)
+        ntds_pos = result.index("NTDS SIGNAL SUMMARY")
+        proto_pos = result.index("PROTOCOL SIGNAL SUMMARY")
+        self.assertLess(ntds_pos, proto_pos)
+
+    def test_determinism(self):
+        """Two renders with same protocol data must produce identical output."""
+        results = [
+            _protocol_result("P001", "DVT Prophylaxis", "COMPLIANT"),
+            _protocol_result("P002", "TBI Protocol", "NON_COMPLIANT"),
+            _protocol_result("P003", "Spine Clearance", "INDETERMINATE"),
+        ]
+        data = _minimal_features()
+        r1 = render_v5(data, protocol_results=results)
+        r2 = render_v5(data, protocol_results=results)
+        self.assertEqual(r1, r2)
+
+    def test_existing_sections_stable(self):
+        """Adding protocol data must not alter other sections."""
+        data = _minimal_features()
+        baseline = render_v5(data)
+        # Now render with protocol results
+        results = [_protocol_result("P001", "DVT Prophylaxis", "COMPLIANT")]
+        with_proto = render_v5(data, protocol_results=results)
+        # Patient Summary, PER-DAY should still be present
+        self.assertIn("PATIENT SUMMARY", with_proto)
+        self.assertIn("PER-DAY CLINICAL STATUS", with_proto)
+        self.assertIn("END OF PI DAILY NOTES (v5)", with_proto)
+        # Everything after PER-DAY CLINICAL STATUS should be identical
+        baseline_perday = baseline[baseline.index("PER-DAY CLINICAL STATUS"):]
+        with_proto_perday = with_proto[with_proto.index("PER-DAY CLINICAL STATUS"):]
+        self.assertEqual(baseline_perday, with_proto_perday)
+
+    def test_not_triggered_excluded_from_actionable(self):
+        """NOT_TRIGGERED protocols do not appear in actionable listing."""
+        results = [
+            _protocol_result("P001", "DVT Prophylaxis", "NOT_TRIGGERED"),
+            _protocol_result("P002", "TBI Protocol", "NON_COMPLIANT"),
+        ]
+        data = _minimal_features()
+        result = render_v5(data, protocol_results=results)
+        self.assertNotIn("P001", result.split("Actionable Protocols:")[1].split("\n\n")[0])
+        self.assertIn("[NON-COMPLIANT] P002: TBI Protocol", result)
+
+
+# ════════════════════════════════════════════════════════════════════
+# Protocol CLI Wiring Tests (--protocols flag integration)
+# ════════════════════════════════════════════════════════════════════
+
+
+class TestProtocolCLIWiring(unittest.TestCase):
+    """Tests that CLI --protocols flag correctly wires protocol data into v5."""
+
+    def _write_json(self, tmpdir, filename, data):
+        path = os.path.join(tmpdir, filename)
+        with open(path, "w") as f:
+            json.dump(data, f)
+        return path
+
+    def test_cli_no_protocols_flag_omits_section(self):
+        """Without --protocols, output must not contain PROTOCOL SIGNAL SUMMARY."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            feat_path = self._write_json(tmpdir, "features.json", _minimal_features())
+            out_path = os.path.join(tmpdir, "v5.txt")
+            import sys
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    "render_trauma_daily_notes_v5.py",
+                    "--features", feat_path,
+                    "--out", out_path,
+                ]
+                from cerebralos.reporting.render_trauma_daily_notes_v5 import main
+                rc = main()
+            finally:
+                sys.argv = old_argv
+            self.assertEqual(rc, 0)
+            with open(out_path) as f:
+                text = f.read()
+            self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    def test_cli_protocols_bare_list(self):
+        """--protocols with bare JSON list renders protocol section."""
+        proto_data = [
+            _protocol_result("P001", "DVT Prophylaxis", "COMPLIANT"),
+            _protocol_result("P002", "TBI Protocol", "NON_COMPLIANT"),
+        ]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            feat_path = self._write_json(tmpdir, "features.json", _minimal_features())
+            proto_path = self._write_json(tmpdir, "protos.json", proto_data)
+            out_path = os.path.join(tmpdir, "v5.txt")
+            import sys
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    "render_trauma_daily_notes_v5.py",
+                    "--features", feat_path,
+                    "--protocols", proto_path,
+                    "--out", out_path,
+                ]
+                from cerebralos.reporting.render_trauma_daily_notes_v5 import main
+                rc = main()
+            finally:
+                sys.argv = old_argv
+            self.assertEqual(rc, 0)
+            with open(out_path) as f:
+                text = f.read()
+            self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+            self.assertIn("[NON-COMPLIANT] P002: TBI Protocol", text)
+            self.assertIn("Protocols evaluated:    2", text)
+
+    def test_cli_protocols_eval_dict(self):
+        """--protocols with evaluation dict wrapper extracts results key."""
+        proto_data = {
+            "patient_id": "Test",
+            "results": [
+                _protocol_result("P001", "DVT Prophylaxis", "COMPLIANT"),
+                _protocol_result("P003", "Spine Clearance", "INDETERMINATE"),
+            ],
+        }
+        with tempfile.TemporaryDirectory() as tmpdir:
+            feat_path = self._write_json(tmpdir, "features.json", _minimal_features())
+            proto_path = self._write_json(tmpdir, "eval.json", proto_data)
+            out_path = os.path.join(tmpdir, "v5.txt")
+            import sys
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    "render_trauma_daily_notes_v5.py",
+                    "--features", feat_path,
+                    "--protocols", proto_path,
+                    "--out", out_path,
+                ]
+                from cerebralos.reporting.render_trauma_daily_notes_v5 import main
+                rc = main()
+            finally:
+                sys.argv = old_argv
+            self.assertEqual(rc, 0)
+            with open(out_path) as f:
+                text = f.read()
+            self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+            self.assertIn("[INDETERMINATE] P003: Spine Clearance", text)
+
+    def test_cli_protocols_missing_file_renders_without_section(self):
+        """--protocols pointing to non-existent file → section omitted."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            feat_path = self._write_json(tmpdir, "features.json", _minimal_features())
+            out_path = os.path.join(tmpdir, "v5.txt")
+            import sys
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    "render_trauma_daily_notes_v5.py",
+                    "--features", feat_path,
+                    "--protocols", os.path.join(tmpdir, "no_such_file.json"),
+                    "--out", out_path,
+                ]
+                from cerebralos.reporting.render_trauma_daily_notes_v5 import main
+                rc = main()
+            finally:
+                sys.argv = old_argv
+            self.assertEqual(rc, 0)
+            with open(out_path) as f:
+                text = f.read()
+            self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
+
+
 if __name__ == "__main__":
     unittest.main()

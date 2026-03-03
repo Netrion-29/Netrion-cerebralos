@@ -56,6 +56,19 @@ def _ntds_result(event_id: int, canonical_name: str, outcome: str, **kw):
     return base
 
 
+def _protocol_result(protocol_id: str, protocol_name: str, outcome: str, **kw):
+    """Helper to build a single protocol result dict."""
+    base = {
+        "protocol_id": protocol_id,
+        "protocol_name": protocol_name,
+        "outcome": outcome,
+        "step_trace": [],
+        "warnings": [],
+    }
+    base.update(kw)
+    return base
+
+
 def _write_patient(tmpdir: str, name: str = "Test_Patient") -> Path:
     """Write a minimal patient .txt file and return its Path."""
     p = Path(tmpdir) / f"{name}.txt"
@@ -175,6 +188,62 @@ class TestGenerateV5Report(unittest.TestCase):
             text2 = _generate_v5_report(patient_path, ntds)
 
         self.assertEqual(text1, text2)
+
+
+# ════════════════════════════════════════════════════════════════════
+# _generate_v5_report protocol wiring tests
+# ════════════════════════════════════════════════════════════════════
+
+class TestGenerateV5ReportProtocol(unittest.TestCase):
+    """Tests for _generate_v5_report() protocol_results wiring."""
+
+    def test_protocol_section_present_when_results_provided(self):
+        """Non-empty protocol_results → PROTOCOL SIGNAL SUMMARY section rendered."""
+        from cerebralos.ingestion.batch_eval import _generate_v5_report
+
+        protos = [
+            _protocol_result("P001", "DVT Prophylaxis", "COMPLIANT"),
+            _protocol_result("P002", "TBI Protocol", "NON_COMPLIANT"),
+        ]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = _generate_v5_report(patient_path, [], protocol_results=protos)
+
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
+        self.assertIn("[NON-COMPLIANT] P002: TBI Protocol", text)
+
+    def test_protocol_section_omitted_when_empty(self):
+        """Empty protocol_results → section omitted (baseline stability)."""
+        from cerebralos.ingestion.batch_eval import _generate_v5_report
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = _generate_v5_report(patient_path, [], protocol_results=[])
+
+        self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    def test_protocol_section_omitted_when_none(self):
+        """protocol_results=None → section omitted."""
+        from cerebralos.ingestion.batch_eval import _generate_v5_report
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = _generate_v5_report(patient_path, [], protocol_results=None)
+
+        self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
+
+    def test_both_ntds_and_protocol_rendered(self):
+        """Both NTDS and protocol sections render when both provided."""
+        from cerebralos.ingestion.batch_eval import _generate_v5_report
+
+        ntds = [_ntds_result(1, "AKI", "YES")]
+        protos = [_protocol_result("P001", "DVT Prophylaxis", "NON_COMPLIANT")]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patient_path = _write_patient(tmpdir)
+            text = _generate_v5_report(patient_path, ntds, protocol_results=protos)
+
+        self.assertIn("NTDS SIGNAL SUMMARY", text)
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", text)
 
 
 # ════════════════════════════════════════════════════════════════════

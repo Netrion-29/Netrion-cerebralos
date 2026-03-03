@@ -119,13 +119,14 @@ def cmd_run(args: list) -> int:
     json_path.write_text(json.dumps(evaluation, indent=2, default=str), encoding="utf-8")
     print(f"  JSON:  {json_path}")
 
-    # V5 daily notes with NTDS signal summary
+    # V5 daily notes with NTDS signal summary and protocol results
     try:
         v5_path = _OUTPUT_DIR / f"{patient_path.stem}_TRAUMA_DAILY_NOTES_v5.txt"
         _generate_v5_report(
             patient_path,
             evaluation.get("ntds_results", []),
             v5_path,
+            protocol_results=evaluation.get("results", []),
         )
         print(f"  V5:    {v5_path}")
     except Exception as exc:
