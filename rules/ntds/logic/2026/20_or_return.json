@@ -18,7 +18,8 @@
          "rule_id": "OR_EXCL_PLANNED",
          "reason": "Planned/staged return (excluded).",
          "query_keys": ["or_planned_staged"],
-         "require_context_keys": ["or_procedure_context"]
+         "require_context_keys": ["or_procedure_context"],
+         "proximity_mode": "sentence_window"
       },
       {
          "gate_type": "exclude_if_any",
@@ -35,7 +36,8 @@
          "rule_id": "OR_EXCL_OSH",
          "reason": "Outside facility OR/transfer (excluded).",
             "query_keys": ["osh_or"],
-            "require_context_keys": ["or_procedure_context"]
+            "require_context_keys": ["or_procedure_context"],
+            "proximity_mode": "sentence_window"
       }
    ],
    "gates": [
