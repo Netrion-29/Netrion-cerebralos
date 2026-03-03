@@ -74,7 +74,7 @@ def cmd_run(args: list) -> int:
 
     from cerebralos.ingestion.batch_eval import (
         _load_resources, evaluate_patient, generate_pi_report,
-        _get_evaluable_protocols,
+        _get_evaluable_protocols, _generate_v5_report,
     )
     from cerebralos.reporting.html_report import generate_patient_html
 
@@ -118,6 +118,18 @@ def cmd_run(args: list) -> int:
     json_path.parent.mkdir(parents=True, exist_ok=True)
     json_path.write_text(json.dumps(evaluation, indent=2, default=str), encoding="utf-8")
     print(f"  JSON:  {json_path}")
+
+    # V5 daily notes with NTDS signal summary
+    try:
+        v5_path = _OUTPUT_DIR / f"{patient_path.stem}_TRAUMA_DAILY_NOTES_v5.txt"
+        _generate_v5_report(
+            patient_path,
+            evaluation.get("ntds_results", []),
+            v5_path,
+        )
+        print(f"  V5:    {v5_path}")
+    except Exception as exc:
+        print(f"  V5:    error -- {exc}")
 
     # Excel
     try:
