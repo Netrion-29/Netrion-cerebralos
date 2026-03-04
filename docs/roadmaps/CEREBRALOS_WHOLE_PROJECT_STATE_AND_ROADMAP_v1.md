@@ -2,7 +2,7 @@
 
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
-| Date        | 2026-03-10                                               |
+| Date        | 2026-03-04                                               |
 | Baseline    | `2c1263d` (main, after PR #124)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
@@ -26,15 +26,15 @@
 | #113 | `ba108c8` | feat(ntds): extend proximity_mode to DVT/PE POA exclusions   |
 | #114 | `19b1c4d` | feat(cli): CEREBRAL_NO_OPEN=1 for sandboxed runs             |
 | #115 | `693723a` | feat(audit): canonical cohort count utility                  |
-| #116 | `a16c6b4` | feat(test): pytest-native NTDS fixture runner (43 fixtures)  |
-| #117 | `66a54c8` | fix(ntds): parser + mapper gaps for 18 unmapped events       |
-| #118 | `6dc5a70` | feat(ntds): Cluster A — events 05/08/09/10/13/14/15/16/20   |
-| #119 | `5f2b49c` | fix(ntds): Cluster A followup — false-positive tightening    |
-| #120 | `e6a93f7` | fix(ntds): Cluster A batch 2 — remaining xfail fixes         |
-| #121 | `7a52bb2` | fix(ntds): Cluster B — residual xfail cleanup                |
-| #122 | `c73b5c5` | feat(ntds): Cluster C — events 01/02/18/19/21                |
-| #123 | `d4ade9d` | feat(ntds): Cluster D — events 06/07/11/17                   |
-| #124 | `2c1263d` | feat(ntds): Cluster E — events 03/04/12 (21/21 complete)     |
+| #116 | `4d0be05` | test(ntds): add pytest-native fixture runner and scratch policy baseline |
+| #117 | `bbc16ef` | docs(roadmap): add whole-project state, roadmap baseline, and sentinel cohort policy |
+| #118 | `396e9e0` | feat(ntds): batch1 mapper coverage for cauti/delirium/pressure ulcer |
+| #119 | `021e9e3` | fix(ntds): scope batch1 POA exclusions with event context and sentence-window proximity |
+| #120 | `27c7b7b` | test(ntds): close 08/14 fixture timing gaps in pytest runner |
+| #121 | `6a2a9e7` | feat(ntds): batch2 mapper coverage for mi/stroke/sepsis      |
+| #122 | `2d188dd` | feat(ntds): Batch 3 coverage cluster C (01/02/18/19/21)      |
+| #123 | `0962638` | feat(ntds): add mapper coverage for SSI cluster events 06/07/11/17 |
+| #124 | `2c1263d` | feat(ntds): add mapper coverage for final events 03/04/12    |
 
 ### Open PRs
 
