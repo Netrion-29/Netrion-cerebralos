@@ -113,9 +113,53 @@ def _print_text(report: Dict[str, object]) -> None:
     print(report["policy"])
 
 
+def check_invariant(report: Dict[str, object]) -> tuple[bool, list[str]]:
+    """Return (ok, messages).  ok=True iff cohort is consistent.
+
+    Invariant:
+      - true_patient_dirs_after_dedup_count == canonical_count
+      - extra_slugs is empty
+      - missing_slugs is empty
+    """
+    messages: list[str] = []
+    ok = True
+
+    canonical = report["canonical_count"]
+    adjusted = report["true_patient_dirs_after_dedup_count"]
+    extra = report["extra_slugs"]
+    missing = report["missing_slugs"]
+
+    if adjusted != canonical:
+        messages.append(
+            f"FAIL: adjusted output count ({adjusted}) != canonical count ({canonical})"
+        )
+        ok = False
+
+    if extra:
+        messages.append(f"FAIL: extra slugs in outputs/ntds: {extra}")
+        ok = False
+
+    if missing:
+        messages.append(f"FAIL: missing slugs from outputs/ntds: {missing}")
+        ok = False
+
+    if ok:
+        messages.append(
+            f"PASS: cohort invariant holds — {canonical} canonical, "
+            f"{adjusted} adjusted output dirs, 0 extra, 0 missing."
+        )
+
+    return ok, messages
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Audit canonical cohort count vs outputs/ntds slugs.")
     ap.add_argument("--json", action="store_true", help="Emit JSON output only.")
+    ap.add_argument(
+        "--check",
+        action="store_true",
+        help="Enforce cohort invariant: exit non-zero on mismatch.",
+    )
     args = ap.parse_args()
 
     repo_root = Path(__file__).resolve().parents[1]
@@ -125,6 +169,15 @@ def main() -> int:
         print(json.dumps(report, indent=2))
     else:
         _print_text(report)
+
+    if args.check:
+        ok, messages = check_invariant(report)
+        print()
+        for msg in messages:
+            print(msg)
+        if not ok:
+            return 1
+
     return 0
 
 
