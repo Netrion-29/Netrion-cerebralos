@@ -119,13 +119,15 @@ Batches are sequenced so later work builds on earlier foundations.
 
 With NTDS coverage at 21/21, the following items define the next phase:
 
-#### N1 — Output Slug Normalization
+#### N1 — Output Slug Normalization (IN PROGRESS)
 
-| Item | Scope |
-|------|-------|
-| Normalize ingestion to always produce underscore slugs | `batch_eval.py`, `__main__.py` |
-| Remove stale space-named duplicate output dirs | One-time cleanup |
-| Add invariant check: output count == canonical count | Validation script |
+| Item | Scope | Status |
+|------|-------|--------|
+| Safe slug-normalization utility (dry-run + --apply) | `scripts/normalize_output_slugs.py` | PR open |
+| Tests for planner/collision behavior | `tests/test_normalize_slugs.py` | PR open |
+| Normalize ingestion to always produce underscore slugs | `batch_eval.py`, `__main__.py` | Planned |
+| Remove stale space-named duplicate output dirs | One-time cleanup via tool | Planned |
+| Add invariant check: output count == canonical count | Validation script | Planned |
 
 #### N2 — Audit / Report Flow Integration
 
