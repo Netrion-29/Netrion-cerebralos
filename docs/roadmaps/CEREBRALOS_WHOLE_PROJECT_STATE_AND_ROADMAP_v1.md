@@ -3,7 +3,7 @@
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
 | Date        | 2026-03-04                                               |
-| Baseline    | `2c1263d` (main, after PR #124)                          |
+| Baseline    | `55c8cc5` (main, after PR #131)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -35,6 +35,13 @@
 | #122 | `2d188dd` | feat(ntds): Batch 3 coverage cluster C (01/02/18/19/21)      |
 | #123 | `0962638` | feat(ntds): add mapper coverage for SSI cluster events 06/07/11/17 |
 | #124 | `2c1263d` | feat(ntds): add mapper coverage for final events 03/04/12    |
+| #125 | `b9066c2` | docs(roadmap): mark NTDS 21/21 coverage complete and define next-phase backlog |
+| #126 | `e920d57` | docs(roadmap): fix PR #116-#124 hash table and date accuracy |
+| #127 | `5713e1e` | feat(outputs): add safe slug-normalization utility with dry-run/apply modes |
+| #128 | `b51f950` | fix(outputs): normalize NTDS slug names at output creation time |
+| #129 | `5c4be91` | feat(gate): enforce canonical-vs-output cohort invariant |
+| #130 | `9181423` | fix(gate): exclude _-prefixed admin dirs from cohort invariant audit |
+| #131 | `55c8cc5` | feat(audit): embed cohort invariant summary in codex handoff |
 
 ### Open PRs
 
@@ -119,25 +126,27 @@ Batches are sequenced so later work builds on earlier foundations.
 
 With NTDS coverage at 21/21, the following items define the next phase:
 
-#### N1 — Output Slug Normalization (IN PROGRESS)
+#### N1 — Output Slug Normalization ✅ COMPLETE (PRs #127, #128)
 
 | Item | Scope | Status |
 |------|-------|--------|
-| Safe slug-normalization utility (dry-run + --apply) | `scripts/normalize_output_slugs.py` | PR open |
-| Tests for planner/collision behavior | `tests/test_normalize_slugs.py` | PR open |
-| Normalize ingestion to always produce underscore slugs | `batch_eval.py`, `__main__.py` | Planned |
-| Remove stale space-named duplicate output dirs | One-time cleanup via tool | Planned |
-| Add invariant check: output count == canonical count | Validation script | Planned |
+| Safe slug-normalization utility (dry-run + --apply) | `scripts/normalize_output_slugs.py` | ✅ PR #127 |
+| Normalize ingestion to always produce underscore slugs | `batch_eval.py`, `__main__.py` | ✅ PR #128 |
+| Add invariant check: output count == canonical count | `scripts/audit_cohort_counts.py` + gate | ✅ PR #129 |
 
-#### N2 — Audit / Report Flow Integration
+#### N2 — Audit / Report Flow Integration — Phase 1 ✅ COMPLETE (PRs #129, #130, #131)
 
-| Item | Scope |
-|------|-------|
-| Integrate sentinel + full cohort runs into `gate_pr.sh` | Script change |
-| Automate NTDS outcome distribution check per event | CI/gate script |
-| Baseline hash coverage for NTDS event outputs | `scripts/baselines/` |
+| Item | Scope | Status |
+|------|-------|--------|
+| Enforce canonical-vs-output cohort invariant in gate | `scripts/gate_pr.sh` | ✅ PR #129 |
+| Exclude `_`-prefixed admin dirs from invariant audit | `scripts/audit_cohort_counts.py` | ✅ PR #130 |
+| Embed cohort invariant summary in codex handoff artifact | `scripts/gate_pr.sh` | ✅ PR #131 |
+| Automate NTDS outcome distribution check per event | CI/gate script | Planned |
+| Baseline hash coverage for NTDS event outputs | `scripts/baselines/` | Planned |
 
-#### N3 — Precision Tuning / False-Positive Audits
+#### N3 — Precision Tuning / False-Positive Audits (ACTIVE)
+
+**N3-P1 (current):** Event 16 — Stroke/CVA precision (branch `tier2/n3-p1-stroke-cva-precision-v1`)
 
 | Item | Scope |
 |------|-------|
