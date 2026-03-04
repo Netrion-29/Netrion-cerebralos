@@ -186,6 +186,10 @@ echo "---- Running regression ----"
 python3 _regression_phase1_v2.py
 
 echo
+echo "---- Cohort invariant check ----"
+python3 scripts/audit_cohort_counts.py --check
+
+echo
 echo "Gate complete."
 
 }  # end gate_body
