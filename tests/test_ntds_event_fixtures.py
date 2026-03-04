@@ -10,14 +10,12 @@ Fixture naming convention:
     <event_id>_<slug>_<expected>.txt   e.g. 08_dvt_yes.txt
 
 Known gaps (xfail, strict=False):
-    - Only events 08 (DVT), 14 (PE), and 20 (OR Return) currently have
-      query-pattern entries in the mapper.  YES fixtures for the other
-      18 events will return NO because no patterns match.
-    - Synthetic fixture files use underscore section headers
-      (e.g. [PHYSICIAN_NOTE]) while the section parser expects spaces.
-      This prevents evidence classification even for mapped events.
-    These xfails will auto-promote to XPASS once mapper + parser
-    coverage is extended (no test changes needed).
+    - Events 05 (CAUTI), 08 (DVT), 09 (Delirium), 13 (Pressure Ulcer),
+      14 (PE), and 20 (OR Return) have query-pattern entries in the
+      mapper.  YES fixtures for the other 15 events will return NO
+      because no patterns match.
+    These xfails will auto-promote to XPASS once mapper coverage is
+    extended (no test changes needed).
 """
 
 from __future__ import annotations
@@ -44,7 +42,12 @@ _OUTCOME_MAP = {
 }
 
 # Events that have full query-pattern coverage in the mapper today.
-_MAPPED_EVENTS: Set[int] = {8, 14, 20}
+_MAPPED_EVENTS: Set[int] = {5, 8, 9, 13, 14, 20}
+
+# Mapped events whose YES fixtures evaluate to UNABLE_TO_DETERMINE
+# because the synthetic fixture content does not satisfy timing/onset
+# gates (e.g. timing_after_arrival).  These need richer fixtures.
+_FIXTURE_TIMING_GAPS: Set[int] = {8, 14}
 
 
 def _parse_fixture(path: Path) -> Tuple[int, str]:
@@ -78,12 +81,13 @@ def _needs_xfail(fixture_path: Path) -> str | None:
             f"event {event_id:02d} has no mapper query-patterns yet; "
             f"YES fixture will return NO until patterns are added"
         )
-    # Mapped events still fail because synthetic fixtures use underscore
-    # section headers ([PHYSICIAN_NOTE]) that the parser doesn't match.
-    return (
-        f"event {event_id:02d} fixture uses underscore section headers; "
-        f"parser expects spaces — evidence not classified"
-    )
+    # Mapped events with timing gates that synthetic fixtures don't satisfy:
+    if event_id in _FIXTURE_TIMING_GAPS:
+        return (
+            f"event {event_id:02d} fixture does not satisfy timing/onset gates; "
+            f"returns UNABLE_TO_DETERMINE until fixture is enriched"
+        )
+    return None
 
 
 @pytest.fixture(scope="session")

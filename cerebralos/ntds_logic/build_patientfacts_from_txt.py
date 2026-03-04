@@ -32,22 +32,24 @@ from cerebralos.ntds_logic.model import (
 
 
 # Section header patterns map to SourceType
+# Use [\s_]+ so both "PHYSICIAN NOTE" and "PHYSICIAN_NOTE" match
+# (production Epic exports use spaces; synthetic test fixtures use underscores).
 _SECTION_PATTERNS: Dict[str, SourceType] = {
-    r"PHYSICIAN\s+NOTE": SourceType.PHYSICIAN_NOTE,
-    r"CONSULT\s+NOTE": SourceType.CONSULT_NOTE,
-    r"NURSING\s+NOTE": SourceType.NURSING_NOTE,
+    r"PHYSICIAN[\s_]+NOTE": SourceType.PHYSICIAN_NOTE,
+    r"CONSULT[\s_]+NOTE": SourceType.CONSULT_NOTE,
+    r"NURSING[\s_]+NOTE": SourceType.NURSING_NOTE,
     r"IMAGING": SourceType.IMAGING,
     r"RADIOLOGY": SourceType.IMAGING,
     r"LAB": SourceType.LAB,
     r"MAR": SourceType.MAR,
-    r"MEDICATION\s+ADMIN": SourceType.MAR,
+    r"MEDICATION[\s_]+ADMIN": SourceType.MAR,
     r"PROCEDURE": SourceType.PROCEDURE,
-    r"OPERATIVE\s+NOTE": SourceType.OPERATIVE_NOTE,
-    r"OP\s+NOTE": SourceType.OPERATIVE_NOTE,
+    r"OPERATIVE[\s_]+NOTE": SourceType.OPERATIVE_NOTE,
+    r"OP[\s_]+NOTE": SourceType.OPERATIVE_NOTE,
     r"DISCHARGE": SourceType.DISCHARGE,
-    r"ED\s+NOTE": SourceType.ED_NOTE,
+    r"ED[\s_]+NOTE": SourceType.ED_NOTE,
     r"EMERGENCY": SourceType.ED_NOTE,
-    r"PROGRESS\s+NOTE": SourceType.PROGRESS_NOTE,
+    r"PROGRESS[\s_]+NOTE": SourceType.PROGRESS_NOTE,
 }
 
 # Timestamp patterns (various Epic formats)

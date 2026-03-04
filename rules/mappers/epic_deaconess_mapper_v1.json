@@ -264,6 +264,40 @@
 		"pe_subsegmental_only": [
 			"\\bsubsegmental\\b.*\\bpulmonary\\s+embol\\w*",
 			"\\bsubsegmental\\s+pulmonary\\s+embol\\w*\\b"
+		],
+		"cauti_dx": [
+			"\\bcatheter[- ]?associated\\s+(urinary\\s+tract\\s+infection|UTI)\\b",
+			"\\bCAUTI\\b",
+			"\\burinary\\s+tract\\s+infection\\b.*\\bcatheter\\b",
+			"\\bcatheter\\b.*\\burinary\\s+tract\\s+infection\\b",
+			"\\burine\\s+culture\\s+positive\\b",
+			"\\bpositive\\s+urine\\s+culture\\b"
+		],
+		"delirium_dx": [
+			"\\bdelirium\\b",
+			"\\bacute\\s+confusional\\s+state\\b",
+			"\\bCAM\\s+positive\\b",
+			"\\bCAM[- ]?positive\\b",
+			"\\bpositive\\s+CAM\\b",
+			"\\bacute\\s+confusion\\b",
+			"\\bacute\\s+altered\\s+mental\\s+status\\b"
+		],
+		"pressure_ulcer_dx": [
+			"\\bpressure\\s+(ulcer|injury|sore)\\b",
+			"\\bdecubitus\\s+ulcer\\b",
+			"\\bdecubitus\\b",
+			"\\bstage\\s+(I{1,4}|[1-4])\\s+pressure\\b",
+			"\\bpressure\\b.*\\bstage\\s+(I{1,4}|[1-4])\\b"
+		],
+		"history_noise": [
+			"\\bprior\\s+to\\s+arrival\\b",
+			"\\bpresent\\s+on\\s+admission\\b",
+			"\\bpresent\\s+on\\s+arrival\\b",
+			"\\bhistory\\s+of\\b",
+			"\\bpre[- ]?existing\\b",
+			"\\bpreviously\\s+diagnosed\\b",
+			"\\bprior\\s+history\\b",
+			"\\bpast\\s+medical\\s+history\\b"
 		]
 	}
 }
