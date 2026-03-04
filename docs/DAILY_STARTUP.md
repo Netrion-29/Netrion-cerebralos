@@ -147,6 +147,11 @@ Verify the push succeeded and note the branch name for tomorrow.
 - **[Whole-Project State and Roadmap v1](roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md)** ← primary context-recovery doc
 - [Trauma Build-Forward Plan v1](roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md) (historical)
 
+> **NTDS Coverage:** 21/21 events fully mapped (PRs #118 – #124).
+> Fixture runner: 43 passed, 0 xfailed. See the Roadmap doc §3 for
+> the post-coverage backlog (slug normalization, audit/report flow,
+> precision tuning).
+
 > **Dev-loop default:** use the 12-patient sentinel cohort for fast validation.
 > Full 33-patient cohort runs only at the pre-merge gate (`./scripts/gate_pr.sh`).
 > See the Whole-Project State doc §4 for the sentinel patient list.

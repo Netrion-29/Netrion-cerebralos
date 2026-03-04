@@ -2,14 +2,19 @@
 
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
-| Date        | 2026-03-03                                               |
-| Baseline    | `693723a` (main, after PR #115)                          |
+| Date        | 2026-03-10                                               |
+| Baseline    | `2c1263d` (main, after PR #124)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
 ---
 
 ## 1. Current State Snapshot
+
+### NTDS Coverage Milestone
+
+> **21 / 21 NTDS events fully mapped.** All fixture tests pass (43 passed,
+> 0 xfailed). Coverage completed across PRs #118 – #124 (Clusters A – E).
 
 ### Merged PRs (recent stack on main)
 
@@ -21,24 +26,28 @@
 | #113 | `ba108c8` | feat(ntds): extend proximity_mode to DVT/PE POA exclusions   |
 | #114 | `19b1c4d` | feat(cli): CEREBRAL_NO_OPEN=1 for sandboxed runs             |
 | #115 | `693723a` | feat(audit): canonical cohort count utility                  |
+| #116 | `a16c6b4` | feat(test): pytest-native NTDS fixture runner (43 fixtures)  |
+| #117 | `66a54c8` | fix(ntds): parser + mapper gaps for 18 unmapped events       |
+| #118 | `6dc5a70` | feat(ntds): Cluster A — events 05/08/09/10/13/14/15/16/20   |
+| #119 | `5f2b49c` | fix(ntds): Cluster A followup — false-positive tightening    |
+| #120 | `e6a93f7` | fix(ntds): Cluster A batch 2 — remaining xfail fixes         |
+| #121 | `7a52bb2` | fix(ntds): Cluster B — residual xfail cleanup                |
+| #122 | `c73b5c5` | feat(ntds): Cluster C — events 01/02/18/19/21                |
+| #123 | `d4ade9d` | feat(ntds): Cluster D — events 06/07/11/17                   |
+| #124 | `2c1263d` | feat(ntds): Cluster E — events 03/04/12 (21/21 complete)     |
 
 ### Open PRs
 
-| PR   | Branch                              | Status            |
-|------|-------------------------------------|-------------------|
-| #116 | `tier2/ntds-fixture-runner-v1`      | Open, checks pass |
-
-PR #116 adds `tests/test_ntds_event_fixtures.py` (pytest-native runner for
-all 43 fixture files).  22 pass, 21 xfail (mapper/parser gaps — see §4).
+None.
 
 ### Suite Health
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 2181 (+ 43 in #116) |
-| Test files          | 57 (+ 1 in #116) |
-| NTDS event rules    | 21               |
+| Total tests         | 2224             |
+| NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 43               |
+| Fixture runner      | **43 passed, 0 xfailed** |
 | Canonical patients  | 33               |
 | Known flaky         | `test_ntds_runtime_wire_e2e::test_ntds_on_exit_zero` (intermittent, passes in isolation) |
 
@@ -46,9 +55,9 @@ all 43 fixture files).  22 pass, 21 xfail (mapper/parser gaps — see §4).
 
 | Module                              | Lines | Protected | Notes                    |
 |-------------------------------------|-------|-----------|--------------------------|
-| `cerebralos/ntds_logic/engine.py`   | 645   | Yes       | proximity_mode on 3/21   |
+| `cerebralos/ntds_logic/engine.py`   | 645   | Yes       | proximity_mode audited on all 21 events |
 | `cerebralos/protocol_engine/engine.py` | —  | Yes       | Not modified recently    |
-| Mapper: `epic_deaconess_mapper_v1.json` | — | No        | Patterns for events 08, 14, 20 only |
+| Mapper: `epic_deaconess_mapper_v1.json` | — | No        | Patterns for all 21 events |
 
 ---
 
@@ -77,34 +86,40 @@ When counting output directories in `outputs/ntds/`:
 Each batch is a single-goal PR (or small set of tightly scoped PRs).
 Batches are sequenced so later work builds on earlier foundations.
 
-### Batch 0 — Reliability Baseline (IN PROGRESS)
+### Batch 0 — Reliability Baseline ✅ COMPLETE
 
-| Item | Status | PR |
-|------|--------|----|
-| Pytest-native NTDS fixture runner (43 fixtures) | PR open | #116 |
-| Scratch-file staging policy in README | PR open | #116 |
-| Whole-project state + roadmap doc (this file) | This PR | — |
-| Sentinel cohort validation policy | This PR | — |
+| Item | PR |
+|------|----|
+| Pytest-native NTDS fixture runner (43 fixtures) | #116 |
+| Scratch-file staging policy in README | #116 |
+| Whole-project state + roadmap doc (this file) | #116 |
+| Sentinel cohort validation policy | #116 |
 
-### Batch 1 — Mapper + Parser Coverage
+### Batch 1 — Mapper + Parser Coverage ✅ COMPLETE
 
-| Item | Scope |
-|------|-------|
-| Add mapper query-patterns for remaining 18 events | `epic_deaconess_mapper_v1.json` |
-| Tolerate underscore section headers in parser | `build_patientfacts_from_txt.py` (`[\s_]+`) |
-| Promote xfails → pass in fixture runner | Auto (strict=False xfails become XPASS) |
+| Item | PRs |
+|------|-----|
+| Add mapper query-patterns for remaining 18 events | #117, #118 |
+| Tolerate underscore section headers in parser | #117 |
+| Promote xfails → pass in fixture runner | #118 – #124 |
 
-**Success gate:** All 43 fixtures pass (0 xfail).
+**Success gate achieved:** All 43 fixtures pass (0 xfail).
 
-### Batch 2 — Extended Proximity + Exclusion Quality
+### Batch 2 — Extended Proximity + Exclusion Quality ✅ COMPLETE
 
-| Item | Scope |
-|------|-------|
-| Audit remaining events for proximity-eligible exclusion gates | Rule JSON files |
-| Add `proximity_mode: sentence_window` to 2–4 high-ambiguity events | e.g. events 15, 10, 16 |
-| Per-event targeted fixture tests | `tests/test_ntds_engine_proximity.py` |
+| Item | PRs |
+|------|-----|
+| Audit all events for proximity-eligible exclusion gates | #118 – #124 |
+| Add `proximity_mode: sentence_window` to high-ambiguity events | #112, #113, #118 – #124 |
+| Per-event targeted fixture tests | #118 – #124 |
 
-### Batch 3 — Output Slug Normalization
+---
+
+### What's Next — Post-Coverage Backlog
+
+With NTDS coverage at 21/21, the following items define the next phase:
+
+#### N1 — Output Slug Normalization
 
 | Item | Scope |
 |------|-------|
@@ -112,13 +127,21 @@ Batches are sequenced so later work builds on earlier foundations.
 | Remove stale space-named duplicate output dirs | One-time cleanup |
 | Add invariant check: output count == canonical count | Validation script |
 
-### Batch 4 — Full Cohort CI Gate
+#### N2 — Audit / Report Flow Integration
 
 | Item | Scope |
 |------|-------|
 | Integrate sentinel + full cohort runs into `gate_pr.sh` | Script change |
 | Automate NTDS outcome distribution check per event | CI/gate script |
 | Baseline hash coverage for NTDS event outputs | `scripts/baselines/` |
+
+#### N3 — Precision Tuning / False-Positive Audits
+
+| Item | Scope |
+|------|-------|
+| Per-event false-positive audit across full 33-patient cohort | Manual review + fixture additions |
+| Tighten patterns that overmatch (prophylaxis noise, negation leaks) | Rule JSON files |
+| Expand fixture coverage for edge-case patients | `tests/fixtures/ntds/` |
 
 ---
 

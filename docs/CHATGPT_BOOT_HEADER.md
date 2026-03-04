@@ -13,6 +13,8 @@
 | Primary branch | `main` |
 | Language | Python 3.12+, bash |
 | Date format | ISO-8601 everywhere |
+| NTDS coverage | **21/21 events mapped** — 43 fixtures, 0 xfailed (PRs #118 – #124) |
+| Next phase | Slug normalization, audit/report flow, precision tuning (see Roadmap §3) |
 
 ## Quick Chat Starter
 
