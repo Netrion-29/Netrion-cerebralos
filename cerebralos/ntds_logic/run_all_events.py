@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any, Dict, List
@@ -30,6 +31,18 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 ALL_EVENTS = list(range(1, 22))  # 1..21
 
 
+def _slugify(name: str) -> str:
+    """Deterministic, filesystem-safe slug: spaces → underscores, strip
+    non-alphanumeric, collapse runs of underscores.
+
+    Matches the canonical _slugify in cerebralos/ingest/parse_patient_txt.py.
+    """
+    s = name.strip().replace(" ", "_")
+    s = re.sub(r"[^A-Za-z0-9_]+", "_", s)
+    s = re.sub(r"_+", "_", s).strip("_")
+    return s or "UNKNOWN_PATIENT"
+
+
 def run_all(year: int, patient_path: Path, arrival: str | None = None) -> List[Dict[str, Any]]:
     """Evaluate all 21 NTDS events for *patient_path* and return summary rows."""
 
@@ -37,7 +50,7 @@ def run_all(year: int, patient_path: Path, arrival: str | None = None) -> List[D
     qp = mapper.get("query_patterns", {})
     patient = build_patientfacts(patient_path, qp, arrival_time=arrival)
 
-    slug = patient_path.stem.replace(" ", "_")
+    slug = _slugify(patient_path.stem)
     out_dir = REPO_ROOT / "outputs" / "ntds" / slug
     out_dir.mkdir(parents=True, exist_ok=True)
 
