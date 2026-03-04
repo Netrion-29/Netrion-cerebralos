@@ -298,6 +298,31 @@
 			"\\bpreviously\\s+diagnosed\\b",
 			"\\bprior\\s+history\\b",
 			"\\bpast\\s+medical\\s+history\\b"
+		],
+		"mi_dx": [
+			"\\bmyocardial\\s+infarction\\b",
+			"\\bSTEMI\\b",
+			"\\bNSTEMI\\b",
+			"\\bST\\s+(segment\\s+)?elevation\\b.*\\bmyocardial\\b",
+			"\\bacute\\s+coronary\\s+syndrome\\b",
+			"\\btroponin\\b.*\\b(significantly\\s+)?elevat(ed|ion)\\b"
+		],
+		"stroke_dx": [
+			"\\bacute\\s+(ischemic\\s+)?stroke\\b",
+			"\\bcerebrovascular\\s+accident\\b",
+			"\\bCVA\\b",
+			"\\bcerebral\\s+infarction\\b",
+			"\\bintracranial\\s+hemorrhage\\b",
+			"\\bhemorrhagic\\s+stroke\\b",
+			"\\bNIHSS\\b"
+		],
+		"sepsis_dx": [
+			"\\bsevere\\s+sepsis\\b",
+			"\\bseptic\\s+shock\\b",
+			"\\bsepsis\\b.*\\borgan\\s+dysfunction\\b",
+			"\\borgan\\s+dysfunction\\b.*\\bsepsis\\b",
+			"\\blactate\\b.*\\belevat(ed|ion)\\b",
+			"\\bvasopressor\\b.*\\b(support|require|infusion)\\b"
 		]
 	}
 }

@@ -42,7 +42,7 @@ _OUTCOME_MAP = {
 }
 
 # Events that have full query-pattern coverage in the mapper today.
-_MAPPED_EVENTS: Set[int] = {5, 8, 9, 13, 14, 20}
+_MAPPED_EVENTS: Set[int] = {5, 8, 9, 10, 13, 14, 15, 16, 20}
 
 # Mapped events whose YES fixtures evaluate to UNABLE_TO_DETERMINE
 # because the synthetic fixture content does not satisfy timing/onset

@@ -22,9 +22,13 @@
   "exclusions": [
     {
       "gate_type": "exclude_if_any",
+      "gate_id": "mi_excl_poa",
+      "gate_name": "Exclude if MI present on arrival",
       "rule_id": "EXCL_POA",
       "reason": "Documented prior/present on arrival.",
-      "query_keys": ["history_noise"]
+      "query_keys": ["history_noise"],
+      "require_context_keys": ["mi_dx"],
+      "proximity_mode": "sentence_window"
     }
   ],
   "summary_overrides": {},
