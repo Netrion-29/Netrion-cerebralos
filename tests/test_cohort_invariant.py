@@ -20,7 +20,7 @@ import pytest
 # Ensure scripts/ is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
-from audit_cohort_counts import check_invariant, _collect
+from audit_cohort_counts import check_invariant, _collect, format_summary_line, format_markdown
 
 
 # ── check_invariant unit tests ───────────────────────────────────────
@@ -199,3 +199,85 @@ class TestCollectSynthetic:
         ok, _ = check_invariant(report)
         assert ok is True
         assert sorted(report["admin_dirs"]) == ["_archive_v1", "_stale_backup"]
+
+
+# ── format_summary_line tests ────────────────────────────────────────
+
+
+class TestFormatSummaryLine:
+    def _make_report(self, canonical=33, adjusted=33, extra=None, missing=None):
+        return {
+            "canonical_count": canonical,
+            "true_patient_dirs_after_dedup_count": adjusted,
+            "extra_slugs": extra or [],
+            "missing_slugs": missing or [],
+        }
+
+    def test_pass_format(self):
+        line = format_summary_line(self._make_report())
+        assert line == "Cohort invariant: PASS | canonical=33 adjusted=33 extra=0 missing=0"
+
+    def test_fail_format_extra(self):
+        line = format_summary_line(self._make_report(adjusted=34, extra=["Unknown"]))
+        assert "FAIL" in line
+        assert "extra=1" in line
+
+    def test_fail_format_missing(self):
+        line = format_summary_line(self._make_report(canonical=33, adjusted=32, missing=["Anna_Dennis"]))
+        assert "FAIL" in line
+        assert "missing=1" in line
+
+    def test_single_line(self):
+        line = format_summary_line(self._make_report())
+        assert "\n" not in line
+
+
+# ── format_markdown tests ────────────────────────────────────────────
+
+
+class TestFormatMarkdown:
+    def _make_report(self, canonical=33, adjusted=33, extra=None, missing=None,
+                     fixture=None, admin=None):
+        return {
+            "canonical_count": canonical,
+            "true_patient_dirs_after_dedup_count": adjusted,
+            "extra_slugs": extra or [],
+            "missing_slugs": missing or [],
+            "fixture_dirs": fixture or [],
+            "admin_dirs": admin or [],
+        }
+
+    def test_pass_contains_header(self):
+        md = format_markdown(self._make_report())
+        assert "## Cohort Invariant Summary" in md
+
+    def test_pass_contains_table(self):
+        md = format_markdown(self._make_report())
+        assert "| Status | **PASS** |" in md
+        assert "| Canonical patients (data_raw) | 33 |" in md
+        assert "| Adjusted output dirs | 33 |" in md
+
+    def test_fail_status(self):
+        md = format_markdown(self._make_report(adjusted=31))
+        assert "| Status | **FAIL** |" in md
+
+    def test_extra_slugs_listed(self):
+        md = format_markdown(self._make_report(adjusted=34, extra=["Unknown", "Stale"]))
+        assert "**Extra slugs**: Unknown, Stale" in md
+
+    def test_missing_slugs_listed(self):
+        md = format_markdown(self._make_report(adjusted=32, missing=["Anna_Dennis"]))
+        assert "**Missing slugs**: Anna_Dennis" in md
+
+    def test_no_extra_missing_sections_when_clean(self):
+        md = format_markdown(self._make_report())
+        assert "**Extra slugs**" not in md
+        assert "**Missing slugs**" not in md
+
+    def test_fixture_and_admin_counts(self):
+        md = format_markdown(self._make_report(
+            fixture=["08_dvt_no", "14_pe_yes"],
+            admin=["_stale_backup"],
+        ))
+        assert "| Fixture dirs excluded | 2 |" in md
+        assert "| Admin dirs excluded | 1 |" in md

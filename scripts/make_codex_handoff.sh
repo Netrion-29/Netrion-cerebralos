@@ -93,6 +93,9 @@ for f in "${NOGO_FILES[@]}"; do
   fi
 done
 
+# ── Cohort invariant summary ────────────────────────────────
+COHORT_SUMMARY="$(python3 scripts/audit_cohort_counts.py --markdown 2>/dev/null || echo '(cohort invariant summary unavailable)')"
+
 # ── Write handoff markdown ──────────────────────────────────
 cat > "$OUTFILE" <<EOF
 # Codex Handoff — $(date '+%Y-%m-%d %H:%M:%S')
@@ -121,6 +124,10 @@ ${BASELINE_BLOCK}
 ## No-go zones confirmation
 
 $(printf '%b' "$NOGO_SECTION")
+
+---
+
+${COHORT_SUMMARY}
 
 ---
 
