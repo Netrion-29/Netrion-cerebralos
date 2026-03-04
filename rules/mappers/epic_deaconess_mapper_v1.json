@@ -316,6 +316,19 @@
 			"\\bhemorrhagic\\s+stroke\\b",
 			"\\bNIHSS\\b"
 		],
+		"stroke_negation_noise": [
+			"\\bno\\s+(acute\\s+)?intracranial\\s+hemorrhage\\b",
+			"\\bno\\s+evidence\\s+of\\b[^.]{0,80}\\bintracranial\\s+hemorrhage\\b",
+			"\\bno\\s+overt\\s+intracranial\\s+hemorrhage\\b",
+			"\\bno\\s+new\\s+(acute\\s+)?intracranial\\s+hemorrhage\\b",
+			"\\bwithout\\s+(acute\\s+)?intracranial\\s+hemorrhage\\b",
+			"\\bno\\s+(acute\\s+)?(ischemic\\s+)?stroke\\b",
+			"\\bno\\s+evidence\\s+of\\b[^.]{0,60}\\bstroke\\b",
+			"\\bnegative\\s+for\\b[^.]{0,60}\\b(stroke|intracranial\\s+hemorrhage|cerebral\\s+infarction)\\b",
+			"\\bno\\s+(acute\\s+)?(cerebral\\s+)?infarction\\b",
+			"\\bCVA\\s+prevention\\b",
+			"\\bstroke\\s+prevention\\b"
+		],
 		"sepsis_dx": [
 			"\\bsevere\\s+sepsis\\b",
 			"\\bseptic\\s+shock\\b",
