@@ -14,7 +14,7 @@
       "min_count": 1,
       "query_keys": ["unplanned_icu"],
       "exclude_noise_keys": [],
-      "allowed_sources": ["EVENT_LOG", "PHYSICIAN_NOTE", "DISCHARGE"],
+      "allowed_sources": ["PHYSICIAN_NOTE", "NURSING_NOTE", "DISCHARGE"],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of unplanned ICU admission."
     }
@@ -22,9 +22,13 @@
   "exclusions": [
     {
       "gate_type": "exclude_if_any",
+      "gate_id": "icu_excl_poa",
+      "gate_name": "Exclude if planned ICU or prior disposition",
       "rule_id": "EXCL_POA",
       "reason": "Planned ICU admission or prior disposition.",
-      "query_keys": ["history_noise"]
+      "query_keys": ["history_noise"],
+      "require_context_keys": ["unplanned_icu"],
+      "proximity_mode": "sentence_window"
     }
   ],
   "summary_overrides": {},

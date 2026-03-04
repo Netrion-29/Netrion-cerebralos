@@ -323,6 +323,76 @@
 			"\\borgan\\s+dysfunction\\b.*\\bsepsis\\b",
 			"\\blactate\\b.*\\belevat(ed|ion)\\b",
 			"\\bvasopressor\\b.*\\b(support|require|infusion)\\b"
+		],
+		"aki_dx": [
+			"\\bacute\\s+kidney\\s+injury\\b",
+			"\\bAKI\\b",
+			"\\bacute\\s+renal\\s+failure\\b",
+			"\\bcreatinine\\s+(rose|rising|elevated|increase)\\b",
+			"\\brenal\\s+replacement\\s+therapy\\b",
+			"\\bhemodialysis\\b",
+			"\\boliguria\\b"
+		],
+		"aki_onset": [
+			"\\bdeveloped\\b.*\\bacute\\s+kidney\\s+injury\\b",
+			"\\bAKI\\b.*\\bduring\\s+(hospitalization|stay)\\b",
+			"\\bonset\\b.*\\bafter\\b.*\\barrival\\b",
+			"\\bafter\\s+arrival\\b",
+			"\\bdeveloped\\b.*\\bAKI\\b.*\\bduring\\b"
+		],
+		"ards_dx": [
+			"\\bacute\\s+respiratory\\s+distress\\s+syndrome\\b",
+			"\\bARDS\\b",
+			"\\bBerlin\\s+criteria\\b",
+			"\\bPaO2/FiO2\\b.*\\bratio\\b",
+			"\\bP/F\\s+ratio\\b",
+			"\\bbilateral\\s+(infiltrates|opacities)\\b",
+			"\\bdiffuse\\b.*\\bairspace\\s+disease\\b"
+		],
+		"ards_onset": [
+			"\\bdeveloped\\b.*\\b(ARDS|acute\\s+respiratory\\s+distress)\\b",
+			"\\bARDS\\b.*\\bduring\\s+(hospitalization|stay)\\b",
+			"\\bonset\\b.*\\bafter\\b.*\\barrival\\b",
+			"\\bafter\\s+arrival\\b"
+		],
+		"unplanned_icu": [
+			"\\btransferred\\s+to\\s+ICU\\b",
+			"\\bupgraded\\s+to\\s+ICU\\b",
+			"\\bICU\\s+admission\\b",
+			"\\badmitted\\s+to\\s+ICU\\b",
+			"\\btransfer(red)?\\s+to\\s+(the\\s+)?intensive\\s+care\\b"
+		],
+		"unplanned_intubation": [
+			"\\bemergent\\s+intubation\\b",
+			"\\bintubat(ed|ion)\\b.*\\b(respiratory|hypox|decompensation)\\b",
+			"\\bendotracheal\\s+(tube|intubation)\\b",
+			"\\bETT\\s+placed\\b",
+			"\\bintubat(ed|ion)\\s+during\\s+(hospitalization|stay)\\b",
+			"\\brequired\\b.*\\bintubation\\b"
+		],
+		"vap_dx": [
+			"\\bventilator[- ]?associated\\s+pneumonia\\b",
+			"\\bVAP\\b",
+			"\\bpneumonia\\b.*\\b(ventilat|intubat|mechanical\\s+ventilation)\\b",
+			"\\b(ventilat|intubat)\\b.*\\bpneumonia\\b",
+			"\\bsputum\\s+culture\\s+positive\\b",
+			"\\bBAL\\s+positive\\b",
+			"\\bpurulent\\s+sputum\\b"
+		],
+		"vap_cxr": [
+			"\\bnew\\s+infiltrate\\b",
+			"\\bnew\\b.*\\b(consolidation|opacity|opacities)\\b",
+			"\\bchest\\s+(x-?ray|xray|radiograph)\\b.*\\b(infiltrate|consolidation|opacity)\\b",
+			"\\bCXR\\b.*\\b(infiltrate|consolidation|opacity)\\b",
+			"\\bCT\\s+chest\\b.*\\b(consolidation|infiltrate)\\b"
+		],
+		"prophylaxis_noise": [
+			"\\bppx\\b",
+			"\\bprophylaxis\\b",
+			"\\bprophylactic\\b",
+			"\\bvap\\s+bundle\\b",
+			"\\bvap\\s+prevention\\b",
+			"\\bventilator\\s+bundle\\b"
 		]
 	}
 }
