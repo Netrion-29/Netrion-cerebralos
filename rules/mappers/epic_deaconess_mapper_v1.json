@@ -393,6 +393,42 @@
 			"\\bvap\\s+bundle\\b",
 			"\\bvap\\s+prevention\\b",
 			"\\bventilator\\s+bundle\\b"
+		],
+		"clabsi_dx": [
+			"\\bcentral\\s+line[- ]associated\\s+bloodstream\\s+infection\\b",
+			"\\bCLABSI\\b",
+			"\\bblood\\s+culture\\s+positive\\b",
+			"\\bbacteremia\\b.*\\bcentral\\s+(line|venous)\\b",
+			"\\bcentral\\s+(line|venous)\\b.*\\bbacteremia\\b",
+			"\\bline\\s+sepsis\\b",
+			"\\bcatheter[- ]related\\s+(bloodstream|infection)\\b"
+		],
+		"deep_ssi_dx": [
+			"\\bdeep\\s+(surgical\\s+site\\s+infection|SSI)\\b",
+			"\\bdeep\\s+soft\\s+tissue\\s+infection\\b",
+			"\\bfascial\\s+dehiscence\\b",
+			"\\bpurulent\\s+drainage\\b.*\\bdeep\\s+incision\\b",
+			"\\bdeep\\s+abscess\\b",
+			"\\bdeep\\s+wound\\s+infection\\b",
+			"\\bdeep\\s+incision(al)?\\s+infection\\b"
+		],
+		"organ_space_ssi_dx": [
+			"\\borgan[/ ]space\\s+(surgical\\s+site\\s+infection|SSI)\\b",
+			"\\bintra[- ]abdominal\\s+abscess\\b",
+			"\\bperitonitis\\b",
+			"\\borgan[/ ]space\\s+infection\\b",
+			"\\bfluid\\s+culture\\s+positive\\b",
+			"\\bempyema\\b",
+			"\\bsubphrenic\\s+abscess\\b"
+		],
+		"superficial_ssi_dx": [
+			"\\bsuperficial\\s+(surgical\\s+site\\s+infection|SSI|incision)\\b",
+			"\\bpurulent\\s+drainage\\b.*\\bincision\\b",
+			"\\bwound\\s+culture\\s+positive\\b",
+			"\\bsuperficial\\s+wound\\s+infection\\b",
+			"\\bincision(al)?\\s+infection\\b.*\\bsuperficial\\b",
+			"\\bskin\\s+and\\s+subcutaneous\\s+tissue\\b",
+			"\\berythema\\b.*\\bincision\\s+site\\b"
 		]
 	}
 }
