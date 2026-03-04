@@ -23,6 +23,7 @@ from typing import Dict, List
 
 
 RE_FIXTURE_SLUG = re.compile(r"^\d{2}_.+")
+RE_ADMIN_SLUG = re.compile(r"^_")
 
 
 def _slugify(stem: str) -> str:
@@ -42,10 +43,13 @@ def _collect(repo_root: Path) -> Dict[str, object]:
     output_slug_count = len(output_dirs)
 
     fixture_dirs: List[str] = []
+    admin_dirs: List[str] = []
     non_fixture_dirs: List[str] = []
     for name in output_dirs:
         if RE_FIXTURE_SLUG.match(name):
             fixture_dirs.append(name)
+        elif RE_ADMIN_SLUG.match(name):
+            admin_dirs.append(name)
         else:
             non_fixture_dirs.append(name)
 
@@ -75,13 +79,14 @@ def _collect(repo_root: Path) -> Dict[str, object]:
         "canonical_count": len(canonical_slugs),
         "output_slug_count": output_slug_count,
         "fixture_dirs": fixture_dirs,
+        "admin_dirs": admin_dirs,
         "space_variant_duplicates": space_variant_duplicates,
         "true_patient_dirs_after_dedup_count": adjusted_output_count,
         "extra_slugs": extra_slugs,
         "missing_slugs": missing_slugs,
         "policy": (
             "Canonical cohort is data_raw/*.txt. Report raw outputs/ntds dir count, then adjusted count "
-            "after excluding test fixture dirs (NN_*) and space/underscore duplicate slugs."
+            "after excluding test fixture dirs (NN_*), admin dirs (_*), and space/underscore duplicate slugs."
         ),
     }
 
@@ -100,6 +105,10 @@ def _print_text(report: Dict[str, object]) -> None:
     print(f"test_fixture_dirs: {len(fixture_dirs)}")
     if fixture_dirs:
         print("  " + ", ".join(fixture_dirs))
+    admin_dirs = report["admin_dirs"]
+    print(f"admin_dirs: {len(admin_dirs)}")
+    if admin_dirs:
+        print("  " + ", ".join(admin_dirs))
     print(f"space_variant_duplicates: {len(dupes)}")
     if dupes:
         print("  " + ", ".join(dupes))
