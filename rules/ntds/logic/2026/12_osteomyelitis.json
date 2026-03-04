@@ -14,7 +14,7 @@
       "min_count": 1,
       "query_keys": ["osteomyelitis_dx"],
       "exclude_noise_keys": [],
-      "allowed_sources": ["PHYSICIAN_NOTE", "IMAGING", "SURGERY_NOTE"],
+      "allowed_sources": ["PHYSICIAN_NOTE", "IMAGING", "OPERATIVE_NOTE", "PROCEDURE"],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of osteomyelitis."
     }
@@ -22,9 +22,13 @@
   "exclusions": [
     {
       "gate_type": "exclude_if_any",
+      "gate_id": "osteo_excl_poa",
+      "gate_name": "Exclude osteomyelitis present on arrival (scoped)",
       "rule_id": "EXCL_POA",
       "reason": "Documented prior/present on arrival.",
-      "query_keys": ["history_noise"]
+      "query_keys": ["history_noise"],
+      "require_context_keys": ["osteomyelitis_dx"],
+      "proximity_mode": "sentence_window"
     }
   ],
   "summary_overrides": {},

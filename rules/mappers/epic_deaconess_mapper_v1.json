@@ -429,6 +429,42 @@
 			"\\bincision(al)?\\s+infection\\b.*\\bsuperficial\\b",
 			"\\bskin\\s+and\\s+subcutaneous\\s+tissue\\b",
 			"\\berythema\\b.*\\bincision\\s+site\\b"
+		],
+		"alcohol_withdrawal_dx": [
+			"\\balcohol\\s+withdrawal\\b",
+			"\\bETOH\\s+withdrawal\\b",
+			"\\bCIWA\\s+score\\b",
+			"\\bdelirium\\s+tremens\\b",
+			"\\bDTs\\b",
+			"\\bcessation\\s+of\\s+alcohol\\b",
+			"\\bwithdrawal\\s+seizure\\b"
+		],
+		"cardiac_arrest_dx": [
+			"\\bcardiac\\s+arrest\\b",
+			"\\bcode\\s+blue\\b",
+			"\\bpulseless\\b",
+			"\\basystole\\b",
+			"\\bventricular\\s+fibrillation\\b",
+			"\\bVfib\\b",
+			"\\bPEA\\b.*\\barrest\\b"
+		],
+		"cpr_documented": [
+			"\\bCPR\\s+(initiated|performed|started|given)\\b",
+			"\\bchest\\s+compressions\\b",
+			"\\bcardiopulmonary\\s+resuscitation\\b",
+			"\\bACLS\\s+protocol\\b",
+			"\\bresuscitation\\b.*\\b(return|ROSC)\\b",
+			"\\b(return|ROSC)\\b.*\\bresuscitation\\b",
+			"\\bdefibrillation\\b"
+		],
+		"osteomyelitis_dx": [
+			"\\bosteomyelitis\\b",
+			"\\bbone\\s+infection\\b",
+			"\\bbone\\s+biopsy\\s+positive\\b",
+			"\\bmarrow\\s+edema\\b.*\\bperiosteal\\s+reaction\\b",
+			"\\bperiosteal\\s+reaction\\b.*\\bosteomyelitis\\b",
+			"\\binfected\\s+bone\\b",
+			"\\bosseous\\s+infection\\b"
 		]
 	}
 }

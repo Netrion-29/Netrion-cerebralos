@@ -22,9 +22,13 @@
   "exclusions": [
     {
       "gate_type": "exclude_if_any",
+      "gate_id": "aws_excl_poa",
+      "gate_name": "Exclude alcohol withdrawal present on arrival (scoped)",
       "rule_id": "EXCL_POA",
       "reason": "Documented prior/present on arrival.",
-      "query_keys": ["history_noise"]
+      "query_keys": ["history_noise"],
+      "require_context_keys": ["alcohol_withdrawal_dx"],
+      "proximity_mode": "sentence_window"
     }
   ],
   "summary_overrides": {},
