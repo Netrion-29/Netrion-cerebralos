@@ -47,7 +47,8 @@ _MAPPED_EVENTS: Set[int] = {5, 8, 9, 13, 14, 20}
 # Mapped events whose YES fixtures evaluate to UNABLE_TO_DETERMINE
 # because the synthetic fixture content does not satisfy timing/onset
 # gates (e.g. timing_after_arrival).  These need richer fixtures.
-_FIXTURE_TIMING_GAPS: Set[int] = {8, 14}
+# PR #120: Events 08/14 fixtures now satisfy timing gates.
+_FIXTURE_TIMING_GAPS: Set[int] = set()
 
 
 def _parse_fixture(path: Path) -> Tuple[int, str]:
@@ -60,6 +61,15 @@ def _parse_fixture(path: Path) -> Tuple[int, str]:
     expected_raw = parts[-1].upper()
     expected = _OUTCOME_MAP.get(expected_raw, expected_raw)
     return event_id, expected
+
+
+def _extract_arrival_time(fixture_path: Path) -> str | None:
+    """Extract ARRIVAL_TIME header from fixture file, if present."""
+    for line in fixture_path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped.upper().startswith("ARRIVAL_TIME:"):
+            return stripped.split(":", 1)[1].strip()
+    return None
 
 
 def _collect_fixtures() -> list[Path]:
@@ -109,7 +119,8 @@ def test_ntds_event_fixture_outcomes(
 
     event_id, expected_outcome = _parse_fixture(fixture_path)
     ruleset = load_ruleset(2026, event_id)
-    patient = build_patientfacts(fixture_path, query_patterns)
+    arrival_time = _extract_arrival_time(fixture_path)
+    patient = build_patientfacts(fixture_path, query_patterns, arrival_time=arrival_time)
 
     result = evaluate_event(ruleset.event, ruleset.contract, patient)
     actual = result.outcome.value

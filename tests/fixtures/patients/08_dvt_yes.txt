@@ -16,7 +16,8 @@ Acute DVT left lower extremity.
 
 [PHYSICIAN_NOTE] 2026-01-17 15:00:00
 Patient diagnosed with acute DVT left leg. Started on anticoagulation with heparin drip.
-DVT developed during hospitalization, not present on arrival per nursing notes.
+Developed deep vein thrombosis during hospital stay, onset after arrival confirmed.
+Not present on admission per nursing notes.
 
 [LAB] 2026-01-17 15:30:00
 D-dimer: 3500 ng/mL (elevated)
