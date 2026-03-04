@@ -7,14 +7,14 @@
   },
   "gates": [
     {
-      "gate_type": "evidence_all",
+      "gate_type": "evidence_any",
       "gate_id": "vap_evidence",
       "gate_name": "Evidence consistent with VAP",
       "required": true,
       "min_count": 2,
       "query_keys": ["vap_dx", "vap_cxr"],
       "exclude_noise_keys": ["history_noise"],
-      "allowed_sources": ["RADIOLOGY_REPORT", "CLINICAL_NOTE", "MICROBIOLOGY"],
+      "allowed_sources": ["IMAGING", "PHYSICIAN_NOTE", "LAB"],
       "fail_outcome": "NO",
       "fail_reason": "Insufficient evidence for VAP."
     }
@@ -22,9 +22,13 @@
   "exclusions": [
     {
       "gate_type": "exclude_if_any",
+      "gate_id": "vap_excl_prophy",
+      "gate_name": "Exclude prophylactic ventilator care (scoped)",
       "rule_id": "EXCL_PROPHY",
       "reason": "Prophylactic ventilator-associated care documented.",
-      "query_keys": ["prophylaxis_noise"]
+      "query_keys": ["prophylaxis_noise"],
+      "require_context_keys": ["vap_dx"],
+      "proximity_mode": "sentence_window"
     }
   ],
   "summary_overrides": {},

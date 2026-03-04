@@ -14,7 +14,7 @@
       "min_count": 1,
       "query_keys": ["unplanned_intubation"],
       "exclude_noise_keys": [],
-      "allowed_sources": ["PROCEDURE", "PHYSICIAN_NOTE", "EVENT_LOG"],
+      "allowed_sources": ["PROCEDURE", "PHYSICIAN_NOTE"],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of unplanned intubation."
     }
@@ -22,9 +22,13 @@
   "exclusions": [
     {
       "gate_type": "exclude_if_any",
+      "gate_id": "intubation_excl_poa",
+      "gate_name": "Exclude if intubation prior to arrival",
       "rule_id": "EXCL_POA",
       "reason": "Planned/intubation prior to arrival.",
-      "query_keys": ["history_noise"]
+      "query_keys": ["history_noise"],
+      "require_context_keys": ["unplanned_intubation"],
+      "proximity_mode": "sentence_window"
     }
   ],
   "summary_overrides": {},
