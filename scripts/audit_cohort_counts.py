@@ -122,6 +122,49 @@ def _print_text(report: Dict[str, object]) -> None:
     print(report["policy"])
 
 
+def format_summary_line(report: Dict[str, object]) -> str:
+    """One-line compact summary for embedding in handoff artifacts."""
+    ok, _ = check_invariant(report)
+    status = "PASS" if ok else "FAIL"
+    canonical = report["canonical_count"]
+    adjusted = report["true_patient_dirs_after_dedup_count"]
+    extra = len(report["extra_slugs"])
+    missing = len(report["missing_slugs"])
+    return f"Cohort invariant: {status} | canonical={canonical} adjusted={adjusted} extra={extra} missing={missing}"
+
+
+def format_markdown(report: Dict[str, object]) -> str:
+    """Markdown block for embedding in codex handoff artifacts."""
+    ok, msgs = check_invariant(report)
+    status = "PASS" if ok else "FAIL"
+    canonical = report["canonical_count"]
+    adjusted = report["true_patient_dirs_after_dedup_count"]
+    extra_slugs = report["extra_slugs"]
+    missing_slugs = report["missing_slugs"]
+    fixture_dirs = report["fixture_dirs"]
+    admin_dirs = report["admin_dirs"]
+    lines = [
+        "## Cohort Invariant Summary",
+        "",
+        f"| Metric | Value |",
+        f"| --- | --- |",
+        f"| Status | **{status}** |",
+        f"| Canonical patients (data_raw) | {canonical} |",
+        f"| Adjusted output dirs | {adjusted} |",
+        f"| Extra slugs | {len(extra_slugs)} |",
+        f"| Missing slugs | {len(missing_slugs)} |",
+        f"| Fixture dirs excluded | {len(fixture_dirs)} |",
+        f"| Admin dirs excluded | {len(admin_dirs)} |",
+    ]
+    if extra_slugs:
+        lines.append(f"")
+        lines.append(f"**Extra slugs**: {', '.join(extra_slugs)}")
+    if missing_slugs:
+        lines.append(f"")
+        lines.append(f"**Missing slugs**: {', '.join(missing_slugs)}")
+    return "\n".join(lines)
+
+
 def check_invariant(report: Dict[str, object]) -> tuple[bool, list[str]]:
     """Return (ok, messages).  ok=True iff cohort is consistent.
 
@@ -165,6 +208,16 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Audit canonical cohort count vs outputs/ntds slugs.")
     ap.add_argument("--json", action="store_true", help="Emit JSON output only.")
     ap.add_argument(
+        "--summary-line",
+        action="store_true",
+        help="Emit a single compact summary line.",
+    )
+    ap.add_argument(
+        "--markdown",
+        action="store_true",
+        help="Emit markdown block for codex handoff embedding.",
+    )
+    ap.add_argument(
         "--check",
         action="store_true",
         help="Enforce cohort invariant: exit non-zero on mismatch.",
@@ -176,6 +229,10 @@ def main() -> int:
 
     if args.json:
         print(json.dumps(report, indent=2))
+    elif args.summary_line:
+        print(format_summary_line(report))
+    elif args.markdown:
+        print(format_markdown(report))
     else:
         _print_text(report)
 
