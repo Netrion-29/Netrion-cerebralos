@@ -96,6 +96,7 @@ class TestCollectIntegration:
         assert "true_patient_dirs_after_dedup_count" in report
         assert "extra_slugs" in report
         assert "missing_slugs" in report
+        assert "admin_dirs" in report
 
     def test_invariant_on_live_repo(self):
         """The live repo cohort should be consistent (adjusted == canonical)."""
@@ -173,3 +174,28 @@ class TestCollectSynthetic:
         ok, _ = check_invariant(report)
         assert ok is True
         assert report["space_variant_duplicates"] != []
+
+    def test_admin_dirs_ignored(self, tmp_path: Path):
+        """Dirs starting with _ (archives, stale backups) are excluded."""
+        repo = self._make_tree(
+            tmp_path,
+            ["Anna_Dennis"],
+            ["Anna_Dennis", "_stale_space_dups_20260304"],
+        )
+        report = _collect(repo)
+        ok, _ = check_invariant(report)
+        assert ok is True
+        assert report["admin_dirs"] == ["_stale_space_dups_20260304"]
+        assert report["extra_slugs"] == []
+
+    def test_admin_dirs_multiple(self, tmp_path: Path):
+        """Multiple _-prefixed dirs are all excluded."""
+        repo = self._make_tree(
+            tmp_path,
+            ["Anna_Dennis", "Robert_Sauer"],
+            ["Anna_Dennis", "Robert_Sauer", "_archive_v1", "_stale_backup"],
+        )
+        report = _collect(repo)
+        ok, _ = check_invariant(report)
+        assert ok is True
+        assert sorted(report["admin_dirs"]) == ["_archive_v1", "_stale_backup"]
