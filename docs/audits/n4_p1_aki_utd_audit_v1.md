@@ -12,15 +12,14 @@
 
 ## 1. Baseline Distribution (post-N3, fresh run)
 
+
 | Outcome             | Count |
 |---------------------|-------|
 | YES                 | 0     |
-| NO                  | 29    |
-| UNABLE_TO_DETERMINE | 4     |
+| NO                  | 28    |
+| UNABLE_TO_DETERMINE | 5     |
 | Total               | 33    |
 
-> Note: roadmap doc estimated UTD=5 after N3-P6 (PR #138); fresh run shows UTD=4.
-> The discrepancy is likely from a re-run after intermediate mapper state.
 
 ---
 
@@ -121,6 +120,7 @@ David_Gross from UTD to YES with no FP risk (zero other cohort hits).
 
 ---
 
+
 ### Gary_Linder
 
 **Evidence:** Only PMH-tier mentions:
@@ -148,7 +148,22 @@ active in-progress event without contextual sentences.
 
 ---
 
+### Margaret_Rudd
+
+**Evidence:**
+```
+aki_dx: PASS (AKI diagnosis present)
+aki_after_arrival: FAIL (No onset evidence found.)
+```
+
+Margaret_Rudd passes the AKI diagnosis gate but fails the onset-after-arrival gate due to lack of any temporal evidence. No phrase or timestamp establishes that AKI developed after hospital arrival. This is a classic UTD: diagnosis present, but timing unproven.
+
+**UTD is the correct outcome.** No safe temporal pattern can be added without risking false positives.
+
+---
+
 ## 3. Safety Gate
+
 
 | Patient          | Safe pattern available? | Evidence source accessible? | Action |
 |------------------|-------------------------|-----------------------------|--------|
@@ -156,6 +171,7 @@ active in-progress event without contextual sentences.
 | Carlton_Van_Ness | No viable temporal pattern | LAB (accessible) | **Deferred — no temporal language** |
 | David_Gross      | Pattern exists, zero FP | CONSULT_NOTE (inaccessible — misclassified as IMAGING) | **Deferred — section detection fix needed** |
 | Gary_Linder      | No viable temporal pattern | LAB/DISCHARGE (accessible) | **Deferred — problem list only** |
+| Margaret_Rudd    | No viable temporal pattern | PHYSICIAN_NOTE (accessible) | **Deferred — no temporal language** |
 
 **Safety gate verdict: BLOCKED.** No changes that satisfy all conditions:
 - Mapper-only (no engine modifications)
