@@ -404,6 +404,19 @@
 			"\\badmitted\\s+to\\s+ICU\\b",
 			"\\btransfer(red)?\\s+to\\s+(the\\s+)?intensive\\s+care\\b"
 		],
+		"icu_negation_noise": [
+			"\\border\\s+(part|set)\\s+of\\b.*\\bICU\\b",
+			"\\bOrder\\s+Set\\s*:\\s*.*ICU\\b",
+			"\\bDHS\\s+IP\\s+ICU\\b",
+			"\\bICU\\s+admission\\s+(order|panel|protocol|bundle)\\b",
+			"\\bplanned\\b.*\\bICU\\s+admission\\b",
+			"\\belective\\b.*\\bICU\\s+admission\\b",
+			"\\bscheduled\\b.*\\bICU\\s+admission\\b",
+			"\\bICU\\s+admission\\s+criteria\\b",
+			"\\broutine\\b.*\\bICU\\s+admission\\b",
+			"\\bpost[- ]?op(erative)?\\s+(planned|routine|scheduled)\\b.*\\bICU\\b",
+			"\\bno\\s+(evidence|signs?)\\s+of\\b.*\\bICU\\b"
+		],
 		"unplanned_intubation": [
 			"\\bemergent\\s+intubation\\b",
 			"\\bintubat(ed|ion)\\b.*\\b(respiratory|hypox|decompensation)\\b",
