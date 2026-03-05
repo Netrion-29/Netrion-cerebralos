@@ -42,7 +42,7 @@
 | #129 | `5c4be91` | feat(gate): enforce canonical-vs-output cohort invariant |
 | #130 | `9181423` | fix(gate): exclude _-prefixed admin dirs from cohort invariant audit |
 | #131 | `55c8cc5` | feat(audit): embed cohort invariant summary in codex handoff |
-| #132 | `5af25b2` | fix(ntds): tighten event16 stroke/cva precision (N3-P1)  |
+| #132 | `b4911de` | fix(ntds): tighten event16 stroke/cva precision (N3-P1)  |
 | #134 | `596bee7` | fix(ntds): tighten event10 MI precision (N3-P2)          |
 | #135 | `259d4a4` | fix(ntds): tighten event19 unplanned intubation precision (N3-P3) |
 | #136 | `3009584` | fix(ntds): tighten event15 severe sepsis precision (N3-P4) |
@@ -160,10 +160,10 @@ in the event rule, and added a dedicated precision test suite.
 
 | Pass | Event | PR   | Mapper bucket            | Tests | Distribution shift |
 |------|-------|------|--------------------------|-------|--------------------|
-| N3-P1 | E16 Stroke/CVA           | #132 | `stroke_negation_noise` (11) | `test_e16_stroke_precision.py` | YES 10→5 |
-| N3-P2 | E10 MI                   | #134 | `mi_negation_noise` (12)     | `test_e10_mi_precision.py`     | YES 4→2 |
-| N3-P3 | E19 Unplanned Intubation | #135 | `intubation_negation_noise` (15) | `test_e19_intubation_precision.py` | YES 9→5 |
-| N3-P4 | E15 Severe Sepsis        | #136 | `sepsis_negation_noise` (13) | `test_e15_sepsis_precision.py` | YES 4→2 |
+| N3-P1 | E16 Stroke/CVA           | #132 | `stroke_negation_noise` (11) | `test_e16_stroke_precision.py` | YES 14→2 |
+| N3-P2 | E10 MI                   | #134 | `mi_negation_noise` (12)     | `test_e10_mi_precision.py`     | YES 6→1 |
+| N3-P3 | E19 Unplanned Intubation | #135 | `intubation_negation_noise` (15) | `test_e19_unplanned_intubation_precision.py` | YES 5→2 |
+| N3-P4 | E15 Severe Sepsis        | #136 | `sepsis_negation_noise` (13) | `test_e15_severe_sepsis_precision.py` | YES 2→1 |
 | N3-P5 | E18 Unplanned ICU        | #137 | `icu_negation_noise` (11)    | `test_e18_unplanned_icu_precision.py` | YES 2→1 |
 | N3-P6 | E01 AKI                  | #138 | `aki_negation_noise` (12)    | `test_e01_aki_precision.py`    | UTD 7→5, NO 26→28 |
 
