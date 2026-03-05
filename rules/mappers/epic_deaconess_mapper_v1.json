@@ -397,6 +397,23 @@
 			"\\bintubat(ed|ion)\\s+during\\s+(hospitalization|stay)\\b",
 			"\\brequired\\b.*\\bintubation\\b"
 		],
+		"intubation_negation_noise": [
+			"\\bendotracheal\\s+tube\\s+tip\\b",
+			"\\bendotracheal\\s+tube\\s+terminat",
+			"\\bendotracheal\\s+tube\\s+is\\s+\\d",
+			"\\bendotracheal\\s+tube\\s+projects?\\b",
+			"\\bendotracheal\\s+tube\\s+in\\s+(place|situ)\\b",
+			"\\bfollow[- ]?up\\b.*\\bendotracheal\\s+tube\\b",
+			"\\bTUBES\\s+and\\s+LINES\\b.*\\bendotracheal\\b",
+			"\\bendotracheal\\s+tube\\s+placement\\b",
+			"\\b(enteric|nasogastric|orogastric)\\s+tube\\b.*\\bendotracheal",
+			"\\bcoming\\s+up\\s+intubated\\b",
+			"\\belective\\b.*\\bintubat",
+			"\\bplanned\\b.*\\bintubat",
+			"\\bscheduled\\b.*\\bintubat",
+			"\\bintubat(ed|ion)\\s+for\\s+(the\\s+)?(surgery|procedure|operation|case)\\b",
+			"\\banesthesia\\b.*\\bendotracheal\\b"
+		],
 		"vap_dx": [
 			"\\bventilator[- ]?associated\\s+pneumonia\\b",
 			"\\bVAP\\b",
