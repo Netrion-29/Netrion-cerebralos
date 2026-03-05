@@ -150,12 +150,13 @@ Verify the push succeeded and note the branch name for tomorrow.
 > **NTDS Coverage:** 21/21 events fully mapped (PRs #118 – #124).
 > Fixture runner: 43 passed, 0 xfailed.
 >
-> **Phase status (as of PR #131):**
+> **Phase status (as of PR #138):**
 > - N1 (slug normalization): ✅ COMPLETE (PRs #127–#128)
 > - N2 Phase 1 (gate cohort invariant + handoff embedding): ✅ COMPLETE (PRs #129–#131)
-> - N3 (precision tuning): ACTIVE — N3-P1 = Event 16 Stroke/CVA (branch `tier2/n3-p1-stroke-cva-precision-v1`)
+> - N3 (precision tuning): ✅ COMPLETE (PRs #132–#138) — 6 events tightened (E16, E10, E19, E15, E18, E01)
+> - N4 (recall + PMH-aware handling + remaining events): PLANNED — see Roadmap doc §3
 >
-> See Roadmap doc §3 for full backlog detail.
+> See Roadmap doc §3 for full backlog detail, N3 residuals, and N4 queue.
 
 > **Dev-loop default:** use the 12-patient sentinel cohort for fast validation.
 > Full 33-patient cohort runs only at the pre-merge gate (`./scripts/gate_pr.sh`).
