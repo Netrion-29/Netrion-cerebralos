@@ -341,7 +341,10 @@
 			"\\bnegative\\s+for\\b[^.]{0,60}\\b(stroke|intracranial\\s+hemorrhage|cerebral\\s+infarction)\\b",
 			"\\bno\\s+(acute\\s+)?(cerebral\\s+)?infarction\\b",
 			"\\bCVA\\s+prevention\\b",
-			"\\bstroke\\s+prevention\\b"
+			"\\bstroke\\s+prevention\\b",
+			"\\bno\\b[^.]{0,60}\\bintracranial\\s+hemorrhage\\b",
+			"\\b(PMH|past\\s+medical\\s+history)\\b[^.]{0,80}\\b(CVA|stroke|cerebrovascular\\s+accident)\\b",
+			"\\b(history|hx)\\s+of\\b[^.]{0,40}\\b(CVA|stroke|cerebrovascular\\s+accident)\\b"
 		],
 		"sepsis_dx": [
 			"\\bsevere\\s+sepsis\\b",
@@ -479,6 +482,13 @@
 			"\\bvap\\s+bundle\\b",
 			"\\bvap\\s+prevention\\b",
 			"\\bventilator\\s+bundle\\b"
+		],
+		"vap_negation_noise": [
+			"\\bno\\b[^.]{0,40}\\b(consolidation|infiltrate|opacity|opacities)\\b",
+			"\\bno\\s+acute\\s+airspace\\s+disease\\b",
+			"\\bnegative\\s+for\\b[^.]{0,40}\\b(consolidation|infiltrate|pneumonia)\\b",
+			"\\baspiration\\s+pneumonia\\b",
+			"\\baspiration\\s+pneumonitis\\b"
 		],
 		"clabsi_dx": [
 			"\\bcentral\\s+line[- ]associated\\s+bloodstream\\s+infection\\b",
