@@ -13,7 +13,7 @@
       "required": true,
       "min_count": 1,
       "query_keys": ["unplanned_intubation"],
-      "exclude_noise_keys": [],
+      "exclude_noise_keys": ["intubation_negation_noise"],
       "allowed_sources": ["PROCEDURE", "PHYSICIAN_NOTE"],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of unplanned intubation."
