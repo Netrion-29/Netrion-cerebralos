@@ -67,12 +67,38 @@ _TIMESTAMP_PATTERNS = [
 ]
 
 
+_VERB_WORDS = {
+    'PERFORMED', 'ORDERED', 'NOTED', 'REPORTED', 'REVIEWED', 'SHOWS', 'SHOWED', 'DEMONSTRATES', 'DEMONSTRATED',
+    'CONSULTED', 'ADDED', 'REMOVED', 'STARTED', 'STOPPED', 'ADMINISTERED', 'GIVEN', 'RECEIVED', 'TAKEN', 'COMPLETED',
+    'WAS', 'IS', 'ARE', 'HAS', 'HAVE', 'WERE', 'WILL', 'BE', 'BEEN', 'BEING', 'INDICATES', 'INDICATED',
+}
+
+
 def _detect_source_type(line: str, current_source: SourceType) -> SourceType:
-    """Detect if line is a section header, return appropriate SourceType."""
+    """Detect if line is a section header (header-style: line-start), return appropriate SourceType."""
     upper = line.upper().strip()
+    # Accept headers like [PHYSICIAN_NOTE], PHYSICIAN NOTE:, PHYSICIAN NOTE: 01/01/26 1200, etc.
     for pattern, source_type in _SECTION_PATTERNS.items():
-        if re.search(pattern, upper):
-            return source_type
+        # Match: optional bracket, pattern, optional bracket, optional colon, optional trailing text/timestamp
+        header_regex = rf"^\[?{pattern}\]?(:)?(\s+.*)?$"
+        # Only match if the pattern is at the very start (header-style)
+        m = re.match(header_regex, upper)
+        if m:
+            # Safely get trailing group if present (group 2 = trailing text)
+            trailing = m.group(2) if m.lastindex and m.lastindex >= 2 and m.group(2) is not None else ''
+            trailing_clean = trailing.strip()
+            if trailing_clean == '':
+                return source_type
+            # Allow if trailing is a timestamp
+            for ts_pat, _ in _TIMESTAMP_PATTERNS:
+                if re.search(ts_pat, trailing_clean):
+                    return source_type
+            words = trailing_clean.upper().split()
+            # Only allow if trailing is a single non-verb word (e.g., username/label)
+            if len(words) == 1 and words[0] not in _VERB_WORDS:
+                return source_type
+            # Block header switch if trailing has more than one word (not timestamp)
+            continue
     return current_source
 
 
@@ -113,11 +139,22 @@ def _extract_timestamp(line: str) -> Optional[str]:
 
 
 def _is_section_header(line: str) -> bool:
-    """Check if line is a section header."""
+    """Check if line is a section header (same rules as _detect_source_type)."""
     upper = line.upper().strip()
     for pattern in _SECTION_PATTERNS:
-        if re.search(pattern, upper):
-            return True
+        header_regex = rf"^\[?{pattern}\]?(:)?(\s+.*)?$"
+        m = re.match(header_regex, upper)
+        if m:
+            trailing = m.group(2) if m.lastindex and m.lastindex >= 2 and m.group(2) is not None else ''
+            trailing_clean = trailing.strip()
+            if trailing_clean == '':
+                return True
+            for ts_pat, _ in _TIMESTAMP_PATTERNS:
+                if re.search(ts_pat, trailing_clean):
+                    return True
+            words = trailing_clean.upper().split()
+            if len(words) == 1 and words[0] not in _VERB_WORDS:
+                return True
     return False
 
 
