@@ -3,7 +3,7 @@
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
 | Date        | 2026-03-04                                               |
-| Baseline    | `55c8cc5` (main, after PR #131)                          |
+| Baseline    | `cd887ce` (main, after PR #138)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -42,6 +42,12 @@
 | #129 | `5c4be91` | feat(gate): enforce canonical-vs-output cohort invariant |
 | #130 | `9181423` | fix(gate): exclude _-prefixed admin dirs from cohort invariant audit |
 | #131 | `55c8cc5` | feat(audit): embed cohort invariant summary in codex handoff |
+| #132 | `5af25b2` | fix(ntds): tighten event16 stroke/cva precision (N3-P1)  |
+| #134 | `596bee7` | fix(ntds): tighten event10 MI precision (N3-P2)          |
+| #135 | `259d4a4` | fix(ntds): tighten event19 unplanned intubation precision (N3-P3) |
+| #136 | `3009584` | fix(ntds): tighten event15 severe sepsis precision (N3-P4) |
+| #137 | `ddef507` | fix(ntds): tighten event18 unplanned ICU admission precision (N3-P5) |
+| #138 | `cd887ce` | fix(ntds): tighten event01 AKI precision — reduce UTD rate (N3-P6) |
 
 ### Open PRs
 
@@ -51,10 +57,12 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 2224             |
+| Total tests         | 2224 + 6 precision suites |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 43               |
 | Fixture runner      | **43 passed, 0 xfailed** |
+| Precision tests     | 6 suites (E01, E10, E15, E16, E18, E19) |
+| Cohort invariant    | 33 canonical = 33 adjusted |
 | Canonical patients  | 33               |
 | Known flaky         | `test_ntds_runtime_wire_e2e::test_ntds_on_exit_zero` (intermittent, passes in isolation) |
 
@@ -62,9 +70,9 @@ None.
 
 | Module                              | Lines | Protected | Notes                    |
 |-------------------------------------|-------|-----------|--------------------------|
-| `cerebralos/ntds_logic/engine.py`   | 645   | Yes       | proximity_mode audited on all 21 events |
+| `cerebralos/ntds_logic/engine.py`   | 645   | Yes       | proximity_mode audited on all 21 events; no changes in N3 |
 | `cerebralos/protocol_engine/engine.py` | —  | Yes       | Not modified recently    |
-| Mapper: `epic_deaconess_mapper_v1.json` | — | No        | Patterns for all 21 events |
+| Mapper: `epic_deaconess_mapper_v1.json` | — | No        | Patterns for all 21 events + 6 negation noise buckets (N3) |
 
 ---
 
@@ -144,15 +152,40 @@ With NTDS coverage at 21/21, the following items define the next phase:
 | Automate NTDS outcome distribution check per event | CI/gate script | Planned |
 | Baseline hash coverage for NTDS event outputs | `scripts/baselines/` | Planned |
 
-#### N3 — Precision Tuning / False-Positive Audits (ACTIVE)
+#### N3 — Precision Tuning / False-Positive Audits ✅ COMPLETE (PRs #132–#138)
 
-**N3-P1 (current):** Event 16 — Stroke/CVA precision (branch `tier2/n3-p1-stroke-cva-precision-v1`)
+Six precision passes executed across the highest-impact NTDS events.
+Each PR added a negation-noise bucket to the mapper, wired `exclude_noise_keys`
+in the event rule, and added a dedicated precision test suite.
 
-| Item | Scope |
-|------|-------|
-| Per-event false-positive audit across full 33-patient cohort | Manual review + fixture additions |
-| Tighten patterns that overmatch (prophylaxis noise, negation leaks) | Rule JSON files |
-| Expand fixture coverage for edge-case patients | `tests/fixtures/ntds/` |
+| Pass | Event | PR   | Mapper bucket            | Tests | Distribution shift |
+|------|-------|------|--------------------------|-------|--------------------|
+| N3-P1 | E16 Stroke/CVA           | #132 | `stroke_negation_noise` (11) | `test_e16_stroke_precision.py` | YES 10→5 |
+| N3-P2 | E10 MI                   | #134 | `mi_negation_noise` (12)     | `test_e10_mi_precision.py`     | YES 4→2 |
+| N3-P3 | E19 Unplanned Intubation | #135 | `intubation_negation_noise` (15) | `test_e19_intubation_precision.py` | YES 9→5 |
+| N3-P4 | E15 Severe Sepsis        | #136 | `sepsis_negation_noise` (13) | `test_e15_sepsis_precision.py` | YES 4→2 |
+| N3-P5 | E18 Unplanned ICU        | #137 | `icu_negation_noise` (11)    | `test_e18_unplanned_icu_precision.py` | YES 2→1 |
+| N3-P6 | E01 AKI                  | #138 | `aki_negation_noise` (12)    | `test_e01_aki_precision.py`    | UTD 7→5, NO 26→28 |
+
+**Zero engine changes across all six passes.** All changes are mapper patterns + rule JSON wiring.
+
+##### N3 Residuals / Known Deferred Items
+
+| Item | Events | Reason deferred |
+|------|--------|------------------|
+| 5 AKI patients remain UNABLE_TO_DETERMINE | E01 | Genuine AKI evidence but no explicit onset-after-arrival language; resolving requires broadened `aki_onset` patterns (FP risk) or lab-trend inference (engine change) |
+| Gary_Linder AKI lab hits not filterable | E01 | LAB/DISCHARGE "AKI (acute kidney injury)" entries lack PMH context in the same line; noise pattern can't distinguish from active diagnosis |
+| Remaining precision noise in other 15 events | E02–E09, E11–E14, E17, E20–E21 | Not audited in N3; lower cohort impact; queue for future N4 pass |
+
+#### N4 — Next Phase Queue (PLANNED)
+
+| Item | Scope | Priority |
+|------|-------|----------|
+| Recall improvement: broaden `aki_onset` timing patterns safely | E01 rule + mapper | High |
+| PMH-aware gate handling: allow engine to filter PMH context across non-adjacent lines | Engine proposal (protected) | Medium |
+| Precision audit pass for remaining 15 events | Per-event mapper/rule/tests | Medium |
+| Automate NTDS outcome distribution check per event | CI/gate script | Low |
+| Baseline hash coverage for NTDS event outputs | `scripts/baselines/` | Low |
 
 ---
 

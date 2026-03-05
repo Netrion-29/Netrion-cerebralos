@@ -16,7 +16,8 @@
 | NTDS coverage | **21/21 events mapped** — 43 fixtures, 0 xfailed (PRs #118 – #124) |
 | N1 slug norm | ✅ COMPLETE (PRs #127–#128) |
 | N2 gate invariant | ✅ COMPLETE — Phase 1 (PRs #129–#131) |
-| Next phase | **N3 precision tuning** — N3-P1 = Event 16 Stroke/CVA (see Roadmap §3) |
+| N3 precision tuning | ✅ COMPLETE — 6 events tightened (PRs #132–#138): E16, E10, E19, E15, E18, E01 |
+| Next phase | **N4** — recall improvement + PMH-aware handling + remaining event precision (see Roadmap §3) |
 
 ## Quick Chat Starter
 
