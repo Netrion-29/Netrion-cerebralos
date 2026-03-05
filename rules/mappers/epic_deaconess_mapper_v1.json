@@ -351,6 +351,21 @@
 			"\\blactate\\b.*\\belevat(ed|ion)\\b",
 			"\\bvasopressor\\b.*\\b(support|require|infusion)\\b"
 		],
+		"sepsis_negation_noise": [
+			"\\(HCC\\)",
+			"\\bdue\\s+to\\s+unspecified\\s+organism\\b",
+			"\\bunspecified\\s+whether\\s+acute\\s+organ\\s+dysfunction\\b",
+			"\\bsepsis\\s+criteria\\b",
+			"\\bSIRS\\s+criteria\\b",
+			"\\bsepsis\\s+screen(ing)?\\b",
+			"\\bsepsis\\s+panel\\b",
+			"\\bsepsis\\s+bundle\\b",
+			"\\borgan\\s+dysfunction\\s*:\\s*none\\b",
+			"\\brule\\s+out\\b.*\\bsep(sis|tic)\\b",
+			"\\br/o\\b.*\\bsep(sis|tic)\\b",
+			"\\bno\\s+(evidence|signs?)\\s+of\\b.*\\bsep(sis|tic)\\b",
+			"\\bas\\s+a\\s+reminder\\b.*\\bsepsis\\b"
+		],
 		"aki_dx": [
 			"\\bacute\\s+kidney\\s+injury\\b",
 			"\\bAKI\\b",
