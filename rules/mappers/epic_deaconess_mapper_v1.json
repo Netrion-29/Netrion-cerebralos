@@ -307,6 +307,20 @@
 			"\\bacute\\s+coronary\\s+syndrome\\b",
 			"\\btroponin\\b.*\\b(significantly\\s+)?elevat(ed|ion)\\b"
 		],
+		"mi_negation_noise": [
+			"\\bno\\s+STEMI\\b",
+			"\\bno\\s+NSTEMI\\b",
+			"\\bno\\s+(acute\\s+)?myocardial\\s+infarction\\b",
+			"\\bno\\s+evidence\\s+of\\b[^.]{0,80}\\bmyocardial\\s+infarction\\b",
+			"\\bwithout\\s+evidence\\s+of\\b[^.]{0,80}\\bmyocardial\\s+infarction\\b",
+			"\\btroponin\\b[^.]{0,40}\\bnegative\\b",
+			"\\bnegative\\b[^.]{0,40}\\btroponin\\b",
+			"\\bno\\s+(obvious\\s+)?culprit\\s+(lesion\\s+)?for\\s+(NSTEMI|STEMI|MI)\\b",
+			"\\(HCC\\)",
+			"\\bno\\s+(acute\\s+)?coronary\\s+syndrome\\b",
+			"\\brule\\s*out\\b[^.]{0,40}\\b(MI|STEMI|NSTEMI|myocardial\\s+infarction)\\b",
+			"\\br/o\\b[^.]{0,40}\\b(MI|STEMI|NSTEMI)\\b"
+		],
 		"stroke_dx": [
 			"\\bacute\\s+(ischemic\\s+)?stroke\\b",
 			"\\bcerebrovascular\\s+accident\\b",
