@@ -40,8 +40,8 @@ _SECTION_PATTERNS: Dict[str, SourceType] = {
     r"NURSING[\s_]+NOTE": SourceType.NURSING_NOTE,
     r"IMAGING": SourceType.IMAGING,
     r"RADIOLOGY": SourceType.IMAGING,
-    r"LAB": SourceType.LAB,
-    r"MAR": SourceType.MAR,
+    r"LABS?\b": SourceType.LAB,
+    r"MAR\b": SourceType.MAR,
     r"MEDICATION[\s_]+ADMIN": SourceType.MAR,
     r"PROCEDURE": SourceType.PROCEDURE,
     r"OPERATIVE[\s_]+NOTE": SourceType.OPERATIVE_NOTE,
@@ -50,6 +50,12 @@ _SECTION_PATTERNS: Dict[str, SourceType] = {
     r"ED[\s_]+NOTE": SourceType.ED_NOTE,
     r"EMERGENCY": SourceType.ED_NOTE,
     r"PROGRESS[\s_]+NOTE": SourceType.PROGRESS_NOTE,
+}
+
+# Words that, when appearing as the sole trailing text after a section keyword,
+# indicate the line is clinical prose rather than a true section header.
+_BLOCK_WORDS = {
+    "PATIENT", "DISPOSITION", "PROVIDER", "PLANNING", "PLANNING.",
 }
 
 # Timestamp patterns (various Epic formats)
@@ -71,7 +77,11 @@ def _detect_source_type(line: str, current_source: SourceType) -> SourceType:
     """Detect if line is a section header, return appropriate SourceType."""
     upper = line.upper().strip()
     for pattern, source_type in _SECTION_PATTERNS.items():
-        if re.search(pattern, upper):
+        m = re.search(pattern, upper)
+        if m:
+            trailing = upper[m.end():].strip().strip(":")
+            if trailing in _BLOCK_WORDS:
+                continue
             return source_type
     return current_source
 
@@ -116,7 +126,11 @@ def _is_section_header(line: str) -> bool:
     """Check if line is a section header."""
     upper = line.upper().strip()
     for pattern in _SECTION_PATTERNS:
-        if re.search(pattern, upper):
+        m = re.search(pattern, upper)
+        if m:
+            trailing = upper[m.end():].strip().strip(":")
+            if trailing in _BLOCK_WORDS:
+                continue
             return True
     return False
 
