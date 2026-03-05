@@ -14,7 +14,7 @@
       "required": true,
       "min_count": 1,
       "query_keys": ["aki_dx"],
-      "exclude_noise_keys": [],
+      "exclude_noise_keys": ["aki_negation_noise"],
       "allowed_sources": ["PHYSICIAN_NOTE", "LAB", "DISCHARGE"],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of AKI diagnosis found."

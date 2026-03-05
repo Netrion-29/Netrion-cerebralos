@@ -375,6 +375,20 @@
 			"\\bhemodialysis\\b",
 			"\\boliguria\\b"
 		],
+		"aki_negation_noise": [
+			"\\bend[- ]?stage\\s+renal\\s+disease\\b",
+			"\\bESRD\\b",
+			"\\bchronic\\s+(kidney|renal)\\s+(disease|failure)\\b",
+			"\\b(CKD|CRF)\\b",
+			"\\bhemodialysis\\s+access\\b",
+			"\\b(on|maintenance)\\s+hemodialysis\\b",
+			"\\brenal\\s+disease\\s+on\\s+hemodialysis\\b",
+			"\\bHistory\\s*:.*\\bAKI\\b",
+			"\\bPMH\\s+(of|includes?|significant\\s+for)\\b.*\\bAKI\\b",
+			"\\bpast\\s+(medical\\s+)?history\\b.*\\b(AKI|acute\\s+kidney\\s+injury)\\b",
+			"\\bwith\\s+PMH\\s+of\\b.*\\bAKI\\b",
+			"\\bhistory\\s+of\\b.*\\b(AKI|acute\\s+kidney\\s+injury)\\b"
+		],
 		"aki_onset": [
 			"\\bdeveloped\\b.*\\bacute\\s+kidney\\s+injury\\b",
 			"\\bAKI\\b.*\\bduring\\s+(hospitalization|stay)\\b",
