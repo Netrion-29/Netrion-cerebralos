@@ -3,7 +3,7 @@
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
 | Date        | 2026-03-05                                               |
-| Baseline    | `4e76301` (main, after PR #145)                          |
+| Baseline    | `8fe032d` (main, after PR #147)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -53,6 +53,7 @@
 | #141 | `c60ddf8` | feat(ntds): N4-P1 AKI UTD reduction — timing gate + onset patterns |
 | #143 | `7ec0d45` | fix(parser): word-boundary anchors + block-words for source detection (N4-P2b) |
 | #145 | `4e76301` | fix(parser): anchor DISCHARGE detection to line start (N5) |
+| #147 | `8fe032d` | fix(parser): DISCHARGE first-word block logic — N6 residual false-flip hardening |
 
 ### Open PRs
 
@@ -62,7 +63,7 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 2601 passed (pytest) |
+| Total tests         | 2622 passed (pytest) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 43               |
 | Fixture runner      | **43 passed, 0 xfailed** |
@@ -224,21 +225,37 @@ Goals", "Barriers to Discharge", "EYES: No complaints of discharge", etc.).
 YES count: 17 → 14 (−3). All 5 deltas are corrections — outcomes were based on
 evidence falsely attributed to DISCHARGE sections via substring matching.
 
-##### N5 Residuals / Known Deferred Items
+##### N6 — DISCHARGE First-Word Block Logic ✅ COMPLETE (PR #147)
+
+Changed `_BLOCK_WORDS` check from exact-match (`trailing in _BLOCK_WORDS`) to
+first-word matching (`trailing.split()[0].rstrip(":.") in _DISCHARGE_BLOCK_FIRST_WORDS`),
+scoped to DISCHARGE patterns only. Added expanded block words: PATIENTON,
+RECOMMENDATIONS, MIM, /TRANSFER, COMMENTS, ASSESSMENT.
+
+**Eliminates 109/118 residual DISCHARGE false flips (92%), 5,482/5,723
+contaminated content lines (96%). 0 NTDS outcome deltas across all 33 patients
+(693 events, YES 14→14).**
+
+22 new tests added (admin-field rejection + true header preservation).
+
+##### N6 Residuals / Known Deferred Items
 
 | Item | Scope | Priority |
 |------|-------|----------|
-| ~102 residual line-start false flips (admin fields: "Discharge/Transfer To:", "Discharge Comments:") | `_BLOCK_WORDS` expansion | Medium |
+| 9 remaining false flips — "Discharge: [prose]" / "discharge." patterns (241 blast lines, 0 NTDS impact) | Prose-detection heuristics or regex tightening | Low |
+| Full cohort output refresh — 8/10 DISCHARGE evidence items in on-disk NTDS outputs are stale from pre-N5 | `run_patient.sh` all patients | Medium |
+| `\b` word-boundary on DISCHARGE regex for future-proofing | Parser hardening | Low |
 | Precision audit across all 16 DISCHARGE-using events | Per-event evidence review | Medium |
 | Audit other source patterns (IMAGING, PROCEDURE) for same substring issue | Parser hardening | Low |
 
-##### Remaining Queue (N4 + N5 combined)
+##### Remaining Queue (N4 + N5 + N6 combined)
 
 | Item | Scope | Priority |
 |------|-------|----------|
 | PMH-aware gate handling: allow engine to filter PMH context across non-adjacent lines | Engine proposal (protected) | Medium |
 | Precision audit pass for remaining 15 events | Per-event mapper/rule/tests | Medium |
-| Residual DISCHARGE admin-field false flips (~102) | `_BLOCK_WORDS` expansion | Medium |
+| 9 residual DISCHARGE false flips (prose / sentence fragments) | Parser hardening | Low |
+| Full cohort output refresh (stale DISCHARGE evidence items) | `run_patient.sh` all patients | Medium |
 | Automate NTDS outcome distribution check per event | CI/gate script | Low |
 | Baseline hash coverage for NTDS event outputs | `scripts/baselines/` | Low |
 | Audit other source patterns for substring issues | Parser hardening | Low |
