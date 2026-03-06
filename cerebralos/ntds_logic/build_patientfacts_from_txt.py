@@ -58,6 +58,15 @@ _BLOCK_WORDS = {
     "PATIENT", "DISPOSITION", "PROVIDER", "PLANNING", "PLANNING.",
 }
 
+# Extended block words checked against the first trailing token (after
+# stripping colons/periods) when the matched pattern is DISCHARGE.
+# This catches admin-field lines like "Discharge Disposition: Rehab-Inpt"
+# where the full trailing text differs from the bare block word.
+_DISCHARGE_BLOCK_FIRST_WORDS = _BLOCK_WORDS | {
+    "PATIENTON", "RECOMMENDATIONS", "MIM", "/TRANSFER",
+    "COMMENTS", "ASSESSMENT",
+}
+
 # Timestamp patterns (various Epic formats)
 _TIMESTAMP_PATTERNS = [
     # mm/dd/yy HHmm
@@ -82,6 +91,12 @@ def _detect_source_type(line: str, current_source: SourceType) -> SourceType:
             trailing = upper[m.end():].strip().strip(":")
             if trailing in _BLOCK_WORDS:
                 continue
+            # For DISCHARGE, also block on the first trailing word to
+            # catch admin fields like "Discharge Disposition: Rehab-Inpt".
+            if source_type is SourceType.DISCHARGE:
+                first_word = trailing.split()[0].rstrip(":.") if trailing.split() else ""
+                if first_word in _DISCHARGE_BLOCK_FIRST_WORDS:
+                    continue
             return source_type
     return current_source
 
@@ -126,11 +141,16 @@ def _is_section_header(line: str) -> bool:
     """Check if line is a section header."""
     upper = line.upper().strip()
     for pattern in _SECTION_PATTERNS:
+        source_type = _SECTION_PATTERNS[pattern]
         m = re.search(pattern, upper)
         if m:
             trailing = upper[m.end():].strip().strip(":")
             if trailing in _BLOCK_WORDS:
                 continue
+            if source_type is SourceType.DISCHARGE:
+                first_word = trailing.split()[0].rstrip(":.") if trailing.split() else ""
+                if first_word in _DISCHARGE_BLOCK_FIRST_WORDS:
+                    continue
             return True
     return False
 
