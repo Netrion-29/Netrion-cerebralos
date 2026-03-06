@@ -150,14 +150,15 @@ Verify the push succeeded and note the branch name for tomorrow.
 > **NTDS Coverage:** 21/21 events fully mapped (PRs #118 – #124).
 > Fixture runner: 43 passed, 0 xfailed.
 >
-> **Phase status (as of PR #145):**
+> **Phase status (as of PR #147):**
 > - N1 (slug normalization): ✅ COMPLETE (PRs #127–#128)
 > - N2 Phase 1 (gate cohort invariant + handoff embedding): ✅ COMPLETE (PRs #129–#131)
 > - N3 (precision tuning): ✅ COMPLETE (PRs #132–#138) — 6 events tightened (E16, E10, E19, E15, E18, E01)
 > - N4-P1 (AKI UTD reduction): ✅ COMPLETE (PR #141) — timing gate + onset patterns
 > - N4-P2b (parser word-boundary fix): ✅ COMPLETE (PR #143) — 8 validated deltas, 0 regressions
 > - N5 (DISCHARGE line-start anchor): ✅ COMPLETE (PR #145) — 5 validated deltas (all corrections), 0 regressions
-> - Next phase: PMH-aware handling + remaining event precision + residual DISCHARGE admin-field flips — see Roadmap doc §3
+> - N6 (DISCHARGE first-word block): ✅ COMPLETE (PR #147) — 109/118 residual false flips eliminated, 0 NTDS outcome deltas
+> - Next phase: PMH-aware handling + remaining event precision + stale output refresh — see Roadmap doc §3
 >
 > See Roadmap doc §3 for full backlog detail, N3 residuals, and N4 queue.
 

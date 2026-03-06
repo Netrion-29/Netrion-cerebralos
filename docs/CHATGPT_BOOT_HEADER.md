@@ -20,7 +20,8 @@
 | N4-P1 AKI UTD reduction | ✅ COMPLETE (PR #141) — timing gate + onset patterns |
 | N4-P2b parser word-boundary | ✅ COMPLETE (PR #143) — 8 validated deltas, 0 regressions |
 | N5 DISCHARGE line-start anchor | ✅ COMPLETE (PR #145) — 5 validated deltas (all corrections), 0 regressions |
-| Next phase | **Post-N5** — PMH-aware handling + remaining event precision + residual DISCHARGE admin flips (see Roadmap §3) |
+| N6 DISCHARGE first-word block | ✅ COMPLETE (PR #147) — 109/118 residual false flips eliminated, 0 NTDS outcome deltas |
+| Next phase | **Post-N6** — PMH-aware handling + remaining event precision + stale output refresh (see Roadmap §3) |
 
 ## Quick Chat Starter
 
