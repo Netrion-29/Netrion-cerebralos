@@ -46,7 +46,7 @@ _SECTION_PATTERNS: Dict[str, SourceType] = {
     r"PROCEDURE": SourceType.PROCEDURE,
     r"OPERATIVE[\s_]+NOTE": SourceType.OPERATIVE_NOTE,
     r"OP[\s_]+NOTE": SourceType.OPERATIVE_NOTE,
-    r"DISCHARGE": SourceType.DISCHARGE,
+    r"^\[?\s*DISCHARGE": SourceType.DISCHARGE,
     r"ED[\s_]+NOTE": SourceType.ED_NOTE,
     r"EMERGENCY": SourceType.ED_NOTE,
     r"PROGRESS[\s_]+NOTE": SourceType.PROGRESS_NOTE,

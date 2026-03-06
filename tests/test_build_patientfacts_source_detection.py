@@ -108,6 +108,15 @@ class TestBlockWords:
     def test_discharge_planning_rejected(self):
         assert _detect_source_type("DISCHARGE PLANNING", SourceType.UNKNOWN) == SourceType.UNKNOWN
 
+    def test_problem_discharge_goals_rejected(self):
+        assert _detect_source_type("Problem: Discharge Goals", SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+    def test_inline_discharge_rejected(self):
+        assert _detect_source_type("Plan includes discharge tomorrow", SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+    def test_bracketed_discharge_accepted(self):
+        assert _detect_source_type("[DISCHARGE]", SourceType.UNKNOWN) == SourceType.DISCHARGE
+
 
 # ---------------------------------------------------------------------------
 # Existing headers must still be accepted
@@ -163,3 +172,6 @@ class TestIsSectionHeaderBlockWords:
 
     def test_discharge_is_header(self):
         assert _is_section_header("DISCHARGE")
+
+    def test_problem_discharge_goals_not_header(self):
+        assert not _is_section_header("Problem: Discharge Goals")
