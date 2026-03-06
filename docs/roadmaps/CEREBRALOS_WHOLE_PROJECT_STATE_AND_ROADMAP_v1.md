@@ -3,7 +3,7 @@
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
 | Date        | 2026-03-05                                               |
-| Baseline    | `7ec0d45` (main, after PR #143)                          |
+| Baseline    | `4e76301` (main, after PR #145)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -52,6 +52,7 @@
 | #140 | `1156d7d` | docs(roadmap): fix N3 summary table inaccuracies |
 | #141 | `c60ddf8` | feat(ntds): N4-P1 AKI UTD reduction — timing gate + onset patterns |
 | #143 | `7ec0d45` | fix(parser): word-boundary anchors + block-words for source detection (N4-P2b) |
+| #145 | `4e76301` | fix(parser): anchor DISCHARGE detection to line start (N5) |
 
 ### Open PRs
 
@@ -61,7 +62,7 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 2597 passed (pytest) |
+| Total tests         | 2601 passed (pytest) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 43               |
 | Fixture runner      | **43 passed, 0 xfailed** |
@@ -203,14 +204,44 @@ set for trailing-word rejection.
 | UTD→NO (E01) | 1 | Margaret_Rudd | Correct — false LAB from prose "laboratory" eliminated |
 | NO→UTD (E01) | 1 | William_Simmons | Correct — false MAR from "PRIMARY" eliminated |
 
-##### N4 Remaining Queue
+##### N5 — DISCHARGE Source-Detection Hardening ✅ COMPLETE (PR #145)
+
+Anchored the DISCHARGE section pattern in `_detect_source_type()` from bare
+substring `r"DISCHARGE"` to line-start `r"^\[?\s*DISCHARGE"`. Eliminates 95%
+of false DISCHARGE section flips caused by prose lines ("Problem: Discharge
+Goals", "Barriers to Discharge", "EYES: No complaints of discharge", etc.).
+
+**Validated all-21 delta (5 changes, 0 regressions):**
+
+| Patient | Event | Old | New | Classification |
+|---------|-------|-----|-----|----------------|
+| Margaret_Rudd | E01 AKI | UTD | NO | Correction — false DISCHARGE evidence eliminated |
+| William_Simmons | E01 AKI | NO | UTD | Correction — section cascade restored correct attribution |
+| Larry_Corne | E16 Stroke | YES | NO | Correction — stroke_dx gate lost false DISCHARGE evidence |
+| Mary_King | E16 Stroke | YES | NO | Correction — stroke_dx gate lost false DISCHARGE evidence |
+| Ronald_Marshall | E21 VAP | YES | NO | Correction — vap_evidence gate lost false DISCHARGE evidence |
+
+YES count: 17 → 14 (−3). All 5 deltas are corrections — outcomes were based on
+evidence falsely attributed to DISCHARGE sections via substring matching.
+
+##### N5 Residuals / Known Deferred Items
+
+| Item | Scope | Priority |
+|------|-------|----------|
+| ~102 residual line-start false flips (admin fields: "Discharge/Transfer To:", "Discharge Comments:") | `_BLOCK_WORDS` expansion | Medium |
+| Precision audit across all 16 DISCHARGE-using events | Per-event evidence review | Medium |
+| Audit other source patterns (IMAGING, PROCEDURE) for same substring issue | Parser hardening | Low |
+
+##### Remaining Queue (N4 + N5 combined)
 
 | Item | Scope | Priority |
 |------|-------|----------|
 | PMH-aware gate handling: allow engine to filter PMH context across non-adjacent lines | Engine proposal (protected) | Medium |
 | Precision audit pass for remaining 15 events | Per-event mapper/rule/tests | Medium |
+| Residual DISCHARGE admin-field false flips (~102) | `_BLOCK_WORDS` expansion | Medium |
 | Automate NTDS outcome distribution check per event | CI/gate script | Low |
 | Baseline hash coverage for NTDS event outputs | `scripts/baselines/` | Low |
+| Audit other source patterns for substring issues | Parser hardening | Low |
 
 ---
 
