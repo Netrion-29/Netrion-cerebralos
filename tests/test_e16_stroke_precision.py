@@ -137,6 +137,58 @@ class TestStrokeNegationNoiseMatches:
             pats, "Continue aspirin for stroke prevention."
         )
 
+    def test_no_mass_effect_comma_list_ich(self):
+        """Comma-list negation: 'No mass effect, intracranial hemorrhage, ...'"""
+        pats = _load_patterns()["stroke_negation_noise"]
+        assert _any_pattern_matches(
+            pats,
+            "No mass effect, intracranial hemorrhage, or extra-axial fluid collections.",
+        )
+
+    def test_no_midline_shift_comma_ich(self):
+        pats = _load_patterns()["stroke_negation_noise"]
+        assert _any_pattern_matches(
+            pats,
+            "No midline shift, intracranial hemorrhage or hydrocephalus.",
+        )
+
+    def test_pmh_cva(self):
+        """PMH list containing CVA should be filtered as non-diagnostic."""
+        pats = _load_patterns()["stroke_negation_noise"]
+        assert _any_pattern_matches(
+            pats, "PMH CAD HTN, HLD, CVA, PE (Eliquis)"
+        )
+
+    def test_past_medical_history_cva(self):
+        pats = _load_patterns()["stroke_negation_noise"]
+        assert _any_pattern_matches(
+            pats, "Past medical history: CVA in 2019, HTN, DM"
+        )
+
+    def test_pmh_stroke(self):
+        pats = _load_patterns()["stroke_negation_noise"]
+        assert _any_pattern_matches(
+            pats, "PMH: stroke 2020, atrial fibrillation, COPD"
+        )
+
+    def test_history_of_cva(self):
+        pats = _load_patterns()["stroke_negation_noise"]
+        assert _any_pattern_matches(
+            pats, "History of CVA, currently on Eliquis"
+        )
+
+    def test_hx_of_stroke(self):
+        pats = _load_patterns()["stroke_negation_noise"]
+        assert _any_pattern_matches(
+            pats, "Hx of stroke, on anticoagulation"
+        )
+
+    def test_history_of_cerebrovascular_accident(self):
+        pats = _load_patterns()["stroke_negation_noise"]
+        assert _any_pattern_matches(
+            pats, "History of cerebrovascular accident, left hemiparesis resolved"
+        )
+
 
 # ─── stroke_negation_noise: must NOT match true positive text ──────────
 
@@ -263,8 +315,8 @@ class TestStrokeRuleStructure:
         pats = _load_patterns()
         assert "stroke_negation_noise" in pats, \
             "stroke_negation_noise bucket must exist in mapper"
-        assert len(pats["stroke_negation_noise"]) >= 8, \
-            "stroke_negation_noise should have at least 8 patterns"
+        assert len(pats["stroke_negation_noise"]) >= 11, \
+            "stroke_negation_noise should have at least 11 patterns"
 
     def test_stroke_dx_patterns_unchanged(self):
         """Guard: stroke_dx patterns must not be modified by this PR."""

@@ -13,7 +13,7 @@
       "required": true,
       "min_count": 2,
       "query_keys": ["vap_dx", "vap_cxr"],
-      "exclude_noise_keys": ["history_noise"],
+      "exclude_noise_keys": ["history_noise", "vap_negation_noise"],
       "allowed_sources": ["IMAGING", "PHYSICIAN_NOTE", "LAB"],
       "fail_outcome": "NO",
       "fail_reason": "Insufficient evidence for VAP."
