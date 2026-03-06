@@ -2,8 +2,8 @@
 
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
-| Date        | 2026-03-04                                               |
-| Baseline    | `cd887ce` (main, after PR #138)                          |
+| Date        | 2026-03-05                                               |
+| Baseline    | `7ec0d45` (main, after PR #143)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -48,6 +48,10 @@
 | #136 | `3009584` | fix(ntds): tighten event15 severe sepsis precision (N3-P4) |
 | #137 | `ddef507` | fix(ntds): tighten event18 unplanned ICU admission precision (N3-P5) |
 | #138 | `cd887ce` | fix(ntds): tighten event01 AKI precision — reduce UTD rate (N3-P6) |
+| #139 | `43f094d` | docs(roadmap): close out N3 precision phase — mark P1–P6 complete |
+| #140 | `1156d7d` | docs(roadmap): fix N3 summary table inaccuracies |
+| #141 | `c60ddf8` | feat(ntds): N4-P1 AKI UTD reduction — timing gate + onset patterns |
+| #143 | `7ec0d45` | fix(parser): word-boundary anchors + block-words for source detection (N4-P2b) |
 
 ### Open PRs
 
@@ -57,7 +61,7 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 2224 + 6 precision suites |
+| Total tests         | 2597 passed (pytest) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 43               |
 | Fixture runner      | **43 passed, 0 xfailed** |
@@ -177,11 +181,32 @@ in the event rule, and added a dedicated precision test suite.
 | Gary_Linder AKI lab hits not filterable | E01 | LAB/DISCHARGE "AKI (acute kidney injury)" entries lack PMH context in the same line; noise pattern can't distinguish from active diagnosis |
 | Remaining precision noise in other 15 events | E02–E09, E11–E14, E17, E20–E21 | Not audited in N3; lower cohort impact; queue for future N4 pass |
 
-#### N4 — Next Phase Queue (PLANNED)
+#### N4 — Parser & Recall Improvement (IN PROGRESS)
+
+##### N4-P1 — AKI UTD Reduction ✅ COMPLETE (PR #141)
+
+Added `aki_onset` timing patterns and `timing_after_arrival` gate to E01 rule.
+Reduces UTD rate by detecting post-arrival AKI onset language.
+
+##### N4-P2b — Parser Word-Boundary Fix ✅ COMPLETE (PR #143)
+
+Anchored `_SECTION_PATTERNS` in `build_patientfacts_from_txt.py` with word
+boundaries (`LAB` → `LABS?\b`, `MAR` → `MAR\b`) and added `_BLOCK_WORDS`
+set for trailing-word rejection.
+
+**Validated all-21 delta (8 changes, 0 regressions):**
+
+| Change | Count | Patients | Classification |
+|--------|-------|----------|----------------|
+| YES→NO (FP eliminated) | 3 | E16 Larry_Corne, E16 Mary_King, E21 Ronald_Marshall | TP — validated, mapper hardened |
+| NO→YES (TP gained) | 3 | E09 Dallas_Clark, E13 Ronald_Marshall, E21 Ronald_Bittner | TP — validated |
+| UTD→NO (E01) | 1 | Margaret_Rudd | Correct — false LAB from prose "laboratory" eliminated |
+| NO→UTD (E01) | 1 | William_Simmons | Correct — false MAR from "PRIMARY" eliminated |
+
+##### N4 Remaining Queue
 
 | Item | Scope | Priority |
 |------|-------|----------|
-| Recall improvement: broaden `aki_onset` timing patterns safely | E01 rule + mapper | High |
 | PMH-aware gate handling: allow engine to filter PMH context across non-adjacent lines | Engine proposal (protected) | Medium |
 | Precision audit pass for remaining 15 events | Per-event mapper/rule/tests | Medium |
 | Automate NTDS outcome distribution check per event | CI/gate script | Low |

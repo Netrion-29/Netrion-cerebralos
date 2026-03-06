@@ -17,7 +17,9 @@
 | N1 slug norm | ✅ COMPLETE (PRs #127–#128) |
 | N2 gate invariant | ✅ COMPLETE — Phase 1 (PRs #129–#131) |
 | N3 precision tuning | ✅ COMPLETE — 6 events tightened (PRs #132–#138): E16, E10, E19, E15, E18, E01 |
-| Next phase | **N4** — recall improvement + PMH-aware handling + remaining event precision (see Roadmap §3) |
+| N4-P1 AKI UTD reduction | ✅ COMPLETE (PR #141) — timing gate + onset patterns |
+| N4-P2b parser word-boundary | ✅ COMPLETE (PR #143) — 8 validated deltas, 0 regressions |
+| Next phase | **N4 remaining** — PMH-aware handling + remaining event precision (see Roadmap §3) |
 
 ## Quick Chat Starter
 
