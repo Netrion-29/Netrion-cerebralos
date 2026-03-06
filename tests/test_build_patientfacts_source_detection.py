@@ -119,6 +119,93 @@ class TestBlockWords:
 
 
 # ---------------------------------------------------------------------------
+# N6 – DISCHARGE first-word block tests
+# ---------------------------------------------------------------------------
+class TestDischargeFirstWordBlock:
+    """Admin-field lines with trailing text beyond a block word must be rejected."""
+
+    def test_disposition_with_value_rejected(self):
+        result = _detect_source_type("Discharge Disposition: Rehab-Inpt", SourceType.UNKNOWN)
+        assert result == SourceType.UNKNOWN
+
+    def test_disposition_skilled_nursing_rejected(self):
+        result = _detect_source_type("Discharge Disposition: Skilled Nursing Facility", SourceType.UNKNOWN)
+        assert result == SourceType.UNKNOWN
+
+    def test_recommendations_prose_rejected(self):
+        result = _detect_source_type("Discharge Recommendations: Pt would benefit from therapy", SourceType.UNKNOWN)
+        assert result == SourceType.UNKNOWN
+
+    def test_patienton_adt_rejected(self):
+        result = _detect_source_type("DISCHARGE PATIENTon Discharge Date: 12/19/2025", SourceType.UNKNOWN)
+        assert result == SourceType.UNKNOWN
+
+    def test_mim_provided_rejected(self):
+        result = _detect_source_type("Discharge MIM provided: yes", SourceType.UNKNOWN)
+        assert result == SourceType.UNKNOWN
+
+    def test_transfer_to_rejected(self):
+        result = _detect_source_type("Discharge/Transfer To: Skilled Nursing", SourceType.UNKNOWN)
+        assert result == SourceType.UNKNOWN
+
+    def test_comments_rejected(self):
+        result = _detect_source_type("Discharge Comments: 12/15 Kyoho today", SourceType.UNKNOWN)
+        assert result == SourceType.UNKNOWN
+
+    def test_assessment_rejected(self):
+        result = _detect_source_type("Discharge Assessment: Complete", SourceType.UNKNOWN)
+        assert result == SourceType.UNKNOWN
+
+    def test_planning_with_prose_rejected(self):
+        result = _detect_source_type("Discharge Planning: Follow up with primary hematologist", SourceType.UNKNOWN)
+        assert result == SourceType.UNKNOWN
+
+    # --- True DISCHARGE headers must still be accepted ---
+    def test_discharge_bare_still_accepted(self):
+        assert _detect_source_type("DISCHARGE", SourceType.UNKNOWN) == SourceType.DISCHARGE
+
+    def test_discharge_summary_still_accepted(self):
+        assert _detect_source_type("DISCHARGE SUMMARY", SourceType.UNKNOWN) == SourceType.DISCHARGE
+
+    def test_discharge_medications_still_accepted(self):
+        assert _detect_source_type("DISCHARGE MEDICATIONS", SourceType.UNKNOWN) == SourceType.DISCHARGE
+
+    def test_discharge_instructions_still_accepted(self):
+        assert _detect_source_type("DISCHARGE INSTRUCTIONS", SourceType.UNKNOWN) == SourceType.DISCHARGE
+
+    def test_discharge_note_still_accepted(self):
+        assert _detect_source_type("DISCHARGE NOTE", SourceType.UNKNOWN) == SourceType.DISCHARGE
+
+    def test_discharge_date_still_accepted(self):
+        assert _detect_source_type("DISCHARGE DATE", SourceType.UNKNOWN) == SourceType.DISCHARGE
+
+    def test_discharge_colon_still_accepted(self):
+        assert _detect_source_type("DISCHARGE:", SourceType.UNKNOWN) == SourceType.DISCHARGE
+
+    def test_bracketed_discharge_still_accepted(self):
+        assert _detect_source_type("[DISCHARGE]", SourceType.UNKNOWN) == SourceType.DISCHARGE
+
+    # --- Non-DISCHARGE patterns unaffected ---
+    def test_procedure_patient_still_matches(self):
+        """PROCEDURE PATIENT should still match — first-word block is DISCHARGE-only."""
+        result = _detect_source_type("PROCEDURE PATIENT", SourceType.UNKNOWN)
+        assert result == SourceType.UNKNOWN  # blocked by existing _BLOCK_WORDS
+
+
+class TestIsSectionHeaderFirstWordBlock:
+    """_is_section_header must also respect first-word blocking for DISCHARGE."""
+
+    def test_disposition_with_value_not_header(self):
+        assert not _is_section_header("Discharge Disposition: Rehab-Inpt")
+
+    def test_recommendations_not_header(self):
+        assert not _is_section_header("Discharge Recommendations: Pt would benefit from therapy")
+
+    def test_discharge_summary_is_header(self):
+        assert _is_section_header("DISCHARGE SUMMARY")
+
+
+# ---------------------------------------------------------------------------
 # Existing headers must still be accepted
 # ---------------------------------------------------------------------------
 class TestExistingHeadersPreserved:
