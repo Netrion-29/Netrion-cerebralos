@@ -206,6 +206,54 @@ class TestIsSectionHeaderFirstWordBlock:
 
 
 # ---------------------------------------------------------------------------
+# N7 – DISCHARGE prose residual cleanup tests
+# ---------------------------------------------------------------------------
+class TestDischargeProseResidualsN7:
+    """Residual prose lines should not be treated as DISCHARGE headers."""
+
+    @pytest.mark.parametrize(
+        "line",
+        [
+            "Discharge: PT recommending continued therapy...",
+            "Discharge: pending PT",
+            "Discharge at 12/19/2025 1216",
+            "Discharge: Per attending.",
+            "Discharge: per attending.",
+            "Discharge to home with son...",
+            "Discharge to home will start OP PT...",
+            "Discharge: Ortho stable for dc",
+            "discharge.",
+            "Discharge orders placed and patient's family notified",
+            "Discharge to home with wife...",
+        ],
+    )
+    def test_detect_source_type_rejects_residual_prose(self, line):
+        assert _detect_source_type(line, SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+    @pytest.mark.parametrize(
+        "line",
+        [
+            "Discharge: PT recommending continued therapy...",
+            "Discharge at 12/19/2025 1216",
+            "Discharge to home with son...",
+            "discharge.",
+        ],
+    )
+    def test_is_section_header_rejects_residual_prose(self, line):
+        assert not _is_section_header(line)
+
+    def test_discharge_summary_still_detects(self):
+        assert _detect_source_type("DISCHARGE SUMMARY", SourceType.UNKNOWN) == SourceType.DISCHARGE
+
+    def test_bracketed_discharge_with_timestamp_still_detects(self):
+        line = "[DISCHARGE] 2026-01-04 09:08:00"
+        assert _detect_source_type(line, SourceType.UNKNOWN) == SourceType.DISCHARGE
+
+    def test_discharge_date_still_detects(self):
+        assert _detect_source_type("DISCHARGE DATE", SourceType.UNKNOWN) == SourceType.DISCHARGE
+
+
+# ---------------------------------------------------------------------------
 # Existing headers must still be accepted
 # ---------------------------------------------------------------------------
 class TestExistingHeadersPreserved:
