@@ -3,7 +3,7 @@
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
 | Date        | 2026-03-07                                               |
-| Baseline    | `1713e7a` (main, after PR #149)                          |
+| Baseline    | `b742f82` (main, after PR #150)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -56,6 +56,7 @@
 | #147 | `8fe032d` | fix(parser): DISCHARGE first-word block logic — N6 residual false-flip hardening |
 | #148 | `2231054` | docs(roadmap): record PR #147 completion — N6 DISCHARGE first-word block closeout |
 | #149 | `1713e7a` | fix(parser): block residual DISCHARGE prose flips (N7) |
+| #150 | `b742f82` | docs(roadmap): record PR #149 completion — N7 DISCHARGE prose residual cleanup closeout |
 
 ### Open PRs
 
@@ -65,7 +66,7 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 2640 passed (pytest) |
+| Total tests         | 2640 passed (pytest)  |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 43               |
 | Fixture runner      | **43 passed, 0 xfailed** |
@@ -253,11 +254,28 @@ flips** (450 blast lines) across 8 patients.
 18 new tests added (11 `_detect_source_type` rejections, 4
 `_is_section_header` rejections, 3 preservation tests).
 
-##### Remaining Queue (post-N7)
+##### D1 — Full Cohort Output Refresh ✅ COMPLETE (operational, no code changes)
+
+Refreshed all 33 patients' NTDS outputs to pick up parser fixes N5/N6/N7.
+Executed on main after PR #150.
+
+| Metric | Result |
+|--------|--------|
+| Patients refreshed | 33/33 |
+| Pre/post all-21 distribution diff | **Empty — zero NTDS outcome deltas** |
+| Cohort invariant | PASS (33 canonical, 33 adjusted, 0 extra, 0 missing) |
+| Predicted flips (Gary_Linder E01, Ronald_Marshall E13) | Did NOT materialize |
+| Tracked working tree | Clean |
+
+The D1 scoping predicted 2 possible outcome flips (Gary_Linder E01 UTD→NO,
+Ronald_Marshall E13 YES→NO) based on stale evidence analysis. Neither flip
+occurred because the current parser + engine combination preserved gate
+outcomes despite evidence source-type reclassification.
+
+##### Remaining Queue (post-D1)
 
 | Item | Scope | Priority |
 |------|-------|----------|
-| D1 — Full cohort output refresh (stale DISCHARGE evidence items from pre-N5) | `run_patient.sh` all patients | Medium |
 | D2 — Audit other source patterns (IMAGING, PROCEDURE) for substring issues | Parser hardening | Low |
 | D3 — `\b` word-boundary on DISCHARGE regex for future-proofing | Parser hardening | Low |
 | D4 — Precision audit across all 16 DISCHARGE-using events | Per-event evidence review | Medium |
