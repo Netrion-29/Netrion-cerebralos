@@ -2,8 +2,8 @@
 
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
-| Date        | 2026-03-05                                               |
-| Baseline    | `8fe032d` (main, after PR #147)                          |
+| Date        | 2026-03-07                                               |
+| Baseline    | `1713e7a` (main, after PR #149)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -54,6 +54,8 @@
 | #143 | `7ec0d45` | fix(parser): word-boundary anchors + block-words for source detection (N4-P2b) |
 | #145 | `4e76301` | fix(parser): anchor DISCHARGE detection to line start (N5) |
 | #147 | `8fe032d` | fix(parser): DISCHARGE first-word block logic — N6 residual false-flip hardening |
+| #148 | `2231054` | docs(roadmap): record PR #147 completion — N6 DISCHARGE first-word block closeout |
+| #149 | `1713e7a` | fix(parser): block residual DISCHARGE prose flips (N7) |
 
 ### Open PRs
 
@@ -63,7 +65,7 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 2622 passed (pytest) |
+| Total tests         | 2640 passed (pytest) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 43               |
 | Fixture runner      | **43 passed, 0 xfailed** |
@@ -238,27 +240,31 @@ contaminated content lines (96%). 0 NTDS outcome deltas across all 33 patients
 
 22 new tests added (admin-field rejection + true header preservation).
 
-##### N6 Residuals / Known Deferred Items
+##### N7 — DISCHARGE Prose Residual Cleanup ✅ COMPLETE (PR #149)
+
+Expanded `_DISCHARGE_BLOCK_FIRST_WORDS` with 7 additional block words
+(AT, ORDERS, ORTHO, PENDING, PER, PT, TO) and added bare-period
+trailing guard (`trailing == "."`) in both `_detect_source_type()` and
+`_is_section_header()`. Eliminates **all 14 remaining false DISCHARGE
+flips** (450 blast lines) across 8 patients.
+
+**0 NTDS outcome deltas across all 33 patients (693 events, YES 14→14).**
+
+18 new tests added (11 `_detect_source_type` rejections, 4
+`_is_section_header` rejections, 3 preservation tests).
+
+##### Remaining Queue (post-N7)
 
 | Item | Scope | Priority |
 |------|-------|----------|
-| 9 remaining false flips — "Discharge: [prose]" / "discharge." patterns (241 blast lines, 0 NTDS impact) | Prose-detection heuristics or regex tightening | Low |
-| Full cohort output refresh — 8/10 DISCHARGE evidence items in on-disk NTDS outputs are stale from pre-N5 | `run_patient.sh` all patients | Medium |
-| `\b` word-boundary on DISCHARGE regex for future-proofing | Parser hardening | Low |
-| Precision audit across all 16 DISCHARGE-using events | Per-event evidence review | Medium |
-| Audit other source patterns (IMAGING, PROCEDURE) for same substring issue | Parser hardening | Low |
-
-##### Remaining Queue (N4 + N5 + N6 combined)
-
-| Item | Scope | Priority |
-|------|-------|----------|
+| D1 — Full cohort output refresh (stale DISCHARGE evidence items from pre-N5) | `run_patient.sh` all patients | Medium |
+| D2 — Audit other source patterns (IMAGING, PROCEDURE) for substring issues | Parser hardening | Low |
+| D3 — `\b` word-boundary on DISCHARGE regex for future-proofing | Parser hardening | Low |
+| D4 — Precision audit across all 16 DISCHARGE-using events | Per-event evidence review | Medium |
 | PMH-aware gate handling: allow engine to filter PMH context across non-adjacent lines | Engine proposal (protected) | Medium |
 | Precision audit pass for remaining 15 events | Per-event mapper/rule/tests | Medium |
-| 9 residual DISCHARGE false flips (prose / sentence fragments) | Parser hardening | Low |
-| Full cohort output refresh (stale DISCHARGE evidence items) | `run_patient.sh` all patients | Medium |
 | Automate NTDS outcome distribution check per event | CI/gate script | Low |
 | Baseline hash coverage for NTDS event outputs | `scripts/baselines/` | Low |
-| Audit other source patterns for substring issues | Parser hardening | Low |
 
 ---
 
