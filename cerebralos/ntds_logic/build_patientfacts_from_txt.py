@@ -65,6 +65,7 @@ _BLOCK_WORDS = {
 _DISCHARGE_BLOCK_FIRST_WORDS = _BLOCK_WORDS | {
     "PATIENTON", "RECOMMENDATIONS", "MIM", "/TRANSFER",
     "COMMENTS", "ASSESSMENT",
+    "AT", "ORDERS", "ORTHO", "PENDING", "PER", "PT", "TO",
 }
 
 # Timestamp patterns (various Epic formats)
@@ -94,6 +95,8 @@ def _detect_source_type(line: str, current_source: SourceType) -> SourceType:
             # For DISCHARGE, also block on the first trailing word to
             # catch admin fields like "Discharge Disposition: Rehab-Inpt".
             if source_type is SourceType.DISCHARGE:
+                if trailing == ".":
+                    continue
                 first_word = trailing.split()[0].rstrip(":.") if trailing.split() else ""
                 if first_word in _DISCHARGE_BLOCK_FIRST_WORDS:
                     continue
@@ -148,6 +151,8 @@ def _is_section_header(line: str) -> bool:
             if trailing in _BLOCK_WORDS:
                 continue
             if source_type is SourceType.DISCHARGE:
+                if trailing == ".":
+                    continue
                 first_word = trailing.split()[0].rstrip(":.") if trailing.split() else ""
                 if first_word in _DISCHARGE_BLOCK_FIRST_WORDS:
                     continue
