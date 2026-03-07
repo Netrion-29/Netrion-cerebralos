@@ -310,3 +310,127 @@ class TestIsSectionHeaderBlockWords:
 
     def test_problem_discharge_goals_not_header(self):
         assert not _is_section_header("Problem: Discharge Goals")
+
+
+# ---------------------------------------------------------------------------
+# D2 – IMAGING line-start anchor tests
+# ---------------------------------------------------------------------------
+class TestImagingLineStartAnchor:
+    """IMAGING must only match at line start (with optional bracket/whitespace)."""
+
+    def test_imaging_bare(self):
+        assert _detect_source_type("IMAGING", SourceType.UNKNOWN) == SourceType.IMAGING
+
+    def test_imaging_colon(self):
+        assert _detect_source_type("IMAGING:", SourceType.UNKNOWN) == SourceType.IMAGING
+
+    def test_imaging_studies(self):
+        assert _detect_source_type("IMAGING STUDIES:", SourceType.UNKNOWN) == SourceType.IMAGING
+
+    def test_bracketed_imaging(self):
+        assert _detect_source_type("[IMAGING]", SourceType.UNKNOWN) == SourceType.IMAGING
+
+    def test_imaging_information(self):
+        assert _detect_source_type("IMAGING INFORMATION", SourceType.UNKNOWN) == SourceType.IMAGING
+
+    def test_prose_link_to_imaging_rejected(self):
+        assert _detect_source_type("Link to Imaging Results", SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+    def test_prose_print_imaging_rejected(self):
+        assert _detect_source_type("Print Imaging Report", SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+    def test_prose_reviewed_imaging_rejected(self):
+        assert _detect_source_type("Reviewed imaging with radiology", SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+    def test_prose_order_imaging_rejected(self):
+        assert _detect_source_type("Please order imaging of chest", SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+
+# ---------------------------------------------------------------------------
+# D2 – RADIOLOGY line-start anchor tests
+# ---------------------------------------------------------------------------
+class TestRadiologyLineStartAnchor:
+    """RADIOLOGY must only match at line start (with optional bracket/whitespace)."""
+
+    def test_radiology_bare(self):
+        assert _detect_source_type("RADIOLOGY", SourceType.UNKNOWN) == SourceType.IMAGING
+
+    def test_radiology_colon(self):
+        assert _detect_source_type("RADIOLOGY:", SourceType.UNKNOWN) == SourceType.IMAGING
+
+    def test_bracketed_radiology(self):
+        assert _detect_source_type("[RADIOLOGY]", SourceType.UNKNOWN) == SourceType.IMAGING
+
+    def test_radiology_report(self):
+        assert _detect_source_type("RADIOLOGY REPORT", SourceType.UNKNOWN) == SourceType.IMAGING
+
+    def test_prose_reviewed_radiology_rejected(self):
+        assert _detect_source_type("Reviewed radiology findings with team", SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+    def test_prose_pending_radiology_rejected(self):
+        assert _detect_source_type("Pending radiology read", SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+    def test_prose_link_to_radiology_rejected(self):
+        assert _detect_source_type("Link to Radiology Report", SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+
+# ---------------------------------------------------------------------------
+# D2 – PROCEDURE line-start anchor tests
+# ---------------------------------------------------------------------------
+class TestProcedureLineStartAnchor:
+    """PROCEDURE must only match at line start (with optional bracket/whitespace)."""
+
+    def test_procedure_bare(self):
+        assert _detect_source_type("PROCEDURE", SourceType.UNKNOWN) == SourceType.PROCEDURE
+
+    def test_procedure_colon(self):
+        assert _detect_source_type("PROCEDURE:", SourceType.UNKNOWN) == SourceType.PROCEDURE
+
+    def test_procedure_log(self):
+        assert _detect_source_type("PROCEDURE LOG", SourceType.UNKNOWN) == SourceType.PROCEDURE
+
+    def test_procedure_orders(self):
+        assert _detect_source_type("PROCEDURE ORDERS", SourceType.UNKNOWN) == SourceType.PROCEDURE
+
+    def test_bracketed_procedure(self):
+        assert _detect_source_type("[PROCEDURE]", SourceType.UNKNOWN) == SourceType.PROCEDURE
+
+    def test_prose_link_to_procedure_rejected(self):
+        assert _detect_source_type("Link to Procedure Log", SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+    def test_prose_print_procedure_rejected(self):
+        assert _detect_source_type("Print Procedure...", SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+    def test_prose_completed_procedure_rejected(self):
+        assert _detect_source_type("Completed procedure without complication", SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+    def test_prose_schedule_procedure_rejected(self):
+        assert _detect_source_type("Schedule procedure for tomorrow", SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+    def test_prose_consent_for_procedure_rejected(self):
+        assert _detect_source_type("Consent for procedure obtained", SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+
+# ---------------------------------------------------------------------------
+# D2 – _is_section_header consistency for anchored patterns
+# ---------------------------------------------------------------------------
+class TestIsSectionHeaderD2Anchors:
+    """_is_section_header must also respect line-start anchors for D2 patterns."""
+
+    def test_imaging_header(self):
+        assert _is_section_header("IMAGING")
+
+    def test_radiology_header(self):
+        assert _is_section_header("RADIOLOGY:")
+
+    def test_procedure_header(self):
+        assert _is_section_header("PROCEDURE LOG")
+
+    def test_prose_link_imaging_not_header(self):
+        assert not _is_section_header("Link to Imaging Results")
+
+    def test_prose_print_procedure_not_header(self):
+        assert not _is_section_header("Print Procedure...")
+
+    def test_prose_reviewed_radiology_not_header(self):
+        assert not _is_section_header("Reviewed radiology findings")
