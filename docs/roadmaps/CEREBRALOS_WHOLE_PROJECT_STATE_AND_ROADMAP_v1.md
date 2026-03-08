@@ -3,7 +3,7 @@
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
 | Date        | 2026-03-07                                               |
-| Baseline    | `b742f82` (main, after PR #150)                          |
+| Baseline    | `b197cc2` (main, after PR #152)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -57,6 +57,8 @@
 | #148 | `2231054` | docs(roadmap): record PR #147 completion — N6 DISCHARGE first-word block closeout |
 | #149 | `1713e7a` | fix(parser): block residual DISCHARGE prose flips (N7) |
 | #150 | `b742f82` | docs(roadmap): record PR #149 completion — N7 DISCHARGE prose residual cleanup closeout |
+| #151 | `0866ca7` | docs(roadmap): record D1 full-cohort NTDS refresh completion |
+| #152 | `b197cc2` | fix(parser): anchor IMAGING/RADIOLOGY/PROCEDURE detection to line start (D2) |
 
 ### Open PRs
 
@@ -272,11 +274,31 @@ Ronald_Marshall E13 YES→NO) based on stale evidence analysis. Neither flip
 occurred because the current parser + engine combination preserved gate
 outcomes despite evidence source-type reclassification.
 
-##### Remaining Queue (post-D1)
+##### D2 — IMAGING/RADIOLOGY/PROCEDURE Line-Start Anchor ✅ COMPLETE (PR #152)
+
+Anchored three section-detection patterns to line start (`^\[?\s*`) in
+`build_patientfacts_from_txt.py`, matching the DISCHARGE anchor from N5:
+
+| Pattern | Before | After |
+|---------|--------|-------|
+| IMAGING | `r"IMAGING"` | `r"^\[?\s*IMAGING"` |
+| RADIOLOGY | `r"RADIOLOGY"` | `r"^\[?\s*RADIOLOGY"` |
+| PROCEDURE | `r"PROCEDURE"` | `r"^\[?\s*PROCEDURE"` |
+
+68 focused regression tests added covering true-header acceptance and
+prose-mention rejection.
+
+| Metric | Result |
+|--------|--------|
+| pytest source-detection | 112 passed |
+| pytest event fixtures + cohort invariant | 68 passed |
+| audit_cohort_counts --check | PASS (33/33) |
+| A/B all-21 distribution | **0 NTDS outcome deltas** |
+
+##### Remaining Queue (post-D2)
 
 | Item | Scope | Priority |
 |------|-------|----------|
-| D2 — Audit other source patterns (IMAGING, PROCEDURE) for substring issues | Parser hardening | Low |
 | D3 — `\b` word-boundary on DISCHARGE regex for future-proofing | Parser hardening | Low |
 | D4 — Precision audit across all 16 DISCHARGE-using events | Per-event evidence review | Medium |
 | PMH-aware gate handling: allow engine to filter PMH context across non-adjacent lines | Engine proposal (protected) | Medium |
