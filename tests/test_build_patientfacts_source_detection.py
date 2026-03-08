@@ -55,6 +55,10 @@ class TestLabWordBoundary:
         result = _detect_source_type("Lab was ordered for CBC", SourceType.UNKNOWN)
         assert result == SourceType.LAB
 
+    def test_recent_labs_reviewed_rejected_when_not_header(self):
+        result = _detect_source_type("Recent Labs reviewed", SourceType.UNKNOWN)
+        assert result == SourceType.UNKNOWN
+
 
 # ---------------------------------------------------------------------------
 # MAR word-boundary tests
@@ -82,6 +86,10 @@ class TestMarWordBoundary:
 
     def test_mark_on_tube_rejected(self):
         assert _detect_source_type("MARK ON TUBE", SourceType.UNKNOWN) == SourceType.UNKNOWN
+
+    def test_kumar_name_not_treated_as_mar_header(self):
+        result = _detect_source_type("Kumar, Anup, MD", SourceType.UNKNOWN)
+        assert result == SourceType.UNKNOWN
 
 
 # ---------------------------------------------------------------------------
