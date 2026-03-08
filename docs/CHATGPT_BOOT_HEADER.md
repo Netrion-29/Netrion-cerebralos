@@ -23,7 +23,8 @@
 | N6 DISCHARGE first-word block | ✅ COMPLETE (PR #147) — 109/118 residual false flips eliminated, 0 NTDS outcome deltas |
 | N7 DISCHARGE prose residual cleanup | ✅ COMPLETE (PR #149) — all 14 remaining false flips eliminated, 0 NTDS outcome deltas |
 | D1 full cohort output refresh | ✅ COMPLETE — 33/33 patients refreshed, 0 NTDS outcome deltas, cohort invariant PASS |
-| Next phase | **Post-D1** — source-pattern audits (D2) + remaining event precision (D4) (see Roadmap §3) |
+| D2 IMAGING/RADIOLOGY/PROCEDURE anchor | ✅ COMPLETE (PR #152) — 3 patterns anchored, 68 tests added, 0 NTDS outcome deltas |
+| Next phase | **Post-D2** — DISCHARGE word-boundary (D3) + remaining event precision (D4) (see Roadmap §3) |
 
 ## Quick Chat Starter
 
