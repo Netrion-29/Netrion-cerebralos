@@ -442,3 +442,70 @@ class TestIsSectionHeaderD2Anchors:
 
     def test_prose_reviewed_radiology_not_header(self):
         assert not _is_section_header("Reviewed radiology findings")
+
+
+# ---------------------------------------------------------------------------
+# D6-P1 – MEDICATION_ADMIN line-start anchor tests
+# ---------------------------------------------------------------------------
+class TestMedicationAdminLineStartAnchor:
+    """MEDICATION_ADMIN must only match at line start (with optional bracket/whitespace)."""
+
+    def test_medication_admin_bare(self):
+        assert _detect_source_type("MEDICATION ADMINISTRATION", SourceType.UNKNOWN) == SourceType.MAR
+
+    def test_medication_admin_colon(self):
+        assert _detect_source_type("MEDICATION ADMIN:", SourceType.UNKNOWN) == SourceType.MAR
+
+    def test_bracketed_medication_admin(self):
+        assert _detect_source_type("[MEDICATION_ADMIN]", SourceType.UNKNOWN) == SourceType.MAR
+
+    def test_prose_stopping_medication_admin_rejected(self):
+        result = _detect_source_type(
+            "NOTIFY ATTENDING PHYSICIAN IF STOPPING CURRENT MEDICATION ADMINISTRATION",
+            SourceType.UNKNOWN,
+        )
+        assert result == SourceType.UNKNOWN
+
+    def test_prose_comorbidities_medication_admin_rejected(self):
+        result = _detect_source_type(
+            "Such co-morbidities need to be monitored during the inpatient encounter as evidenced by continued Medication Admin",
+            SourceType.UNKNOWN,
+        )
+        assert result == SourceType.UNKNOWN
+
+
+# ---------------------------------------------------------------------------
+# D6-P1 – ED_NOTE line-start anchor tests
+# ---------------------------------------------------------------------------
+class TestEdNoteLineStartAnchor:
+    """ED_NOTE must only match at line start (with optional bracket/whitespace)."""
+
+    def test_ed_note_bare(self):
+        assert _detect_source_type("ED NOTE", SourceType.UNKNOWN) == SourceType.ED_NOTE
+
+    def test_ed_note_colon(self):
+        assert _detect_source_type("ED NOTE:", SourceType.UNKNOWN) == SourceType.ED_NOTE
+
+    def test_bracketed_ed_note(self):
+        assert _detect_source_type("[ED_NOTE] 2025-12-31 15:12:00", SourceType.UNKNOWN) == SourceType.ED_NOTE
+
+    def test_prose_reviewed_ed_note_rejected(self):
+        result = _detect_source_type(
+            "I have seen and examined patient on the above stated date.  I have reviewed pertinent data/lab and radiology as noted. Scribed note reviewed, errors corrected, independently verified.",
+            SourceType.UNKNOWN,
+        )
+        assert result == SourceType.UNKNOWN
+
+    def test_prose_mychart_shared_ed_note_rejected(self):
+        result = _detect_source_type(
+            "The patient can view the shared note after they get an after-visit summary. ED Note: visible",
+            SourceType.UNKNOWN,
+        )
+        assert result == SourceType.UNKNOWN
+
+    def test_prose_medications_reorganized_ed_note_rejected(self):
+        result = _detect_source_type(
+            "POTASSIUM CHLORIDE CRYS ER medications were reorganized on 11/18/2023. The possibly related notes have been updated.",
+            SourceType.UNKNOWN,
+        )
+        assert result == SourceType.UNKNOWN
