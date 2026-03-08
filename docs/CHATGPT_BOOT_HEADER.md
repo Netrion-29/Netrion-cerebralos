@@ -24,7 +24,9 @@
 | N7 DISCHARGE prose residual cleanup | ✅ COMPLETE (PR #149) — all 14 remaining false flips eliminated, 0 NTDS outcome deltas |
 | D1 full cohort output refresh | ✅ COMPLETE — 33/33 patients refreshed, 0 NTDS outcome deltas, cohort invariant PASS |
 | D2 IMAGING/RADIOLOGY/PROCEDURE anchor | ✅ COMPLETE (PR #152) — 3 patterns anchored, 68 tests added, 0 NTDS outcome deltas |
-| Next phase | **Post-D2** — DISCHARGE word-boundary (D3) + remaining event precision (D4) (see Roadmap §3) |
+| D3 DISCHARGE word-boundary | **CLOSED (won't do)** — `\b` after PROCEDURE breaks 262 legitimate plural headers; zero practical impact |
+| D5 LAB/MAR line-start anchor | ✅ COMPLETE (PR #154) — 2 patterns anchored, 2 tests added, 0 NTDS outcome deltas |
+| Next phase | **Post-D5** — D4 DISCHARGE precision audit + remaining event precision (see Roadmap §3) |
 
 ## Quick Chat Starter
 
