@@ -2,8 +2,8 @@
 
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
-| Date        | 2026-03-07                                               |
-| Baseline    | `b197cc2` (main, after PR #152)                          |
+| Date        | 2026-03-08                                               |
+| Baseline    | `8fe7bbe` (main, after PR #154)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -59,6 +59,8 @@
 | #150 | `b742f82` | docs(roadmap): record PR #149 completion — N7 DISCHARGE prose residual cleanup closeout |
 | #151 | `0866ca7` | docs(roadmap): record D1 full-cohort NTDS refresh completion |
 | #152 | `b197cc2` | fix(parser): anchor IMAGING/RADIOLOGY/PROCEDURE detection to line start (D2) |
+| #153 | `f99c297` | docs(roadmap): record D2 parser anchor completion |
+| #154 | `8fe7bbe` | fix(parser): anchor LAB and MAR detection to line start (D5) |
 
 ### Open PRs
 
@@ -68,7 +70,7 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 2640 passed (pytest)  |
+| Total tests         | 2642 passed (pytest)  |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 43               |
 | Fixture runner      | **43 passed, 0 xfailed** |
@@ -295,12 +297,36 @@ prose-mention rejection.
 | audit_cohort_counts --check | PASS (33/33) |
 | A/B all-21 distribution | **0 NTDS outcome deltas** |
 
-##### Remaining Queue (post-D2)
+##### D5 — LAB/MAR Line-Start Anchor ✅ COMPLETE (PR #154)
+
+Anchored two section-detection patterns to line start (`^\[?\s*`) in
+`build_patientfacts_from_txt.py`, matching the D2 anchor approach:
+
+| Pattern | Before | After |
+|---------|--------|-------|
+| LAB | `r"LABS?\b"` | `r"^\[?\s*LABS?\b"` |
+| MAR | `r"MAR\b"` | `r"^\[?\s*MAR\b"` |
+
+D5 scoping found 3,017 mid-line LAB false matches across all 33 patients
+and 144 mid-line MAR false matches across 12 patients. Top false triggers:
+"Recent Labs" (1,397×), "Print Lab Result Report" (251×), physician name
+"Kumar, Anup, MD" matching MAR\b (36×).
+
+2 focused tests added (`test_recent_labs_reviewed_rejected_when_not_header`,
+`test_kumar_name_not_treated_as_mar_header`).
+
+| Metric | Result |
+|--------|--------|
+| pytest source-detection | 114 passed |
+| Branch-vs-main all-21 distribution | **0 NTDS outcome deltas** |
+
+##### Remaining Queue (post-D5)
 
 | Item | Scope | Priority |
 |------|-------|----------|
-| D3 — `\b` word-boundary on DISCHARGE regex for future-proofing | Parser hardening | Low |
+| ~~D3 — `\b` word-boundary on DISCHARGE regex~~ | ~~Parser hardening~~ | **CLOSED (won't do)** — `\b` after PROCEDURE breaks 262 legitimate "Procedures:" plural headers; DISCHARGE/IMAGING/RADIOLOGY `\b` = zero practical impact |
 | D4 — Precision audit across all 16 DISCHARGE-using events | Per-event evidence review | Medium |
+| Un-anchored patterns: PHYSICIAN_NOTE, CONSULT_NOTE, NURSING_NOTE, MEDICATION_ADMIN, OPERATIVE_NOTE, OP_NOTE, ED_NOTE, EMERGENCY, PROGRESS_NOTE | Parser hardening | Low — scope when needed |
 | PMH-aware gate handling: allow engine to filter PMH context across non-adjacent lines | Engine proposal (protected) | Medium |
 | Precision audit pass for remaining 15 events | Per-event mapper/rule/tests | Medium |
 | Automate NTDS outcome distribution check per event | CI/gate script | Low |
