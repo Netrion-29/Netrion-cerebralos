@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { createHash } from "crypto"
+import { createHash, timingSafeEqual } from "crypto"
 
 function computeToken(password: string): string {
   return createHash("sha256")
@@ -13,7 +13,14 @@ export async function POST(req: Request) {
   const { password } = body as { password?: string }
 
   const expected = process.env.DASHBOARD_PASSWORD
-  if (!expected || !password || password !== expected) {
+  if (!expected || !password) {
+    return NextResponse.json({ error: "Invalid password" }, { status: 401 })
+  }
+
+  // Timing-safe comparison — prevent side-channel password extraction
+  const a = Buffer.from(password, "utf8")
+  const b = Buffer.from(expected, "utf8")
+  if (a.length !== b.length || !timingSafeEqual(a, b)) {
     return NextResponse.json({ error: "Invalid password" }, { status: 401 })
   }
 
