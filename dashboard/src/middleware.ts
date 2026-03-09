@@ -46,7 +46,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const cookie = request.cookies.get("cerebralos_auth")?.value
+  const cookie = request.cookies.get("__Host-cerebralos_auth")?.value
   const expected = await computeToken(password)
 
   // Constant-time comparison — prevent timing side-channel on auth token

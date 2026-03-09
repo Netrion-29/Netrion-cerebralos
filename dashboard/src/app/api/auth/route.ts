@@ -101,12 +101,12 @@ export async function POST(req: Request) {
 
   const token = computeToken(password)
   const res = NextResponse.json({ ok: true })
-  res.cookies.set("cerebralos_auth", token, {
+  res.cookies.set("__Host-cerebralos_auth", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 60 * 60 * 24, // 24 hours
   })
   return res
 }
@@ -114,6 +114,6 @@ export async function POST(req: Request) {
 // DELETE /api/auth — clear cookie (logout)
 export async function DELETE() {
   const res = NextResponse.json({ ok: true })
-  res.cookies.delete("cerebralos_auth")
+  res.cookies.delete("__Host-cerebralos_auth")
   return res
 }
