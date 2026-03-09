@@ -37,7 +37,7 @@ from cerebralos.ntds_logic.model import (
 _SECTION_PATTERNS: Dict[str, SourceType] = {
     r"^\[?\s*PHYSICIAN[\s_]+NOTE": SourceType.PHYSICIAN_NOTE,
     r"CONSULT[\s_]+NOTE": SourceType.CONSULT_NOTE,
-    r"NURSING[\s_]+NOTE": SourceType.NURSING_NOTE,
+    r"^\[?\s*NURSING[\s_]+NOTE": SourceType.NURSING_NOTE,
     r"^\[?\s*IMAGING": SourceType.IMAGING,
     r"^\[?\s*RADIOLOGY": SourceType.IMAGING,
     r"^\[?\s*LABS?\b": SourceType.LAB,
