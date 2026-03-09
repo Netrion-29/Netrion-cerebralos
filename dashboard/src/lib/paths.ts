@@ -11,17 +11,26 @@ export function getOutputsDir(): string {
   return path.resolve(process.cwd(), "..", "outputs")
 }
 
+/** Reject slugs that could escape the outputs directory (CWE-22). */
+export function sanitizeSlug(slug: string): string {
+  if (!slug || /[/\\]|\.\.|\0/.test(slug)) {
+    throw new Error("Invalid slug")
+  }
+  return slug
+}
+
 export function getNtdsDir(slug: string): string {
-  return path.join(getOutputsDir(), "ntds", slug)
+  return path.join(getOutputsDir(), "ntds", sanitizeSlug(slug))
 }
 
 export function getProtocolsDir(slug: string): string {
-  return path.join(getOutputsDir(), "protocols", slug)
+  return path.join(getOutputsDir(), "protocols", sanitizeSlug(slug))
 }
 
 /** List all patient slugs by reading ntds/ subdirectories. */
 export function listPatientSlugs(): string[] {
   const ntdsRoot = path.join(getOutputsDir(), "ntds")
+  if (!fs.existsSync(ntdsRoot)) return []
   const entries = fs.readdirSync(ntdsRoot, { withFileTypes: true })
   return entries
     .filter((e) => e.isDirectory())

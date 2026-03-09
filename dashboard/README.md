@@ -33,9 +33,11 @@ Override location with `OUTPUTS_DIR=/absolute/path npm run dev`.
 
 | Route | Description |
 |-------|-------------|
-| `GET /api/patients` | All patients with summary counts |
-| `GET /api/patients/[slug]` | Full patient detail |
-| `GET /api/patients/[slug]/events/[eventId]` | NTDS event detail with gate trace |
+| `GET /api/patients` | All patients with summary counts (returns `[]` if outputs dir missing) |
+| `GET /api/patients/[slug]` | Full patient detail (returns `400` for invalid slugs) |
+| `GET /api/patients/[slug]/events/[eventId]` | NTDS event detail with gate trace (returns `400` for invalid slugs) |
+
+Slugs containing `..`, `/`, `\`, or null bytes are rejected with HTTP 400. If `OUTPUTS_DIR` (or the default `../outputs/`) does not exist, the patient list returns an empty array instead of crashing.
 
 ## Type Check
 
