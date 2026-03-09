@@ -2,8 +2,8 @@
 
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
-| Date        | 2026-03-08                                               |
-| Baseline    | `8fe7bbe` (main, after PR #154)                          |
+| Date        | 2026-03-09                                               |
+| Baseline    | `56a67c5` (main, after PR #156)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -61,6 +61,8 @@
 | #152 | `b197cc2` | fix(parser): anchor IMAGING/RADIOLOGY/PROCEDURE detection to line start (D2) |
 | #153 | `f99c297` | docs(roadmap): record D2 parser anchor completion |
 | #154 | `8fe7bbe` | fix(parser): anchor LAB and MAR detection to line start (D5) |
+| #155 | `d7fda62` | docs(roadmap): record D5 LAB/MAR anchor completion |
+| #156 | `56a67c5` | fix(parser): anchor MEDICATION_ADMIN and ED_NOTE detection to line start (D6-P1) |
 
 ### Open PRs
 
@@ -320,13 +322,41 @@ and 144 mid-line MAR false matches across 12 patients. Top false triggers:
 | pytest source-detection | 114 passed |
 | Branch-vs-main all-21 distribution | **0 NTDS outcome deltas** |
 
-##### Remaining Queue (post-D5)
+##### D6-P1 — MEDICATION_ADMIN / ED_NOTE Line-Start Anchor ✅ COMPLETE (PR #156)
+
+Anchored two section-detection patterns to line start (`^\[?\s*`) in
+`build_patientfacts_from_txt.py`, matching the D2/D5 anchor approach:
+
+| Pattern | Before | After |
+|---------|--------|-------|
+| MEDICATION_ADMIN | `r"MEDICATION[\s_]+ADMIN"` | `r"^\[?\s*MEDICATION[\s_]+ADMIN"` |
+| ED_NOTE | `r"ED[\s_]+NOTE"` | `r"^\[?\s*ED[\s_]+NOTE"` |
+
+D6 scoping found 3 mid-line MEDICATION_ADMIN false matches (1 NTDS gate:
+E08 DVT `dvt_treated`) and 728 mid-line ED_NOTE false matches (0 NTDS gates).
+
+11 focused tests added (5 MEDICATION_ADMIN, 6 ED_NOTE).
+
+| Metric | Result |
+|--------|--------|
+| pytest source-detection | 125 passed |
+| pytest event fixtures + cohort invariant | 68 passed |
+| audit_cohort_counts --check | PASS (33/33) |
+| A/B all-21 distribution | **0 NTDS outcome deltas** |
+
+##### Remaining Queue (post-D6-P1)
 
 | Item | Scope | Priority |
 |------|-------|----------|
 | ~~D3 — `\b` word-boundary on DISCHARGE regex~~ | ~~Parser hardening~~ | **CLOSED (won't do)** — `\b` after PROCEDURE breaks 262 legitimate "Procedures:" plural headers; DISCHARGE/IMAGING/RADIOLOGY `\b` = zero practical impact |
 | D4 — Precision audit across all 16 DISCHARGE-using events | Per-event evidence review | Medium |
-| Un-anchored patterns: PHYSICIAN_NOTE, CONSULT_NOTE, NURSING_NOTE, MEDICATION_ADMIN, OPERATIVE_NOTE, OP_NOTE, ED_NOTE, EMERGENCY, PROGRESS_NOTE | Parser hardening | Low — scope when needed |
+| D6-P2 — PHYSICIAN_NOTE line-start anchor | Parser hardening — 1,145 bracket + 3 prose mid-line hits; all 21 NTDS events exposed | Medium — near-safe, high impact |
+| D6-P3 — NURSING_NOTE line-start anchor | Parser hardening — 243 bracket + 20 prose mid-line hits; 7 events exposed | Medium — mostly safe |
+| D6-P4 — CONSULT_NOTE anchor | Parser hardening — 28 legitimate prose sub-headers among 74 prose hits; needs design | Low |
+| D6-P5 — EMERGENCY anchor | Parser hardening — 420/424 prose noise but 4 legitimate headers need block-word approach | Low |
+| D6-P6 — OPERATIVE_NOTE anchor | Parser hardening — "Brief Operative Note" regression risk; needs design | Low |
+| OP_NOTE — NO-GO | 92% (45/49) prose hits are legitimate POSTOP/Post-Op sub-headers — simple anchoring would break them | **NO-GO for simple anchoring** |
+| PROGRESS_NOTE — NO-GO | ~67% (450/667) prose hits are legitimate sub-headers ("Hospital Progress Note", "Trauma Progress Note") | **NO-GO for simple anchoring** |
 | PMH-aware gate handling: allow engine to filter PMH context across non-adjacent lines | Engine proposal (protected) | Medium |
 | Precision audit pass for remaining 15 events | Per-event mapper/rule/tests | Medium |
 | Automate NTDS outcome distribution check per event | CI/gate script | Low |
