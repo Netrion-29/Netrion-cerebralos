@@ -14,7 +14,7 @@
       "min_count": 1,
       "query_keys": ["delirium_dx"],
       "exclude_noise_keys": [],
-      "allowed_sources": ["PHYSICIAN_NOTE", "NURSING_NOTE"],
+      "allowed_sources": ["PHYSICIAN_NOTE", "NURSING_NOTE", "CONSULT_NOTE"],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of delirium."
     }

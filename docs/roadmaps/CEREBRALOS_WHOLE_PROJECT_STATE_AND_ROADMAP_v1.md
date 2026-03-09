@@ -3,7 +3,7 @@
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
 | Date        | 2026-03-09                                               |
-| Baseline    | `be0f4a6` (main, after PR #157)                          |
+| Baseline    | `ac31ac0` (main, after PR #158)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -64,6 +64,7 @@
 | #155 | `d7fda62` | docs(roadmap): record D5 LAB/MAR anchor completion |
 | #156 | `56a67c5` | fix(parser): anchor MEDICATION_ADMIN and ED_NOTE detection to line start (D6-P1) |
 | #157 | `be0f4a6` | docs(roadmap): record D6-P1 MEDICATION_ADMIN/ED_NOTE anchor completion |
+| #158 | `ac31ac0` | fix(parser): anchor PHYSICIAN_NOTE detection to line start (D6-P2) |
 
 ### Open PRs
 
@@ -75,8 +76,8 @@ None.
 |---------------------|------------------|
 | Total tests         | 2648+ passed (pytest) |
 | NTDS event rules    | 21 (all mapped)  |
-| Fixture files       | 43               |
-| Fixture runner      | **43 passed, 0 xfailed** |
+| Fixture files       | 44               |
+| Fixture runner      | **44 passed, 0 xfailed** |
 | Precision tests     | 6 suites (E01, E10, E15, E16, E18, E19) |
 | Cohort invariant    | 33 canonical = 33 adjusted |
 | Canonical patients  | 33               |
@@ -375,14 +376,48 @@ zones — all affected evidence is near-miss on NO-outcome events only.
 | audit_cohort_counts --check | PASS (33/33) |
 | A/B all-21 distribution (33 patients re-run) | **0 NTDS outcome deltas** |
 
-##### Remaining Queue (post-D6-P2)
+##### D6-P3 — NURSING_NOTE Line-Start Anchor ✅ COMPLETE (PR #159)
+
+Anchored the NURSING_NOTE section-detection pattern to line start (`^\[?\s*`)
+in `build_patientfacts_from_txt.py`, matching the D2/D5/D6-P1/D6-P2 anchor
+approach. Also widened E09 Delirium `allowed_sources` to include CONSULT_NOTE
+to preserve clinically correct Barbara_Burgdorf E09 detection after section
+reclassification.
+
+| Pattern | Before | After |
+|---------|--------|-------|
+| NURSING_NOTE | `r"NURSING[\s_]+NOTE"` | `r"^\[?\s*NURSING[\s_]+NOTE"` |
+
+D6-P3 scoping found 268 total hits across 29/33 patients: 248 line-start
+(92.5%) and 20 mid-line noise (7.5%). All 20 noise triggers are prose
+references ("Vitals and nursing note reviewed.", "Triage vitals and nursing
+note reviewed.", etc.) that falsely re-entered NURSING_NOTE from other
+sections. 15 patients, 2,034 content lines reclassified to correct parent
+sections (PHYSICIAN_NOTE, CONSULT_NOTE, PROCEDURE, IMAGING, ED_NOTE, etc.).
+
+Barbara_Burgdorf E09 Delirium had 3 passing NURSING_NOTE evidence lines in a
+diff zone that reclassified NURSING_NOTE → CONSULT_NOTE (the content is
+genuinely a hospitalist consult note). Adding CONSULT_NOTE to E09
+`allowed_sources` preserves the clinically correct YES outcome.
+
+8 focused source-detection tests added + 1 E09 CONSULT_NOTE fixture.
+
+| Metric | Result |
+|--------|--------|
+| pytest source-detection | 139 passed |
+| pytest event fixtures | 44 passed |
+| pytest cohort invariant | 25 passed |
+| audit_cohort_counts --check | PASS (33/33) |
+| A/B all-21 distribution (33 patients re-run) | **0 NTDS outcome deltas** |
+
+##### Remaining Queue (post-D6-P3)
 
 | Item | Scope | Priority |
 |------|-------|----------|
 | ~~D3 — `\b` word-boundary on DISCHARGE regex~~ | ~~Parser hardening~~ | **CLOSED (won't do)** — `\b` after PROCEDURE breaks 262 legitimate "Procedures:" plural headers; DISCHARGE/IMAGING/RADIOLOGY `\b` = zero practical impact |
 | D4 — Precision audit across all 16 DISCHARGE-using events | Per-event evidence review | Medium |
 | ~~D6-P2 — PHYSICIAN_NOTE line-start anchor~~ | ~~Parser hardening~~ | **✅ COMPLETE (PR #158)** — 1 pattern anchored, 6 tests added, 0 NTDS outcome deltas |
-| D6-P3 — NURSING_NOTE line-start anchor | Parser hardening — 243 bracket + 20 prose mid-line hits; 7 events exposed | Medium — next candidate |
+| ~~D6-P3 — NURSING_NOTE line-start anchor~~ | ~~Parser hardening~~ | **✅ COMPLETE (PR #159)** — 1 pattern anchored + E09 rule widened, 9 tests added, 0 NTDS outcome deltas |
 | D6-P4 — CONSULT_NOTE anchor | Parser hardening — 28 legitimate prose sub-headers among 74 prose hits; needs design | Low |
 | D6-P5 — EMERGENCY anchor | Parser hardening — 420/424 prose noise but 4 legitimate headers need block-word approach | Low |
 | D6-P6 — OPERATIVE_NOTE anchor | Parser hardening — "Brief Operative Note" regression risk; needs design | Low |

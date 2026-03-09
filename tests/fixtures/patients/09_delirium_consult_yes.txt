@@ -1,0 +1,9 @@
+PATIENT_ID: TEST_DELIRIUM_CONSULT_001
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[CONSULT_NOTE] 2026-01-17 22:34:00
+Geriatric Trauma Screen:
+Delirium screen: Patient is at risk for delirium given acute trauma,
+unfamiliar surroundings, pain, metabolic derangements.
+At risk for delirium.
+Counseled to best prevent hospital delirium, no sleeping during the day.

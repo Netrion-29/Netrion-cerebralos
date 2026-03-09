@@ -542,3 +542,47 @@ class TestPhysicianNoteLineStartAnchor:
             SourceType.UNKNOWN,
         )
         assert result != SourceType.PHYSICIAN_NOTE
+
+
+class TestNursingNoteLineStartAnchor:
+    """NURSING_NOTE must only match at line start (with optional bracket/whitespace)."""
+
+    def test_bracketed_nursing_note_with_timestamp(self):
+        assert _detect_source_type("[NURSING_NOTE] 2025-12-18 00:08:00", SourceType.UNKNOWN) == SourceType.NURSING_NOTE
+
+    def test_bracketed_nursing_note_bare(self):
+        assert _detect_source_type("[NURSING_NOTE]", SourceType.UNKNOWN) == SourceType.NURSING_NOTE
+
+    def test_nursing_note_with_date_nurse_name(self):
+        assert _detect_source_type("NURSING NOTE\t01/12\t1049", SourceType.UNKNOWN) == SourceType.NURSING_NOTE
+
+    def test_leading_whitespace_nursing_note(self):
+        assert _detect_source_type("  NURSING NOTE", SourceType.UNKNOWN) == SourceType.NURSING_NOTE
+
+    def test_vitals_and_nursing_note_reviewed_rejected(self):
+        result = _detect_source_type(
+            "Vitals and nursing note reviewed.",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.NURSING_NOTE
+
+    def test_triage_vitals_nursing_note_reviewed_rejected(self):
+        result = _detect_source_type(
+            "Triage vitals and nursing note reviewed.",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.NURSING_NOTE
+
+    def test_reviewed_nursing_notes_rejected(self):
+        result = _detect_source_type(
+            "I have reviewed nursing notes and triage vital signs.",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.NURSING_NOTE
+
+    def test_assessment_based_on_nursing_notes_rejected(self):
+        result = _detect_source_type(
+            "Assessment based on nursing notes, triage vital signs.",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.NURSING_NOTE
