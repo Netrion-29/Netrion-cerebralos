@@ -16,8 +16,17 @@ async function computeToken(password: string): Promise<string> {
 export async function middleware(request: NextRequest) {
   const password = process.env.DASHBOARD_PASSWORD
 
-  // Auth disabled — local dev mode (no password configured)
-  if (!password) return NextResponse.next()
+  // Production: require DASHBOARD_PASSWORD — fail closed to prevent PHI exposure
+  if (!password) {
+    if (process.env.NODE_ENV === "production") {
+      return NextResponse.json(
+        { error: "DASHBOARD_PASSWORD not configured" },
+        { status: 503 }
+      )
+    }
+    // Dev: auth disabled when no password configured
+    return NextResponse.next()
+  }
 
   const { pathname } = request.nextUrl
   if (PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))) {

@@ -21,6 +21,14 @@ Reads directly from `../outputs/` (relative to `dashboard/`):
 
 Override location with `OUTPUTS_DIR=/absolute/path npm run dev`.
 
+## Environment Variables
+
+| Variable | Required | Default | Purpose |
+|----------|----------|---------|--------|
+| `DASHBOARD_PASSWORD` | **Yes** (production) | unset (auth disabled in dev) | Shared access password. In production (`NODE_ENV=production`), the dashboard returns HTTP 503 on all routes if this is not set. |
+| `OUTPUTS_DIR` | No | `../outputs/` | Absolute path to the CerebralOS outputs directory. |
+| `NODE_ENV` | No | `development` | Set automatically by Next.js. Controls cookie `secure` flag and fail-closed auth behavior. |
+
 ## API Routes
 
 | Route | Description |
@@ -39,5 +47,5 @@ npm run typecheck
 
 1. Move `outputs/` to Vercel Blob / S3; set `OUTPUTS_BASE_URL` env var in `paths.ts`
 2. Generate `outputs/manifest.json` slug list for serverless discovery
-3. Add auth middleware in `src/middleware.ts`
-4. Set env vars in Vercel project settings
+3. Set `DASHBOARD_PASSWORD` in Vercel project settings (auth middleware already exists in `src/middleware.ts`)
+4. Configure remaining env vars as needed
