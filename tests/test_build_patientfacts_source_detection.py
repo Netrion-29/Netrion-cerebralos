@@ -509,3 +509,36 @@ class TestEdNoteLineStartAnchor:
             SourceType.UNKNOWN,
         )
         assert result == SourceType.UNKNOWN
+
+
+# ---------------------------------------------------------------------------
+# D6-P2 – PHYSICIAN_NOTE line-start anchor tests
+# ---------------------------------------------------------------------------
+class TestPhysicianNoteLineStartAnchor:
+    """PHYSICIAN_NOTE must only match at line start (with optional bracket/whitespace)."""
+
+    def test_bracketed_physician_note_with_timestamp(self):
+        assert _detect_source_type("[PHYSICIAN_NOTE] 2025-12-05 13:37:00", SourceType.UNKNOWN) == SourceType.PHYSICIAN_NOTE
+
+    def test_bracketed_physician_note_bare(self):
+        assert _detect_source_type("[PHYSICIAN_NOTE]", SourceType.UNKNOWN) == SourceType.PHYSICIAN_NOTE
+
+    def test_physician_note_colon(self):
+        assert _detect_source_type("PHYSICIAN NOTE:", SourceType.UNKNOWN) == SourceType.PHYSICIAN_NOTE
+
+    def test_physician_notes_plural(self):
+        assert _detect_source_type("PHYSICIAN NOTES", SourceType.UNKNOWN) == SourceType.PHYSICIAN_NOTE
+
+    def test_deaconess_emergency_physician_note_rejected(self):
+        result = _detect_source_type(
+            "DEACONESS HEALTH SYSTEM EMERGENCY PHYSICIAN NOTE",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.PHYSICIAN_NOTE
+
+    def test_deaconess_emergency_dept_physician_note_rejected(self):
+        result = _detect_source_type(
+            "DEACONESS HEALTH SYSTEM EMERGENCY DEPARTMENT PHYSICIAN NOTE",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.PHYSICIAN_NOTE

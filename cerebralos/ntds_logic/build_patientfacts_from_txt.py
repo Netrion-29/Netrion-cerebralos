@@ -35,7 +35,7 @@ from cerebralos.ntds_logic.model import (
 # Use [\s_]+ so both "PHYSICIAN NOTE" and "PHYSICIAN_NOTE" match
 # (production Epic exports use spaces; synthetic test fixtures use underscores).
 _SECTION_PATTERNS: Dict[str, SourceType] = {
-    r"PHYSICIAN[\s_]+NOTE": SourceType.PHYSICIAN_NOTE,
+    r"^\[?\s*PHYSICIAN[\s_]+NOTE": SourceType.PHYSICIAN_NOTE,
     r"CONSULT[\s_]+NOTE": SourceType.CONSULT_NOTE,
     r"NURSING[\s_]+NOTE": SourceType.NURSING_NOTE,
     r"^\[?\s*IMAGING": SourceType.IMAGING,
