@@ -3,7 +3,7 @@
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
 | Date        | 2026-03-09                                               |
-| Baseline    | `56a67c5` (main, after PR #156)                          |
+| Baseline    | `be0f4a6` (main, after PR #157)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -63,6 +63,7 @@
 | #154 | `8fe7bbe` | fix(parser): anchor LAB and MAR detection to line start (D5) |
 | #155 | `d7fda62` | docs(roadmap): record D5 LAB/MAR anchor completion |
 | #156 | `56a67c5` | fix(parser): anchor MEDICATION_ADMIN and ED_NOTE detection to line start (D6-P1) |
+| #157 | `be0f4a6` | docs(roadmap): record D6-P1 MEDICATION_ADMIN/ED_NOTE anchor completion |
 
 ### Open PRs
 
@@ -72,7 +73,7 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 2642 passed (pytest)  |
+| Total tests         | 2648+ passed (pytest) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 43               |
 | Fixture runner      | **43 passed, 0 xfailed** |
@@ -344,19 +345,50 @@ E08 DVT `dvt_treated`) and 728 mid-line ED_NOTE false matches (0 NTDS gates).
 | audit_cohort_counts --check | PASS (33/33) |
 | A/B all-21 distribution | **0 NTDS outcome deltas** |
 
-##### Remaining Queue (post-D6-P1)
+##### D6-P2 — PHYSICIAN_NOTE Line-Start Anchor ✅ COMPLETE (PR #158)
+
+Anchored the PHYSICIAN_NOTE section-detection pattern to line start (`^\[?\s*`)
+in `build_patientfacts_from_txt.py`, matching the D2/D5/D6-P1 anchor approach:
+
+| Pattern | Before | After |
+|---------|--------|-------|
+| PHYSICIAN_NOTE | `r"PHYSICIAN[\s_]+NOTE"` | `r"^\[?\s*PHYSICIAN[\s_]+NOTE"` |
+
+D6-P2 scoping found 1,148 total hits: 1,145 line-start bracket headers
+(`[PHYSICIAN_NOTE]`) and 3 mid-line noise hits across 3 patients. All 3
+noise lines are "DEACONESS HEALTH SYSTEM EMERGENCY [DEPARTMENT] PHYSICIAN
+NOTE" headers that correctly reclassify from PHYSICIAN_NOTE → ED_NOTE
+(via EMERGENCY fallback). 645 content lines across 3 patients change section
+assignment.
+
+**Note:** ED_NOTE is absent from all 21 NTDS `allowed_sources` lists.
+Evidence reclassified to ED_NOTE becomes invisible to source-filtered gates.
+However, zero passing gates reference PHYSICIAN_NOTE evidence from affected
+zones — all affected evidence is near-miss on NO-outcome events only.
+
+6 focused tests added (4 acceptance + 2 mid-line rejection).
+
+| Metric | Result |
+|--------|--------|
+| pytest source-detection | 131 passed |
+| pytest event fixtures + cohort invariant | 68 passed |
+| audit_cohort_counts --check | PASS (33/33) |
+| A/B all-21 distribution (33 patients re-run) | **0 NTDS outcome deltas** |
+
+##### Remaining Queue (post-D6-P2)
 
 | Item | Scope | Priority |
 |------|-------|----------|
 | ~~D3 — `\b` word-boundary on DISCHARGE regex~~ | ~~Parser hardening~~ | **CLOSED (won't do)** — `\b` after PROCEDURE breaks 262 legitimate "Procedures:" plural headers; DISCHARGE/IMAGING/RADIOLOGY `\b` = zero practical impact |
 | D4 — Precision audit across all 16 DISCHARGE-using events | Per-event evidence review | Medium |
-| D6-P2 — PHYSICIAN_NOTE line-start anchor | Parser hardening — 1,145 bracket + 3 prose mid-line hits; all 21 NTDS events exposed | Medium — near-safe, high impact |
-| D6-P3 — NURSING_NOTE line-start anchor | Parser hardening — 243 bracket + 20 prose mid-line hits; 7 events exposed | Medium — mostly safe |
+| ~~D6-P2 — PHYSICIAN_NOTE line-start anchor~~ | ~~Parser hardening~~ | **✅ COMPLETE (PR #158)** — 1 pattern anchored, 6 tests added, 0 NTDS outcome deltas |
+| D6-P3 — NURSING_NOTE line-start anchor | Parser hardening — 243 bracket + 20 prose mid-line hits; 7 events exposed | Medium — next candidate |
 | D6-P4 — CONSULT_NOTE anchor | Parser hardening — 28 legitimate prose sub-headers among 74 prose hits; needs design | Low |
 | D6-P5 — EMERGENCY anchor | Parser hardening — 420/424 prose noise but 4 legitimate headers need block-word approach | Low |
 | D6-P6 — OPERATIVE_NOTE anchor | Parser hardening — "Brief Operative Note" regression risk; needs design | Low |
 | OP_NOTE — NO-GO | 92% (45/49) prose hits are legitimate POSTOP/Post-Op sub-headers — simple anchoring would break them | **NO-GO for simple anchoring** |
 | PROGRESS_NOTE — NO-GO | ~67% (450/667) prose hits are legitimate sub-headers ("Hospital Progress Note", "Trauma Progress Note") | **NO-GO for simple anchoring** |
+| ED_NOTE `allowed_sources` gap | ED_NOTE absent from all 21 NTDS rule `allowed_sources` lists — evidence tagged ED_NOTE invisible to source-filtered gates; low priority, tracked finding | Low |
 | PMH-aware gate handling: allow engine to filter PMH context across non-adjacent lines | Engine proposal (protected) | Medium |
 | Precision audit pass for remaining 15 events | Per-event mapper/rule/tests | Medium |
 | Automate NTDS outcome distribution check per event | CI/gate script | Low |

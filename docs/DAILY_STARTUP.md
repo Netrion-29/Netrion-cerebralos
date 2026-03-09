@@ -164,7 +164,8 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - D3 (DISCHARGE word-boundary): **CLOSED (won't do)** — `\b` after PROCEDURE breaks 262 legitimate "Procedures:" headers; zero practical impact on other patterns
 > - D5 (LAB/MAR line-start anchor): ✅ COMPLETE (PR #154) — 2 patterns anchored, 2 tests added, 0 NTDS outcome deltas
 > - D6-P1 (MEDICATION_ADMIN/ED_NOTE anchor): ✅ COMPLETE (PR #156) — 2 patterns anchored, 11 tests added, 0 NTDS outcome deltas
-> - Next phase: D6-P2 PHYSICIAN_NOTE anchor + D4 DISCHARGE precision audit — see Roadmap doc §3
+> - D6-P2 (PHYSICIAN_NOTE anchor): ✅ COMPLETE (PR #158) — 1 pattern anchored, 6 tests added, 0 NTDS outcome deltas
+> - Next phase: D6-P3 NURSING_NOTE anchor + D4 DISCHARGE precision audit — see Roadmap doc §3
 >
 > See Roadmap doc §3 for full backlog detail, N3 residuals, and N4 queue.
 
