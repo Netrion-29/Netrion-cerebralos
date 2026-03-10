@@ -173,7 +173,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 > See Roadmap doc §3 for full backlog detail, N3 residuals, and N4 queue.
 
 > **Dev-loop default:** use the 12-patient sentinel cohort for fast validation.
-> Full 33-patient cohort runs only at the pre-merge gate (`./scripts/gate_pr.sh`).
+> Full 39-patient cohort runs only at the pre-merge gate (`./scripts/gate_pr.sh`).
 > See the Whole-Project State doc §4 for the sentinel patient list.
 
 ---
