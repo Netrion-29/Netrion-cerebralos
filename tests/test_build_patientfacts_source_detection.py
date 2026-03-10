@@ -722,3 +722,137 @@ class TestConsultNoteProseBlock:
         assert _is_section_header(
             "This note will include professional medical terminology...consult notes"
         ) is False
+
+
+# ---------------------------------------------------------------------------
+# D6-P5 – EMERGENCY pattern hardening
+# ---------------------------------------------------------------------------
+class TestEmergencyHardening:
+    """The bare 'EMERGENCY' pattern was triggering false section changes on
+    ADT event lines, admin fields, and clinical prose.  The tightened pattern
+    requires 'EMERGENCY DEPARTMENT/DEPT ... NOTE' to match.
+    """
+
+    # --- Legitimate ED_NOTE headers (should still match) ---
+
+    def test_emergency_department_encounter_note(self):
+        result = _detect_source_type(
+            "Deaconess Health System Emergency Department Encounter Note",
+            SourceType.PHYSICIAN_NOTE,
+        )
+        assert result is SourceType.ED_NOTE
+
+    def test_emergency_department_note(self):
+        result = _detect_source_type(
+            "Emergency Department Note",
+            SourceType.UNKNOWN,
+        )
+        assert result is SourceType.ED_NOTE
+
+    def test_emergency_dept_note(self):
+        result = _detect_source_type(
+            "Emergency Dept Note",
+            SourceType.IMAGING,
+        )
+        assert result is SourceType.ED_NOTE
+
+    def test_ed_note_bracket_still_works(self):
+        result = _detect_source_type(
+            "[ED NOTE] 2026-01-01 10:05:00",
+            SourceType.UNKNOWN,
+        )
+        assert result is SourceType.ED_NOTE
+
+    def test_ed_note_plain_still_works(self):
+        result = _detect_source_type(
+            "ED NOTE",
+            SourceType.UNKNOWN,
+        )
+        assert result is SourceType.ED_NOTE
+
+    # --- ADT lines that must NOT trigger ED_NOTE ---
+
+    def test_adt_emergency_dept_mc_admission(self):
+        result = _detect_source_type(
+            "01/01/26 1005  EMERGENCY DEPT MC       1847    19      Emergency       Admission",
+            SourceType.UNKNOWN,
+        )
+        assert result is SourceType.UNKNOWN
+
+    def test_adt_emergency_dept_mc_transfer(self):
+        result = _detect_source_type(
+            "12/30/25 1745   EMERGENCY DEPT MC       1862    11      General Medical Patient Update",
+            SourceType.DISCHARGE,
+        )
+        assert result is SourceType.DISCHARGE
+
+    def test_adt_emergency_dept_mc_transition(self):
+        result = _detect_source_type(
+            "01/01/26 1452    EMERGENCY DEPT MC       MCTRANSITION    NONE    Trauma  Transfer In",
+            SourceType.UNKNOWN,
+        )
+        assert result is SourceType.UNKNOWN
+
+    # --- Admin field lines that must NOT trigger ED_NOTE ---
+
+    def test_patient_class_emergency(self):
+        result = _detect_source_type(
+            "Patient Class: Emergency",
+            SourceType.LAB,
+        )
+        assert result is SourceType.LAB
+
+    def test_specialty_emergency_medicine(self):
+        result = _detect_source_type(
+            "Specialty: Emergency Medicine",
+            SourceType.PROGRESS_NOTE,
+        )
+        assert result is SourceType.PROGRESS_NOTE
+
+    # --- Clinical prose that must NOT trigger ED_NOTE ---
+
+    def test_studies_performed_in_emergency_department(self):
+        result = _detect_source_type(
+            "All laboratory, radiologic, and EKG studies that were performed in the Emergency Department were a necessary part of the evaluation",
+            SourceType.IMAGING,
+        )
+        assert result is SourceType.IMAGING
+
+    def test_imaging_results_from_emergency_encounter(self):
+        result = _detect_source_type(
+            "=== The following are imaging results from the Emergency encounter on 01/01/26. ===",
+            SourceType.IMAGING,
+        )
+        assert result is SourceType.IMAGING
+
+    def test_recommend_ed_emergency(self):
+        result = _detect_source_type(
+            "Recommend ED for further evaluation given multiple recent falls with trauma",
+            SourceType.PROCEDURE,
+        )
+        assert result is SourceType.PROCEDURE
+
+    def test_deaconess_midtown_emergency_department_table(self):
+        result = _detect_source_type(
+            "Deaconess Midtown Hospital Emergency Department      01/01   1452    Transfer In",
+            SourceType.LAB,
+        )
+        assert result is SourceType.LAB
+
+    def test_closed_in_emergency_department(self):
+        result = _detect_source_type(
+            "Distal and medial right lower extremity wound; closed in the emergency department",
+            SourceType.DISCHARGE,
+        )
+        assert result is SourceType.DISCHARGE
+
+    # --- _is_section_header consistency ---
+
+    def test_is_section_header_emergency_dept_note(self):
+        assert _is_section_header("Emergency Department Note") is True
+
+    def test_is_section_header_adt_emergency_rejected(self):
+        assert _is_section_header("EMERGENCY DEPT MC  1847  19  Emergency  Admission") is False
+
+    def test_is_section_header_patient_class_rejected(self):
+        assert _is_section_header("Patient Class: Emergency") is False

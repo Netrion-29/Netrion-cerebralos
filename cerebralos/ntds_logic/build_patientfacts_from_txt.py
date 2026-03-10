@@ -48,7 +48,7 @@ _SECTION_PATTERNS: Dict[str, SourceType] = {
     r"OP[\s_]+NOTE": SourceType.OPERATIVE_NOTE,
     r"^\[?\s*DISCHARGE": SourceType.DISCHARGE,
     r"^\[?\s*ED[\s_]+NOTE": SourceType.ED_NOTE,
-    r"EMERGENCY": SourceType.ED_NOTE,
+    r"EMERGENCY[\s_]+(?:DEPARTMENT|DEPT)": SourceType.ED_NOTE,
     r"PROGRESS[\s_]+NOTE": SourceType.PROGRESS_NOTE,
 }
 
@@ -77,6 +77,19 @@ _CONSULT_PROSE_BEFORE = re.compile(
     r"(?:(?:^|\s)from\s|(?:^|\s)see\s|(?:^|\s)per\s|(?:^|\s)refer\s"
     r"|history\s+of|HPI\s+from|please\s+see|this\s+note\s+will"
     r"|score\s+is|\*\s*Refer)",
+    re.IGNORECASE,
+)
+
+# Words allowed immediately after EMERGENCY DEPARTMENT/DEPT.
+# Anything else (MC, dates, clinical prose) is rejected.
+_EMERGENCY_DEPT_ALLOW_AFTER = {"NOTE", "ENCOUNTER"}
+
+# Phrases that, when appearing BEFORE "EMERGENCY DEPARTMENT/DEPT",
+# indicate clinical prose rather than a section header.
+# Blocks: "closed in the emergency department",
+#   "performed in the Emergency Department", etc.
+_EMERGENCY_PROSE_BEFORE = re.compile(
+    r"(?:\bin\b|\bfrom\b|\bperformed\b|\bresults\b|\bclosed\b)",
     re.IGNORECASE,
 )
 
@@ -109,6 +122,17 @@ def _detect_source_type(line: str, current_source: SourceType) -> SourceType:
             if source_type is SourceType.CONSULT_NOTE:
                 before = upper[:m.start()].strip()
                 if before and _CONSULT_PROSE_BEFORE.search(line[:m.start()]):
+                    continue
+            # For EMERGENCY DEPARTMENT/DEPT: block ADT lines
+            # ("EMERGENCY DEPT MC ...") and prose ("in the Emergency
+            # Department") by whitelisting allowed trailing words.
+            if source_type is SourceType.ED_NOTE and "EMERGENCY" in upper[m.start():m.end()]:
+                after = upper[m.end():].strip()
+                first_after = after.split()[0] if after.split() else ""
+                if first_after and first_after not in _EMERGENCY_DEPT_ALLOW_AFTER:
+                    continue
+                before = upper[:m.start()].strip()
+                if before and _EMERGENCY_PROSE_BEFORE.search(line[:m.start()]):
                     continue
             # For DISCHARGE, also block on the first trailing word to
             # catch admin fields like "Discharge Disposition: Rehab-Inpt".
@@ -173,6 +197,14 @@ def _is_section_header(line: str) -> bool:
             if source_type is SourceType.CONSULT_NOTE:
                 before = upper[:m.start()].strip()
                 if before and _CONSULT_PROSE_BEFORE.search(line[:m.start()]):
+                    continue
+            if source_type is SourceType.ED_NOTE and "EMERGENCY" in upper[m.start():m.end()]:
+                after = upper[m.end():].strip()
+                first_after = after.split()[0] if after.split() else ""
+                if first_after and first_after not in _EMERGENCY_DEPT_ALLOW_AFTER:
+                    continue
+                before = upper[:m.start()].strip()
+                if before and _EMERGENCY_PROSE_BEFORE.search(line[:m.start()]):
                     continue
             if source_type is SourceType.DISCHARGE:
                 if trailing == ".":

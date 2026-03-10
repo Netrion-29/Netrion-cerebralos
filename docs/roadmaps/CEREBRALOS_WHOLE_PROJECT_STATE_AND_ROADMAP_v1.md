@@ -67,6 +67,7 @@
 | #158 | `ac31ac0` | fix(parser): anchor PHYSICIAN_NOTE detection to line start (D6-P2) |
 | #161 | — | fix(parser): anchor NURSING_NOTE detection to line start (D6-P3) |
 | — | — | fix(parser): block prose-only CONSULT_NOTE false matches (D6-P4) |
+| — | — | fix(parser): harden EMERGENCY source detection (D6-P5) |
 
 ### Open PRs
 
@@ -441,7 +442,41 @@ before "CONSULT NOTE" contains prose indicators (`from`, `see`, `per`, `refer`,
 | Legitimate sub-headers preserved | 26/26 |
 
 
-##### Remaining Queue (post-D6-P4)
+##### D6-P5 — EMERGENCY source-detection hardening
+
+**Problem:** The bare `EMERGENCY` pattern in `_SECTION_PATTERNS` had no anchor
+and no word-boundary constraint. It matched the substring "EMERGENCY" anywhere
+in a line, triggering 464 mid-line false matches across 33 of 34 patients.
+172 of these actually changed parser state, misattributing 20,850 lines of
+clinical data (PROGRESS_NOTE/LAB/PROCEDURE/IMAGING → ED_NOTE). The biggest
+offenders were ADT event lines (`EMERGENCY DEPT MC`), admin fields
+(`Patient Class: Emergency`, `Specialty: Emergency Medicine`), and clinical
+prose (`performed in the Emergency Department`).
+
+**Design:** Replaced `r"EMERGENCY"` with `r"EMERGENCY[\s_]+(?:DEPARTMENT|DEPT)"`
+and added two block filters:
+1. **Trailing-word whitelist** (`_EMERGENCY_DEPT_ALLOW_AFTER`): only `NOTE` and
+   `ENCOUNTER` are allowed as the first word after DEPARTMENT/DEPT. Everything
+   else (MC, dates, clinical prose) is rejected.
+2. **Before-text prose filter** (`_EMERGENCY_PROSE_BEFORE`): blocks when text
+   before the match contains `in`, `from`, `performed`, `results`, `closed`.
+
+**Files changed:**
+- `cerebralos/ntds_logic/build_patientfacts_from_txt.py` — tightened EMERGENCY pattern; added `_EMERGENCY_DEPT_ALLOW_AFTER` and `_EMERGENCY_PROSE_BEFORE` constants; added block logic in `_detect_source_type()` and `_is_section_header()`
+- `tests/test_build_patientfacts_source_detection.py` — 18 new tests (5 header preservation + 10 noise rejection + 3 `_is_section_header` consistency)
+
+| Metric | Result |
+|--------|--------|
+| pytest source-detection | 181 passed |
+| pytest event fixtures | 44 passed |
+| pytest cohort invariant | 25 passed |
+| Full cohort re-run (34 patients) | **0 NTDS outcome deltas** |
+| NTDS output files compared | 760/760 identical |
+| Mid-line false triggers eliminated | 464 |
+| Legitimate ED headers preserved | "Emergency Department [Encounter] Note", "ED NOTE" |
+
+
+##### Remaining Queue (post-D6-P5)
 
 | Item | Scope | Priority |
 |------|-------|----------|
@@ -450,7 +485,7 @@ before "CONSULT NOTE" contains prose indicators (`from`, `see`, `per`, `refer`,
 | ~~D6-P2 — PHYSICIAN_NOTE line-start anchor~~ | ~~Parser hardening~~ | **✅ COMPLETE (PR #158)** — 1 pattern anchored, 6 tests added, 0 NTDS outcome deltas |
 | ~~D6-P3 — NURSING_NOTE line-start anchor~~ | ~~Parser hardening~~ | **✅ COMPLETE (PR #159)** — 1 pattern anchored + E09 rule widened, 9 tests added, 0 NTDS outcome deltas |
 | ~~D6-P4 — CONSULT_NOTE prose-before block~~ | ~~Parser hardening~~ | **✅ COMPLETE** — prose-before filter added, 49 false triggers eliminated, 26 sub-headers preserved, 25 tests added, 0 NTDS outcome deltas |
-| D6-P5 — EMERGENCY anchor | Parser hardening — 420/424 prose noise but 4 legitimate headers need block-word approach | Low |
+| D6-P5 — EMERGENCY anchor | ~~Parser hardening — 420/424 prose noise but 4 legitimate headers need block-word approach~~ | **✅ COMPLETE** — pattern tightened to EMERGENCY DEPT/DEPARTMENT + trailing whitelist + prose-before filter, 464 false triggers eliminated, 18 tests added, 0 NTDS outcome deltas |
 | D6-P6 — OPERATIVE_NOTE anchor | Parser hardening — "Brief Operative Note" regression risk; needs design | Low |
 | OP_NOTE — NO-GO | 92% (45/49) prose hits are legitimate POSTOP/Post-Op sub-headers — simple anchoring would break them | **NO-GO for simple anchoring** |
 | PROGRESS_NOTE — NO-GO | ~67% (450/667) prose hits are legitimate sub-headers ("Hospital Progress Note", "Trauma Progress Note") | **NO-GO for simple anchoring** |
