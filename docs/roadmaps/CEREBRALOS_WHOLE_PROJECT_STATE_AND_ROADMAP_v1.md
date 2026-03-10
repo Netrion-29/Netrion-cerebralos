@@ -82,8 +82,8 @@ None.
 | Fixture files       | 44               |
 | Fixture runner      | **44 passed, 0 xfailed** |
 | Precision tests     | 6 suites (E01, E10, E15, E16, E18, E19) |
-| Cohort invariant    | 33 canonical = 33 adjusted |
-| Canonical patients  | 33               |
+| Cohort invariant    | 39 canonical = 39 adjusted |
+| Canonical patients  | 39               |
 | Known flaky         | `test_ntds_runtime_wire_e2e::test_ntds_on_exit_zero` (intermittent, passes in isolation) |
 
 ### Engine Inventory
@@ -98,7 +98,7 @@ None.
 
 ## 2. Canonical Cohort Counting Rules
 
-**Ground truth:** `data_raw/*.txt` — currently **33 files = 33 patients**.
+**Ground truth:** `data_raw/*.txt` — currently **39 files = 39 patients**.
 
 When counting output directories in `outputs/ntds/`:
 
@@ -106,11 +106,14 @@ When counting output directories in `outputs/ntds/`:
    event prefix (e.g. `08_dvt_no`, `14_pe_yes`). Currently 4 such dirs.
 2. **Exclude stale space-variant duplicates** — directories with spaces in
    the name that duplicate an underscore-normalized sibling (e.g.
-   `Charlotte Howlett` when `Charlotte_Howlett` also exists). Currently 2.
-3. After exclusions, **adjusted output count must equal canonical count (33)**.
-4. Any discrepancy means either a new patient was added to `data_raw/`
+   `Charlotte Howlett` when `Charlotte_Howlett` also exists). Currently 0
+   (prior duplicates archived to `_stale_space_dups_20260304_172106`).
+3. **Exclude admin directories** whose names start with `_` (archives,
+   stale backups). Currently 1 (`_stale_space_dups_20260304_172106`).
+4. After exclusions, **adjusted output count must equal canonical count (39)**.
+5. Any discrepancy means either a new patient was added to `data_raw/`
    without a full cohort re-run, or a stale artifact was not cleaned up.
-5. Always report both raw slug count and adjusted count in audits.
+6. Always report both raw slug count and adjusted count in audits.
 
 ---
 
@@ -524,7 +527,7 @@ Lolita_Calcia
 | Gate                          | Cohort   | When                           |
 |-------------------------------|----------|--------------------------------|
 | **Every PR (dev loop)**       | Sentinel | After each meaningful change   |
-| **Pre-merge / final gate**   | Full 33  | Before merge to main           |
+| **Pre-merge / final gate**   | Full 39  | Before merge to main           |
 
 **Dev-loop sentinel run:**
 ```bash
@@ -540,7 +543,7 @@ done
 ./scripts/gate_pr.sh
 ```
 
-The sentinel cohort is a speed optimization (12/33 = 36% of patients).
+The sentinel cohort is a speed optimization (12/39 = 31% of patients).
 It does NOT replace the full gate — it accelerates the inner dev loop.
 
 ---
