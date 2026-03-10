@@ -586,3 +586,139 @@ class TestNursingNoteLineStartAnchor:
             SourceType.UNKNOWN,
         )
         assert result != SourceType.NURSING_NOTE
+
+
+# ---------------------------------------------------------------------------
+# D6-P4 – CONSULT_NOTE prose-before block filter
+# ---------------------------------------------------------------------------
+class TestConsultNoteProseBlock:
+    """Mid-line prose references must NOT trigger CONSULT_NOTE section change.
+
+    Legitimate specialty sub-headers (e.g. 'Ortho Consult Note') must still match.
+    """
+
+    # --- Legitimate sub-headers (should trigger CONSULT_NOTE) ---
+
+    def test_trauma_consult_note(self):
+        assert _detect_source_type("Trauma consult Note", SourceType.UNKNOWN) == SourceType.CONSULT_NOTE
+
+    def test_neurology_followup_consult_note(self):
+        assert _detect_source_type("Neurology follow up Consult Note", SourceType.UNKNOWN) == SourceType.CONSULT_NOTE
+
+    def test_hospitalist_admission_consult_note(self):
+        assert _detect_source_type("Hospitalist Admission Consult Note", SourceType.UNKNOWN) == SourceType.CONSULT_NOTE
+
+    def test_ortho_consult_note_with_author(self):
+        assert _detect_source_type(
+            "Ortho Consult Note Isaac W Fehrenbacher, MD 1/1/2026 9:58 AM",
+            SourceType.UNKNOWN,
+        ) == SourceType.CONSULT_NOTE
+
+    def test_podiatry_consult_note_upper(self):
+        assert _detect_source_type(
+            "PODIATRY CONSULT NOTE (Aaron Gallardo, DPM, PGY-1",
+            SourceType.UNKNOWN,
+        ) == SourceType.CONSULT_NOTE
+
+    def test_cardiac_ep_consult_note(self):
+        assert _detect_source_type("Cardiac Electrophysiology Consult Note", SourceType.UNKNOWN) == SourceType.CONSULT_NOTE
+
+    def test_palliative_care_np_consult_note(self):
+        assert _detect_source_type(
+            "Palliative Care Nurse Practitioner Consult Note",
+            SourceType.UNKNOWN,
+        ) == SourceType.CONSULT_NOTE
+
+    def test_dcg_medical_management_consult_note(self):
+        assert _detect_source_type("DCG Medical Management Consult Note", SourceType.UNKNOWN) == SourceType.CONSULT_NOTE
+
+    def test_intracranial_hemorrhage_consult_note(self):
+        assert _detect_source_type(
+            "INPATIENT INTRACRANIAL HEMORRHAGE CONSULT NOTE",
+            SourceType.UNKNOWN,
+        ) == SourceType.CONSULT_NOTE
+
+    def test_diabetes_clinician_consult_note(self):
+        assert _detect_source_type("Diabetes Clinician Consult Note 12/15/2025", SourceType.UNKNOWN) == SourceType.CONSULT_NOTE
+
+    def test_foot_ankle_surgery_consult_note(self):
+        assert _detect_source_type("Foot and Ankle Surgery Consult Note", SourceType.UNKNOWN) == SourceType.CONSULT_NOTE
+
+    def test_bare_consult_note_still_matches(self):
+        assert _detect_source_type("Consult Note", SourceType.UNKNOWN) == SourceType.CONSULT_NOTE
+
+    def test_bracketed_consult_note_still_matches(self):
+        assert _detect_source_type("[CONSULT_NOTE] 2025-12-31 15:44:00", SourceType.UNKNOWN) == SourceType.CONSULT_NOTE
+
+    # --- Prose references (should NOT trigger CONSULT_NOTE) ---
+
+    def test_hpi_from_initial_consult_note_rejected(self):
+        result = _detect_source_type("HPI from Initial Consult Note:", SourceType.PROGRESS_NOTE)
+        assert result != SourceType.CONSULT_NOTE
+
+    def test_please_see_ep_consult_note_rejected(self):
+        result = _detect_source_type(
+            "Please see EP consult note from Dr. Makati 01/04/2026.",
+            SourceType.IMAGING,
+        )
+        assert result != SourceType.CONSULT_NOTE
+
+    def test_per_ns_consult_note_rejected(self):
+        result = _detect_source_type(
+            'Per NS consult note: "The patient is a 71 y.o. female',
+            SourceType.PROGRESS_NOTE,
+        )
+        assert result != SourceType.CONSULT_NOTE
+
+    def test_refer_to_consult_note_rejected(self):
+        result = _detect_source_type(
+            "*Refer to consult note for details regarding HPI.",
+            SourceType.PROGRESS_NOTE,
+        )
+        assert result != SourceType.CONSULT_NOTE
+
+    def test_initial_history_from_consult_note_rejected(self):
+        result = _detect_source_type(
+            "Initial History of Presenting Illness from Initial Consult Note:",
+            SourceType.PROGRESS_NOTE,
+        )
+        assert result != SourceType.CONSULT_NOTE
+
+    def test_see_my_initial_consult_note_rejected(self):
+        result = _detect_source_type(
+            "His ICH score is a 4.  See my initial consult note for detailed documentation.",
+            SourceType.PROGRESS_NOTE,
+        )
+        assert result != SourceType.CONSULT_NOTE
+
+    def test_boilerplate_this_note_will_include_rejected(self):
+        result = _detect_source_type(
+            "This note will include professional medical terminology that may be "
+            "somewhat confusing without some interpretation from a medical "
+            "professional team. The intent of the progress notes is to communicate "
+            "between medical professionals involved in the care, or to serve as a "
+            "future reference for me.Therefore if have questions about terminology "
+            "or documentation in the actual progress/consult notes",
+            SourceType.IMAGING,
+        )
+        assert result != SourceType.CONSULT_NOTE
+
+    def test_initial_history_from_dr_consult_note_rejected(self):
+        result = _detect_source_type(
+            "Initial History of Presenting Illness from Dr. Meckler's Initial Consult Note:",
+            SourceType.PROGRESS_NOTE,
+        )
+        assert result != SourceType.CONSULT_NOTE
+
+    # --- _is_section_header consistency ---
+
+    def test_is_section_header_prose_rejected(self):
+        assert _is_section_header("HPI from Initial Consult Note:") is False
+
+    def test_is_section_header_subheader_accepted(self):
+        assert _is_section_header("Ortho Consult Note Isaac W Fehrenbacher, MD") is True
+
+    def test_is_section_header_boilerplate_rejected(self):
+        assert _is_section_header(
+            "This note will include professional medical terminology...consult notes"
+        ) is False
