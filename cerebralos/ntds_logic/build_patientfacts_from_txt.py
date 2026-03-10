@@ -68,6 +68,18 @@ _DISCHARGE_BLOCK_FIRST_WORDS = _BLOCK_WORDS | {
     "AT", "ORDERS", "ORTHO", "PENDING", "PER", "PT", "TO",
 }
 
+# Phrases that, when appearing in text BEFORE "CONSULT NOTE",
+# indicate the line is clinical prose rather than a section header.
+# Examples blocked: "HPI from Initial Consult Note:",
+#   "Please see EP consult note from Dr. Makati",
+#   "This note will include ... consult notes"
+_CONSULT_PROSE_BEFORE = re.compile(
+    r"(?:(?:^|\s)from\s|(?:^|\s)see\s|(?:^|\s)per\s|(?:^|\s)refer\s"
+    r"|history\s+of|HPI\s+from|please\s+see|this\s+note\s+will"
+    r"|score\s+is|\*\s*Refer)",
+    re.IGNORECASE,
+)
+
 # Timestamp patterns (various Epic formats)
 _TIMESTAMP_PATTERNS = [
     # mm/dd/yy HHmm
@@ -92,6 +104,12 @@ def _detect_source_type(line: str, current_source: SourceType) -> SourceType:
             trailing = upper[m.end():].strip().strip(":")
             if trailing in _BLOCK_WORDS:
                 continue
+            # For CONSULT_NOTE, block when text before the keyword
+            # contains prose indicators (cross-references, boilerplate).
+            if source_type is SourceType.CONSULT_NOTE:
+                before = upper[:m.start()].strip()
+                if before and _CONSULT_PROSE_BEFORE.search(line[:m.start()]):
+                    continue
             # For DISCHARGE, also block on the first trailing word to
             # catch admin fields like "Discharge Disposition: Rehab-Inpt".
             if source_type is SourceType.DISCHARGE:
@@ -150,6 +168,12 @@ def _is_section_header(line: str) -> bool:
             trailing = upper[m.end():].strip().strip(":")
             if trailing in _BLOCK_WORDS:
                 continue
+            # For CONSULT_NOTE, block when text before the keyword
+            # contains prose indicators (cross-references, boilerplate).
+            if source_type is SourceType.CONSULT_NOTE:
+                before = upper[:m.start()].strip()
+                if before and _CONSULT_PROSE_BEFORE.search(line[:m.start()]):
+                    continue
             if source_type is SourceType.DISCHARGE:
                 if trailing == ".":
                     continue

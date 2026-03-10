@@ -65,6 +65,8 @@
 | #156 | `56a67c5` | fix(parser): anchor MEDICATION_ADMIN and ED_NOTE detection to line start (D6-P1) |
 | #157 | `be0f4a6` | docs(roadmap): record D6-P1 MEDICATION_ADMIN/ED_NOTE anchor completion |
 | #158 | `ac31ac0` | fix(parser): anchor PHYSICIAN_NOTE detection to line start (D6-P2) |
+| #161 | — | fix(parser): anchor NURSING_NOTE detection to line start (D6-P3) |
+| — | — | fix(parser): block prose-only CONSULT_NOTE false matches (D6-P4) |
 
 ### Open PRs
 
@@ -410,7 +412,36 @@ genuinely a hospitalist consult note). Adding CONSULT_NOTE to E09
 | audit_cohort_counts --check | PASS (33/33) |
 | A/B all-21 distribution (33 patients re-run) | **0 NTDS outcome deltas** |
 
-##### Remaining Queue (post-D6-P3)
+
+##### D6-P4 — CONSULT_NOTE prose-before block filter
+
+**Problem:** The `CONSULT[\s_]+NOTE` pattern in `_SECTION_PATTERNS` had no `^` anchor
+(unlike PHYSICIAN_NOTE, NURSING_NOTE, etc.). This caused 75 mid-line matches, of
+which 49 were clinical prose — not section headers. 42 of these false triggers
+actually changed parser state, misattributing 2,060 lines of clinical data across
+10 patients (PROGRESS_NOTE/IMAGING → CONSULT_NOTE).
+
+**Design:** A bare `^` anchor was rejected because it would drop all 26 legitimate
+specialty sub-headers ("Ortho Consult Note", "Cardiac Electrophysiology Consult Note",
+etc.). Instead, a `_CONSULT_PROSE_BEFORE` regex constant blocks lines where text
+before "CONSULT NOTE" contains prose indicators (`from`, `see`, `per`, `refer`,
+`history of`, `HPI from`, `please see`, `this note will`, `score is`, `*Refer`).
+
+**Files changed:**
+- `cerebralos/ntds_logic/build_patientfacts_from_txt.py` — added `_CONSULT_PROSE_BEFORE` constant; added before-text block in `_detect_source_type()` and `_is_section_header()`
+- `tests/test_build_patientfacts_source_detection.py` — 25 new tests (13 sub-header preservation + 9 prose rejection + 3 `_is_section_header` consistency)
+
+| Metric | Result |
+|--------|--------|
+| pytest source-detection | 163 passed |
+| pytest event fixtures | 44 passed |
+| pytest cohort invariant | 25 passed |
+| Full cohort re-run (34 patients) | **0 NTDS outcome deltas** |
+| Mid-line false triggers eliminated | 49 |
+| Legitimate sub-headers preserved | 26/26 |
+
+
+##### Remaining Queue (post-D6-P4)
 
 | Item | Scope | Priority |
 |------|-------|----------|
@@ -418,7 +449,7 @@ genuinely a hospitalist consult note). Adding CONSULT_NOTE to E09
 | D4 — Precision audit across all 16 DISCHARGE-using events | Per-event evidence review | Medium |
 | ~~D6-P2 — PHYSICIAN_NOTE line-start anchor~~ | ~~Parser hardening~~ | **✅ COMPLETE (PR #158)** — 1 pattern anchored, 6 tests added, 0 NTDS outcome deltas |
 | ~~D6-P3 — NURSING_NOTE line-start anchor~~ | ~~Parser hardening~~ | **✅ COMPLETE (PR #159)** — 1 pattern anchored + E09 rule widened, 9 tests added, 0 NTDS outcome deltas |
-| D6-P4 — CONSULT_NOTE anchor | Parser hardening — 28 legitimate prose sub-headers among 74 prose hits; needs design | Low |
+| ~~D6-P4 — CONSULT_NOTE prose-before block~~ | ~~Parser hardening~~ | **✅ COMPLETE** — prose-before filter added, 49 false triggers eliminated, 26 sub-headers preserved, 25 tests added, 0 NTDS outcome deltas |
 | D6-P5 — EMERGENCY anchor | Parser hardening — 420/424 prose noise but 4 legitimate headers need block-word approach | Low |
 | D6-P6 — OPERATIVE_NOTE anchor | Parser hardening — "Brief Operative Note" regression risk; needs design | Low |
 | OP_NOTE — NO-GO | 92% (45/49) prose hits are legitimate POSTOP/Post-Op sub-headers — simple anchoring would break them | **NO-GO for simple anchoring** |
