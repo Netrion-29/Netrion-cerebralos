@@ -86,6 +86,7 @@ _PATTERN_DESCRIPTIONS = {
     "protocol_spinal_clearance_criteria": "Spinal clearance criteria applied",
     "protocol_spinal_injury_neuro_exam": "Neurological exam for spinal injury",
     "protocol_spinal_injury_mri": "MRI for spinal injury",
+    "protocol_spinal_stabilization_surgery": "Spinal stabilization surgery (ACDF, fusion, laminectomy)",
 
     # Pelvic Fractures
     "protocol_pelvic_imaging": "Pelvic imaging performed",

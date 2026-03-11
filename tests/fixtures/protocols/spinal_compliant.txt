@@ -27,3 +27,9 @@ T11 burst fracture with neurologic deficit (motor and sensory).
 Spinal cord injury suspected. Neurosurgery consulted.
 Cervical collar maintained pending complete evaluation.
 MRI spine ordered for further characterization.
+
+[OPERATIVE_NOTE] 2026-02-19 20:00:00
+Procedure: T11 laminectomy with posterior spinal fusion T10-T12.
+Decompression and fusion performed for unstable T11 burst fracture.
+Pedicle screw instrumentation T10-T12 placed.
+Patient tolerated procedure well. No complications.

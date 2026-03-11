@@ -210,6 +210,20 @@
       "\\bspinal\\s+fractur",
       "\\bneurologic\\s+deficit"
     ],
+    "protocol_spinal_stabilization_surgery": [
+      "\\bACDF\\b",
+      "\\banterior\\s+cervical\\s+discectomy",
+      "\\bcervical\\s+fusion",
+      "\\bspinal\\s+fusion",
+      "\\bposterior\\s+(cervical|thoracic|lumbar)\\s+fusion",
+      "\\bC[0-7][-\\s]+(C[0-7]\\s+)?fusion",
+      "\\bT\\d{1,2}[-\\s]+(T\\d{1,2}\\s+)?fusion",
+      "\\bL[0-5][-\\s]+(L[0-5]\\s+)?fusion",
+      "\\blaminectomy",
+      "\\bspinal\\s+stabilization\\s+(surgery|procedure)",
+      "\\bsurgical\\s+stabilization.*spin",
+      "\\bdecompression\\s+and\\s+fusion"
+    ],
     "protocol_pelvic_fx_gate": [
       "\\bpelvic\\s+fracture",
       "\\bacetabul.*fractur",

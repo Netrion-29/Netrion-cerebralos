@@ -673,9 +673,31 @@
           "acceptable_evidence": ["TRAUMA_HP", "PHYSICIAN_NOTE", "RADIOLOGY"],
           "failure_consequence": "NOT_TRIGGERED if no spinal assessment documented.",
           "notes": null
+        },
+        {
+          "id": "REQ_REQUIRED_DATA_ELEMENTS",
+          "description": "Operative spinal stabilization documented (surgery performed).",
+          "requirement_type": "MANDATORY",
+          "trigger_conditions": [
+            "protocol_spinal_stabilization_surgery"
+          ],
+          "acceptable_evidence": ["OPERATIVE_NOTE", "PHYSICIAN_NOTE", "ANESTHESIA_NOTE"],
+          "failure_consequence": "INDETERMINATE if no operative intervention documented (non-operative management).",
+          "notes": "Only patients with documented spinal stabilization surgery are evaluable for 36-hour timing compliance."
+        },
+        {
+          "id": "REQ_TIMING_CRITICAL",
+          "description": "Spinal stabilization surgery within 36 hours of injury.",
+          "requirement_type": "CONDITIONAL",
+          "trigger_conditions": [
+            "temporal:within:36:hours:protocol_spinal_stabilization_surgery"
+          ],
+          "acceptable_evidence": ["OPERATIVE_NOTE", "PHYSICIAN_NOTE", "ANESTHESIA_NOTE"],
+          "failure_consequence": "NON_COMPLIANT if spinal stabilization surgery not performed within 36 hours of arrival.",
+          "notes": "Per protocol: recommend spinal stabilization surgery within 36 hours from injury to reduce complications."
         }
       ],
-      "references": ["Trauma H&P", "Physician notes", "Imaging reports"],
+      "references": ["Trauma H&P", "Physician notes", "Imaging reports", "Operative notes"],
       "notes": {"extraction_warnings": [], "raw_block_preserved": true}
     },
     {

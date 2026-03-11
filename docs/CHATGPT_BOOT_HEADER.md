@@ -37,8 +37,9 @@
 | Anesthesia SourceType | ✅ COMPLETE — ANESTHESIA_NOTE enum + parser pattern + wired E19/E20 rules, 12 tests added, 0 NTDS outcome deltas across 39 patients |
 | Protocol coverage audit | ✅ COMPLETE (PR #175) — stale ROLE_OF_TRAUMA_SERVICES removed from index/validator/fixtures, 43 protocols synced, 0 NTDS outcome deltas |
 | FLAG 002 E21 VAP vent gate | ✅ COMPLETE — required mechanical-ventilation gate added to E21 VAP, 7 vent_dx mapper patterns, history_noise exclusion, 1 fixture added, Cheryl_Burton YES→NO, 39-patient cohort verified |
+| FLAG 001 Spinal 36 h timing | ✅ COMPLETE — REQ_REQUIRED_DATA_ELEMENTS + REQ_TIMING_CRITICAL (temporal:within:36:hours) added to spinal protocol, 12 surgery patterns, 1 fixture added, 1 fixture updated, 0 NTDS outcome deltas |
 | Open PRs | None |
-| Next phase | **Backlog priority:** (1) FLAG 001 Spinal 36 h timing, (2) Baseline hash coverage, (3) D4 DISCHARGE precision audit, (4) 15-event precision pass — see Roadmap §3 |
+| Next phase | **Backlog priority:** (1) Baseline hash coverage, (2) D4 DISCHARGE precision audit, (3) 15-event precision pass — see Roadmap §3 |
 
 ## Quick Chat Starter
 

@@ -277,6 +277,7 @@ class ProtocolValidator:
             "msk": "MANAGEMENT_OF_SEVERE_MUSCULOSKELETAL_INJURIES",
             "neurosurg": "MANAGEMENT_OF_NEUROSURGICAL_EMERGENCIES",
             "spinal": "SPINAL_CLEARANCE_AND_SPINAL_INJURY_MANAGEMENT",
+            "spinal_timing": "SPINAL_CLEARANCE_AND_SPINAL_INJURY_MANAGEMENT",
             "pelvic": "MANAGEMENT_AND_STABILIZATION_OF_PELVIC_FRACTURES",
         }
 
