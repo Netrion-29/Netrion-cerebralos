@@ -172,8 +172,9 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - D6-P7 (PROGRESS_NOTE anchor): ✅ COMPLETE — compound-prefix anchor with 20 specialty prefixes, 308 false triggers eliminated, 438 sub-headers preserved, 13 tests added, 0 NTDS outcome deltas
 > - ED_NOTE allowed_sources gap: ✅ COMPLETE — ED_NOTE added to 12 NTDS events (E01 AKI, E02 ARDS, E03 Alcohol Withdrawal, E04 Cardiac Arrest, E08 DVT, E09 Delirium, E10 MI, E14 PE, E15 Severe Sepsis, E16 Stroke, E18 Unplanned ICU, E19 Unplanned Intubation), 17 gates total, 0 NTDS outcome deltas across 39 patients
 > - Anesthesia SourceType: ✅ COMPLETE — ANESTHESIA_NOTE enum + `^\[?\s*ANESTHESIA[\s_]` parser pattern + E19/E20 rules wired, 12 tests added, 0 NTDS outcome deltas across 39 patients
-> - Protocol coverage audit: ✅ COMPLETE — stale ROLE_OF_TRAUMA_SERVICES removed from index/validator/fixtures, 43 protocols synced, 0 NTDS outcome deltas
-> - Next phase: D4 DISCHARGE precision audit + remaining 15-event precision pass — see Roadmap doc §3
+> - Protocol coverage audit: ✅ COMPLETE (PR #175) — stale ROLE_OF_TRAUMA_SERVICES removed from index/validator/fixtures, 43 protocols synced, 0 NTDS outcome deltas
+> - Open PRs: None (PR #175 merged, PR #142 closed as stale)
+> - **Backlog priority:** (1) FLAG 002 E21 VAP vent gate, (2) FLAG 001 Spinal 36 h timing, (3) Baseline hash coverage, (4) D4 DISCHARGE precision audit, (5) 15-event precision pass, (6) 5 AKI UTD residuals, (7) per-event distribution automation, (8) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
 >
 > See Roadmap doc §3 for full backlog detail, N3 residuals, and N4 queue.
 
