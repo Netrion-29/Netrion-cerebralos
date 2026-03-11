@@ -12,9 +12,15 @@
       "gate_name": "Documentation of cardiac arrest",
       "required": true,
       "min_count": 1,
-      "query_keys": ["cardiac_arrest_dx"],
+      "query_keys": [
+        "cardiac_arrest_dx"
+      ],
       "exclude_noise_keys": [],
-      "allowed_sources": ["PHYSICIAN_NOTE", "NURSING_NOTE"],
+      "allowed_sources": [
+        "PHYSICIAN_NOTE",
+        "NURSING_NOTE",
+        "ED_NOTE"
+      ],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of cardiac arrest found."
     },
@@ -24,9 +30,15 @@
       "gate_name": "CPR performed",
       "required": true,
       "min_count": 1,
-      "query_keys": ["cpr_documented"],
+      "query_keys": [
+        "cpr_documented"
+      ],
       "exclude_noise_keys": [],
-      "allowed_sources": ["PHYSICIAN_NOTE", "NURSING_NOTE"],
+      "allowed_sources": [
+        "PHYSICIAN_NOTE",
+        "NURSING_NOTE",
+        "ED_NOTE"
+      ],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of CPR performed."
     }
@@ -38,8 +50,12 @@
       "gate_name": "Exclude cardiac arrest present on arrival (scoped)",
       "rule_id": "EXCL_POA",
       "reason": "Documented prior/present on arrival.",
-      "query_keys": ["history_noise"],
-      "require_context_keys": ["cardiac_arrest_dx"],
+      "query_keys": [
+        "history_noise"
+      ],
+      "require_context_keys": [
+        "cardiac_arrest_dx"
+      ],
       "proximity_mode": "sentence_window"
     }
   ],

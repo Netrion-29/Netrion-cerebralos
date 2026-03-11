@@ -368,10 +368,9 @@ NOTE" headers that correctly reclassify from PHYSICIAN_NOTE → ED_NOTE
 (via EMERGENCY fallback). 645 content lines across 3 patients change section
 assignment.
 
-**Note:** ED_NOTE is absent from all 21 NTDS `allowed_sources` lists.
-Evidence reclassified to ED_NOTE becomes invisible to source-filtered gates.
-However, zero passing gates reference PHYSICIAN_NOTE evidence from affected
-zones — all affected evidence is near-miss on NO-outcome events only.
+**Note:** ED_NOTE was absent from all 21 NTDS `allowed_sources` lists (now resolved — see ED_NOTE `allowed_sources` gap closure in Remaining Queue).
+ED_NOTE added to 12/21 events (17 gates). Zero NTDS outcome deltas across 39 patients confirmed;
+all affected evidence is near-miss on NO-outcome events only.
 
 6 focused tests added (4 acceptance + 2 mid-line rejection).
 
@@ -492,7 +491,7 @@ and added two block filters:
 | ~~D6-P6 — OPERATIVE_NOTE anchor~~ | ~~Parser hardening — "Brief Operative Note" regression risk; needs design~~ | **✅ COMPLETE** — compound-prefix anchor, 3860 false triggers eliminated, 14 tests added, 0 NTDS outcome deltas |
 | ~~OP_NOTE — NO-GO~~ | ~~92% (45/49) prose hits are legitimate POSTOP/Post-Op sub-headers — simple anchoring would break them~~ | **RESOLVED by D6-P6** — compound-prefix design preserves POSTOP/Brief Operative sub-headers |
 | ~~PROGRESS_NOTE — NO-GO~~ | ~~~67% (450/667) prose hits are legitimate sub-headers ("Hospital Progress Note", "Trauma Progress Note")~~ | **RESOLVED by D6-P7** — compound-prefix anchor with 20 specialty prefixes, 308 false triggers eliminated, 438 sub-headers preserved, 13 tests added, 0 NTDS outcome deltas |
-| ED_NOTE `allowed_sources` gap | ED_NOTE absent from all 21 NTDS rule `allowed_sources` lists — evidence tagged ED_NOTE invisible to source-filtered gates; low priority, tracked finding | Low |
+| ~~ED_NOTE `allowed_sources` gap~~ | ~~ED_NOTE absent from all 21 NTDS rule `allowed_sources` lists~~ | **✅ COMPLETE** — ED_NOTE added to 12/21 events (17 gates across E01, E02, E03, E04, E08, E09, E10, E14, E15, E16, E18, E19), 0 NTDS outcome deltas across 39 patients. 9 events excluded (CAUTI, CLABSI, Deep SSI, Osteomyelitis, Pressure Ulcer, Superficial SSI, OR Return, VAP — hospital-acquired/surgical, ED evidence not clinically relevant) |
 | PMH-aware gate handling: allow engine to filter PMH context across non-adjacent lines | Engine proposal (protected) | Medium |
 | Precision audit pass for remaining 15 events | Per-event mapper/rule/tests | Medium |
 | Automate NTDS outcome distribution check per event | CI/gate script | Low |

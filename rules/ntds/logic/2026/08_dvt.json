@@ -17,8 +17,12 @@
       "gate_name": "Exclude if DVT present on arrival",
       "rule_id": "DVT_EXCL_POA",
       "reason": "DVT documented as present on arrival / prior to arrival (not a hospital event).",
-      "query_keys": ["dvt_poa_phrase"],
-      "require_context_keys": ["dvt_dx"],
+      "query_keys": [
+        "dvt_poa_phrase"
+      ],
+      "require_context_keys": [
+        "dvt_dx"
+      ],
       "proximity_mode": "sentence_window"
     }
   ],
@@ -29,8 +33,12 @@
       "gate_name": "Imaging explicitly negative for DVT",
       "required": false,
       "min_count": 1,
-      "query_keys": ["dvt_dx_negative"],
-      "allowed_sources": ["IMAGING"],
+      "query_keys": [
+        "dvt_dx_negative"
+      ],
+      "allowed_sources": [
+        "IMAGING"
+      ],
       "pass_outcome": "NO",
       "pass_reason": "Imaging explicitly negative for DVT."
     },
@@ -40,8 +48,16 @@
       "gate_name": "Diagnosis of DVT documented",
       "required": true,
       "min_count": 1,
-      "query_keys": ["dvt_dx"],
-      "allowed_sources": ["PHYSICIAN_NOTE", "CONSULT_NOTE", "IMAGING", "DISCHARGE"],
+      "query_keys": [
+        "dvt_dx"
+      ],
+      "allowed_sources": [
+        "PHYSICIAN_NOTE",
+        "CONSULT_NOTE",
+        "IMAGING",
+        "DISCHARGE",
+        "ED_NOTE"
+      ],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of DVT diagnosis found."
     },
@@ -53,7 +69,13 @@
       "query_key": "dvt_onset",
       "arrival_field": "arrival_time",
       "timestamp_required": true,
-      "allowed_sources": ["PHYSICIAN_NOTE", "CONSULT_NOTE", "NURSING_NOTE", "IMAGING"],
+      "allowed_sources": [
+        "PHYSICIAN_NOTE",
+        "CONSULT_NOTE",
+        "NURSING_NOTE",
+        "IMAGING",
+        "ED_NOTE"
+      ],
       "fail_outcome": "UNABLE_TO_DETERMINE",
       "fail_reason": "Cannot prove onset after arrival (missing or unclear timestamp/context)."
     },
@@ -63,8 +85,17 @@
       "gate_name": "Treated with anticoagulation and/or vena cava filter/clipping",
       "required": true,
       "min_count": 1,
-      "query_keys": ["dvt_treatment_anticoag", "dvt_treatment_filter"],
-      "allowed_sources": ["MAR", "PHYSICIAN_NOTE", "CONSULT_NOTE", "PROCEDURE", "DISCHARGE"],
+      "query_keys": [
+        "dvt_treatment_anticoag",
+        "dvt_treatment_filter"
+      ],
+      "allowed_sources": [
+        "MAR",
+        "PHYSICIAN_NOTE",
+        "CONSULT_NOTE",
+        "PROCEDURE",
+        "DISCHARGE"
+      ],
       "fail_outcome": "NO",
       "fail_reason": "No evidence of required DVT treatment per NTDS definition."
     }

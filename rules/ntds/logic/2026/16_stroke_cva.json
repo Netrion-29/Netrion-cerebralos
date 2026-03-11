@@ -12,9 +12,18 @@
       "gate_name": "Diagnosis of Stroke/CVA",
       "required": true,
       "min_count": 1,
-      "query_keys": ["stroke_dx"],
-      "exclude_noise_keys": ["stroke_negation_noise"],
-      "allowed_sources": ["PHYSICIAN_NOTE", "IMAGING", "DISCHARGE"],
+      "query_keys": [
+        "stroke_dx"
+      ],
+      "exclude_noise_keys": [
+        "stroke_negation_noise"
+      ],
+      "allowed_sources": [
+        "PHYSICIAN_NOTE",
+        "IMAGING",
+        "DISCHARGE",
+        "ED_NOTE"
+      ],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of stroke/CVA."
     }
@@ -26,8 +35,12 @@
       "gate_name": "Exclude if stroke/CVA present on arrival",
       "rule_id": "EXCL_POA",
       "reason": "Documented prior/present on arrival.",
-      "query_keys": ["history_noise"],
-      "require_context_keys": ["stroke_dx"],
+      "query_keys": [
+        "history_noise"
+      ],
+      "require_context_keys": [
+        "stroke_dx"
+      ],
       "proximity_mode": "sentence_window"
     }
   ],

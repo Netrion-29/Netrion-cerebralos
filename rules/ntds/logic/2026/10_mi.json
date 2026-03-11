@@ -12,9 +12,18 @@
       "gate_name": "Diagnosis of MI",
       "required": true,
       "min_count": 1,
-      "query_keys": ["mi_dx"],
-      "exclude_noise_keys": ["mi_negation_noise"],
-      "allowed_sources": ["PHYSICIAN_NOTE", "LAB", "DISCHARGE"],
+      "query_keys": [
+        "mi_dx"
+      ],
+      "exclude_noise_keys": [
+        "mi_negation_noise"
+      ],
+      "allowed_sources": [
+        "PHYSICIAN_NOTE",
+        "LAB",
+        "DISCHARGE",
+        "ED_NOTE"
+      ],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of MI."
     }
@@ -26,8 +35,12 @@
       "gate_name": "Exclude if MI present on arrival",
       "rule_id": "EXCL_POA",
       "reason": "Documented prior/present on arrival.",
-      "query_keys": ["history_noise"],
-      "require_context_keys": ["mi_dx"],
+      "query_keys": [
+        "history_noise"
+      ],
+      "require_context_keys": [
+        "mi_dx"
+      ],
       "proximity_mode": "sentence_window"
     }
   ],
