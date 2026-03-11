@@ -178,6 +178,10 @@ print("No v5 drift relative to stored baseline.")
 PY
 
 echo
+echo "---- NTDS baseline drift check ----"
+python3 scripts/check_ntds_hashes.py
+
+echo
 echo "---- Running full test suite (pytest) ----"
 PYTHONPATH=. python3 -m pytest tests/ -q
 
