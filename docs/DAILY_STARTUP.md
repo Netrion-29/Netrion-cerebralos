@@ -76,6 +76,7 @@ git status
 Gate must exit 0 with:
 
 - All v4 baseline hashes: MATCH
+- All NTDS baseline hashes: MATCH (39 patients)
 - Regression: PASS
 - Zero unintended artifact drift: True
 
@@ -175,8 +176,9 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - Protocol coverage audit: ✅ COMPLETE (PR #175) — stale ROLE_OF_TRAUMA_SERVICES removed from index/validator/fixtures, 43 protocols synced, 0 NTDS outcome deltas
 > - FLAG 002 E21 VAP vent gate: ✅ COMPLETE — required mechanical-ventilation gate added to E21 VAP rule, 7 vent_dx mapper patterns, history_noise exclusion, 1 fixture added, Cheryl_Burton YES→NO, 39-patient cohort verified
 > - FLAG 001 Spinal 36 h timing: ✅ COMPLETE — REQ_REQUIRED_DATA_ELEMENTS + REQ_TIMING_CRITICAL (temporal:within:36:hours) added to spinal protocol, 12 surgery patterns in shared_action_buckets, 1 fixture added (spinal_timing_noncompliant), 1 fixture updated (spinal_compliant +surgery), 0 NTDS outcome deltas
+> - Baseline hash coverage: ✅ COMPLETE — 39-patient NTDS event hash baseline + gate wiring + standalone checker, 0 NTDS outcome deltas
 > - Open PRs: None
-> - **Backlog priority:** (1) Baseline hash coverage, (2) D4 DISCHARGE precision audit, (3) 15-event precision pass, (4) 5 AKI UTD residuals, (5) per-event distribution automation, (6) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
+> - **Backlog priority:** (1) D4 DISCHARGE precision audit, (2) 15-event precision pass, (3) 5 AKI UTD residuals, (4) per-event distribution automation, (5) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
 >
 > See Roadmap doc §3 for full backlog detail, N3 residuals, and N4 queue.
 
