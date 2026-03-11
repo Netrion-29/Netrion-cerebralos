@@ -459,6 +459,15 @@
 			"\\bintubat(ed|ion)\\s+for\\s+(the\\s+)?(surgery|procedure|operation|case)\\b",
 			"\\banesthesia\\b.*\\bendotracheal\\b"
 		],
+		"vent_dx": [
+			"\\bmechanical(ly)?\\s+ventilat",
+			"\\bon\\s+(the\\s+)?ventilator\\b",
+			"\\bventilator\\s+(settings|support|mode)\\b",
+			"\\bendotracheal\\s+tube\\b",
+			"\\bETT\\b",
+			"\\btracheostomy\\b",
+			"\\bPEEP\\b"
+		],
 		"vap_dx": [
 			"\\bventilator[- ]?associated\\s+pneumonia\\b",
 			"\\bVAP\\b",

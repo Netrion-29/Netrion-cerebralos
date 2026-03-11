@@ -1,0 +1,13 @@
+PATIENT_ID: TEST_VAP_003
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[PHYSICIAN_NOTE] 2026-01-15 10:00:00
+Patient breathing spontaneously on nasal cannula.
+Oxygen supplementation via nasal cannula at 2 L/min.
+
+[IMAGING] 2026-01-20 08:00:00
+CT chest shows left upper lobe consolidation with air bronchogram
+consistent with pneumonia. Moderate left pleural effusion.
+
+[LAB] 2026-01-20 11:00:00
+Sputum culture positive for Streptococcus pneumoniae.

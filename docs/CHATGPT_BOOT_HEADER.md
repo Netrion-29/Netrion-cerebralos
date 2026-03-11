@@ -36,8 +36,9 @@
 | ED_NOTE allowed_sources gap | ✅ COMPLETE — ED_NOTE added to 12 NTDS events (17 gates), 0 NTDS outcome deltas across 39 patients |
 | Anesthesia SourceType | ✅ COMPLETE — ANESTHESIA_NOTE enum + parser pattern + wired E19/E20 rules, 12 tests added, 0 NTDS outcome deltas across 39 patients |
 | Protocol coverage audit | ✅ COMPLETE (PR #175) — stale ROLE_OF_TRAUMA_SERVICES removed from index/validator/fixtures, 43 protocols synced, 0 NTDS outcome deltas |
-| Open PRs | None (PR #175 merged, PR #142 closed as stale) |
-| Next phase | **Backlog priority:** (1) FLAG 002 E21 VAP vent gate, (2) FLAG 001 Spinal 36 h timing, (3) Baseline hash coverage, (4) D4 DISCHARGE precision audit — see Roadmap §3 |
+| FLAG 002 E21 VAP vent gate | ✅ COMPLETE — required mechanical-ventilation gate added to E21 VAP, 7 vent_dx mapper patterns, history_noise exclusion, 1 fixture added, Cheryl_Burton YES→NO, 39-patient cohort verified |
+| Open PRs | None |
+| Next phase | **Backlog priority:** (1) FLAG 001 Spinal 36 h timing, (2) Baseline hash coverage, (3) D4 DISCHARGE precision audit, (4) 15-event precision pass — see Roadmap §3 |
 
 ## Quick Chat Starter
 
