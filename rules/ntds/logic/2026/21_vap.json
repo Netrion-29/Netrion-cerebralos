@@ -8,6 +8,18 @@
   "gates": [
     {
       "gate_type": "evidence_any",
+      "gate_id": "vent_evidence",
+      "gate_name": "Evidence of mechanical ventilation",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["vent_dx"],
+      "exclude_noise_keys": ["history_noise"],
+      "allowed_sources": ["PHYSICIAN_NOTE", "NURSING_NOTE", "PROGRESS_NOTE", "OPERATIVE_NOTE", "ANESTHESIA_NOTE", "PROCEDURE", "ED_NOTE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No evidence of mechanical ventilation; VAP requires ventilator use."
+    },
+    {
+      "gate_type": "evidence_any",
       "gate_id": "vap_evidence",
       "gate_name": "Evidence consistent with VAP",
       "required": true,

@@ -510,7 +510,7 @@ and added two block filters:
 
 | # | Item | Scope | Priority | Effort | Notes |
 |---|------|-------|----------|--------|-------|
-| 1 | **FLAG 002 — E21 VAP vent gate** | `rules/ntds/logic/2026/21_vap.json` | **High** | Small | Cheryl_Burton expected YES→NO; vent-duration gate missing |
+| ~~1~~ | ~~**FLAG 002 — E21 VAP vent gate**~~ | ~~`rules/ntds/logic/2026/21_vap.json`~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** — required vent_evidence gate (7 vent_dx patterns, history_noise exclusion), 1 fixture added, Cheryl_Burton YES→NO, Ronald_Bittner stays YES, 39-patient cohort verified |
 | 2 | **FLAG 001 — Spinal protocol 36 h timing** | `rules/deaconess/protocols_deaconess_structured_v1.json` | **High** | Small | Protocol JSON timing threshold needs 36 h rule |
 | 3 | **Baseline hash coverage for NTDS outputs** | `scripts/baselines/`, `scripts/gate_pr.sh` | **High** | Small | Prerequisite for safe outcome-changing work; extends existing v4/v5 hash pattern |
 | 4 | D4 — DISCHARGE precision audit (14 events, 17 gates) | Per-event evidence review; `rules/ntds/logic/2026/` | Medium | Medium | Parser hardened (N5–N7); audit whether DISCHARGE rules still produce false positives |
