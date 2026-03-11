@@ -215,11 +215,11 @@ class TestVapRuleStructure:
         rule_path = REPO_ROOT / "rules" / "ntds" / "logic" / "2026" / "21_vap.json"
         with open(rule_path) as f:
             rule = json.load(f)
-        gate = rule["gates"][0]
-        assert gate["gate_id"] == "vap_evidence"
-        assert "vap_negation_noise" in gate["exclude_noise_keys"], \
+        gates = {g["gate_id"]: g for g in rule["gates"]}
+        assert set(gates.keys()) == {"vent_evidence", "vap_evidence"}
+        assert "vap_negation_noise" in gates["vap_evidence"]["exclude_noise_keys"], \
             "vap_negation_noise must be wired into exclude_noise_keys"
-        assert "history_noise" in gate["exclude_noise_keys"], \
+        assert "history_noise" in gates["vap_evidence"]["exclude_noise_keys"], \
             "history_noise must still be present"
 
     def test_vap_negation_noise_exists_in_mapper(self):
@@ -234,5 +234,6 @@ class TestVapRuleStructure:
         rule_path = REPO_ROOT / "rules" / "ntds" / "logic" / "2026" / "21_vap.json"
         with open(rule_path) as f:
             rule = json.load(f)
-        gate = rule["gates"][0]
-        assert gate["min_count"] == 2
+        gates = {g["gate_id"]: g for g in rule["gates"]}
+        assert gates["vent_evidence"]["min_count"] == 1
+        assert gates["vap_evidence"]["min_count"] == 2
