@@ -489,8 +489,8 @@ and added two block filters:
 | ~~D6-P3 — NURSING_NOTE line-start anchor~~ | ~~Parser hardening~~ | **✅ COMPLETE (PR #159)** — 1 pattern anchored + E09 rule widened, 9 tests added, 0 NTDS outcome deltas |
 | ~~D6-P4 — CONSULT_NOTE prose-before block~~ | ~~Parser hardening~~ | **✅ COMPLETE** — prose-before filter added, 49 false triggers eliminated, 26 sub-headers preserved, 25 tests added, 0 NTDS outcome deltas |
 | D6-P5 — EMERGENCY anchor | ~~Parser hardening — 420/424 prose noise but 4 legitimate headers need block-word approach~~ | **✅ COMPLETE** — pattern tightened to EMERGENCY DEPT/DEPARTMENT + trailing whitelist + prose-before filter, 464 false triggers eliminated, 18 tests added, 0 NTDS outcome deltas |
-| D6-P6 — OPERATIVE_NOTE anchor | Parser hardening — "Brief Operative Note" regression risk; needs design | Low |
-| OP_NOTE — NO-GO | 92% (45/49) prose hits are legitimate POSTOP/Post-Op sub-headers — simple anchoring would break them | **NO-GO for simple anchoring** |
+| ~~D6-P6 — OPERATIVE_NOTE anchor~~ | ~~Parser hardening — "Brief Operative Note" regression risk; needs design~~ | **✅ COMPLETE** — compound-prefix anchor, 3860 false triggers eliminated, 14 tests added, 0 NTDS outcome deltas |
+| ~~OP_NOTE — NO-GO~~ | ~~92% (45/49) prose hits are legitimate POSTOP/Post-Op sub-headers — simple anchoring would break them~~ | **RESOLVED by D6-P6** — compound-prefix design preserves POSTOP/Brief Operative sub-headers |
 | PROGRESS_NOTE — NO-GO | ~67% (450/667) prose hits are legitimate sub-headers ("Hospital Progress Note", "Trauma Progress Note") | **NO-GO for simple anchoring** |
 | ED_NOTE `allowed_sources` gap | ED_NOTE absent from all 21 NTDS rule `allowed_sources` lists — evidence tagged ED_NOTE invisible to source-filtered gates; low priority, tracked finding | Low |
 | PMH-aware gate handling: allow engine to filter PMH context across non-adjacent lines | Engine proposal (protected) | Medium |

@@ -856,3 +856,80 @@ class TestEmergencyHardening:
 
     def test_is_section_header_patient_class_rejected(self):
         assert _is_section_header("Patient Class: Emergency") is False
+
+
+# ---------------------------------------------------------------------------
+# D6-P6 – OPERATIVE_NOTE compound-prefix anchor
+# ---------------------------------------------------------------------------
+class TestOperativeNoteAnchor:
+    """OPERATIVE_NOTE/OP_NOTE must match at line start, allowing
+    POST/POSTOPERATIVE/Brief prefixes but rejecting Anesthesia
+    Post-Op variants and mid-line prose references."""
+
+    # --- acceptance ---
+
+    def test_operative_note_bare(self):
+        assert _detect_source_type("OPERATIVE NOTE", SourceType.UNKNOWN) == SourceType.OPERATIVE_NOTE
+
+    def test_op_note_bare(self):
+        assert _detect_source_type("Op Note", SourceType.UNKNOWN) == SourceType.OPERATIVE_NOTE
+
+    def test_operative_note_bracketed(self):
+        assert _detect_source_type("[OPERATIVE_NOTE]", SourceType.UNKNOWN) == SourceType.OPERATIVE_NOTE
+
+    def test_postop_note(self):
+        assert _detect_source_type("POSTOP NOTE", SourceType.UNKNOWN) == SourceType.OPERATIVE_NOTE
+
+    def test_postoperative_note(self):
+        assert _detect_source_type("POSTOPERATIVE NOTE", SourceType.UNKNOWN) == SourceType.OPERATIVE_NOTE
+
+    def test_brief_operative_note(self):
+        assert _detect_source_type("Brief Operative Note", SourceType.UNKNOWN) == SourceType.OPERATIVE_NOTE
+
+    # --- rejection ---
+
+    def test_anesthesia_follow_up_post_op_rejected(self):
+        result = _detect_source_type(
+            "Anesthesia Follow Up Post-Op Note",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.OPERATIVE_NOTE
+
+    def test_anesthesia_immediate_post_op_rejected(self):
+        result = _detect_source_type(
+            "Anesthesia Immediate Post-Op Note",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.OPERATIVE_NOTE
+
+    def test_immediate_post_op_note_rejected(self):
+        result = _detect_source_type(
+            "Immediate Post-Op Note",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.OPERATIVE_NOTE
+
+    def test_follow_up_post_op_note_rejected(self):
+        result = _detect_source_type(
+            "Follow Up Post-Op Note",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.OPERATIVE_NOTE
+
+    def test_prose_per_op_note_rejected(self):
+        result = _detect_source_type(
+            "Incision c/d/i, steri strips intact per op note. Dressing intact on rounds.",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.OPERATIVE_NOTE
+
+    # --- _is_section_header consistency ---
+
+    def test_is_header_operative_note(self):
+        assert _is_section_header("OPERATIVE NOTE") is True
+
+    def test_is_header_postop_note(self):
+        assert _is_section_header("POSTOP NOTE") is True
+
+    def test_is_header_anesthesia_post_op_rejected(self):
+        assert _is_section_header("Anesthesia Follow Up Post-Op Note") is False
