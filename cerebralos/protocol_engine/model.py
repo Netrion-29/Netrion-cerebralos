@@ -32,6 +32,7 @@ class SourceType(Enum):
     LAB = "LAB"
     MAR = "MAR"  # Medication Administration Record
     OPERATIVE_NOTE = "OPERATIVE_NOTE"
+    ANESTHESIA_NOTE = "ANESTHESIA_NOTE"
     PROCEDURE = "PROCEDURE"
     DISCHARGE = "DISCHARGE"
     RADIOLOGY = "RADIOLOGY"
