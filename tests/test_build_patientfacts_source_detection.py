@@ -933,3 +933,98 @@ class TestOperativeNoteAnchor:
 
     def test_is_header_anesthesia_post_op_rejected(self):
         assert _is_section_header("Anesthesia Follow Up Post-Op Note") is False
+
+
+class TestProgressNoteAnchor:
+    """PROGRESS_NOTE must match at line start, allowing known specialty
+    prefixes (Trauma, Hospital, Hospitalist, Daily, Brief, ESA, Heart,
+    Palliative, Neurology, Vascular, Podiatry, Infectious, Wound,
+    Electrophysiology, Deaconess, Consult, Inpatient, POSTOP, Pharmacy)
+    but rejecting mid-line prose references."""
+
+    # --- acceptance ---
+
+    def test_progress_note_bare(self):
+        assert _detect_source_type("PROGRESS NOTE", SourceType.UNKNOWN) == SourceType.PROGRESS_NOTE
+
+    def test_progress_note_bracketed(self):
+        assert _detect_source_type("[PROGRESS_NOTE]", SourceType.UNKNOWN) == SourceType.PROGRESS_NOTE
+
+    def test_postop_progress_note(self):
+        assert _detect_source_type("POSTOP PROGRESS NOTE", SourceType.UNKNOWN) == SourceType.PROGRESS_NOTE
+
+    def test_trauma_progress_note(self):
+        assert _detect_source_type("Trauma Progress Note", SourceType.UNKNOWN) == SourceType.PROGRESS_NOTE
+
+    def test_hospitalist_progress_note(self):
+        assert _detect_source_type("Hospitalist Progress Note", SourceType.UNKNOWN) == SourceType.PROGRESS_NOTE
+
+    def test_daily_progress_note(self):
+        assert _detect_source_type("Daily Progress Note", SourceType.UNKNOWN) == SourceType.PROGRESS_NOTE
+
+    def test_palliative_care_progress_note(self):
+        assert _detect_source_type("Palliative Care Nurse Practitioner Progress Note", SourceType.UNKNOWN) == SourceType.PROGRESS_NOTE
+
+    def test_neurology_progress_note(self):
+        assert _detect_source_type("NEUROLOGY INPATIENT CONSULT PROGRESS NOTE", SourceType.UNKNOWN) == SourceType.PROGRESS_NOTE
+
+    def test_vascular_progress_note(self):
+        assert _detect_source_type("VASCULAR NEUROLOGY INPATIENT PROGRESS NOTE", SourceType.UNKNOWN) == SourceType.PROGRESS_NOTE
+
+    def test_brief_progress_note(self):
+        assert _detect_source_type("Brief EP Progress Note", SourceType.UNKNOWN) == SourceType.PROGRESS_NOTE
+
+    # --- rejection ---
+
+    def test_patient_class_prose_rejected(self):
+        result = _detect_source_type(
+            "Patient Class: Progress Note Type: H&P",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.PROGRESS_NOTE
+
+    def test_see_progress_note_rejected(self):
+        result = _detect_source_type(
+            "see progress note for details on wound care",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.PROGRESS_NOTE
+
+    def test_per_progress_note_rejected(self):
+        result = _detect_source_type(
+            "Per trauma progress note today, HPI: 83-year-old male",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.PROGRESS_NOTE
+
+    def test_refer_to_progress_note_rejected(self):
+        result = _detect_source_type(
+            "Refer to progress note yesterday for guideline directed medical therapy",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.PROGRESS_NOTE
+
+    def test_mychart_disclaimer_rejected(self):
+        result = _detect_source_type(
+            "MyChart now allows progress notes to be visible to patients.",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.PROGRESS_NOTE
+
+    def test_disclaimer_prose_rejected(self):
+        result = _detect_source_type(
+            "Disclaimer:  Beginning in the spring of 2021, MyChart will allow progress notes",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.PROGRESS_NOTE
+
+    # --- _is_section_header consistency ---
+
+    def test_is_header_progress_note(self):
+        assert _is_section_header("PROGRESS NOTE") is True
+
+    def test_is_header_trauma_progress_note(self):
+        assert _is_section_header("Trauma Progress Note") is True
+
+    def test_is_header_mychart_disclaimer_rejected(self):
+        assert _is_section_header("MyChart now allows progress notes to be visible to patients.") is False
