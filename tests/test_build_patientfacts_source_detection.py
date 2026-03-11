@@ -894,6 +894,7 @@ class TestOperativeNoteAnchor:
             SourceType.UNKNOWN,
         )
         assert result != SourceType.OPERATIVE_NOTE
+        assert result == SourceType.ANESTHESIA_NOTE
 
     def test_anesthesia_immediate_post_op_rejected(self):
         result = _detect_source_type(
@@ -901,6 +902,7 @@ class TestOperativeNoteAnchor:
             SourceType.UNKNOWN,
         )
         assert result != SourceType.OPERATIVE_NOTE
+        assert result == SourceType.ANESTHESIA_NOTE
 
     def test_immediate_post_op_note_rejected(self):
         result = _detect_source_type(
@@ -932,7 +934,7 @@ class TestOperativeNoteAnchor:
         assert _is_section_header("POSTOP NOTE") is True
 
     def test_is_header_anesthesia_post_op_rejected(self):
-        assert _is_section_header("Anesthesia Follow Up Post-Op Note") is False
+        assert _is_section_header("Anesthesia Follow Up Post-Op Note") is True
 
 
 class TestProgressNoteAnchor:
@@ -1028,3 +1030,55 @@ class TestProgressNoteAnchor:
 
     def test_is_header_mychart_disclaimer_rejected(self):
         assert _is_section_header("MyChart now allows progress notes to be visible to patients.") is False
+
+
+class TestAnesthesiaNoteAnchor:
+    """ANESTHESIA_NOTE must match anesthesia headers at line start
+    and reject mid-line prose references."""
+
+    # --- acceptance ---
+
+    def test_anesthesia_follow_up_post_op(self):
+        assert _detect_source_type("Anesthesia Follow Up Post-Op Note", SourceType.UNKNOWN) == SourceType.ANESTHESIA_NOTE
+
+    def test_anesthesia_immediate_post_op(self):
+        assert _detect_source_type("Anesthesia Immediate Post-Op Note", SourceType.UNKNOWN) == SourceType.ANESTHESIA_NOTE
+
+    def test_anesthesia_note_bare(self):
+        assert _detect_source_type("ANESTHESIA NOTE", SourceType.UNKNOWN) == SourceType.ANESTHESIA_NOTE
+
+    def test_anesthesia_note_colon(self):
+        assert _detect_source_type("ANESTHESIA NOTE:", SourceType.UNKNOWN) == SourceType.ANESTHESIA_NOTE
+
+    def test_anesthesia_note_bracketed(self):
+        assert _detect_source_type("[ANESTHESIA_NOTE]", SourceType.UNKNOWN) == SourceType.ANESTHESIA_NOTE
+
+    def test_anesthesia_preop_evaluation(self):
+        assert _detect_source_type("Anesthesia Pre-Op Evaluation", SourceType.UNKNOWN) == SourceType.ANESTHESIA_NOTE
+
+    # --- rejection ---
+
+    def test_prose_anesthesia_rejected(self):
+        result = _detect_source_type(
+            "Patient was seen by anesthesia prior to surgery",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.ANESTHESIA_NOTE
+
+    def test_midline_anesthesia_rejected(self):
+        result = _detect_source_type(
+            "Consult placed to anesthesia for airway management",
+            SourceType.UNKNOWN,
+        )
+        assert result != SourceType.ANESTHESIA_NOTE
+
+    # --- _is_section_header consistency ---
+
+    def test_is_header_anesthesia_note(self):
+        assert _is_section_header("ANESTHESIA NOTE") is True
+
+    def test_is_header_anesthesia_post_op(self):
+        assert _is_section_header("Anesthesia Follow Up Post-Op Note") is True
+
+    def test_is_header_prose_anesthesia_rejected(self):
+        assert _is_section_header("Patient was seen by anesthesia prior to surgery") is False

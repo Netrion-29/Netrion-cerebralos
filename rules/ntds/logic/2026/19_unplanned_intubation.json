@@ -21,7 +21,8 @@
       "allowed_sources": [
         "PROCEDURE",
         "PHYSICIAN_NOTE",
-        "ED_NOTE"
+        "ED_NOTE",
+        "ANESTHESIA_NOTE"
       ],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of unplanned intubation."

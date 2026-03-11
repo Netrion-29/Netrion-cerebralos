@@ -48,7 +48,7 @@
          "required": true,
          "min_count": 1,
          "query_keys": ["or_initial_procedure"],
-         "allowed_sources": ["OPERATIVE_NOTE", "PHYSICIAN_NOTE", "PROCEDURE", "DISCHARGE"],
+         "allowed_sources": ["OPERATIVE_NOTE", "PHYSICIAN_NOTE", "PROCEDURE", "DISCHARGE", "ANESTHESIA_NOTE"],
          "fail_outcome": "NO",
          "fail_reason": "No initial operative procedure documented."
       },
@@ -59,7 +59,7 @@
          "required": true,
          "min_count": 1,
          "query_keys": ["or_return_unplanned"],
-         "allowed_sources": ["OPERATIVE_NOTE", "PHYSICIAN_NOTE", "PROCEDURE", "DISCHARGE"],
+         "allowed_sources": ["OPERATIVE_NOTE", "PHYSICIAN_NOTE", "PROCEDURE", "DISCHARGE", "ANESTHESIA_NOTE"],
          "fail_outcome": "NO",
          "fail_reason": "No return to operating room documented."
       },
@@ -70,7 +70,7 @@
          "required": true,
          "min_count": 1,
          "query_keys": ["or_same_site"],
-         "allowed_sources": ["OPERATIVE_NOTE", "PHYSICIAN_NOTE", "PROCEDURE", "DISCHARGE"],
+         "allowed_sources": ["OPERATIVE_NOTE", "PHYSICIAN_NOTE", "PROCEDURE", "DISCHARGE", "ANESTHESIA_NOTE"],
          "fail_outcome": "UNABLE_TO_DETERMINE",
          "fail_reason": "Cannot confirm same operative site from documentation."
       }

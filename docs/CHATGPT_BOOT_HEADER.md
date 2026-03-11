@@ -34,7 +34,8 @@
 | D6-P6 OPERATIVE_NOTE anchor | ✅ COMPLETE — compound-prefix anchor, 3860 false triggers eliminated, 14 tests added, 0 NTDS outcome deltas |
 | D6-P7 PROGRESS_NOTE anchor | ✅ COMPLETE — compound-prefix anchor with 20 specialty prefixes, 308 false triggers eliminated, 438 sub-headers preserved, 13 tests added, 0 NTDS outcome deltas |
 | ED_NOTE allowed_sources gap | ✅ COMPLETE — ED_NOTE added to 12 NTDS events (17 gates), 0 NTDS outcome deltas across 39 patients |
-| Next phase | **Post-ED_NOTE gap** — D4 DISCHARGE precision audit, Anesthesia SourceType design (see Roadmap §3) |
+| Anesthesia SourceType | ✅ COMPLETE — ANESTHESIA_NOTE enum + parser pattern + wired E19/E20 rules, 12 tests added, 0 NTDS outcome deltas across 39 patients |
+| Next phase | **Post-Anesthesia** — D4 DISCHARGE precision audit, remaining 15-event precision pass (see Roadmap §3) |
 
 ## Quick Chat Starter
 
