@@ -35,8 +35,9 @@
 | D6-P7 PROGRESS_NOTE anchor | ✅ COMPLETE — compound-prefix anchor with 20 specialty prefixes, 308 false triggers eliminated, 438 sub-headers preserved, 13 tests added, 0 NTDS outcome deltas |
 | ED_NOTE allowed_sources gap | ✅ COMPLETE — ED_NOTE added to 12 NTDS events (17 gates), 0 NTDS outcome deltas across 39 patients |
 | Anesthesia SourceType | ✅ COMPLETE — ANESTHESIA_NOTE enum + parser pattern + wired E19/E20 rules, 12 tests added, 0 NTDS outcome deltas across 39 patients |
-| Protocol coverage audit | ✅ COMPLETE — stale ROLE_OF_TRAUMA_SERVICES removed from index/validator/fixtures, 43 protocols synced, 0 NTDS outcome deltas |
-| Next phase | **Post-Protocol-Audit** — D4 DISCHARGE precision audit, remaining 15-event precision pass (see Roadmap §3) |
+| Protocol coverage audit | ✅ COMPLETE (PR #175) — stale ROLE_OF_TRAUMA_SERVICES removed from index/validator/fixtures, 43 protocols synced, 0 NTDS outcome deltas |
+| Open PRs | None (PR #175 merged, PR #142 closed as stale) |
+| Next phase | **Backlog priority:** (1) FLAG 002 E21 VAP vent gate, (2) FLAG 001 Spinal 36 h timing, (3) Baseline hash coverage, (4) D4 DISCHARGE precision audit — see Roadmap §3 |
 
 ## Quick Chat Starter
 

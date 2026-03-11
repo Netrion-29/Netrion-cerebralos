@@ -68,6 +68,17 @@
 | #161 | — | fix(parser): anchor NURSING_NOTE detection to line start (D6-P3) |
 | — | — | fix(parser): block prose-only CONSULT_NOTE false matches (D6-P4) |
 | — | — | fix(parser): harden EMERGENCY source detection (D6-P5) |
+| — | — | fix(parser): compound-prefix anchor for OPERATIVE_NOTE (D6-P6) |
+| — | — | fix(parser): compound-prefix anchor for PROGRESS_NOTE (D6-P7) |
+| #173 | — | feat(ntds): add ED_NOTE to 12 NTDS event allowed_sources |
+| #174 | `e5426d5` | feat(ntds): add ANESTHESIA_NOTE SourceType + wire E19/E20 |
+| #175 | `3215247` | fix(protocols): remove stale ROLE_OF_TRAUMA_SERVICES artifacts |
+
+### Closed PRs
+
+| PR | Notes |
+|----|-------|
+| #142 | Closed as stale (N4-P2 source detection); superseded by D6 parser hardening (P1–P7), branch conflicting |
 
 ### Open PRs
 
@@ -493,11 +504,20 @@ and added two block filters:
 | ~~PROGRESS_NOTE — NO-GO~~ | ~~~67% (450/667) prose hits are legitimate sub-headers ("Hospital Progress Note", "Trauma Progress Note")~~ | **RESOLVED by D6-P7** — compound-prefix anchor with 20 specialty prefixes, 308 false triggers eliminated, 438 sub-headers preserved, 13 tests added, 0 NTDS outcome deltas |
 | ~~ED_NOTE `allowed_sources` gap~~ | ~~ED_NOTE absent from all 21 NTDS rule `allowed_sources` lists~~ | **✅ COMPLETE** — ED_NOTE added to 12/21 events (17 gates across E01, E02, E03, E04, E08, E09, E10, E14, E15, E16, E18, E19), 0 NTDS outcome deltas across 39 patients. 9 events excluded (CAUTI, CLABSI, Deep SSI, Osteomyelitis, Pressure Ulcer, Superficial SSI, OR Return, VAP — hospital-acquired/surgical, ED evidence not clinically relevant) |
 | ~~Anesthesia SourceType~~ | ~~New SourceType for anesthesia post-op/follow-up notes~~ | **✅ COMPLETE** — ANESTHESIA_NOTE enum added to NTDS + protocol engine models, `^\[?\s*ANESTHESIA[\s_]` parser pattern, E19 Unplanned Intubation + E20 OR Return rules wired, 12 tests added, 0 NTDS outcome deltas across 39 patients |
-| ~~Protocol coverage audit~~ | ~~Sync index/validator/fixtures after v1.1.0 restructure~~ | **✅ COMPLETE** — stale ROLE_OF_TRAUMA_SERVICES removed from index (44→43), validator prefix_map (36→35), 3 fixture files deleted, 0 NTDS outcome deltas |
-| PMH-aware gate handling: allow engine to filter PMH context across non-adjacent lines | Engine proposal (protected) | Medium |
-| Precision audit pass for remaining 15 events | Per-event mapper/rule/tests | Medium |
-| Automate NTDS outcome distribution check per event | CI/gate script | Low |
-| Baseline hash coverage for NTDS event outputs | `scripts/baselines/` | Low |
+| ~~Protocol coverage audit~~ | ~~Sync index/validator/fixtures after v1.1.0 restructure~~ | **✅ COMPLETE (PR #175)** — stale ROLE_OF_TRAUMA_SERVICES removed from index (44→43), validator prefix_map (36→35), 3 fixture files deleted, 0 NTDS outcome deltas |
+
+##### Prioritized Backlog (post-Protocol-Audit)
+
+| # | Item | Scope | Priority | Effort | Notes |
+|---|------|-------|----------|--------|-------|
+| 1 | **FLAG 002 — E21 VAP vent gate** | `rules/ntds/logic/2026/21_vap.json` | **High** | Small | Cheryl_Burton expected YES→NO; vent-duration gate missing |
+| 2 | **FLAG 001 — Spinal protocol 36 h timing** | `rules/deaconess/protocols_deaconess_structured_v1.json` | **High** | Small | Protocol JSON timing threshold needs 36 h rule |
+| 3 | **Baseline hash coverage for NTDS outputs** | `scripts/baselines/`, `scripts/gate_pr.sh` | **High** | Small | Prerequisite for safe outcome-changing work; extends existing v4/v5 hash pattern |
+| 4 | D4 — DISCHARGE precision audit (14 events, 17 gates) | Per-event evidence review; `rules/ntds/logic/2026/` | Medium | Medium | Parser hardened (N5–N7); audit whether DISCHARGE rules still produce false positives |
+| 5 | Remaining 15-event precision pass | Per-event mapper/rule/tests | Medium | Medium–Large | Extend N3-style evidence review to uncovered events |
+| 6 | 5 AKI UTD residuals | `rules/ntds/logic/2026/01_aki.json`, evidence tuning | Medium | Hard | Gary_Linder + 4 others; PMH contamination + LAB/DISCHARGE noise |
+| 7 | Automate per-event NTDS outcome distribution in gate/CI | CI/gate script | Low | Small | Add distribution summary to `gate_pr.sh` output |
+| 8 | PMH-aware gate handling | Engine proposal (PROTECTED `cerebralos/ntds_logic/engine.py`) | Medium | Large | Requires engine modification + design doc + explicit authorization; protocol engine has reference impl |
 
 ---
 
