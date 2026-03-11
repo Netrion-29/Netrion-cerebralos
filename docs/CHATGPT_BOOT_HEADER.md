@@ -39,8 +39,9 @@
 | FLAG 002 E21 VAP vent gate | ✅ COMPLETE — required mechanical-ventilation gate added to E21 VAP, 7 vent_dx mapper patterns, history_noise exclusion, 1 fixture added, Cheryl_Burton YES→NO, 39-patient cohort verified |
 | FLAG 001 Spinal 36 h timing | ✅ COMPLETE — REQ_REQUIRED_DATA_ELEMENTS + REQ_TIMING_CRITICAL (temporal:within:36:hours) added to spinal protocol, 12 surgery patterns, 1 fixture added, 1 fixture updated, 0 NTDS outcome deltas |
 | Baseline hash coverage | ✅ COMPLETE — 39-patient NTDS event hash baseline in `scripts/baselines/ntds_hashes_v1.json`, standalone checker `scripts/check_ntds_hashes.py`, wired into `gate_pr.sh`, 0 NTDS outcome deltas |
+| D4 DISCHARGE precision audit | ✅ COMPLETE — 14 events audited, 39 patients, 0 false positives, 1 TP (Ronald_Bittner E13 Pressure Ulcer), no rule changes needed, baseline realigned (Anna_Dennis hash), 0 NTDS outcome deltas |
 | Open PRs | None |
-| Next phase | **Backlog priority:** (1) D4 DISCHARGE precision audit, (2) 15-event precision pass, (3) 5 AKI UTD residuals — see Roadmap §3 |
+| Next phase | **Backlog priority:** (1) 15-event precision pass, (2) 5 AKI UTD residuals, (3) per-event distribution automation — see Roadmap §3 |
 
 ## Quick Chat Starter
 
