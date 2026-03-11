@@ -12,9 +12,15 @@
       "gate_name": "Diagnosis of Alcohol Withdrawal",
       "required": true,
       "min_count": 1,
-      "query_keys": ["alcohol_withdrawal_dx"],
+      "query_keys": [
+        "alcohol_withdrawal_dx"
+      ],
       "exclude_noise_keys": [],
-      "allowed_sources": ["PHYSICIAN_NOTE", "NURSING_NOTE"],
+      "allowed_sources": [
+        "PHYSICIAN_NOTE",
+        "NURSING_NOTE",
+        "ED_NOTE"
+      ],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of alcohol withdrawal found."
     }
@@ -26,8 +32,12 @@
       "gate_name": "Exclude alcohol withdrawal present on arrival (scoped)",
       "rule_id": "EXCL_POA",
       "reason": "Documented prior/present on arrival.",
-      "query_keys": ["history_noise"],
-      "require_context_keys": ["alcohol_withdrawal_dx"],
+      "query_keys": [
+        "history_noise"
+      ],
+      "require_context_keys": [
+        "alcohol_withdrawal_dx"
+      ],
       "proximity_mode": "sentence_window"
     }
   ],

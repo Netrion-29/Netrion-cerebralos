@@ -12,9 +12,16 @@
       "gate_name": "Diagnosis of ARDS",
       "required": true,
       "min_count": 1,
-      "query_keys": ["ards_dx"],
+      "query_keys": [
+        "ards_dx"
+      ],
       "exclude_noise_keys": [],
-      "allowed_sources": ["PHYSICIAN_NOTE", "IMAGING", "DISCHARGE"],
+      "allowed_sources": [
+        "PHYSICIAN_NOTE",
+        "IMAGING",
+        "DISCHARGE",
+        "ED_NOTE"
+      ],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of ARDS diagnosis found."
     },
@@ -26,7 +33,11 @@
       "query_key": "ards_onset",
       "arrival_field": "arrival_time",
       "timestamp_required": true,
-      "allowed_sources": ["PHYSICIAN_NOTE", "IMAGING"],
+      "allowed_sources": [
+        "PHYSICIAN_NOTE",
+        "IMAGING",
+        "ED_NOTE"
+      ],
       "fail_outcome": "UNABLE_TO_DETERMINE",
       "fail_reason": "Cannot prove ARDS onset after arrival."
     }
@@ -38,8 +49,12 @@
       "gate_name": "Exclude if ARDS present on arrival",
       "rule_id": "EXCL_POA",
       "reason": "Documented prior/present on arrival.",
-      "query_keys": ["history_noise"],
-      "require_context_keys": ["ards_dx"],
+      "query_keys": [
+        "history_noise"
+      ],
+      "require_context_keys": [
+        "ards_dx"
+      ],
       "proximity_mode": "sentence_window"
     }
   ],

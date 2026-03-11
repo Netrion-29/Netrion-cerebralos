@@ -12,9 +12,16 @@
       "gate_name": "Diagnosis of Delirium",
       "required": true,
       "min_count": 1,
-      "query_keys": ["delirium_dx"],
+      "query_keys": [
+        "delirium_dx"
+      ],
       "exclude_noise_keys": [],
-      "allowed_sources": ["PHYSICIAN_NOTE", "NURSING_NOTE", "CONSULT_NOTE"],
+      "allowed_sources": [
+        "PHYSICIAN_NOTE",
+        "NURSING_NOTE",
+        "CONSULT_NOTE",
+        "ED_NOTE"
+      ],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of delirium."
     }
@@ -26,8 +33,12 @@
       "gate_name": "Exclude if delirium present on arrival",
       "rule_id": "EXCL_POA",
       "reason": "Documented prior/present on arrival.",
-      "query_keys": ["history_noise"],
-      "require_context_keys": ["delirium_dx"],
+      "query_keys": [
+        "history_noise"
+      ],
+      "require_context_keys": [
+        "delirium_dx"
+      ],
       "proximity_mode": "sentence_window"
     }
   ],

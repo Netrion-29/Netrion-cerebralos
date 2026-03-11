@@ -13,9 +13,18 @@
       "gate_name": "Diagnosis of AKI",
       "required": true,
       "min_count": 1,
-      "query_keys": ["aki_dx"],
-      "exclude_noise_keys": ["aki_negation_noise"],
-      "allowed_sources": ["PHYSICIAN_NOTE", "LAB", "DISCHARGE"],
+      "query_keys": [
+        "aki_dx"
+      ],
+      "exclude_noise_keys": [
+        "aki_negation_noise"
+      ],
+      "allowed_sources": [
+        "PHYSICIAN_NOTE",
+        "LAB",
+        "DISCHARGE",
+        "ED_NOTE"
+      ],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of AKI diagnosis found."
     },
@@ -27,7 +36,11 @@
       "query_key": "aki_onset",
       "arrival_field": "arrival_time",
       "timestamp_required": true,
-      "allowed_sources": ["PHYSICIAN_NOTE", "LAB"],
+      "allowed_sources": [
+        "PHYSICIAN_NOTE",
+        "LAB",
+        "ED_NOTE"
+      ],
       "fail_outcome": "UNABLE_TO_DETERMINE",
       "fail_reason": "Cannot prove AKI onset after arrival."
     }
@@ -39,8 +52,12 @@
       "gate_name": "Exclude if AKI present on arrival",
       "rule_id": "EXCL_POA",
       "reason": "Documented prior/present on arrival.",
-      "query_keys": ["history_noise"],
-      "require_context_keys": ["aki_dx"],
+      "query_keys": [
+        "history_noise"
+      ],
+      "require_context_keys": [
+        "aki_dx"
+      ],
       "proximity_mode": "sentence_window"
     }
   ],

@@ -170,6 +170,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - D6-P5 (EMERGENCY hardening): ✅ COMPLETE — pattern tightened to EMERGENCY DEPT/DEPARTMENT + trailing whitelist + prose-before filter, 464 false triggers eliminated, 18 tests added, 0 NTDS outcome deltas
 > - D6-P6 (OPERATIVE_NOTE anchor): ✅ COMPLETE — compound-prefix anchor, 3860 false triggers eliminated, 14 tests added, 0 NTDS outcome deltas
 > - D6-P7 (PROGRESS_NOTE anchor): ✅ COMPLETE — compound-prefix anchor with 20 specialty prefixes, 308 false triggers eliminated, 438 sub-headers preserved, 13 tests added, 0 NTDS outcome deltas
+> - ED_NOTE allowed_sources gap: ✅ COMPLETE — ED_NOTE added to 12 NTDS events (E01 AKI, E02 ARDS, E03 Alcohol Withdrawal, E04 Cardiac Arrest, E08 DVT, E09 Delirium, E10 MI, E14 PE, E15 Severe Sepsis, E16 Stroke, E18 Unplanned ICU, E19 Unplanned Intubation), 17 gates total, 0 NTDS outcome deltas across 39 patients
 > - Next phase: D4 DISCHARGE precision audit + Anesthesia SourceType design — see Roadmap doc §3
 >
 > See Roadmap doc §3 for full backlog detail, N3 residuals, and N4 queue.
