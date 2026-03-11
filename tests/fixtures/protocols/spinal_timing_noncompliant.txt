@@ -1,0 +1,25 @@
+PATIENT_ID: TEST_SPINAL_TIMING_NC_001
+ARRIVAL_TIME: 2026-01-15 06:00:00
+
+[TRAUMA_HP] 2026-01-15 06:10:00
+Category I activation for 78-year-old female. Ground-level fall.
+Blunt trauma mechanism. Neck pain and bilateral upper extremity paresthesias.
+Motor and sensory examination documented.
+Neurologic deficit: bilateral upper extremity weakness and sensory loss.
+BP 152/84, HR 78, RR 18, GCS 15.
+
+[IMAGING] 2026-01-15 11:30:00
+CT cervical spine: C5 vertebral body avulsion fracture with transdiscal
+fracture extending through C5-C6 disc space. Anterior and posterior
+longitudinal ligament disruption. C4-C5 spinous process fractures.
+Spinal fracture confirmed on CT imaging. Unstable cervical fracture pattern.
+
+[PHYSICIAN_NOTE] 2026-01-15 14:00:00
+Unstable cervical fracture. Neurosurgery consulted for surgical planning.
+Cervical collar maintained. Patient hemodynamically stable.
+Surgical stabilization recommended.
+
+[OPERATIVE_NOTE] 2026-01-19 09:00:00
+Procedure: C5-C6 ACDF (anterior cervical discectomy and fusion).
+Decompression and fusion performed for unstable cervical fracture.
+Instrumentation placed. Patient tolerated procedure without complication.

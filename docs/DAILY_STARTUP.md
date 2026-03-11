@@ -174,8 +174,9 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - Anesthesia SourceType: ✅ COMPLETE — ANESTHESIA_NOTE enum + `^\[?\s*ANESTHESIA[\s_]` parser pattern + E19/E20 rules wired, 12 tests added, 0 NTDS outcome deltas across 39 patients
 > - Protocol coverage audit: ✅ COMPLETE (PR #175) — stale ROLE_OF_TRAUMA_SERVICES removed from index/validator/fixtures, 43 protocols synced, 0 NTDS outcome deltas
 > - FLAG 002 E21 VAP vent gate: ✅ COMPLETE — required mechanical-ventilation gate added to E21 VAP rule, 7 vent_dx mapper patterns, history_noise exclusion, 1 fixture added, Cheryl_Burton YES→NO, 39-patient cohort verified
+> - FLAG 001 Spinal 36 h timing: ✅ COMPLETE — REQ_REQUIRED_DATA_ELEMENTS + REQ_TIMING_CRITICAL (temporal:within:36:hours) added to spinal protocol, 12 surgery patterns in shared_action_buckets, 1 fixture added (spinal_timing_noncompliant), 1 fixture updated (spinal_compliant +surgery), 0 NTDS outcome deltas
 > - Open PRs: None
-> - **Backlog priority:** (1) FLAG 001 Spinal 36 h timing, (2) Baseline hash coverage, (3) D4 DISCHARGE precision audit, (4) 15-event precision pass, (5) 5 AKI UTD residuals, (6) per-event distribution automation, (7) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
+> - **Backlog priority:** (1) Baseline hash coverage, (2) D4 DISCHARGE precision audit, (3) 15-event precision pass, (4) 5 AKI UTD residuals, (5) per-event distribution automation, (6) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
 >
 > See Roadmap doc §3 for full backlog detail, N3 residuals, and N4 queue.
 
