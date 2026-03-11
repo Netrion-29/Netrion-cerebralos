@@ -32,7 +32,8 @@
 | D6-P4 CONSULT_NOTE prose-before block | ✅ COMPLETE — prose-before filter added, 49 false triggers eliminated, 26 sub-headers preserved, 25 tests added, 0 NTDS outcome deltas |
 | D6-P5 EMERGENCY hardening | ✅ COMPLETE — pattern tightened to EMERGENCY DEPT/DEPARTMENT + trailing whitelist + prose-before filter, 464 false triggers eliminated, 18 tests added, 0 NTDS outcome deltas |
 | D6-P6 OPERATIVE_NOTE anchor | ✅ COMPLETE — compound-prefix anchor, 3860 false triggers eliminated, 14 tests added, 0 NTDS outcome deltas |
-| Next phase | **Post-D6-P6** — D4 DISCHARGE precision audit, D6-P7 PROGRESS_NOTE anchor (see Roadmap §3) |
+| D6-P7 PROGRESS_NOTE anchor | ✅ COMPLETE — compound-prefix anchor with 20 specialty prefixes, 308 false triggers eliminated, 438 sub-headers preserved, 13 tests added, 0 NTDS outcome deltas |
+| Next phase | **Post-D6-P7** — D4 DISCHARGE precision audit, Anesthesia SourceType design (see Roadmap §3) |
 
 ## Quick Chat Starter
 
