@@ -4,9 +4,9 @@ ARRIVAL_TIME: 2026-01-15 08:00:00
 [CONSULT_NOTE] 2026-01-17 14:00:00
 Nephrology Consultation:
 Patient has developed acute kidney injury during hospitalization.
-Creatinine has risen from baseline 1.0 to 3.6 mg/dL.
-Recommend fluid resuscitation and monitoring of renal function.
+Creatinine has risen from baseline 1.0 to 3.6 mg/dL, greater than 3x baseline.
+KDIGO stage 3 AKI. Recommend fluid resuscitation and monitoring of renal function.
 
 [PHYSICIAN_NOTE] 2026-01-17 10:00:00
 Patient developed acute kidney injury during hospitalization.
-AKI stage 2, creatinine rising. Nephrology consulted.
+AKI stage 3, creatinine rising. Nephrology consulted.

@@ -3,9 +3,37 @@
     "event_id": 1,
     "canonical_name": "Acute Kidney Injury (AKI)",
     "ntds_year": 2026,
-    "version": "1.0.0",
-    "source": "NTDS Hospital Events (STRUCTURED)"
+    "version": "2.0.0",
+    "source": "NTDS Hospital Events (STRUCTURED) — KDIGO Stage 3"
   },
+  "exclusions": [
+    {
+      "gate_type": "exclude_if_any",
+      "gate_id": "aki_excl_poa",
+      "gate_name": "Exclude if AKI present on arrival",
+      "rule_id": "EXCL_POA",
+      "reason": "Documented prior/present on arrival.",
+      "query_keys": [
+        "history_noise"
+      ],
+      "require_context_keys": [
+        "aki_dx"
+      ],
+      "proximity_mode": "sentence_window"
+    },
+    {
+      "gate_type": "exclude_if_any",
+      "gate_id": "aki_excl_chronic_rrt",
+      "gate_name": "Exclude if chronic / maintenance RRT pre-admission",
+      "rule_id": "EXCL_CHRONIC_RRT",
+      "reason": "Chronic or maintenance renal replacement therapy documented prior to admission; not a hospital-acquired event.",
+      "query_keys": [
+        "aki_chronic_rrt"
+      ],
+      "require_context_keys": [],
+      "proximity_mode": "sentence_window"
+    }
+  ],
   "gates": [
     {
       "gate_type": "evidence_any",
@@ -24,10 +52,37 @@
         "LAB",
         "DISCHARGE",
         "ED_NOTE",
-        "CONSULT_NOTE"
+        "CONSULT_NOTE",
+        "NURSING_NOTE",
+        "PROGRESS_NOTE"
       ],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of AKI diagnosis found."
+    },
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "aki_stage3",
+      "gate_name": "KDIGO Stage 3 criteria (SCr >=3x baseline OR >=4.0 OR anuria >=12h OR new RRT)",
+      "required": true,
+      "min_count": 1,
+      "query_keys": [
+        "aki_stage3_lab",
+        "aki_new_dialysis"
+      ],
+      "exclude_noise_keys": [
+        "aki_chronic_rrt"
+      ],
+      "allowed_sources": [
+        "PHYSICIAN_NOTE",
+        "LAB",
+        "NURSING_NOTE",
+        "CONSULT_NOTE",
+        "PROGRESS_NOTE",
+        "ED_NOTE",
+        "DISCHARGE"
+      ],
+      "fail_outcome": "NO",
+      "fail_reason": "No evidence meeting KDIGO Stage 3 criteria (SCr >=3x baseline, SCr >=4.0, anuria >=12h, or new RRT initiation)."
     },
     {
       "gate_type": "timing_after_arrival",
@@ -40,28 +95,17 @@
       "allowed_sources": [
         "PHYSICIAN_NOTE",
         "LAB",
-        "ED_NOTE"
+        "ED_NOTE",
+        "NURSING_NOTE",
+        "PROGRESS_NOTE"
       ],
       "fail_outcome": "UNABLE_TO_DETERMINE",
       "fail_reason": "Cannot prove AKI onset after arrival."
     }
   ],
-  "exclusions": [
-    {
-      "gate_type": "exclude_if_any",
-      "gate_id": "aki_excl_poa",
-      "gate_name": "Exclude if AKI present on arrival",
-      "rule_id": "EXCL_POA",
-      "reason": "Documented prior/present on arrival.",
-      "query_keys": [
-        "history_noise"
-      ],
-      "require_context_keys": [
-        "aki_dx"
-      ],
-      "proximity_mode": "sentence_window"
-    }
-  ],
-  "summary_overrides": {},
-  "debug": "Template-based AKI rule placeholders"
+  "reporting": {
+    "if_excluded": "EXCLUDED",
+    "if_any_required_gate_fails": "use_fail_outcome",
+    "if_all_required_gates_pass": "YES"
+  }
 }

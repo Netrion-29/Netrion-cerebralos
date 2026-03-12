@@ -461,10 +461,12 @@
 			"\\bacute\\s+kidney\\s+injury\\b",
 			"\\bAKI\\b",
 			"\\bacute\\s+renal\\s+failure\\b",
-			"\\bcreatinine\\s+(rose|rising|elevated|increase)\\b",
+			"\\bcreatinine\\s+(rose|rising|elevated|increase|increasing)\\b",
 			"\\brenal\\s+replacement\\s+therapy\\b",
 			"\\bhemodialysis\\b",
-			"\\boliguria\\b"
+			"\\boliguria\\b",
+			"\\bacute\\s+tubular\\s+necrosis\\b",
+			"\\bATN\\b"
 		],
 		"aki_negation_noise": [
 			"\\bend[- ]?stage\\s+renal\\s+disease\\b",
@@ -483,13 +485,46 @@
 			"\\bacute\\s+kidney\\s+injury\\s+after\\s+chemo",
 			"\\bAKI\\s*\\(acute\\s+kidney\\s+injury\\)"
 		],
+		"aki_stage3_lab": [
+			"\\b(creatinine|SCr|Cr)\\s*(>|≥|>=)\\s*4\\.0\\b",
+			"\\b(creatinine|SCr|Cr)\\s*(:|of|at|=|rose\\s+to|increased?\\s+to|up\\s+to|peaked\\s+at|reached)\\s*[4-9]\\.[0-9]",
+			"\\b(creatinine|SCr|Cr)\\s*(:|of|at|=|rose\\s+to|increased?\\s+to)\\s*[1-9][0-9]+\\.[0-9]",
+			"\\b3\\s*(x|×|times)\\s+baseline\\b",
+			"\\b(greater|more)\\s+than\\s+3\\s*(x|×|times)\\s+baseline\\b",
+			"\\bgreater\\s+than\\s+3x\\s+baseline\\b",
+			"\\bKDIGO\\s+(stage\\s+)?3\\b",
+			"\\bstage\\s+3\\s+(AKI|acute\\s+kidney\\s+injury)\\b",
+			"\\banuria\\b",
+			"\\banuric\\b",
+			"\\bno\\s+urine\\s+output\\b",
+			"\\burine\\s+output\\s*(<|less\\s+than)\\s*(0|50|100)\\s*m[Ll]\\b"
+		],
+		"aki_new_dialysis": [
+			"\\b(initiat(ed|ion\\s+of)|started|starting|begun|began)\\s+(on\\s+)?(hemodialysis|dialysis|RRT|renal\\s+replacement\\s+therapy|CVVH|CVVHD|CVVHDF|CRRT)\\b",
+			"\\b(hemodialysis|dialysis|RRT|renal\\s+replacement\\s+therapy|CVVH|CVVHD|CVVHDF|CRRT)\\s+(initiated|started|begun|planned|ordered)\\b",
+			"\\bnew\\s+(hemodialysis|dialysis|RRT|renal\\s+replacement\\s+therapy|CRRT|CVVH)\\b",
+			"\\bemergent\\s+(hemodialysis|dialysis)\\b",
+			"\\bcontinuous\\s+veno-?venous\\s+hemo(filtration|dialysis)\\b"
+		],
+		"aki_chronic_rrt": [
+			"\\bchronic\\s+(hemodialysis|dialysis|RRT|renal\\s+replacement\\s+therapy)\\b",
+			"\\b(on|maintenance)\\s+(hemodialysis|dialysis)\\s*(MWF|Monday|Wednesday|Friday|schedule|3\\s*times|three\\s*times)\\b",
+			"\\blong[- ]?term\\s+(hemodialysis|dialysis|RRT)\\b",
+			"\\bESRD\\s+(on|requiring|with)\\s+(hemodialysis|dialysis|HD)\\b",
+			"\\bmaintenance\\s+(hemodialysis|dialysis)\\b"
+		],
 		"aki_onset": [
 			"\\bdeveloped\\b.*\\bacute\\s+kidney\\s+injury\\b",
-			"\\bAKI\\b.*\\bduring\\s+(hospitalization|stay)\\b",
+			"\\bAKI\\b.*\\bduring\\s+(hospitalization|stay|admission)\\b",
 			"\\bonset\\b.*\\bafter\\b.*\\barrival\\b",
 			"\\bafter\\s+arrival\\b",
 			"\\bdeveloped\\b.*\\bAKI\\b.*\\bduring\\b",
-			"\\bAKI\\s*[-]+\\s*(resolving|better|improving|worse|worsening|stable)\\b"
+			"\\bAKI\\s*[-]+\\s*(resolving|better|improving|worse|worsening|stable)\\b",
+			"\\bhospital[- ]?acquired\\s+(AKI|acute\\s+kidney\\s+injury|renal\\s+failure)\\b",
+			"\\bnew[- ]?onset\\s+(AKI|acute\\s+kidney\\s+injury|renal\\s+failure)\\b",
+			"\\b(AKI|acute\\s+kidney\\s+injury)\\s+(developed|diagnosed|noted)\\s+(on|during|after)\\b",
+			"\\bpost[- ]?(operative|admission|surgical)\\s+(AKI|acute\\s+kidney\\s+injury|renal\\s+failure)\\b",
+			"\\bcreatinine\\s+(began|started)\\s+(rising|increasing|trending\\s+up)\\b"
 		],
 		"ards_dx": [
 			"\\bacute\\s+respiratory\\s+distress\\s+syndrome\\b",
