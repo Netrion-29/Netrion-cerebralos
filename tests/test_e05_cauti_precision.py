@@ -69,6 +69,7 @@ class TestE05RuleWiring:
         assert ids == {
             "cauti_dx",
             "cauti_catheter_gt2d",
+            "cauti_catheter_duration_lda",
             "cauti_symptoms",
             "cauti_culture",
             "cauti_after_arrival",

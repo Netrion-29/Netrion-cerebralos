@@ -148,7 +148,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 
 - **[Whole-Project State and Roadmap v1](roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md)** ← primary context-recovery doc
 - [Trauma Build-Forward Plan v1](roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md) (historical)
-- [LDA Engine Design v1](audits/LDA_ENGINE_DESIGN_v1.md) — **NEW** generalised Lines/Drains/Airways device-duration engine design (Foley/CAUTI, central lines/CLABSI, ventilator/VAP, peds DVT); supersedes CAUTI doc for engine specification (**engine approval needed**, Roadmap §3 item 16)
+- [LDA Engine Design v1](audits/LDA_ENGINE_DESIGN_v1.md) — ✅ IMPLEMENTED (v1) Lines/Drains/Airways device-duration engine design; `ENABLE_LDA_GATES` feature flag (default False); gates wired into E05/E06/E21 (`required: false`); 37 dedicated tests (Roadmap §3 item 16)
 - [CAUTI Engine Design v1](audits/CAUTI_ENGINE_DESIGN_v1.md) — CAUTI-specific LDA duration gate + alternative-source exclusion design (predecessor; CAUTI clinical requirements still authoritative; engine approval needed)
 - [Protocol Data Element Master v1](audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md) — comprehensive inventory of all data elements across 51 protocol PDFs; coverage mapping is a backlog item (NOT STARTED, see Roadmap §3 item 15)
 
@@ -197,7 +197,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - E06 CLABSI duration-scope tightening: ✅ COMPLETE — duration patterns require explicit device mention (central line/PICC/CVL/CVC); dropped generic patterns; 7→4 duration patterns; 105 total precision tests; 0 NTDS outcome deltas
 > - E06 CLABSI punctuation variant tests: ✅ COMPLETE — duration patterns accept colon/em-dash/en-dash/hyphen separators; +14 precision tests (8 positives, 6 negatives); 119 total precision tests; 0 NTDS outcome deltas
 > - E05 CAUTI duration-scope tightening: ✅ COMPLETE — duration gate requires explicit urinary device (foley/indwelling/urethral/urinary catheter) + duration ≥3d/>48h; `cauti_catheter_duration` (6 patterns); 65→89 E05 precision tests; 0 NTDS outcome deltas
-> - **Backlog priority:** (1) Tier 2 PROGRESS_NOTE scoping pass, (2) Delirium shift compliance audit script, (3) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
+> - **Backlog priority:** (1) Tier 2 PROGRESS_NOTE scoping pass, (2) Delirium shift compliance audit script, (3) PMH-aware gate handling (engine-protected), (4) LDA flag-on cohort validation per event — see Roadmap doc §3
 > - Handoff reminder: Every Claude handoff must include Codex post-handoff analysis (spec alignment, validation results, gaps/risks, next actions) plus a raw-data cross-check: compare raw NTDS/protocol sources vs current extraction and spot-check two patient raw `.txt` files (one questionable, one baseline) for capture accuracy.
 > - **Standard PR workflow:** (1) Raw-data evidence first — scan ≥2 patient `.txt` files, record exact phrases before mapper/rule edits; (2) Pre-merge checklist: targeted pytest → full pytest → `audit_cohort_counts.py --check` → `check_ntds_hashes.py` → `check_ntds_distribution.py` → `git diff --check`; (3) Address all Copilot review comments before handoff; (4) Post-handoff analysis by Codex (spec alignment, validation, gaps/risks, next actions, 2-patient raw-data spot-check); (5) Post-merge: `git switch main && git pull --ff-only`, re-run hash + distribution checks.
 >

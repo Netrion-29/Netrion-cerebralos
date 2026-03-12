@@ -302,3 +302,68 @@ def build_patientfacts(
         facts=facts,
         evidence=evidence_list,
     )
+
+
+# ── LDA episode builder (stub) ─────────────────────────────────────
+
+def build_lda_episodes(
+    patient_id: Optional[str] = None,
+    lda_json_path: Optional[Path] = None,
+) -> List[Any]:
+    """Build LDA device episodes from a structured JSON feed.
+
+    If *lda_json_path* is provided and exists, parse it and return a list
+    of ``LDAEpisode`` dicts.  Otherwise return an empty list (text-derived
+    fallback is a future phase — this stub keeps the interface stable).
+
+    Returns:
+        List of dicts matching the LDAEpisode schema defined in model.py.
+    """
+    from cerebralos.ntds_logic.model import LDA_DEVICE_TYPES, LDA_CONFIDENCE_LEVELS
+
+    if lda_json_path is None or not lda_json_path.exists():
+        return []
+
+    try:
+        import json as _json
+        raw = _json.loads(lda_json_path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+    records = raw.get("lda_records", [])
+    if not isinstance(records, list):
+        return []
+
+    episodes: List[Any] = []
+    for rec in records:
+        if not isinstance(rec, dict):
+            continue
+        device_type = str(rec.get("device_type", "")).upper()
+        if device_type not in LDA_DEVICE_TYPES:
+            continue
+        confidence = str(rec.get("source_confidence", "STRUCTURED")).upper()
+        if confidence not in LDA_CONFIDENCE_LEVELS:
+            confidence = "STRUCTURED"
+        ep = {
+            "device_type": device_type,
+            "start_ts": rec.get("start_ts"),
+            "stop_ts": rec.get("stop_ts"),
+            "episode_days": rec.get("episode_days"),
+            "source_confidence": confidence,
+            "location": rec.get("location"),
+            "inserted_by": rec.get("inserted_by"),
+            "notes": rec.get("notes"),
+            "raw_line_ids": rec.get("raw_line_ids", []),
+        }
+        # Compute episode_days if not provided but timestamps available
+        if ep["episode_days"] is None and ep["start_ts"] and ep["stop_ts"]:
+            try:
+                from datetime import datetime as _dt
+                start = _dt.fromisoformat(ep["start_ts"])
+                stop = _dt.fromisoformat(ep["stop_ts"])
+                ep["episode_days"] = max(0, (stop - start).days)
+            except Exception:
+                pass
+        episodes.append(ep)
+
+    return episodes

@@ -58,6 +58,18 @@
       "fail_reason": "No documentation of urinary catheter in place for >2 calendar days (requires explicit duration language — catheter day 3+, >48h, or equivalent)."
     },
     {
+      "gate_type": "lda_duration",
+      "gate_id": "cauti_catheter_duration_lda",
+      "gate_name": "LDA: Urinary catheter episode ≥2 calendar days (structured/text-derived)",
+      "required": false,
+      "device_type": "URINARY_CATHETER",
+      "days_gte": 2,
+      "min_confidence": "TEXT_DERIVED",
+      "outcome_if_missing": "NO",
+      "fail_outcome": "NO",
+      "fail_reason": "LDA: No urinary catheter episode ≥2 calendar days found (or LDA gates disabled)."
+    },
+    {
       "gate_type": "evidence_any",
       "gate_id": "cauti_symptoms",
       "gate_name": "Signs or symptoms present (fever >38C, suprapubic tenderness, CVA pain, urgency, frequency, dysuria)",
