@@ -8,13 +8,19 @@ Covers:
   3. Feature flag behavior (ENABLE_LDA_GATES on/off)
   4. Rule precision: LDA gates in E05/E06/E21 with synthetic episodes
   5. Contract validation for lda_episodes_v1
+  6. Text-derived LDA episodes from flowsheet day-counter patterns
+  7. Engine gate integration with text-derived episodes
+  8. Precision tests per event (E05/E06/E21) with flag toggle
 
 Raw evidence derivation note:
   - David_Gross.txt: central line (Left IJ), mechanical ventilator, Foley catheter
     Phrases: "Left IJ approach central line", "mechanical ventilation",
     "Foley catheter", "intubated", "extubated"
+    Flowsheet: "Catheter day" (max 3), "Line Day" (max 6)
   - Linda_Hufford.txt: "LDAs" section present, "Non-Invasive Mechanical Ventilation"
-    (baseline — no invasive devices with duration data)
+    (baseline — no invasive devices with duration data, no day-counter lines)
+  - Ronald_Bittner: "Catheter day" (max 8), "Line Day" (max 12) — richest device data
+  - Timothy_Nachtwey: "Vent day" (max 6), "Catheter day" (max 6) — only vent patient
 """
 
 import json
@@ -40,7 +46,10 @@ from cerebralos.ntds_logic.model import (
     SourceType,
 )
 from cerebralos.ntds_logic import engine
-from cerebralos.ntds_logic.build_patientfacts_from_txt import build_lda_episodes
+from cerebralos.ntds_logic.build_patientfacts_from_txt import (
+    build_lda_episodes,
+    _extract_lda_episodes_from_lines,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -535,3 +544,438 @@ class TestContractLDAEpisodes:
         errors = validate_contract(data)
         lda_errors = [e for e in errors if "LDA_EPISODES" in e]
         assert lda_errors
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 9. Text-derived LDA episode extraction
+# ═══════════════════════════════════════════════════════════════════
+
+class TestTextDerivedExtraction:
+    """Unit tests for _extract_lda_episodes_from_lines helper."""
+
+    def test_catheter_day_simple(self):
+        eps = _extract_lda_episodes_from_lines(["Catheter day 3"])
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "URINARY_CATHETER"
+        assert eps[0]["episode_days"] == 3
+        assert eps[0]["source_confidence"] == "TEXT_DERIVED"
+
+    def test_catheter_day_colon(self):
+        eps = _extract_lda_episodes_from_lines(["Catheter day: 5"])
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "URINARY_CATHETER"
+        assert eps[0]["episode_days"] == 5
+
+    def test_catheter_day_tabbed_multicolumn(self):
+        """Format observed in Ronald_Bittner: 'Catheter day     8   -KW ...'"""
+        eps = _extract_lda_episodes_from_lines([
+            "Catheter day     8   -KW —       —       —       8   -BW",
+        ])
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "URINARY_CATHETER"
+        assert eps[0]["episode_days"] == 8
+
+    def test_line_day_simple(self):
+        eps = _extract_lda_episodes_from_lines(["Line Day: 5"])
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "CENTRAL_LINE"
+        assert eps[0]["episode_days"] == 5
+
+    def test_line_day_multicolumn(self):
+        """Format observed in Ronald_Bittner: 'Line Day 12   -DP   12   -ET'"""
+        eps = _extract_lda_episodes_from_lines([
+            "Line Day 12   -DP        12   -ET        11   -ET",
+        ])
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "CENTRAL_LINE"
+        assert eps[0]["episode_days"] == 12
+
+    def test_central_line_day(self):
+        eps = _extract_lda_episodes_from_lines(["Central line day 4"])
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "CENTRAL_LINE"
+        assert eps[0]["episode_days"] == 4
+
+    def test_cvc_day(self):
+        eps = _extract_lda_episodes_from_lines(["CVC day: 3"])
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "CENTRAL_LINE"
+        assert eps[0]["episode_days"] == 3
+
+    def test_vent_day(self):
+        eps = _extract_lda_episodes_from_lines(["Vent day: 4"])
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "MECHANICAL_VENTILATOR"
+        assert eps[0]["episode_days"] == 4
+
+    def test_ventilator_day(self):
+        eps = _extract_lda_episodes_from_lines(["Ventilator day 6"])
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "MECHANICAL_VENTILATOR"
+        assert eps[0]["episode_days"] == 6
+
+    def test_max_day_across_lines(self):
+        """Multiple mentions of same device → keep highest day."""
+        eps = _extract_lda_episodes_from_lines([
+            "Catheter day     1   -CG",
+            "Catheter day     3   -MW",
+            "Catheter day     2   -AW",
+        ])
+        assert len(eps) == 1
+        assert eps[0]["episode_days"] == 3
+
+    def test_multiple_device_types(self):
+        eps = _extract_lda_episodes_from_lines([
+            "Catheter day 3",
+            "Line Day 5",
+        ])
+        assert len(eps) == 2
+        types = {ep["device_type"] for ep in eps}
+        assert types == {"URINARY_CATHETER", "CENTRAL_LINE"}
+
+    def test_no_matches(self):
+        eps = _extract_lda_episodes_from_lines([
+            "Patient resting comfortably.",
+            "Vitals stable.",
+            "No issues today.",
+        ])
+        assert eps == []
+
+    def test_empty_input(self):
+        eps = _extract_lda_episodes_from_lines([])
+        assert eps == []
+
+    def test_raw_line_ids_populated(self):
+        eps = _extract_lda_episodes_from_lines([
+            "Some intro text",
+            "Catheter day 2",
+            "More text",
+            "Catheter day 4",
+        ])
+        assert len(eps) == 1
+        assert "L2" in eps[0]["raw_line_ids"]
+        assert "L4" in eps[0]["raw_line_ids"]
+
+    def test_all_schema_fields_present(self):
+        """Every text-derived episode must have all LDAEpisode fields."""
+        eps = _extract_lda_episodes_from_lines(["Catheter day 3"])
+        expected_fields = {
+            "device_type", "episode_days", "source_confidence",
+            "start_ts", "stop_ts", "location", "inserted_by",
+            "notes", "raw_line_ids",
+        }
+        assert set(eps[0].keys()) == expected_fields
+
+    def test_start_stop_ts_none(self):
+        """Text-derived episodes have no start/stop timestamps."""
+        eps = _extract_lda_episodes_from_lines(["Line Day 3"])
+        assert eps[0]["start_ts"] is None
+        assert eps[0]["stop_ts"] is None
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 10. build_lda_episodes with text-derived path
+# ═══════════════════════════════════════════════════════════════════
+
+class TestBuildLDAEpisodesTextDerived:
+    """Tests for build_lda_episodes when raw_lines are provided."""
+
+    def test_text_only_episodes(self):
+        eps = build_lda_episodes(
+            patient_id="test",
+            raw_lines=["Catheter day 3", "Line Day 5"],
+        )
+        assert len(eps) == 2
+        types = {ep["device_type"] for ep in eps}
+        assert types == {"URINARY_CATHETER", "CENTRAL_LINE"}
+
+    def test_text_and_no_json(self):
+        eps = build_lda_episodes(
+            patient_id="test",
+            lda_json_path=None,
+            raw_lines=["Catheter day 4"],
+        )
+        assert len(eps) == 1
+        assert eps[0]["episode_days"] == 4
+
+    def test_structured_overrides_text_for_same_device(self):
+        """Structured JSON episode takes precedence over text for same device."""
+        feed = {
+            "lda_records": [
+                {
+                    "device_type": "URINARY_CATHETER",
+                    "episode_days": 5,
+                    "source_confidence": "STRUCTURED",
+                },
+            ],
+        }
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(feed, f)
+            tmp_path = Path(f.name)
+
+        try:
+            eps = build_lda_episodes(
+                patient_id="test",
+                lda_json_path=tmp_path,
+                raw_lines=["Catheter day 3"],  # also URINARY_CATHETER
+            )
+            # Only structured should remain for URINARY_CATHETER
+            cath = [e for e in eps if e["device_type"] == "URINARY_CATHETER"]
+            assert len(cath) == 1
+            assert cath[0]["source_confidence"] == "STRUCTURED"
+            assert cath[0]["episode_days"] == 5
+        finally:
+            tmp_path.unlink()
+
+    def test_text_adds_device_not_in_structured(self):
+        """Text-derived episodes for devices absent from structured are added."""
+        feed = {
+            "lda_records": [
+                {
+                    "device_type": "URINARY_CATHETER",
+                    "episode_days": 5,
+                    "source_confidence": "STRUCTURED",
+                },
+            ],
+        }
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(feed, f)
+            tmp_path = Path(f.name)
+
+        try:
+            eps = build_lda_episodes(
+                patient_id="test",
+                lda_json_path=tmp_path,
+                raw_lines=["Line Day 7"],  # CENTRAL_LINE not in structured
+            )
+            assert len(eps) == 2
+            types = {ep["device_type"] for ep in eps}
+            assert types == {"URINARY_CATHETER", "CENTRAL_LINE"}
+        finally:
+            tmp_path.unlink()
+
+    def test_no_lines_no_json_returns_empty(self):
+        eps = build_lda_episodes(patient_id="test")
+        assert eps == []
+
+    def test_empty_lines_returns_empty(self):
+        eps = build_lda_episodes(patient_id="test", raw_lines=[])
+        assert eps == []
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 11. Engine gate integration with text-derived episodes
+# ═══════════════════════════════════════════════════════════════════
+
+class TestLDAGatesWithTextDerived:
+    """Engine LDA gates should work with text-derived episodes when flag on."""
+
+    def setup_method(self):
+        self._orig = engine.ENABLE_LDA_GATES
+        engine.ENABLE_LDA_GATES = True
+
+    def teardown_method(self):
+        engine.ENABLE_LDA_GATES = self._orig
+
+    def test_duration_passes_with_text_catheter(self):
+        """Text-derived catheter day 3 >= 2 → passes lda_duration gate."""
+        episodes = _extract_lda_episodes_from_lines(["Catheter day 3"])
+        patient = _make_patient(lda_episodes=episodes)
+        gate = _gate("lda_duration", "test_cath_dur",
+                      device_type="URINARY_CATHETER", days_gte=2)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert result.passed
+
+    def test_duration_fails_with_text_catheter_below_threshold(self):
+        """Text-derived catheter day 1 < 2 → fails."""
+        episodes = _extract_lda_episodes_from_lines(["Catheter day 1"])
+        patient = _make_patient(lda_episodes=episodes)
+        gate = _gate("lda_duration", "test_cath_dur",
+                      device_type="URINARY_CATHETER", days_gte=2)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert not result.passed
+
+    def test_duration_passes_with_text_line_day(self):
+        """Text-derived Line Day 5 >= 2 → passes for CENTRAL_LINE."""
+        episodes = _extract_lda_episodes_from_lines(["Line Day 5"])
+        patient = _make_patient(lda_episodes=episodes)
+        gate = _gate("lda_duration", "test_line_dur",
+                      device_type="CENTRAL_LINE", days_gte=2)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert result.passed
+
+    def test_duration_passes_with_text_vent_day(self):
+        """Text-derived Vent day 4 >= 2 → passes for MECHANICAL_VENTILATOR."""
+        episodes = _extract_lda_episodes_from_lines(["Vent day 4"])
+        patient = _make_patient(lda_episodes=episodes)
+        gate = _gate("lda_duration", "test_vent_dur",
+                      device_type="MECHANICAL_VENTILATOR", days_gte=2)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert result.passed
+
+    def test_text_confidence_meets_text_derived_min(self):
+        """TEXT_DERIVED confidence meets min_confidence=TEXT_DERIVED."""
+        episodes = _extract_lda_episodes_from_lines(["Catheter day 3"])
+        patient = _make_patient(lda_episodes=episodes)
+        gate = _gate("lda_duration", "test_conf",
+                      device_type="URINARY_CATHETER", days_gte=2,
+                      min_confidence="TEXT_DERIVED")
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert result.passed
+
+    def test_text_confidence_fails_structured_min(self):
+        """TEXT_DERIVED confidence < STRUCTURED minimum → fails."""
+        episodes = _extract_lda_episodes_from_lines(["Catheter day 5"])
+        patient = _make_patient(lda_episodes=episodes)
+        gate = _gate("lda_duration", "test_conf_fail",
+                      device_type="URINARY_CATHETER", days_gte=2,
+                      min_confidence="STRUCTURED")
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert not result.passed
+
+    def test_flag_off_text_episodes_still_noop(self):
+        """With flag off, text-derived episodes are present but gate returns False."""
+        engine.ENABLE_LDA_GATES = False
+        episodes = _extract_lda_episodes_from_lines(["Catheter day 10"])
+        patient = _make_patient(lda_episodes=episodes)
+        gate = _gate("lda_duration", "test_noop",
+                      device_type="URINARY_CATHETER", days_gte=2)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert not result.passed
+        assert "disabled" in result.reason.lower()
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 12. Per-event precision with text-derived LDA + flag toggle
+# ═══════════════════════════════════════════════════════════════════
+
+class TestE05CautiTextDerivedPrecision:
+    """E05 CAUTI: lda_duration gate with text-derived catheter episode."""
+
+    def setup_method(self):
+        self._orig = engine.ENABLE_LDA_GATES
+
+    def teardown_method(self):
+        engine.ENABLE_LDA_GATES = self._orig
+
+    def _load_e05_lda_gate(self):
+        with open(RULE_DIR / "05_cauti.json") as f:
+            rule = json.load(f)
+        for g in rule["gates"]:
+            if g["gate_id"] == "cauti_catheter_duration_lda":
+                return g
+        pytest.fail("cauti_catheter_duration_lda gate not found in E05 rule")
+
+    def test_flag_true_text_catheter_3d_passes(self):
+        """Flag on + catheter day 3 (>=2) → gate passes."""
+        engine.ENABLE_LDA_GATES = True
+        gate = self._load_e05_lda_gate()
+        episodes = _extract_lda_episodes_from_lines(["Catheter day 3"])
+        patient = _make_patient(lda_episodes=episodes)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert result.passed
+
+    def test_flag_false_text_catheter_3d_fails(self):
+        """Flag off + catheter day 3 → gate does not pass (disabled)."""
+        engine.ENABLE_LDA_GATES = False
+        gate = self._load_e05_lda_gate()
+        episodes = _extract_lda_episodes_from_lines(["Catheter day 3"])
+        patient = _make_patient(lda_episodes=episodes)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert not result.passed
+
+    def test_flag_true_no_catheter_fails(self):
+        """Flag on but no catheter data → gate fails."""
+        engine.ENABLE_LDA_GATES = True
+        gate = self._load_e05_lda_gate()
+        patient = _make_patient(lda_episodes=[])
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert not result.passed
+
+
+class TestE06ClabsiTextDerivedPrecision:
+    """E06 CLABSI: lda_duration gate with text-derived central line episode."""
+
+    def setup_method(self):
+        self._orig = engine.ENABLE_LDA_GATES
+
+    def teardown_method(self):
+        engine.ENABLE_LDA_GATES = self._orig
+
+    def _load_e06_lda_gate(self):
+        with open(RULE_DIR / "06_clabsi.json") as f:
+            rule = json.load(f)
+        for g in rule["gates"]:
+            if g["gate_id"] == "clabsi_central_line_duration_lda":
+                return g
+        pytest.fail("clabsi_central_line_duration_lda gate not found in E06 rule")
+
+    def test_flag_true_text_line_day_5_passes(self):
+        """Flag on + Line Day 5 (>=2) → gate passes."""
+        engine.ENABLE_LDA_GATES = True
+        gate = self._load_e06_lda_gate()
+        episodes = _extract_lda_episodes_from_lines(["Line Day 5"])
+        patient = _make_patient(lda_episodes=episodes)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert result.passed
+
+    def test_flag_false_text_line_day_5_fails(self):
+        """Flag off + Line Day 5 → gate does not pass (disabled)."""
+        engine.ENABLE_LDA_GATES = False
+        gate = self._load_e06_lda_gate()
+        episodes = _extract_lda_episodes_from_lines(["Line Day 5"])
+        patient = _make_patient(lda_episodes=episodes)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert not result.passed
+
+    def test_flag_true_no_line_data_fails(self):
+        """Flag on but no central line data → gate fails."""
+        engine.ENABLE_LDA_GATES = True
+        gate = self._load_e06_lda_gate()
+        patient = _make_patient(lda_episodes=[])
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert not result.passed
+
+
+class TestE21VapTextDerivedPrecision:
+    """E21 VAP: lda_duration gate with text-derived vent episode."""
+
+    def setup_method(self):
+        self._orig = engine.ENABLE_LDA_GATES
+
+    def teardown_method(self):
+        engine.ENABLE_LDA_GATES = self._orig
+
+    def _load_e21_lda_gate(self):
+        with open(RULE_DIR / "21_vap.json") as f:
+            rule = json.load(f)
+        for g in rule["gates"]:
+            if g["gate_id"] == "vent_duration_lda":
+                return g
+        pytest.fail("vent_duration_lda gate not found in E21 rule")
+
+    def test_flag_true_text_vent_day_4_passes(self):
+        """Flag on + Vent day 4 (>=2) → gate passes."""
+        engine.ENABLE_LDA_GATES = True
+        gate = self._load_e21_lda_gate()
+        episodes = _extract_lda_episodes_from_lines(["Vent day 4"])
+        patient = _make_patient(lda_episodes=episodes)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert result.passed
+
+    def test_flag_false_text_vent_day_fails(self):
+        """Flag off + Vent day 4 → gate does not pass (disabled)."""
+        engine.ENABLE_LDA_GATES = False
+        gate = self._load_e21_lda_gate()
+        episodes = _extract_lda_episodes_from_lines(["Vent day 4"])
+        patient = _make_patient(lda_episodes=episodes)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert not result.passed
+
+    def test_flag_true_no_vent_data_fails(self):
+        """Flag on but no vent data → gate fails."""
+        engine.ENABLE_LDA_GATES = True
+        gate = self._load_e21_lda_gate()
+        patient = _make_patient(lda_episodes=[])
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert not result.passed
