@@ -280,7 +280,53 @@ git diff --cached --name-only
 
 ---
 
-## 10) Quick Chat Starter (New ChatGPT/Codex Sessions)
+## 10) Lean Review Mode (Default)
+
+To reduce cycle time, use **lean mode** unless a high-risk condition exists.
+
+Default lean sequence (one pass each):
+
+1. Run `CEREBRALOS PREFLIGHT FIRST` once per cycle.
+2. Run one scope check: `git diff --name-only origin/main...HEAD`.
+3. Run one validation pass appropriate to scope (targeted tests and/or gate).
+4. Run one final merge-readiness audit + command set.
+
+Re-run checks only when one of these happens:
+
+- Branch/PR state changes mid-cycle.
+- Protected files are touched.
+- Baseline/test output changes unexpectedly.
+- Operator explicitly requests deep audit mode.
+
+---
+
+## 11) Branch Cleanup Status (2026-03-12)
+
+Cleanup for PR #208/#209 branches was already executed in a prior session:
+
+```bash
+git fetch origin --prune
+git branch -m wip/docs-handoff-template-updates-v1
+git push origin --delete docs/roadmap-sync-pr207-v1 docs/startup-cleanup-pr208-v1
+git branch -d docs/startup-cleanup-pr208-v1
+git remote prune origin
+```
+
+Current expected state:
+
+- Working branch: `wip/docs-handoff-template-updates-v1`
+- Upstream for prior branch may show `[gone]` until reset
+- Local unstaged docs edits are preserved intentionally
+
+When ready to publish the WIP branch, set a fresh upstream:
+
+```bash
+git push -u origin wip/docs-handoff-template-updates-v1
+```
+
+---
+
+## 12) Quick Chat Starter (New ChatGPT/Codex Sessions)
 
 Paste the block below as the **first message** in any fresh ChatGPT or
 Codex chat to activate roadmap-first architect/reviewer mode with
@@ -292,6 +338,7 @@ CEREBRALOS PREFLIGHT FIRST — always run preflight before merge,
 cleanup, PR, or rebase guidance.
 You decide scope/triage (current PR vs doc note vs future fix track).
 Claude executes code changes.
+Use lean review mode by default; escalate to deep audit only on risk or request.
 Give detailed step-by-step terminal + GitHub UI instructions.
 
 At chat start, first read

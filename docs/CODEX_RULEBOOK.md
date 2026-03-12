@@ -172,4 +172,35 @@ Pre-existing untracked local files (e.g., `tests/test_negation.py`,
 in `git status`. Distinguish these from PR scope — do not stage or
 include them unless they belong to the current PR.
 
+### Lean Verification Mode (Default)
+
+Codex should use lean verification cadence by default to reduce cycle
+time while maintaining safety:
+
+1. One preflight block per cycle.
+2. One scope check (`git diff --name-only origin/main...HEAD`).
+3. One validation pass matched to change scope.
+4. One final merge-readiness audit with exact commands.
+
+Escalate to deeper/repeated checks only when:
+
+- branch/PR state changes mid-cycle,
+- protected files are touched,
+- baseline/test output drifts unexpectedly,
+- or the operator explicitly requests deep audit mode.
+
+---
+
+## 9) Post-Handoff Analysis (Codex Required)
+
+After every Claude handoff, Codex must perform and report:
+
+1. **Spec alignment check** against AGENTS.md constraints and current PR scope.
+2. **Validation summary** (tests/gate run, pass/fail, any gaps).
+3. **Copilot/GitHub comments triage** for unresolved feedback:
+   - classify each as `must-fix-now` vs `defer`
+   - cite file/line when available.
+4. **Risk/gap assessment** (behavioral regressions, drift risk, missing coverage).
+5. **Next actions** (exact terminal commands and PR/UI steps).
+
 End of rulebook.
