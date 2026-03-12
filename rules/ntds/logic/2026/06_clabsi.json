@@ -3,34 +3,97 @@
     "event_id": 6,
     "canonical_name": "Central Line-Associated Bloodstream Infection (CLABSI)",
     "ntds_year": 2026,
-    "version": "1.0.0"
+    "version": "2.0.0",
+    "source": "NTDS Hospital Events (STRUCTURED) — NHSN CLABSI Criteria"
   },
-  "gates": [
-    {
-      "gate_type": "evidence_any",
-      "gate_id": "clabsi_dx",
-      "gate_name": "Diagnosis/lab evidence of CLABSI",
-      "required": true,
-      "min_count": 1,
-      "query_keys": ["clabsi_dx"],
-      "exclude_noise_keys": [],
-      "allowed_sources": ["LAB", "PHYSICIAN_NOTE", "DISCHARGE", "NURSING_NOTE"],
-      "fail_outcome": "NO",
-      "fail_reason": "No documentation of CLABSI."
-    }
-  ],
+  "element_values": { "YES": "1", "NO": "2" },
   "exclusions": [
     {
       "gate_type": "exclude_if_any",
       "gate_id": "clabsi_excl_poa",
       "gate_name": "Exclude CLABSI present on arrival (scoped)",
       "rule_id": "EXCL_POA",
-      "reason": "Documented prior/present on arrival.",
+      "reason": "CLABSI or bacteremia documented as present on arrival or prior to admission.",
       "query_keys": ["history_noise"],
       "require_context_keys": ["clabsi_dx"],
       "proximity_mode": "sentence_window"
+    },
+    {
+      "gate_type": "exclude_if_any",
+      "gate_id": "clabsi_excl_chronic_line",
+      "gate_name": "Exclude if chronic / pre-admission central line (dialysis catheter)",
+      "rule_id": "EXCL_CHRONIC_LINE",
+      "reason": "Chronic or long-term central venous catheter or dialysis catheter documented prior to admission; not a hospital-acquired device.",
+      "query_keys": ["clabsi_chronic_line"],
+      "require_context_keys": [],
+      "proximity_mode": "sentence_window"
     }
   ],
-  "summary_overrides": {},
-  "debug": "Template-based CLABSI placeholders"
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "clabsi_dx",
+      "gate_name": "CLABSI / catheter-related BSI diagnosis documented",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["clabsi_dx"],
+      "exclude_noise_keys": ["clabsi_negation_noise"],
+      "allowed_sources": ["PHYSICIAN_NOTE", "CONSULT_NOTE", "NURSING_NOTE", "LAB", "PROGRESS_NOTE", "DISCHARGE", "ED_NOTE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of CLABSI or catheter-related bloodstream infection."
+    },
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "clabsi_central_line_gt2d",
+      "gate_name": "Central line in place >2 calendar days",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["clabsi_central_line_in_place"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["NURSING_NOTE", "PHYSICIAN_NOTE", "CONSULT_NOTE", "PROGRESS_NOTE", "ED_NOTE", "DISCHARGE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No evidence of central line in place for >2 calendar days."
+    },
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "clabsi_lab_positive",
+      "gate_name": "Blood culture positive with recognized pathogen",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["clabsi_blood_culture_positive"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["LAB", "PHYSICIAN_NOTE", "CONSULT_NOTE", "NURSING_NOTE", "PROGRESS_NOTE", "DISCHARGE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No positive blood culture documented."
+    },
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "clabsi_symptoms",
+      "gate_name": "Signs or symptoms present (fever >38C, chills, rigors, hypotension)",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["clabsi_symptoms"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["PHYSICIAN_NOTE", "CONSULT_NOTE", "NURSING_NOTE", "PROGRESS_NOTE", "ED_NOTE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No signs or symptoms meeting CLABSI criteria (fever, chills, rigors, hypotension)."
+    },
+    {
+      "gate_type": "timing_after_arrival",
+      "gate_id": "clabsi_after_arrival",
+      "gate_name": "Onset of symptoms after arrival to ED/hospital",
+      "required": true,
+      "query_key": "clabsi_onset",
+      "arrival_field": "arrival_time",
+      "timestamp_required": true,
+      "allowed_sources": ["PHYSICIAN_NOTE", "CONSULT_NOTE", "NURSING_NOTE", "PROGRESS_NOTE", "ED_NOTE", "LAB"],
+      "fail_outcome": "UNABLE_TO_DETERMINE",
+      "fail_reason": "Cannot confirm onset of CLABSI symptoms after arrival."
+    }
+  ],
+  "reporting": {
+    "if_excluded": "EXCLUDED",
+    "if_any_required_gate_fails": "use_fail_outcome",
+    "if_all_required_gates_pass": "YES"
+  }
 }

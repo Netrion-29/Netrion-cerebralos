@@ -93,11 +93,11 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 2327 passed (pytest) |
+| Total tests         | 3017 passed (pytest) |
 | NTDS event rules    | 21 (all mapped)  |
-| Fixture files       | 44               |
-| Fixture runner      | **44 passed, 0 xfailed** |
-| Precision tests     | 7 suites (E01, E05, E10, E15, E16, E18, E19) |
+| Fixture files       | 47               |
+| Fixture runner      | **56 passed, 0 xfailed** |
+| Precision tests     | 8 suites (E01, E05, E06, E10, E15, E16, E18, E19) |
 | Cohort invariant    | 39 canonical = 39 adjusted |
 | NTDS distribution   | 21 events baselined (YES/NO/UTD/EXCLUDED per event) |
 | Canonical patients  | 39               |
@@ -110,7 +110,7 @@ None.
 |-------------------------------------|-------|-----------|--------------------------|
 | `cerebralos/ntds_logic/engine.py`   | 645   | Yes       | proximity_mode audited on all 21 events; no changes in N3 |
 | `cerebralos/protocol_engine/engine.py` | —  | Yes       | Not modified recently    |
-| Mapper: `epic_deaconess_mapper_v1.json` | — | No        | Patterns for all 21 events + 6 negation noise buckets (N3) |
+| Mapper: `epic_deaconess_mapper_v1.json` | — | No        | Patterns for all 21 events + 7 negation noise buckets (N3 + CLABSI) |
 
 ---
 
@@ -532,6 +532,7 @@ and added two block filters:
 | 11c | **E05 CAUTI follow-up (culture/symptom variants)** | `rules/mappers/epic_deaconess_mapper_v1.json`, tests | High | Small | OPEN (PR #190) — symptoms 14→15 (adds altered mental status, temp regex 38–42°C); culture patterns 11→14 (1e5 CFU, spaced caret, “>100,000” forms); 13 new precision tests; 0 NTDS deltas |
 | 12 | PMH-aware gate handling | Engine proposal (PROTECTED `cerebralos/ntds_logic/engine.py`) | Medium | Large | Requires engine modification + design doc + explicit authorization; protocol engine has reference impl |
 | 13 | **CAUTI engine design (LDA duration gate + alt-source exclusion)** | Design doc `docs/audits/CAUTI_ENGINE_DESIGN_v1.md` | **High** | Medium–Large | ✅ DESIGN COMPLETE — requires engine-change authorization for implementation. LDA SourceType + catheter duration gate + alternative-source exclusion. See design doc for phased migration plan. |
+| ~~14~~ | ~~**E06 CLABSI spec fidelity (NHSN CLABSI)**~~ | ~~`rules/ntds/logic/2026/06_clabsi.json`, `rules/mappers/epic_deaconess_mapper_v1.json`, tests~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** — 5 required gates (clabsi_dx, clabsi_central_line_gt2d, clabsi_lab_positive, clabsi_symptoms, clabsi_after_arrival) + 2 exclusions (POA, chronic line); 7 mapper keys (clabsi_negation_noise, clabsi_central_line_in_place, clabsi_blood_culture_positive, clabsi_symptoms, clabsi_onset, clabsi_chronic_line + refined clabsi_dx) with ~56 patterns total; clabsi_dx noise filter; 76 precision tests + 3 new fixtures (chronic-line-excluded, no-culture-no, noncentral-line-no); baseline refreshed: E06 stays NO=39, 0 NTDS outcome deltas |
 
 ---
 
