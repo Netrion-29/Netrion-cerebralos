@@ -3,34 +3,100 @@
     "event_id": 5,
     "canonical_name": "Catheter-Associated Urinary Tract Infection (CAUTI)",
     "ntds_year": 2026,
-    "version": "1.0.0"
+    "version": "2.0.0",
+    "source": "NTDS Hospital Events (STRUCTURED) — CDC SUTI 1a Jan 2019"
   },
-  "gates": [
-    {
-      "gate_type": "evidence_any",
-      "gate_id": "cauti_dx",
-      "gate_name": "Diagnosis or lab evidence of CAUTI",
-      "required": true,
-      "min_count": 1,
-      "query_keys": ["cauti_dx"],
-      "exclude_noise_keys": [],
-      "allowed_sources": ["LAB", "PHYSICIAN_NOTE", "NURSING_NOTE"],
-      "fail_outcome": "NO",
-      "fail_reason": "No documentation of CAUTI."
-    }
-  ],
+  "element_values": {
+    "YES": "1",
+    "NO": "2"
+  },
   "exclusions": [
     {
       "gate_type": "exclude_if_any",
       "gate_id": "cauti_excl_poa",
-      "gate_name": "Exclude if CAUTI present on arrival",
+      "gate_name": "Exclude if CAUTI / UTI present on arrival",
       "rule_id": "EXCL_POA",
-      "reason": "Documented prior/present on arrival or prior infection.",
+      "reason": "UTI or CAUTI documented as present on arrival or prior to admission.",
       "query_keys": ["history_noise"],
       "require_context_keys": ["cauti_dx"],
       "proximity_mode": "sentence_window"
+    },
+    {
+      "gate_type": "exclude_if_any",
+      "gate_id": "cauti_excl_chronic_catheter",
+      "gate_name": "Exclude if chronic / long-term indwelling catheter (pre-admission)",
+      "rule_id": "EXCL_CHRONIC_CATHETER",
+      "reason": "Chronic or long-term indwelling urinary catheter documented prior to admission; not a hospital-acquired device.",
+      "query_keys": ["cauti_chronic_catheter"],
+      "require_context_keys": [],
+      "proximity_mode": "sentence_window"
     }
   ],
-  "summary_overrides": {},
-  "debug": "Template-based CAUTI placeholders"
+  "gates": [
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "cauti_dx",
+      "gate_name": "UTI / CAUTI diagnosis documented",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["cauti_dx"],
+      "exclude_noise_keys": ["cauti_negation_noise"],
+      "allowed_sources": ["PHYSICIAN_NOTE", "CONSULT_NOTE", "NURSING_NOTE", "LAB", "PROGRESS_NOTE", "DISCHARGE", "ED_NOTE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No documentation of UTI or CAUTI diagnosis."
+    },
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "cauti_catheter_gt2d",
+      "gate_name": "Indwelling urinary catheter in place >2 calendar days",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["cauti_catheter_in_place"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["NURSING_NOTE", "PHYSICIAN_NOTE", "CONSULT_NOTE", "LDA", "PROGRESS_NOTE", "ED_NOTE", "DISCHARGE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No evidence of indwelling urinary catheter in place for >2 calendar days."
+    },
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "cauti_symptoms",
+      "gate_name": "Signs or symptoms present (fever >38C, suprapubic tenderness, CVA pain, urgency, frequency, dysuria)",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["cauti_symptoms"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["PHYSICIAN_NOTE", "CONSULT_NOTE", "NURSING_NOTE", "PROGRESS_NOTE", "ED_NOTE", "VITALS"],
+      "fail_outcome": "NO",
+      "fail_reason": "No signs or symptoms meeting CDC SUTI 1a criteria (fever >38C, suprapubic tenderness, CVA pain/tenderness, urgency, frequency, dysuria)."
+    },
+    {
+      "gate_type": "evidence_any",
+      "gate_id": "cauti_culture",
+      "gate_name": "Urine culture >=10^5 CFU/ml with <=2 species",
+      "required": true,
+      "min_count": 1,
+      "query_keys": ["cauti_culture_positive"],
+      "exclude_noise_keys": [],
+      "allowed_sources": ["LAB", "PHYSICIAN_NOTE", "CONSULT_NOTE", "NURSING_NOTE", "PROGRESS_NOTE", "DISCHARGE"],
+      "fail_outcome": "NO",
+      "fail_reason": "No urine culture with bacterial count >=10^5 CFU/ml documented."
+    },
+    {
+      "gate_type": "timing_after_arrival",
+      "gate_id": "cauti_after_arrival",
+      "gate_name": "Onset of symptoms after arrival to ED/hospital",
+      "required": true,
+      "query_key": "cauti_onset",
+      "arrival_field": "arrival_time",
+      "timestamp_required": true,
+      "allowed_sources": ["PHYSICIAN_NOTE", "CONSULT_NOTE", "NURSING_NOTE", "PROGRESS_NOTE", "ED_NOTE", "LAB"],
+      "fail_outcome": "UNABLE_TO_DETERMINE",
+      "fail_reason": "Cannot confirm onset of UTI symptoms after arrival (missing or unclear timestamp/context)."
+    }
+  ],
+  "reporting": {
+    "if_excluded": "EXCLUDED",
+    "if_any_required_gate_fails": "use_fail_outcome",
+    "if_all_required_gates_pass": "YES"
+  }
 }

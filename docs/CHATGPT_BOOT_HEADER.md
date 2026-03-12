@@ -45,8 +45,9 @@
 | Per-event distribution CI | ✅ COMPLETE — `scripts/check_ntds_distribution.py` + baseline `scripts/baselines/ntds_distribution_v1.json` (21 events × 39 patients), wired into `gate_pr.sh`, 0 NTDS outcome deltas |
 | Source alignment + geri delirium design | ✅ COMPLETE (design doc) — `docs/audits/SOURCE_ALIGNMENT_AND_GERI_DELIRIUM_v1.md`: 3-tier source recommendations (CONSULT_NOTE/NURSING_NOTE/PROGRESS_NOTE), CAM-ICU/bCAM mapper gap analysis, shift compliance design, Ronald_Bittner follow-up; 0 NTDS outcome deltas |
 | Tier 1 source alignment + CAM/bCAM patterns | ✅ COMPLETE — CONSULT_NOTE added to 4 gates (aki_dx, mi_dx, sepsis_dx, stroke_dx), NURSING_NOTE added to 3 gates (cauti_dx, clabsi_dx, sepsis_dx), 4 CAM-ICU/bCAM positive patterns added to delirium_dx, 4 negative patterns added to delirium_negation_noise, 3 fixtures added, 0 NTDS outcome deltas |
-| Open PRs | None |
-| Next phase | **Backlog priority:** (1) Tier 2 PROGRESS_NOTE scoping pass, (2) Delirium shift compliance audit script, (3) PMH-aware gate handling (engine-protected) — see Roadmap §3 |
+| E05 CAUTI Tier-1 spec fidelity | ✅ COMPLETE — CDC SUTI 1a: 5 required gates (dx, catheter >2d, symptoms, culture ≥10^5, timing) + 2 exclusions (POA, chronic catheter); 6 new mapper keys (52 patterns); cauti_dx expanded with negation noise filter; 52 precision tests + 3 fixtures; 0 NTDS outcome deltas (rule-only, pre-rerun) |
+| Open PRs | tier2/e05-cauti-spec-v1 |
+| Next phase | **Backlog priority:** (1) E05 CAUTI cohort rerun + baseline update, (2) Tier 2 PROGRESS_NOTE scoping pass, (3) Delirium shift compliance audit script, (4) PMH-aware gate handling (engine-protected) — see Roadmap §3 |
 
 ## Quick Chat Starter
 

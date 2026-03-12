@@ -270,8 +270,72 @@
 			"\\bCAUTI\\b",
 			"\\burinary\\s+tract\\s+infection\\b.*\\bcatheter\\b",
 			"\\bcatheter\\b.*\\burinary\\s+tract\\s+infection\\b",
+			"\\burinary\\s+tract\\s+infection\\b",
+			"\\bUTI\\b(?!.*\\b(prophylaxis|ppx|prevent)\\b)"
+		],
+		"cauti_negation_noise": [
+			"\\bno\\s+(evidence\\s+of\\s+)?UTI\\b",
+			"\\bno\\s+(evidence\\s+of\\s+)?urinary\\s+tract\\s+infection\\b",
+			"\\bno\\s+(evidence\\s+of\\s+)?CAUTI\\b",
+			"\\bnegative\\s+(for\\s+)?(UTI|urinary\\s+tract\\s+infection|CAUTI)\\b",
+			"\\brule\\s*out\\s+(UTI|CAUTI|urinary\\s+tract\\s+infection)\\b",
+			"\\b(UTI|CAUTI)\\s+ruled\\s+out\\b",
+			"\\bwithout\\b.*\\b(UTI|urinary\\s+tract\\s+infection)\\b"
+		],
+		"cauti_catheter_in_place": [
+			"\\b(foley|indwelling\\s+urinary)\\s+catheter\\b.*\\bin\\s+place\\b",
+			"\\b(foley|indwelling\\s+(urinary\\s+)?catheter)\\s+(inserted|placed)\\b",
+			"\\bcatheter\\s+(inserted|placed)\\b.*\\b(urin|bladder)\\b",
+			"\\bindwelling\\s+urinary\\s+catheter\\b",
+			"\\bfoley\\s+catheter\\b",
+			"\\bfoley\\b.*\\binserted\\b",
+			"\\bfoley\\b.*\\bin\\s+place\\b",
+			"\\b(foley|urinary\\s+catheter)\\s+(day|since)\\b",
+			"\\bcatheter\\s+in\\s+place\\s+(since|for|day)\\b"
+		],
+		"cauti_symptoms": [
+			"\\bfever\\b.*\\b3[89]\\b",
+			"\\btemperature\\b.*\\b3[89]\\b",
+			"\\btemp\\b.*\\b3[89]\\b",
+			"\\b3[89]\\.\\d\\s*[°]?\\s*C\\b",
+			"\\bfebrile\\b",
+			"\\bsuprapubic\\s+tenderness\\b",
+			"\\bcostovertebral\\s+angle\\s+(pain|tenderness)\\b",
+			"\\bCVA\\s+(pain|tenderness)\\b",
+			"\\bflank\\s+(pain|tenderness)\\b",
+			"\\bdysuria\\b",
+			"\\burinary\\s+urgency\\b",
+			"\\burgency\\b.*\\burin\\w*\\b",
+			"\\burinary\\s+frequency\\b",
+			"\\bfrequency\\b.*\\burin\\w*\\b"
+		],
+		"cauti_culture_positive": [
 			"\\burine\\s+culture\\s+positive\\b",
-			"\\bpositive\\s+urine\\s+culture\\b"
+			"\\bpositive\\s+urine\\s+culture\\b",
+			"\\burine\\s+culture\\b.*\\b\\d{3,}\\s*,?\\s*\\d*\\s*CFU\\b",
+			"\\burine\\s+culture\\b.*\\b10\\^?5\\b",
+			"\\burine\\s+culture\\b.*\\b100\\s*,?\\s*000\\s*(CFU|cfu)\\b",
+			"\\b(>|greater\\s+than|>=)\\s*10\\^?5\\s*(CFU|cfu)\\b.*\\burin\\w*\\b",
+			"\\burin\\w*\\b.*\\b(>|greater\\s+than|>=)\\s*10\\^?5\\s*(CFU|cfu)\\b",
+			"\\b\\d{5,}\\s*(CFU|cfu)\\s*(per|/)\\s*m[Ll]\\b.*\\burin\\w*\\b",
+			"\\burin\\w*\\b.*\\b\\d{5,}\\s*(CFU|cfu)\\s*(per|/)\\s*m[Ll]\\b",
+			"\\b100\\s*,?\\s*000\\s*(CFU|cfu)\\s*(per|/)\\s*m[Ll]\\b",
+			"\\b\\d{5,}\\s*(CFU|cfu)\\s*(per|/)\\s*m[Ll]\\b"
+		],
+		"cauti_onset": [
+			"\\bonset\\b.*\\bafter\\b.*\\b(arrival|admission|admit)\\b",
+			"\\bdeveloped\\b.*\\b(UTI|CAUTI|urinary\\s+tract\\s+infection|fever|dysuria)\\b",
+			"\\bnew\\s+(onset\\s+)?(UTI|CAUTI|fever|dysuria|urinary)\\b",
+			"\\bhospital[- ]?(acquired|onset)\\b.*\\b(UTI|CAUTI|infection)\\b",
+			"\\bnosocomial\\b.*\\b(UTI|CAUTI|infection)\\b"
+		],
+		"cauti_chronic_catheter": [
+			"\\bchronic\\s+(indwelling\\s+)?(foley|urinary\\s+catheter|catheter)\\b",
+			"\\blong[- ]?term\\s+(indwelling\\s+)?(foley|urinary\\s+catheter|catheter)\\b",
+			"\\bsuprapubic\\s+catheter\\b.*\\bchronic\\b",
+			"\\bchronic\\s+suprapubic\\s+catheter\\b",
+			"\\b(foley|catheter)\\b.*\\bprior\\s+to\\s+(arrival|admission)\\b",
+			"\\bpre[- ]?admission\\s+(foley|catheter)\\b"
 		],
 		"delirium_dx": [
 			"\\bdelirium\\b",
