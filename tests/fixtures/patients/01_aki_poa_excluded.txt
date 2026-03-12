@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_AKI_POA_001
+ARRIVAL_TIME: 2026-03-01 10:00:00
+
+[ED_NOTE] 2026-03-01 10:30:00
+Patient presents with PMH of AKI, diabetes, hypertension.
+Past medical history includes AKI requiring dialysis 6 months ago.
+Creatinine: 1.4 mg/dL on arrival, within normal limits.
+
+[LAB] 2026-03-01 10:15:00
+Creatinine: 1.4 mg/dL
+BUN: 22 mg/dL
+GFR: 58 mL/min
+
+[PHYSICIAN_NOTE] 2026-03-01 12:00:00
+History of AKI 6 months ago, resolved. Current renal function stable.
+No evidence of acute kidney injury this admission.

@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_AKI_SUBTHRESHOLD_001
+ARRIVAL_TIME: 2026-02-15 09:00:00
+
+[PHYSICIAN_NOTE] 2026-02-16 08:00:00
+Patient with mild acute kidney injury during hospitalization.
+Creatinine rose from 1.0 to 1.8 mg/dL (stage 1 AKI).
+Renal function improving with IV fluids. No dialysis needed.
+
+[LAB] 2026-02-16 06:00:00
+Creatinine: 1.8 mg/dL (baseline 1.0)
+BUN: 28 mg/dL
+GFR: 42 mL/min
+
+[PROGRESS_NOTE] 2026-02-17 10:00:00
+AKI resolving. Creatinine trending down to 1.4.
+Stage 1 AKI, below stage 3 threshold. No dialysis needed.

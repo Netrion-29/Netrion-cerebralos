@@ -372,7 +372,7 @@ class TestAkiRuleStructure:
     def test_timing_gate_unchanged(self):
         with open(self.RULE_PATH) as f:
             rule = json.load(f)
-        timing_gate = rule["gates"][1]
+        timing_gate = rule["gates"][2]
         assert timing_gate["gate_id"] == "aki_after_arrival"
         assert timing_gate["query_key"] == "aki_onset"
         assert timing_gate["fail_outcome"] == "UNABLE_TO_DETERMINE"

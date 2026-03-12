@@ -1,0 +1,17 @@
+PATIENT_ID: TEST_AKI_DIALYSIS_001
+ARRIVAL_TIME: 2026-01-20 14:00:00
+
+[PHYSICIAN_NOTE] 2026-01-22 09:00:00
+Patient developed acute kidney injury during hospitalization.
+Creatinine rose to 5.1 mg/dL from baseline 1.3.
+Initiated hemodialysis emergently for fluid overload and uremia.
+
+[LAB] 2026-01-22 06:00:00
+Creatinine: 5.1 mg/dL (baseline 1.3)
+BUN: 78 mg/dL
+Potassium: 6.2 mEq/L
+
+[NURSING_NOTE] 2026-01-22 10:00:00
+Patient received emergent hemodialysis via temporary catheter.
+Continuous veno-venous hemofiltration initiated in ICU.
+Urine output minimal, anuric for past 14 hours.

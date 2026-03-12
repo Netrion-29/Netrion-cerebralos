@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_AKI_CHRONIC_RRT_001
+ARRIVAL_TIME: 2026-02-10 16:00:00
+
+[PHYSICIAN_NOTE] 2026-02-10 17:00:00
+82 y.o. male with PMH of ESRD on hemodialysis Monday Wednesday Friday.
+Maintenance hemodialysis three times weekly, chronic dialysis patient.
+Presented with fever and hypotension. AKI on CKD suspected.
+
+[LAB] 2026-02-10 16:30:00
+Creatinine: 6.8 mg/dL (baseline 5.2 — chronic)
+BUN: 92 mg/dL
+
+[NURSING_NOTE] 2026-02-11 08:00:00
+Patient on maintenance hemodialysis MWF schedule.
+Chronic hemodialysis via AV fistula left arm.
+Long-term renal replacement therapy, ESRD requiring dialysis.
