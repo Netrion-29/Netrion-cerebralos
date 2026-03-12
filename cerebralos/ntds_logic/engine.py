@@ -440,12 +440,15 @@ def eval_lda_present_at(gate: Dict[str, Any], patient: PatientFacts, contract: D
 
 
 def eval_lda_overlap(gate: Dict[str, Any], patient: PatientFacts, contract: Dict[str, Any]) -> GateResult:
-    """Evaluate whether a device episode overlaps with another gate's window.
+    """Evaluate whether a device episode overlaps with a reference window.
 
     Gate parameters:
         device_type: canonical device type
-        overlap_gate: gate_id of the gate to check overlap against
-        window_days: days of overlap required
+        reference: "event_date" — uses patient.facts["event_date"] as the
+            centre, extending ±window_days.  Or "admission" — uses
+            arrival_time as window start.
+        window_days: days of overlap required (default 0 = any overlap)
+        min_confidence: minimum source_confidence tier
     """
     gate_id = str(gate.get("gate_id", "lda_overlap"))
 
@@ -453,10 +456,63 @@ def eval_lda_overlap(gate: Dict[str, Any], patient: PatientFacts, contract: Dict
         return GateResult(gate=gate_id, passed=False,
                           reason="LDA gates disabled (ENABLE_LDA_GATES=False).", evidence=[])
 
-    # Overlap evaluation requires temporal reasoning across gates —
-    # stub returns False until cross-gate timestamp correlation is implemented.
+    device_type = str(gate.get("device_type", "")).upper()
+    min_confidence = str(gate.get("min_confidence", "TEXT_APPROXIMATE")).upper()
+    window_days = int(gate.get("window_days", 0))
+    reference = str(gate.get("reference", "event_date")).lower()
+
+    # ── Determine reference window ──────────────────────────────────
+    facts = patient.facts or {}
+    ref_ts_str: Optional[str] = None
+    if reference == "event_date":
+        ref_ts_str = str(facts.get("event_date") or facts.get("arrival_time") or "")
+    elif reference == "admission":
+        ref_ts_str = str(facts.get("arrival_time") or "")
+    else:
+        ref_ts_str = str(facts.get(reference) or "")
+
+    ref_dt = parse_ts(ref_ts_str) if ref_ts_str else None
+    if ref_dt is None:
+        return GateResult(gate=gate_id, passed=False,
+                          reason=f"No reference timestamp for overlap check (reference={reference}).",
+                          evidence=[])
+
+    from datetime import timedelta
+    window_start = ref_dt - timedelta(days=window_days) if window_days else ref_dt
+    window_end = ref_dt + timedelta(days=window_days) if window_days else ref_dt
+
+    # ── Check episodes for overlap ──────────────────────────────────
+    episodes = _get_lda_episodes(patient)
+    for ep in episodes:
+        if not isinstance(ep, dict):
+            continue
+        if str(ep.get("device_type", "")).upper() != device_type:
+            continue
+        conf = str(ep.get("source_confidence", "TEXT_APPROXIMATE")).upper()
+        if not _confidence_meets_min(conf, min_confidence):
+            continue
+
+        ep_start = parse_ts(ep.get("start_ts"))
+        ep_stop = parse_ts(ep.get("stop_ts"))
+
+        # If episode has no timestamps at all, skip it for overlap
+        if ep_start is None and ep_stop is None:
+            continue
+
+        # Build effective episode interval
+        # If only start_ts: treat device as still active (open-ended)
+        # If only stop_ts: treat device as started at beginning of time
+        effective_start = ep_start if ep_start else window_start
+        effective_stop = ep_stop if ep_stop else window_end
+
+        # Check interval overlap: [effective_start, effective_stop] ∩ [window_start, window_end]
+        if effective_start <= window_end and effective_stop >= window_start:
+            return GateResult(gate=gate_id, passed=True,
+                              reason=f"LDA {device_type} episode overlaps reference window.",
+                              evidence=[])
+
     return GateResult(gate=gate_id, passed=False,
-                      reason="LDA overlap gate not yet fully implemented.",
+                      reason=f"No {device_type} episode overlaps the reference window.",
                       evidence=[])
 
 
