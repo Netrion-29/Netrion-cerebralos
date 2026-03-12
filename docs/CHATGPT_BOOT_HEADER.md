@@ -68,7 +68,7 @@
 
 > **Canonical long-form operating contract** lives in:
 > - `docs/roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md` §5 (Persistent Codex Operating Contract)
-> - `docs/DAILY_STARTUP.md` §14 (New-Chat Master Prompt)
+> - `docs/DAILY_STARTUP.md` §13 (New-Chat Master Prompt)
 >
 > This boot header is a **quick starter** — refer to those sections for
 > the full findings-first response format, lean/deep audit triggers,

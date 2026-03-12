@@ -353,7 +353,7 @@ fix track, and explain why.
 
 ---
 
-## 14) New-Chat Master Prompt (Persistent)
+## 13) New-Chat Master Prompt (Persistent)
 
 Paste the block below as the **first message** in any fresh Codex / ChatGPT
 chat to activate full roadmap-first, findings-first mode. This is the
@@ -377,8 +377,8 @@ ROLES:
 NON-NEGOTIABLES:
 - Deterministic/fail-closed only. No LLM/ML/clinical inference.
 - No silent schema drift. Update docs + validators + consumers together.
-- Protected engines: do NOT modify ntds_logic/engine.py or
-  protocol_engine/engine.py unless explicitly instructed.
+- Protected engines: do NOT modify cerebralos/ntds_logic/engine.py or
+  cerebralos/protocol_engine/engine.py unless explicitly instructed.
 - One PR = one goal. No scope creep.
 - raw_line_id required on all stored evidence.
 
@@ -402,7 +402,7 @@ COMPLETION GATE: ./scripts/gate_pr.sh must exit 0 before declaring done.
 
 ---
 
-## 15) Analysis-Only Intake (Build Plan Required)
+## 14) Analysis-Only Intake (Build Plan Required)
 
 When Terminal-Claude runs analysis-only passes (no edits), Codex must:
 
