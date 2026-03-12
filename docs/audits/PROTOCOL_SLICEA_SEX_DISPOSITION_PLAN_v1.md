@@ -57,7 +57,7 @@ Every raw file has at least one deterministic sex/gender marker.
 | 12 | `Mary King.txt:3` | `60 year old female` |
 | 13 | `Anna_Dennis.txt:23` | `Anna Dennis is a 65 y.o. female` |
 | 14 | `Anna_Dennis.txt:4169` | `Dennis, Anna       Legal Sex` (next line: `Female`) |
-| 15 | `William Simmons.txt` (via HPI) | implicit from HPI — structured header absent |
+| 15 | `William Simmons.txt:43` | `William H Simmons is a 86 y.o. male with PMH of Afib ...` |
 | 16 | `Timothy_Cowan.txt:16` | `60 yo male with unknown PMH` |
 | 17 | `Timothy_Nachtwey.txt:20` | `56-year-old male with PMH hemorrhagic stroke` |
 | 18 | `Ronald Bittner.txt:36` | `Ronald Bittner is a 72 yo male with a PMH` |
@@ -160,10 +160,11 @@ File: `cerebralos/ingest/parse_patient_txt.py` (line 748–753)
 
 ```python
 # Line 2: age/sex  ("67 year old male")
-m = re.match(r"(\d+)\s+year\s+old\s+(\w+)", lines[1].strip(), re.IGNORECASE)
-if m:
-    header["AGE"] = m.group(1)
-    header["SEX"] = m.group(2).capitalize()
+if len(lines) >= 2:
+    m = re.match(r"(\d+)\s+year\s+old\s+(\w+)", lines[1].strip(), re.IGNORECASE)
+    if m:
+        header["AGE"] = m.group(1)
+        header["SEX"] = m.group(2).capitalize()
 ```
 
 **Current state:** Only matches line 2 of the file. Works for ~24/39 patients whose line 2 is `"NN year old male/female"`. Fails for ~15 patients whose line 2 is `ARRIVAL_TIME:`, patient name, or ADT data — these patients have sex data in HPI or structured `Legal Sex` blocks but it is not extracted.
