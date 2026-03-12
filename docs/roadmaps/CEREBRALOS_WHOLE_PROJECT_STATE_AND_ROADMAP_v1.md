@@ -2,8 +2,8 @@
 
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
-| Date        | 2026-03-11                                               |
-| Baseline    | `b3757cc` (main, after PR #188)                          |
+| Date        | 2026-03-12                                               |
+| Baseline    | `4774b74` (main, after PR #207)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -78,12 +78,31 @@
 | #186 | `ee214d9` | docs(design): source alignment + geriatric delirium nursing shift design v1 |
 | #187 | `8030ee6` | feat(ntds): Tier 1 source alignment + CAM/bCAM delirium patterns |
 | #188 | `b3757cc` | feat(E05): CAUTI Tier-1 spec fidelity — CDC SUTI 1a gates |
+| #189 | `7f004b4` | chore(baselines): refresh NTDS hashes + distribution post-CAUTI v2 |
+| #190 | `8a51e35` | feat(E05): CAUTI follow-up — culture/symptom pattern coverage hardening |
+| #191 | `d9aec71` | docs(design): CAUTI engine design — LDA duration gate + alternative-source exclusion |
+| #192 | `af4fd74` | feat(E01): AKI Tier-2 spec fidelity — KDIGO Stage 3 gates + chronic-RRT exclusion |
+| #193 | `2cea25c` | chore: ignore tmp scratch files, protocol PDFs, and handoff artifacts |
+| #194 | `adb1eb2` | feat(E06): CLABSI spec fidelity — multi-gate NHSN criteria |
+| #195 | `385d896` | fix(E06): enforce >2d central line duration; doc formatting |
+| #196 | `c3efd5a` | fix(E06): require central-line mention in duration patterns |
+| #197 | `a34a63d` | docs: add raw-.txt and post-handoff workflow to build plan |
+| #198 | `e52dc7a` | test(E06): punctuation variant tests for CLABSI duration patterns |
+| #199 | `0de081e` | docs: add protocol data element master list and backlog hook |
+| #200 | `d0b7f5c` | docs: add protocol data coverage scaffold |
+| #201 | `7c8d37f` | fix(E05): require urinary catheter mention in CAUTI duration patterns |
+| #202 | `b75bd0d` | docs: LDA engine design for device duration (Lines/Drains/Airways) |
+| #203 | `27da1f2` | feat(engine): add LDA device duration gates (Foley/central line/vent) |
+| #205 | `1e6777b` | docs: fill protocol data coverage status (doc-only) |
+| #206 | `5659d46` | feat(engine): add text-derived LDA episodes from flowsheet day counters |
+| #207 | `4774b74` | feat(ntds): infer LDA start/stop episodes and calendar-day durations |
 
 ### Closed PRs
 
 | PR | Notes |
 |----|-------|
 | #142 | Closed as stale (N4-P2 source detection); superseded by D6 parser hardening (P1–P7), branch conflicting |
+| #204 | Closed — superseded by PR #205 (protocol data coverage fill, doc-only) |
 
 ### Open PRs
 
@@ -93,11 +112,11 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 3017 passed (pytest) |
+| Total tests         | 3202 passed (pytest) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 47               |
 | Fixture runner      | **56 passed, 0 xfailed** |
-| Precision tests     | 8 suites (E01, E05, E06, E10, E15, E16, E18, E19) |
+| Precision tests     | 10 suites (E01×2, E05, E06, E10, E15, E16, E18, E19, E21) |
 | Cohort invariant    | 39 canonical = 39 adjusted |
 | NTDS distribution   | 21 events baselined (YES/NO/UTD/EXCLUDED per event) |
 | Canonical patients  | 39               |
@@ -108,7 +127,7 @@ None.
 
 | Module                              | Lines | Protected | Notes                    |
 |-------------------------------------|-------|-----------|--------------------------|
-| `cerebralos/ntds_logic/engine.py`   | 645   | Yes       | proximity_mode audited on all 21 events; no changes in N3 |
+| `cerebralos/ntds_logic/engine.py`   | 870   | Yes       | proximity_mode audited on all 21 events; LDA gate types added (PR #203/#207); `ENABLE_LDA_GATES` default False |
 | `cerebralos/protocol_engine/engine.py` | —  | Yes       | Not modified recently    |
 | Mapper: `epic_deaconess_mapper_v1.json` | — | No        | Patterns for all 21 events + 7 negation noise buckets (N3 + CLABSI) |
 
@@ -534,7 +553,7 @@ and added two block filters:
 | 13 | **CAUTI engine design (LDA duration gate + alt-source exclusion)** | Design doc `docs/audits/CAUTI_ENGINE_DESIGN_v1.md` | **High** | Medium–Large | ✅ DESIGN COMPLETE — requires engine-change authorization for implementation. LDA SourceType + catheter duration gate + alternative-source exclusion. See design doc for phased migration plan. |
 | ~~14~~ | ~~**E06 CLABSI spec fidelity (NHSN CLABSI)**~~ | ~~`rules/ntds/logic/2026/06_clabsi.json`, `rules/mappers/epic_deaconess_mapper_v1.json`, tests~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** — 5 required gates (clabsi_dx, clabsi_central_line_gt2d, clabsi_lab_positive, clabsi_symptoms, clabsi_after_arrival) + 2 exclusions (POA, chronic line); 7 mapper keys (clabsi_negation_noise, clabsi_central_line_in_place, clabsi_blood_culture_positive, clabsi_symptoms, clabsi_onset, clabsi_chronic_line + refined clabsi_dx) with ~56 patterns total; clabsi_dx noise filter; 76 precision tests + 3 new fixtures (chronic-line-excluded, no-culture-no, noncentral-line-no); baseline refreshed: E06 stays NO=39, 0 NTDS outcome deltas |
 | 15 | **Protocol Data Coverage Mapping** | `docs/audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md`, `docs/audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.csv` | Medium | Medium | NOT STARTED — master list of all protocol data elements committed (20 categories, ~180 elements across 51 protocol PDFs); next step: map each element to current CerebralOS extraction coverage (extracted / not extracted / partial) |
-| 16 | **LDA engine support (Lines, Drains, Airways)** | `cerebralos/ntds_logic/engine.py`, `cerebralos/features/build_patientfacts_from_txt.py`, `rules/ntds/logic/2026/05_cauti.json`, `06_clabsi.json`, `21_vap.json` | **High** | Large | ✅ IMPLEMENTED (v1+text) — PRs `tier2/lda-engine-impl-v1` (merged), `tier2/lda-text-episodes-v1`. SourceType `LDA` added to model; `LDAEpisode` dataclass; `build_lda_episodes()` builder (structured JSON + text-derived flowsheet day-counter extraction); 4 gate types in engine with `ENABLE_LDA_GATES` feature flag (default False); optional LDA gates wired into E05/E06/E21 rules (`required: false`); contract updated; 75 dedicated tests. Next: enable flag per-event after cohort validation. |
+| 16 | **LDA engine support (Lines, Drains, Airways)** | `cerebralos/ntds_logic/engine.py`, `cerebralos/ntds_logic/build_patientfacts_from_txt.py`, `cerebralos/ntds_logic/model.py` | **High** | Large | ✅ IMPLEMENTED (v1+text+startstop) — PRs #203, #206, #207 (all merged). SourceType `LDA` added to model; `LDAEpisode` dataclass; `build_lda_episodes()` builder (structured JSON + text-derived flowsheet day-counter + insertion/removal start/stop inference); 4 gate types in engine incl. `eval_lda_overlap` (interval overlap); `TEXT_DERIVED_STARTSTOP` confidence level; merge precedence: structured > startstop > day-counter; `ENABLE_LDA_GATES` feature flag (default False); optional LDA gates wired into E05/E06/E21 rules (`required: false`); 118 dedicated tests. Next: enable flag per-event after cohort validation. |
 
 ---
 

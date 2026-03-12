@@ -52,6 +52,14 @@
 > ./scripts/gate_pr.sh
 > ```
 >
+> If a PR exists, also collect review comments:
+>
+> ```bash
+> gh api repos/Netrion-29/Netrion-cerebralos/pulls/<PR_NUMBER>/comments --paginate
+> gh api repos/Netrion-29/Netrion-cerebralos/issues/<PR_NUMBER>/comments --paginate
+> gh api repos/Netrion-29/Netrion-cerebralos/pulls/<PR_NUMBER>/reviews --paginate
+> ```
+>
 > Always include this exact `Return:` block at the end of the prompt:
 >
 > ```text
@@ -60,7 +68,9 @@
 > 2) Terminal output tail (include baseline drift check block + final gate line)
 > 3) git diff --name-only
 > 4) git status --short
-> 5) Any blockers/open questions
+> 5) PR metadata (branch, HEAD commit hash, PR URL/number or "no PR")
+> 6) Copilot/GitHub review comments summary (unresolved only; path:line, author, must-fix-now vs defer)
+> 7) Any blockers/open questions
 > ```
 
 ---
@@ -122,8 +132,19 @@ back to Codex:
 <paste last ~30 lines of gate output, including baseline drift check
  and "Gate complete.">
 
+## PR review comments (required if PR exists)
+- <unresolved comment 1: file:line, author, text>
+- <classification: must-fix-now or defer>
+
+## PR metadata
+- Branch: <branch>
+- HEAD: <commit hash>
+- PR: <url/number or "no PR">
+
 ## Request
-Please audit the changes and provide commit + push commands.
+Please perform Codex post-handoff analysis (spec alignment, validation
+summary, Copilot comment triage, risks/gaps, next actions), then provide
+commit + push commands.
 ```
 
 ---
@@ -148,7 +169,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 
 - **[Whole-Project State and Roadmap v1](roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md)** ← primary context-recovery doc
 - [Trauma Build-Forward Plan v1](roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md) (historical)
-- [LDA Engine Design v1](audits/LDA_ENGINE_DESIGN_v1.md) — ✅ IMPLEMENTED (v1+text) Lines/Drains/Airways device-duration engine design; text-derived flowsheet day-counter extraction; `ENABLE_LDA_GATES` feature flag (default False); gates wired into E05/E06/E21 (`required: false`); 75 dedicated tests (Roadmap §3 item 16)
+- [LDA Engine Design v1](audits/LDA_ENGINE_DESIGN_v1.md) — ✅ IMPLEMENTED (v1+text+startstop) Lines/Drains/Airways device-duration engine design; text-derived flowsheet day-counter extraction; insertion/removal start/stop inference (`TEXT_DERIVED_STARTSTOP`); `eval_lda_overlap` interval overlap gate; `ENABLE_LDA_GATES` feature flag (default False); gates wired into E05/E06/E21 (`required: false`); 118 dedicated tests (PRs #203, #206, #207)
 - [CAUTI Engine Design v1](audits/CAUTI_ENGINE_DESIGN_v1.md) — CAUTI-specific LDA duration gate + alternative-source exclusion design (predecessor; CAUTI clinical requirements still authoritative; engine approval needed)
 - [Protocol Data Element Master v1](audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md) — comprehensive inventory of all data elements across 51 protocol PDFs; coverage mapping is a backlog item (NOT STARTED, see Roadmap §3 item 15)
 
@@ -189,8 +210,12 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - Tier 1 source alignment + CAM/bCAM patterns: ✅ COMPLETE — CONSULT_NOTE added to 4 gates (aki_dx, mi_dx, sepsis_dx, stroke_dx), NURSING_NOTE added to 3 gates (cauti_dx, clabsi_dx, sepsis_dx), 4 CAM-ICU/bCAM positive patterns to delirium_dx, 4 negative patterns to delirium_negation_noise, 3 fixtures added, 0 NTDS outcome deltas
 > - E05 CAUTI Tier-1 spec fidelity (CDC SUTI 1a): ✅ COMPLETE — 5 required gates (cauti_dx, cauti_catheter_gt2d, cauti_symptoms, cauti_culture, cauti_after_arrival) + 2 exclusions (POA, chronic catheter); 6 new mapper keys (52 patterns total); cauti_dx expanded with UTI standalone + negation noise filter; 52 precision tests + 3 fixtures (YES, nursing-YES, no-catheter-NO); baseline refreshed: E05 NO=39→NO=35 EXCLUDED=4
 > - Baseline refresh post-CAUTI v2: ✅ COMPLETE — 39-patient cohort rerun, hash + distribution baselines updated; E05 delta: NO=39→NO=35 EXCLUDED=4 (4 patients excluded by catheter/chronic gates); all other 20 events unchanged; 2313 tests passed, cohort invariant PASS, 0 drift
-> - E05 CAUTI follow-up (culture/symptom variants): 🔵 OPEN (PR #190) — symptoms 14→15 (adds altered mental status, temp regex 38–42°C); culture patterns 11→14 (1e5 CFU, spaced caret, ">100,000" forms); +13 precision tests; 0 NTDS deltas
+> - E05 CAUTI follow-up (culture/symptom variants): ✅ COMPLETE (PR #190) — symptoms 14→15 (adds altered mental status, temp regex 38–42°C); culture patterns 11→14 (1e5 CFU, spaced caret, ">100,000" forms); +13 precision tests; 0 NTDS deltas
 > - E01 AKI Tier-2 spec fidelity (KDIGO Stage 3): ✅ COMPLETE — 3 gates (aki_dx tightened + ATN, aki_stage3 KDIGO OR criteria, aki_after_arrival enhanced onset) + 2 exclusions (POA, chronic RRT); 3 new mapper keys (aki_stage3_lab, aki_new_dialysis, aki_chronic_rrt); aki_onset 6→11 patterns; NURSING_NOTE + PROGRESS_NOTE added to all gates; 68 precision tests + 4 fixtures; 0 NTDS outcome deltas across 39 patients
+> - E06 CLABSI spec fidelity (NHSN CLABSI): ✅ COMPLETE (PR #194) — 5 required gates + 2 exclusions, 7 mapper keys (~56 patterns), 76 precision tests + 3 new fixtures, 0 NTDS outcome deltas
+> - E05/E06 duration-scope tightening: ✅ COMPLETE (PRs #195, #196, #198, #201) — duration patterns require explicit device mention; punctuation variant tests added
+> - LDA engine design: ✅ COMPLETE (PR #202) — Lines/Drains/Airways device-duration engine design doc
+> - LDA engine implementation (v1+text+startstop): ✅ COMPLETE (PRs #203, #206, #207) — LDAEpisode model, build_lda_episodes() builder (structured JSON + text day-counter + insertion/removal start/stop inference), 4 gate types incl. eval_lda_overlap, TEXT_DERIVED_STARTSTOP confidence level, ENABLE_LDA_GATES=False, 118 dedicated tests
 > - Open PRs: none
 > - .gitignore cleanup: ✅ COMPLETE — `_tmp_*`, `rules/deaconess/*.pdf`, `docs/handoffs/`, audit log added to `.gitignore`
 > - E06 CLABSI spec fidelity: ✅ COMPLETE — NHSN CLABSI: 5 required gates + 2 exclusions, 7 mapper keys (~56 patterns), 76 precision tests + 3 new fixtures, 0 NTDS outcome deltas
@@ -220,8 +245,9 @@ After `./scripts/dev_start.sh` completes, paste this block into Codex:
 > 1) Verify changes obey AGENTS.md constraints.
 > 2) Confirm no renderer/NTDS/protocol drift.
 > 3) Confirm baseline gate behavior matches spec.
-> 4) List any risks or edge cases.
-> 5) If clean, give commit message and exact git commands.
+> 4) Review unresolved Copilot/GitHub comments and triage each as must-fix-now vs defer.
+> 5) Perform post-handoff analysis: spec alignment, validation summary, gaps/risks, next actions.
+> 6) If clean, give commit message and exact git commands.
 
 If `codex_handoff.md` contains placeholders, treat as FAIL and re-run the gate.
 
@@ -238,7 +264,9 @@ Return:
 2) Terminal output tail (include baseline drift check block + final gate line)
 3) git diff --name-only
 4) git status --short
-5) Any blockers/open questions
+5) PR metadata (branch, HEAD commit hash, PR URL/number or "no PR")
+6) Copilot/GitHub review comments summary (unresolved only; path:line, author, must-fix-now vs defer)
+7) Any blockers/open questions
 ```
 
 ---
