@@ -88,12 +88,13 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 2648+ passed (pytest) |
+| Total tests         | 2787 passed (pytest) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 44               |
 | Fixture runner      | **44 passed, 0 xfailed** |
 | Precision tests     | 6 suites (E01, E10, E15, E16, E18, E19) |
 | Cohort invariant    | 39 canonical = 39 adjusted |
+| NTDS distribution   | 21 events baselined (YES/NO/UTD/EXCLUDED per event) |
 | Canonical patients  | 39               |
 | Known flaky         | `test_ntds_runtime_wire_e2e::test_ntds_on_exit_zero` (intermittent, passes in isolation) |
 
@@ -183,7 +184,7 @@ With NTDS coverage at 21/21, the following items define the next phase:
 | Enforce canonical-vs-output cohort invariant in gate | `scripts/gate_pr.sh` | ✅ PR #129 |
 | Exclude `_`-prefixed admin dirs from invariant audit | `scripts/audit_cohort_counts.py` | ✅ PR #130 |
 | Embed cohort invariant summary in codex handoff artifact | `scripts/gate_pr.sh` | ✅ PR #131 |
-| Automate NTDS outcome distribution check per event | CI/gate script | Planned |
+| Automate NTDS outcome distribution check per event | `scripts/check_ntds_distribution.py`, `scripts/baselines/ntds_distribution_v1.json`, `scripts/gate_pr.sh` | ✅ COMPLETE |
 | ~~Baseline hash coverage for NTDS event outputs~~ | ~~`scripts/baselines/`~~ | **✅ COMPLETE** — 39-patient composite hash baseline in `ntds_hashes_v1.json`, standalone `scripts/check_ntds_hashes.py` checker, wired into `gate_pr.sh` NTDS drift check |
 
 #### N3 — Precision Tuning / False-Positive Audits ✅ COMPLETE (PRs #132–#138)
@@ -519,7 +520,7 @@ and added two block filters:
 | 7 | Geriatric delirium nursing shift assessments | E09: ensure shift-based nursing delirium assessments (06:30–19:00, 18:30–07:00) for geriatric trauma; patterns + rule design | High | Medium | Some patients lack late-entered nursing assessments — design doc first |
 | 8 | Ronald_Bittner targeted audit follow-up | Patient-level trace check (Pressure Ulcer, VAP vent gate) to confirm no missing evidence; doc-only unless gap found | Low | Small | Run trace, document; propose changes separately if needed |
 | ~~9~~ | ~~**5 AKI UTD residuals**~~ | ~~`rules/ntds/logic/2026/01_aki.json`, evidence tuning~~ | ~~Medium~~ | ~~Hard~~ | **✅ COMPLETE (v2)** — 3 `aki_negation_noise` patterns (PMH date format, chemo history, parenthetical format), 1 `aki_onset` pattern (clinical trajectory), arrival-time extraction added to runner; E01 UTD 7→3; 4 outcome deltas: Barbara_Burgdorf UTD→NO, Gary_Linder UTD→NO, William_Simmons UTD→NO, Floy_Geary UTD→YES; 3 residual UTDs (Carlton_Van_Ness, David_Gross, Ronald_Bittner) — genuine clinical ambiguity or source-detection limitation |
-| 10 | Automate per-event NTDS outcome distribution in gate/CI | CI/gate script | Low | Small | Add distribution summary to `gate_pr.sh` output |
+| ~~10~~ | ~~**Automate per-event NTDS outcome distribution in gate/CI**~~ | ~~CI/gate script~~ | ~~Low~~ | ~~Small~~ | **✅ COMPLETE** — `scripts/check_ntds_distribution.py` + baseline `scripts/baselines/ntds_distribution_v1.json` (21 events × 39 patients); per-event YES/NO/UTD/EXCLUDED counts computed from `outputs/ntds/`, compared against stored baseline; wired into `gate_pr.sh` between NTDS hash check and pytest; `--update` and `--summary` modes; 0 NTDS outcome deltas |
 | 11 | PMH-aware gate handling | Engine proposal (PROTECTED `cerebralos/ntds_logic/engine.py`) | Medium | Large | Requires engine modification + design doc + explicit authorization; protocol engine has reference impl |
 
 ---
