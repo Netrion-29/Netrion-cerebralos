@@ -81,7 +81,7 @@ class LDAEpisode:
         start_ts: ISO timestamp of device placement (may be None)
         stop_ts: ISO timestamp of device removal (may be None)
         episode_days: Computed duration in calendar days (may be None)
-        source_confidence: TEXT_APPROXIMATE | TEXT_DERIVED | STRUCTURED
+        source_confidence: TEXT_APPROXIMATE | TEXT_DERIVED | TEXT_DERIVED_STARTSTOP | STRUCTURED
         location: Optional anatomical location
         inserted_by: Optional role that inserted the device
         notes: Optional free-text notes

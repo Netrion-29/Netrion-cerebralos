@@ -342,6 +342,35 @@ _LDA_STARTSTOP_PATTERNS: List[tuple] = [
     (re.compile(r"\bextubat(?:ed|ion)\b", re.IGNORECASE), "ENDOTRACHEAL_TUBE", "remove"),
     (re.compile(r"\bvent(?:ilat(?:or|ion))?\s+(?:discontinued|weaned\s+off|removed)\b", re.IGNORECASE), "MECHANICAL_VENTILATOR", "remove"),
     (re.compile(r"\btrach(?:eostomy)?\s+placed\b", re.IGNORECASE), "ENDOTRACHEAL_TUBE", "remove"),  # trach placement ends ETT episode
+
+    # ── CHEST_TUBE insertion ──
+    # Raw evidence: "right chest tube placed" (Ronald_Bittner:4675),
+    # "post chest tube placement" (Ronald_Bittner:5215),
+    # "pigtail catheter placement" (Ronald_Bittner:41210)
+    (re.compile(r"\bchest\s+tube\b.*?\b(?:placed|inserted|in\s+place|placement)\b", re.IGNORECASE), "CHEST_TUBE", "insert"),
+    (re.compile(r"\bthoracostomy\b.*?\b(?:placed|inserted|performed|tube)\b", re.IGNORECASE), "CHEST_TUBE", "insert"),
+    (re.compile(r"\bpigtail\s+(?:catheter|drain)\b.*?\b(?:placed|inserted|placement)\b", re.IGNORECASE), "CHEST_TUBE", "insert"),
+    # ── CHEST_TUBE removal ──
+    # Raw evidence: "Pulled chest tube" (Ronald_Bittner:3784),
+    # "S/p chest tube removal" (Ronald_Bittner:5185),
+    # "Chest tube on the right been removed" (Ronald_Bittner:5185)
+    (re.compile(r"\bchest\s+tube\b.*?\b(?:removed|pulled|discontinued|d/?c['\u2019]?d|removal)\b", re.IGNORECASE), "CHEST_TUBE", "remove"),
+    (re.compile(r"\b(?:pulled|removed?)\b.*?\bchest\s+tube\b", re.IGNORECASE), "CHEST_TUBE", "remove"),
+
+    # ── DRAIN_SURGICAL insertion ──
+    # Raw evidence: "[REMOVED] Surgical Drain 1 Anterior;Left;Superior Other (Comment) Hemovac"
+    # (Timothy_Cowan:20599), "Drain Tube Type: Hemovac" (Timothy_Cowan:20605)
+    (re.compile(r"\b(?:JP|Jackson[- ]Pratt)\s*drain\b.*?\b(?:placed|inserted|in\s+place)\b", re.IGNORECASE), "DRAIN_SURGICAL", "insert"),
+    (re.compile(r"\bhemovac\b.*?\b(?:placed|inserted|in\s+place)\b", re.IGNORECASE), "DRAIN_SURGICAL", "insert"),
+    (re.compile(r"\bblake\s+drain\b.*?\b(?:placed|inserted|in\s+place)\b", re.IGNORECASE), "DRAIN_SURGICAL", "insert"),
+    (re.compile(r"\bsurgical\s+drain\b.*?\b(?:placed|inserted|in\s+place)\b", re.IGNORECASE), "DRAIN_SURGICAL", "insert"),
+    (re.compile(r"\[REMOVED\]\s+Surgical\s+Drain\b", re.IGNORECASE), "DRAIN_SURGICAL", "remove"),
+    # ── DRAIN_SURGICAL removal ──
+    # Raw evidence: "[REMOVED] Surgical Drain 1" (Timothy_Cowan:20599/28511)
+    (re.compile(r"\b(?:JP|Jackson[- ]Pratt)\s*drain\b.*?\b(?:removed|pulled|discontinued|d/?c['\u2019]?d)\b", re.IGNORECASE), "DRAIN_SURGICAL", "remove"),
+    (re.compile(r"\bhemovac\b.*?\b(?:removed|pulled|discontinued)\b", re.IGNORECASE), "DRAIN_SURGICAL", "remove"),
+    (re.compile(r"\bblake\s+drain\b.*?\b(?:removed|pulled|discontinued)\b", re.IGNORECASE), "DRAIN_SURGICAL", "remove"),
+    (re.compile(r"\bsurgical\s+drain\b.*?\b(?:removed|pulled|discontinued)\b", re.IGNORECASE), "DRAIN_SURGICAL", "remove"),
 ]
 
 
@@ -448,6 +477,8 @@ _LDA_TEXT_PATTERNS: List[tuple] = [
     (re.compile(r"\b(?:cvc)\s+day[:\s]+(\d+)", re.IGNORECASE), "CENTRAL_LINE"),
     # "Ventilator day 3", "Vent day: 4"
     (re.compile(r"\b(?:vent(?:ilator)?)\s+day[:\s]+(\d+)", re.IGNORECASE), "MECHANICAL_VENTILATOR"),
+    # "Chest tube day 3", "Chest tube day: 4"
+    (re.compile(r"\b(?:chest\s+tube)\s+day[:\s]+(\d+)", re.IGNORECASE), "CHEST_TUBE"),
 ]
 
 
@@ -585,6 +616,11 @@ def build_lda_episodes(
         e_tier = _TIER_ORDER.get(str(existing.get("source_confidence", "")), -1)
         c_tier = _TIER_ORDER.get(str(candidate.get("source_confidence", "")), -1)
         if c_tier > e_tier:
+            # Higher tier wins.  If it lacks episode_days, backfill from
+            # the lower-tier episode when both share the same device_type.
+            if candidate.get("episode_days") is None and existing.get("episode_days") is not None:
+                candidate = dict(candidate)  # avoid mutating the original
+                candidate["episode_days"] = existing["episode_days"]
             return candidate
         if c_tier == e_tier:
             e_days = existing.get("episode_days") or 0
