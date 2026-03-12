@@ -15,4 +15,13 @@ Run:
 ./scripts/gate_pr.sh
 and paste full output.
 
+## Mandatory handoff fields
+Every Claude→Codex handoff must include:
+- Branch name and HEAD commit hash
+- PR URL/number (or explicit "no PR")
+- `git diff --name-only`
+- `git status --short`
+- Unresolved Copilot/GitHub review comments summary (path:line, author, must-fix-now vs defer)
+- Blockers/open questions
+
 End.
