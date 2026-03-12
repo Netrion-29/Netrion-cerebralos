@@ -1,0 +1,9 @@
+PATIENT_ID: TEST_CAUTI_NURSING_001
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[NURSING_NOTE] 2026-01-18 07:00:00
+Foley catheter in place since admission day 1.
+Patient reports dysuria and suprapubic tenderness.
+Urine cloudy with foul odor noted during catheter care.
+Catheter-associated urinary tract infection suspected.
+Temperature 38.9 C. Notified physician.

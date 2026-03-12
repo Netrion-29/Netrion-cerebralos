@@ -14,7 +14,7 @@
       "min_count": 1,
       "query_keys": ["clabsi_dx"],
       "exclude_noise_keys": [],
-      "allowed_sources": ["LAB", "PHYSICIAN_NOTE", "DISCHARGE"],
+      "allowed_sources": ["LAB", "PHYSICIAN_NOTE", "DISCHARGE", "NURSING_NOTE"],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of CLABSI."
     }
