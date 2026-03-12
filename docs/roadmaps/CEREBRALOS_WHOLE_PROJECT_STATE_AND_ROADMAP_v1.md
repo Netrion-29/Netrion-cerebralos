@@ -3,7 +3,7 @@
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
 | Date        | 2026-03-12                                               |
-| Baseline    | `4774b74` (main, after PR #207)                          |
+| Baseline    | `95383e8` (main, after PR #217)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -96,6 +96,16 @@
 | #205 | `1e6777b` | docs: fill protocol data coverage status (doc-only) |
 | #206 | `5659d46` | feat(engine): add text-derived LDA episodes from flowsheet day counters |
 | #207 | `4774b74` | feat(ntds): infer LDA start/stop episodes and calendar-day durations |
+| #208 | `b3f3e2f` | docs: sync roadmap and startup docs for merged PR #207 (LDA start/stop inference) |
+| #209 | `cf23cad` | docs: revert PR208 template additions and dedupe E06 status |
+| #210 | `cf23cad` | docs: tighten DAILY_STARTUP scope after PR #208 merge        |
+| #211 | `eb53813` | docs: add lean review mode and record completed branch cleanup |
+| #212 | `5180887` | docs: align handoff template reminders in boot header and claude rulebook |
+| #213 | `6f62b37` | chore: add pre-commit config for local guardrails            |
+| #214 | `8224bb1` | fix(lda): correctness hardening — overlap semantics, merge backfill, chest tube + drain patterns |
+| #215 | `64781e5` | docs(roadmap): add LDA intake loop and post-PR214 intake ledger |
+| #216 | `156c86f` | fix(lda): add [REMOVED] bracket patterns for Urethral Catheter and Non-Surgical Airway |
+| #217 | `156c86f` | docs(roadmap): add LDA intake loop and post-PR214 intake ledger (re-merge) |
 
 ### Closed PRs
 
@@ -112,7 +122,7 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 3202 passed (pytest) |
+| Total tests         | 3229 passed (pytest) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 47               |
 | Fixture runner      | **56 passed, 0 xfailed** |
@@ -548,12 +558,12 @@ and added two block filters:
 | ~~10~~ | ~~**Automate per-event NTDS outcome distribution in gate/CI**~~ | ~~CI/gate script~~ | ~~Low~~ | ~~Small~~ | **✅ COMPLETE** — `scripts/check_ntds_distribution.py` + baseline `scripts/baselines/ntds_distribution_v1.json` (21 events × 39 patients); per-event YES/NO/UTD/EXCLUDED counts computed from `outputs/ntds/`, compared against stored baseline; wired into `gate_pr.sh` between NTDS hash check and pytest; `--update` and `--summary` modes; 0 NTDS outcome deltas |
 | ~~11~~ | ~~**E05 CAUTI Tier-1 spec fidelity (CDC SUTI 1a)**~~ | ~~`rules/ntds/logic/2026/05_cauti.json`, `rules/mappers/epic_deaconess_mapper_v1.json`, tests~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** — 5 required gates (cauti_dx, cauti_catheter_gt2d, cauti_symptoms, cauti_culture, cauti_after_arrival) + 2 exclusions (POA, chronic catheter); 6 new mapper keys (cauti_negation_noise, cauti_catheter_in_place, cauti_symptoms, cauti_culture_positive, cauti_onset, cauti_chronic_catheter) with 52 patterns total; cauti_dx expanded (UTI standalone + noise filter); 52 precision tests + 3 fixtures (YES, nursing-YES, no-catheter-NO); baseline refreshed post-rerun: E05 NO=39→NO=35 EXCLUDED=4 (4 patients excluded by catheter/chronic gates) |
 | ~~11b~~ | ~~**Baseline refresh post-CAUTI v2**~~ | ~~`scripts/baselines/ntds_hashes_v1.json`, `scripts/baselines/ntds_distribution_v1.json`~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** — 39-patient cohort rerun, hash + distribution baselines updated; E05 distribution delta: NO=39→NO=35 EXCLUDED=4; all other events unchanged; 2313 tests passed, cohort invariant PASS, 0 drift |
-| 11c | **E05 CAUTI follow-up (culture/symptom variants)** | `rules/mappers/epic_deaconess_mapper_v1.json`, tests | High | Small | OPEN (PR #190) — symptoms 14→15 (adds altered mental status, temp regex 38–42°C); culture patterns 11→14 (1e5 CFU, spaced caret, “>100,000” forms); 13 new precision tests; 0 NTDS deltas |
+| ~~11c~~ | ~~**E05 CAUTI follow-up (culture/symptom variants)**~~ | ~~`rules/mappers/epic_deaconess_mapper_v1.json`, tests~~ | ~~High~~ | ~~Small~~ | **✅ COMPLETE** (PR #190) — symptoms 14→15 (adds altered mental status, temp regex 38–42°C); culture patterns 11→14 (1e5 CFU, spaced caret, ">100,000" forms); 13 new precision tests; 0 NTDS deltas |
 | 12 | PMH-aware gate handling | Engine proposal (PROTECTED `cerebralos/ntds_logic/engine.py`) | Medium | Large | Requires engine modification + design doc + explicit authorization; protocol engine has reference impl |
 | 13 | **CAUTI engine design (LDA duration gate + alt-source exclusion)** | Design doc `docs/audits/CAUTI_ENGINE_DESIGN_v1.md` | **High** | Medium–Large | ✅ DESIGN COMPLETE — requires engine-change authorization for implementation. LDA SourceType + catheter duration gate + alternative-source exclusion. See design doc for phased migration plan. |
 | ~~14~~ | ~~**E06 CLABSI spec fidelity (NHSN CLABSI)**~~ | ~~`rules/ntds/logic/2026/06_clabsi.json`, `rules/mappers/epic_deaconess_mapper_v1.json`, tests~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** — 5 required gates (clabsi_dx, clabsi_central_line_gt2d, clabsi_lab_positive, clabsi_symptoms, clabsi_after_arrival) + 2 exclusions (POA, chronic line); 7 mapper keys (clabsi_negation_noise, clabsi_central_line_in_place, clabsi_blood_culture_positive, clabsi_symptoms, clabsi_onset, clabsi_chronic_line + refined clabsi_dx) with ~56 patterns total; clabsi_dx noise filter; 76 precision tests + 3 new fixtures (chronic-line-excluded, no-culture-no, noncentral-line-no); baseline refreshed: E06 stays NO=39, 0 NTDS outcome deltas |
 | 15 | **Protocol Data Coverage Mapping** | `docs/audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md`, `docs/audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.csv` | Medium | Medium | NOT STARTED — master list of all protocol data elements committed (20 categories, ~180 elements across 51 protocol PDFs); next step: map each element to current CerebralOS extraction coverage (extracted / not extracted / partial) |
-| 16 | **LDA engine support (Lines, Drains, Airways)** | `cerebralos/ntds_logic/engine.py`, `cerebralos/ntds_logic/build_patientfacts_from_txt.py`, `cerebralos/ntds_logic/model.py` | **High** | Large | ✅ IMPLEMENTED (v1+text+startstop) — PRs #203, #206, #207 (all merged). SourceType `LDA` added to model; `LDAEpisode` dataclass; `build_lda_episodes()` builder (structured JSON + text-derived flowsheet day-counter + insertion/removal start/stop inference); 4 gate types in engine incl. `eval_lda_overlap` (interval overlap); `TEXT_DERIVED_STARTSTOP` confidence level; merge precedence: structured > startstop > day-counter; `ENABLE_LDA_GATES` feature flag (default False); optional LDA gates wired into E05/E06/E21 rules (`required: false`); 118 dedicated tests. Next: enable flag per-event after cohort validation. |
+| 16 | **LDA engine support (Lines, Drains, Airways)** | `cerebralos/ntds_logic/engine.py`, `cerebralos/ntds_logic/build_patientfacts_from_txt.py`, `cerebralos/ntds_logic/model.py` | **High** | Large | ✅ IMPLEMENTED (v1+text+startstop+correctness+bracket-removed) — PRs #203, #206, #207, #214, #216 (all merged). SourceType `LDA` added to model; `LDAEpisode` dataclass; `build_lda_episodes()` builder (structured JSON + text-derived flowsheet day-counter + insertion/removal start/stop inference); 4 gate types in engine incl. `eval_lda_overlap` (interval overlap, one-sided admission window — PR #214); `TEXT_DERIVED_STARTSTOP` confidence level; merge precedence: structured > startstop > day-counter (backfill episode_days — PR #214); `ENABLE_LDA_GATES` feature flag (default False); optional LDA gates wired into E05/E06/E21 rules (`required: false`); bracket `[REMOVED]` patterns for Urethral Catheter + Non-Surgical Airway ETT (PR #216); 145 dedicated tests. Next: enable flag per-event after cohort validation. |
 
 ##### LDA Analysis Intake Loop (Roadmap-First)
 
@@ -574,17 +584,19 @@ Accepted into merged PR #214:
 - CHEST_TUBE and DRAIN_SURGICAL text patterns expanded from cited raw lines.
 - `TEXT_DERIVED_STARTSTOP` doc/runtime schema sync completed.
 
-##### Item 16B — Post-PR #214 Raw-Scan Intake (2026-03-12)
+##### Item 16B — Post-PR #214 Raw-Scan Intake (2026-03-12) ✅ COMPLETE (PR #216)
 
 Source: Terminal-Claude analysis report over newer patient set (11 found, 2 missing: `Mark_King`, `Andrew_Paez`).
 
-`KEEP NOW` (next single-goal PR candidate):
-- Add bracketed remove pattern for urinary catheter:
-  - `"[REMOVED] Urethral Catheter ..."` -> `URINARY_CATHETER` remove.
-- Add bracketed remove pattern for ETT/airway:
-  - `"[REMOVED] Non-Surgical Airway ETT- Cuffed"` -> `ENDOTRACHEAL_TUBE` remove.
-- Add focused negatives in tests:
-  - `"[REMOVED] Peripheral IV"` must not match LDA start/stop extraction.
+`KEEP NOW` — **all implemented in PR #216** (merged):
+- ~~Add bracketed remove pattern for urinary catheter:~~
+  - ~~`"[REMOVED] Urethral Catheter ..."` -> `URINARY_CATHETER` remove.~~ ✅
+- ~~Add bracketed remove pattern for ETT/airway:~~
+  - ~~`"[REMOVED] Non-Surgical Airway ETT- Cuffed"` -> `ENDOTRACHEAL_TUBE` remove.~~ ✅
+- ~~Add focused negatives in tests:~~
+  - ~~`"[REMOVED] Peripheral IV"` must not match LDA start/stop extraction.~~ ✅
+
+3 tests added (2 positive, 1 negative). 0 NTDS outcome deltas. `ENABLE_LDA_GATES` unchanged (False).
 
 `TIGHTEN NEXT` (separate follow-up track, not same PR):
 - Multi-line structured LDA block parsing (`header -> status -> datetime`) for richer placement/removal extraction.
