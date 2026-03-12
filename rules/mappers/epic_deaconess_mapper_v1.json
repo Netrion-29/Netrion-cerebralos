@@ -646,10 +646,10 @@
 			"\\bwithout\\b.*\\b(CLABSI|bacteremia|line\\s+sepsis)\\b"
 		],
 		"clabsi_central_line_duration": [
-			"\\b(central\\s+(line|venous\\s+catheter)|PICC|CVL|CVC)\\s+(line\\s+)?day\\s+#?([3-9]|\\d{2,})\\b",
-			"\\b(central\\s+(line|venous\\s+catheter)|PICC|CVL|CVC)\\s+(in\\s+place|present)\\s+(for\\s+)?([3-9]|\\d{2,})\\s+days\\b",
+			"\\b(central\\s+(line|venous\\s+catheter)|PICC|CVL|CVC)[\\s:\u2014\u2013-]+(line\\s+)?day\\s+#?([3-9]|\\d{2,})\\b",
+			"\\b(central\\s+(line|venous\\s+catheter)|PICC|CVL|CVC)[\\s:\u2014\u2013-]+(line[\\s:\u2014\u2013-]+)?(in\\s+place|present)\\s+(for\\s+)?([3-9]|\\d{2,})\\s+days\\b",
 			"\\b(central\\s+(line|venous\\s+catheter)|PICC|CVL|CVC)\\b.{0,30}>\\s*48\\s*(h|hours?)\\b",
-			"\\b(central\\s+(line|venous\\s+catheter)|PICC|CVL|CVC)\\s+placed\\s+([3-9]|\\d{2,})\\s+days\\s+ago\\b"
+			"\\b(central\\s+(line|venous\\s+catheter)|PICC|CVL|CVC)[\\s:\u2014\u2013-]+(line[\\s:\u2014\u2013-]+)?placed\\s+([3-9]|\\d{2,})\\s+days\\s+ago\\b"
 		],
 		"clabsi_central_line_in_place": [
 			"\\bcentral\\s+(line|venous\\s+catheter)\\s+(in\\s+place|inserted|placed)\\b",
