@@ -179,8 +179,9 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - Baseline hash coverage: ✅ COMPLETE — 39-patient NTDS event hash baseline + gate wiring + standalone checker, 0 NTDS outcome deltas
 > - D4 DISCHARGE precision audit: ✅ COMPLETE — 14 events audited, 39 patients, 0 false positives, 1 TP (Ronald_Bittner E13 Pressure Ulcer), no rule changes needed, baseline realigned (Anna_Dennis hash), 0 NTDS outcome deltas
 > - N3 residual precision pass (E08 DVT + E09 Delirium): ✅ COMPLETE — E09 `delirium_negation_noise` (10 patterns), 2 FP corrections (Barbara_Burgdorf YES→NO, Christine_Adelitzo YES→NO); E08 `dvt_dx_noise_prophylaxis` wired (defensive, 0 outcome changes); 2 NTDS outcome deltas
+> - AKI UTD reduction v2: ✅ COMPLETE — 3 noise patterns + 1 onset pattern + arrival-time extraction in runner; 4 outcome deltas (Barbara_Burgdorf UTD→NO, Gary_Linder UTD→NO, William_Simmons UTD→NO, Floy_Geary UTD→YES); E01 UTD 7→3
 > - Open PRs: None
-> - **Backlog priority:** (1) 5 AKI UTD residuals, (2) per-event distribution automation, (3) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
+> - **Backlog priority:** (1) Source alignment (PROGRESS_NOTE/NURSING_NOTE) doc + recommendations, (2) Geriatric delirium nursing shift assessment design, (3) per-event distribution automation, (4) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
 >
 > See Roadmap doc §3 for full backlog detail, N3 residuals, and N4 queue.
 

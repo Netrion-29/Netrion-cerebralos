@@ -402,14 +402,18 @@
 			"\\bPMH\\s+(of|includes?|significant\\s+for)\\b.*\\bAKI\\b",
 			"\\bpast\\s+(medical\\s+)?history\\b.*\\b(AKI|acute\\s+kidney\\s+injury)\\b",
 			"\\bwith\\s+PMH\\s+of\\b.*\\bAKI\\b",
-			"\\bhistory\\s+of\\b.*\\b(AKI|acute\\s+kidney\\s+injury)\\b"
+			"\\bhistory\\s+of\\b.*\\b(AKI|acute\\s+kidney\\s+injury)\\b",
+			"\\bacute\\s+kidney\\s+injury\\b[\\t ]+\\d{2}/\\d{2}/\\d{4}",
+			"\\bacute\\s+kidney\\s+injury\\s+after\\s+chemo",
+			"\\bAKI\\s*\\(acute\\s+kidney\\s+injury\\)"
 		],
 		"aki_onset": [
 			"\\bdeveloped\\b.*\\bacute\\s+kidney\\s+injury\\b",
 			"\\bAKI\\b.*\\bduring\\s+(hospitalization|stay)\\b",
 			"\\bonset\\b.*\\bafter\\b.*\\barrival\\b",
 			"\\bafter\\s+arrival\\b",
-			"\\bdeveloped\\b.*\\bAKI\\b.*\\bduring\\b"
+			"\\bdeveloped\\b.*\\bAKI\\b.*\\bduring\\b",
+			"\\bAKI\\s*[-]+\\s*(resolving|better|improving|worse|worsening|stable)\\b"
 		],
 		"ards_dx": [
 			"\\bacute\\s+respiratory\\s+distress\\s+syndrome\\b",

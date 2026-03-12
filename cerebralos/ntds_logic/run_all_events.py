@@ -43,12 +43,25 @@ def _slugify(name: str) -> str:
     return s or "UNKNOWN_PATIENT"
 
 
+def _extract_arrival_time(patient_path: Path) -> str | None:
+    """Extract ARRIVAL_TIME header from patient file, if present."""
+    try:
+        for line in patient_path.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if stripped.upper().startswith("ARRIVAL_TIME:"):
+                return stripped.split(":", 1)[1].strip()
+    except (IOError, UnicodeDecodeError):
+        pass
+    return None
+
+
 def run_all(year: int, patient_path: Path, arrival: str | None = None) -> List[Dict[str, Any]]:
     """Evaluate all 21 NTDS events for *patient_path* and return summary rows."""
 
     mapper = engine_load_mapper()
     qp = mapper.get("query_patterns", {})
-    patient = build_patientfacts(patient_path, qp, arrival_time=arrival)
+    effective_arrival = arrival or _extract_arrival_time(patient_path)
+    patient = build_patientfacts(patient_path, qp, arrival_time=effective_arrival)
 
     slug = _slugify(patient_path.stem)
     out_dir = REPO_ROOT / "outputs" / "ntds" / slug
