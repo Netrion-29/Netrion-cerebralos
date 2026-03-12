@@ -22,7 +22,8 @@
         "PHYSICIAN_NOTE",
         "IMAGING",
         "DISCHARGE",
-        "ED_NOTE"
+        "ED_NOTE",
+        "CONSULT_NOTE"
       ],
       "fail_outcome": "NO",
       "fail_reason": "No documentation of stroke/CVA."

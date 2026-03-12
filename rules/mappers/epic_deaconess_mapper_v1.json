@@ -280,7 +280,11 @@
 			"\\bCAM[- ]?positive\\b",
 			"\\bpositive\\s+CAM\\b",
 			"\\bacute\\s+confusion\\b",
-			"\\bacute\\s+altered\\s+mental\\s+status\\b"
+			"\\bacute\\s+altered\\s+mental\\s+status\\b",
+			"\\bCAM[-\\s]?ICU\\s*:\\s*positive\\b",
+			"\\bbCAM\\s*:\\s*positive\\b",
+			"\\boverall\\s+(bCAM|CAM[-\\s]?ICU)\\s*:\\s*positive\\b",
+			"\\bbCAM\\s+screening\\s*:\\s*positive\\b"
 		],
 		"delirium_negation_noise": [
 			"\\bat\\s+risk\\s+(for\\s+)?delirium\\b",
@@ -292,7 +296,11 @@
 			"\\bpmh\\b.*\\bdelirium\\b",
 			"\\bdelirium\\s+screen\\b",
 			"\\bdelirium\\s+protocol\\b",
-			"\\bdelirium\\s+precaution\\b"
+			"\\bdelirium\\s+precaution\\b",
+			"\\bCAM[-\\s]?ICU\\s*:\\s*negative\\b",
+			"\\bbCAM\\s*:\\s*negative\\b",
+			"\\boverall\\s+(bCAM|CAM[-\\s]?ICU)\\s*:\\s*negative\\b",
+			"\\bbCAM\\s+screening\\s*:\\s*negative\\b"
 		],
 		"pressure_ulcer_dx": [
 			"\\bpressure\\s+(ulcer|injury|sore)\\b",

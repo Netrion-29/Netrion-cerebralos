@@ -183,8 +183,9 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - AKI UTD reduction v2: ✅ COMPLETE — 3 noise patterns + 1 onset pattern + arrival-time extraction in runner; 4 outcome deltas (Barbara_Burgdorf UTD→NO, Gary_Linder UTD→NO, William_Simmons UTD→NO, Floy_Geary UTD→YES); E01 UTD 7→3
 > - Per-event distribution CI: ✅ COMPLETE — `scripts/check_ntds_distribution.py` + baseline (21 events × 39 patients), wired into `gate_pr.sh`, 0 NTDS outcome deltas
 > - Source alignment + geri delirium design: ✅ COMPLETE (design doc) — 3-tier source recommendations, CAM/bCAM mapper gaps, shift compliance design, Ronald_Bittner follow-up; 0 NTDS outcome deltas
+> - Tier 1 source alignment + CAM/bCAM patterns: ✅ COMPLETE — CONSULT_NOTE added to 4 gates (aki_dx, mi_dx, sepsis_dx, stroke_dx), NURSING_NOTE added to 3 gates (cauti_dx, clabsi_dx, sepsis_dx), 4 CAM-ICU/bCAM positive patterns to delirium_dx, 4 negative patterns to delirium_negation_noise, 3 fixtures added, 0 NTDS outcome deltas
 > - Open PRs: None
-> - **Backlog priority:** (1) Tier 1 source alignment implementation (CONSULT_NOTE + NURSING_NOTE → 7 gates), (2) CAM-ICU/bCAM mapper expansion, (3) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
+> - **Backlog priority:** (1) Tier 2 PROGRESS_NOTE scoping pass, (2) Delirium shift compliance audit script, (3) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
 >
 > See Roadmap doc §3 for full backlog detail, N3 residuals, and N4 queue.
 
