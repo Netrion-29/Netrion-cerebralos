@@ -555,6 +555,49 @@ and added two block filters:
 | 15 | **Protocol Data Coverage Mapping** | `docs/audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md`, `docs/audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.csv` | Medium | Medium | NOT STARTED — master list of all protocol data elements committed (20 categories, ~180 elements across 51 protocol PDFs); next step: map each element to current CerebralOS extraction coverage (extracted / not extracted / partial) |
 | 16 | **LDA engine support (Lines, Drains, Airways)** | `cerebralos/ntds_logic/engine.py`, `cerebralos/ntds_logic/build_patientfacts_from_txt.py`, `cerebralos/ntds_logic/model.py` | **High** | Large | ✅ IMPLEMENTED (v1+text+startstop) — PRs #203, #206, #207 (all merged). SourceType `LDA` added to model; `LDAEpisode` dataclass; `build_lda_episodes()` builder (structured JSON + text-derived flowsheet day-counter + insertion/removal start/stop inference); 4 gate types in engine incl. `eval_lda_overlap` (interval overlap); `TEXT_DERIVED_STARTSTOP` confidence level; merge precedence: structured > startstop > day-counter; `ENABLE_LDA_GATES` feature flag (default False); optional LDA gates wired into E05/E06/E21 rules (`required: false`); 118 dedicated tests. Next: enable flag per-event after cohort validation. |
 
+##### LDA Analysis Intake Loop (Roadmap-First)
+
+Use this whenever Terminal-Claude provides analysis-only findings:
+
+1. Classify each finding as `KEEP NOW`, `TIGHTEN NEXT`, or `DEFER`.
+2. Require raw citations (`Patient_File:line`) for new pattern/gate proposals.
+3. State deterministic/fail-closed rationale for each `KEEP NOW` item.
+4. Map `KEEP NOW` to one single-goal PR scope.
+5. Record deferred items explicitly to prevent scope creep.
+
+##### Item 16A — PR #214 Correctness Hardening Intake (2026-03-12)
+
+Accepted into merged PR #214:
+- Admission overlap semantics corrected to one-sided admission window.
+- Mixed tz-aware/naive timestamp guard added to avoid runtime type errors.
+- Merge-precedence backfill preserves `episode_days` when higher-tier episode lacks duration.
+- CHEST_TUBE and DRAIN_SURGICAL text patterns expanded from cited raw lines.
+- `TEXT_DERIVED_STARTSTOP` doc/runtime schema sync completed.
+
+##### Item 16B — Post-PR #214 Raw-Scan Intake (2026-03-12)
+
+Source: Terminal-Claude analysis report over newer patient set (11 found, 2 missing: `Mark_King`, `Andrew_Paez`).
+
+`KEEP NOW` (next single-goal PR candidate):
+- Add bracketed remove pattern for urinary catheter:
+  - `"[REMOVED] Urethral Catheter ..."` -> `URINARY_CATHETER` remove.
+- Add bracketed remove pattern for ETT/airway:
+  - `"[REMOVED] Non-Surgical Airway ETT- Cuffed"` -> `ENDOTRACHEAL_TUBE` remove.
+- Add focused negatives in tests:
+  - `"[REMOVED] Peripheral IV"` must not match LDA start/stop extraction.
+
+`TIGHTEN NEXT` (separate follow-up track, not same PR):
+- Multi-line structured LDA block parsing (`header -> status -> datetime`) for richer placement/removal extraction.
+- Inline `Placement Date/Time` and `Removal Date/Time` dual-date parsing.
+- Handling of `Resolved: <date>` suffixes as possible stop-bound evidence.
+- Explicit NIV classification decision (`Non-Invasive Mechanical Ventilation` vs invasive ventilator semantics).
+- Prose date parsing (`January 4, 2026`, `1/6 -`) if needed for additional recall.
+
+`DEFER` (out of current scope):
+- Maintenance/status/context lines (for example water seal, care actions, present-tense status, plan-only language).
+- Admin-routing language (for example "given via central line").
+- DNI/DNR order lines unless they produce demonstrated false positives.
+
 ---
 
 ## 4. Fast Validation Policy (Sentinel vs Full Cohort)
