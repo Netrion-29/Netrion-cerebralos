@@ -81,12 +81,12 @@ Coverage was assessed by:
 | 14 | Infection Prevention / HAI Monitoring | 7 | 2 | 2 | 0 | 11 | 82% |
 | 15 | Prophylaxis (DVT / GI / Hypothermia) | 2 | 2 | 3 | 0 | 7 | 57% |
 | 16 | Screening / Behavioral Health | 4 | 3 | 4 | 0 | 11 | 64% |
-| 17 | Special Populations — Geriatric | 0 | 2 | 5 | 0 | 7 | 29% |
-| 18 | Special Populations — Pediatric | 0 | 0 | 7 | 0 | 7 | 0% |
-| 19 | Special Populations — Obstetric | 0 | 0 | 6 | 0 | 6 | 0% |
-| 20 | Disposition / Discharge Planning | 1 | 4 | 4 | 2 | 11 | 56% |
-| 21 | Complications / NTDS Events | 20 | 1 | 0 | 0 | 21 | 100% |
-| 22 | Operational / Call Panel | 1 | 0 | 0 | 10 | 11 | 100% |
+| 17a | Special Populations — Geriatric | 0 | 2 | 5 | 0 | 7 | 29% |
+| 17b | Special Populations — Pediatric | 0 | 0 | 7 | 0 | 7 | 0% |
+| 17c | Special Populations — Obstetric | 0 | 0 | 6 | 0 | 6 | 0% |
+| 18 | Disposition / Discharge Planning | 1 | 4 | 4 | 2 | 11 | 56% |
+| 19 | Complications / NTDS Events | 20 | 1 | 0 | 0 | 21 | 100% |
+| 20 | Operational / Call Panel | 1 | 0 | 0 | 10 | 11 | 100% |
 
 > **Coverage** = (EXTRACTED + PARTIAL) / (Total − N/A). Categories with 0%
 > have no extraction infrastructure at all today.
@@ -102,15 +102,15 @@ Coverage was assessed by:
 | Demographics | Admission date/time | ARRIVAL_TIME header parsing; `cerebralos/features/adt_transfer_timeline_v1.py` |
 | Demographics | Trauma activation category | `cerebralos/features/category_activation_v1.py`; `rules/features/category_activation_v1.json` |
 | Prehospital | Mechanism of injury narrative | `cerebralos/features/mechanism_region_v1.py` |
-| Injury Mech. | Blunt vs. penetrating | `cerebralos/features/mechanism_region_v1.py` — classifies blunt/penetrating |
+| Injury Mech. | Blunt vs. penetrating classification | `cerebralos/features/mechanism_region_v1.py` — classifies blunt/penetrating |
 | Injury Mech. | Body region(s) involved | `cerebralos/features/mechanism_region_v1.py` — extracts body regions |
 | ED Assessment | ED arrival date/time | ARRIVAL_TIME header; `cerebralos/features/adt_transfer_timeline_v1.py` |
-| ED Assessment | Triage category | `cerebralos/features/category_activation_v1.py` |
-| ED Assessment | FAST exam | `cerebralos/features/fast_exam_v1.py` |
-| Vital Signs | Blood pressure | `cerebralos/features/vitals_canonical_v1.py`; `rules/features/vitals_patterns_v1.json` |
+| ED Assessment | Triage category (Cat I / Cat II / Consult) | `cerebralos/features/category_activation_v1.py` |
+| ED Assessment | FAST exam (positive/negative/indeterminate) | `cerebralos/features/fast_exam_v1.py` |
+| Vital Signs | Blood pressure (systolic/diastolic/MAP) | `cerebralos/features/vitals_canonical_v1.py`; `rules/features/vitals_patterns_v1.json` |
 | Vital Signs | Heart rate | `cerebralos/features/vitals_canonical_v1.py` |
 | Vital Signs | Respiratory rate | `cerebralos/features/vitals_canonical_v1.py` |
-| Vital Signs | SpO2 | `cerebralos/features/vitals_canonical_v1.py` |
+| Vital Signs | SpO2 (pulse oximetry) | `cerebralos/features/vitals_canonical_v1.py` |
 | Vital Signs | Temperature (core) | `cerebralos/features/vitals_canonical_v1.py` |
 | Neurologic | Spinal clearance status | `cerebralos/features/spine_clearance_v1.py` |
 | Laboratory | Base deficit (serial) | `cerebralos/features/base_deficit_monitoring_v1.py` |
@@ -118,34 +118,33 @@ Coverage was assessed by:
 | Laboratory | Urine culture results | `cauti_culture_positive` mapper key |
 | Laboratory | Urine drug screen / BAL | `cerebralos/features/etoh_uds_v1.py` |
 | Imaging | FAST/eFAST | `cerebralos/features/fast_exam_v1.py` |
-| Operative | Surgical complications (SSI) | `deep_ssi_dx` + `organ_space_ssi_dx` + `superficial_ssi_dx` mapper keys |
+| Operative | Surgical complications | `deep_ssi_dx` + `organ_space_ssi_dx` + `superficial_ssi_dx` mapper keys |
 | Operative | Unplanned return to OR | `or_return_unplanned` + `or_initial_procedure` + `or_same_site` mapper keys; `rules/ntds/logic/2026/20_or_return.json` |
-| Pharmacologic | GI prophylaxis | `cerebralos/features/gi_prophylaxis_v1.py` |
-| Pharmacologic | VTE chemoprophylaxis | `cerebralos/features/dvt_prophylaxis_v1.py`; `dvt_treatment_anticoag` mapper key |
-| Infection | CAUTI diagnosis | E05 multi-gate rule: `rules/ntds/logic/2026/05_cauti.json` |
-| Infection | CLABSI diagnosis | E06 multi-gate rule: `rules/ntds/logic/2026/06_clabsi.json` |
+| Pharmacologic | GI prophylaxis agent (PPI/H2 blocker) | `cerebralos/features/gi_prophylaxis_v1.py` |
+| Pharmacologic | VTE chemoprophylaxis (LMWH/UFH, timing) | `cerebralos/features/dvt_prophylaxis_v1.py`; `dvt_treatment_anticoag` mapper key |
+| Infection | CAUTI diagnosis (CDC criteria) | E05 multi-gate rule: `rules/ntds/logic/2026/05_cauti.json` |
+| Infection | CLABSI diagnosis (NHSN criteria) | E06 multi-gate rule: `rules/ntds/logic/2026/06_clabsi.json` |
 | Infection | SSI — superficial | E17 rule: `rules/ntds/logic/2026/17_superficial_ssi.json` |
 | Infection | SSI — deep | E07 rule: `rules/ntds/logic/2026/07_deep_ssi.json` |
 | Infection | SSI — organ/space | E11 rule: `rules/ntds/logic/2026/11_organ_space_ssi.json` |
 | Infection | VAP diagnosis | E21 multi-gate rule: `rules/ntds/logic/2026/21_vap.json` |
-| Infection | Sepsis / severe sepsis | `sepsis_dx` mapper key; E15 rule: `rules/ntds/logic/2026/15_severe_sepsis.json` |
-| Prophylaxis | DVT chemical prophylaxis | `cerebralos/features/dvt_prophylaxis_v1.py`; `dvt_treatment_anticoag` mapper key |
-| Prophylaxis | GI prophylaxis | `cerebralos/features/gi_prophylaxis_v1.py` |
-| Screening | SBIRT completed | `cerebralos/features/sbirt_screening_v1.py` |
-| Screening | SBIRT result | `cerebralos/features/sbirt_screening_v1.py` |
-| Screening | Blood alcohol level | `cerebralos/features/etoh_uds_v1.py` |
-| Screening | Urine drug screen | `cerebralos/features/etoh_uds_v1.py` |
-| Disposition | ICU admission (unplanned) | `unplanned_icu` mapper key; E18 rule: `rules/ntds/logic/2026/18_unplanned_icu_admission.json` |
-| NTDS E01 | AKI (KDIGO Stage 3) | `rules/ntds/logic/2026/01_aki.json` — 3+ gate logic |
-| NTDS E02 | ARDS (Berlin criteria) — *partial* | E02 rule exists; P/F ratio not fully structured — listed PARTIAL in CSV |
+| Infection | Sepsis / severe sepsis (qSOFA, SIRS criteria) | `sepsis_dx` mapper key; E15 rule: `rules/ntds/logic/2026/15_severe_sepsis.json` |
+| Prophylaxis | DVT prophylaxis — chemical (agent, dose, start date) | `cerebralos/features/dvt_prophylaxis_v1.py`; `dvt_treatment_anticoag` mapper key |
+| Prophylaxis | GI prophylaxis (PPI/H2 blocker, start date) | `cerebralos/features/gi_prophylaxis_v1.py` |
+| Screening | SBIRT screening completed (yes/no) | `cerebralos/features/sbirt_screening_v1.py` |
+| Screening | SBIRT screening result (negative/positive) | `cerebralos/features/sbirt_screening_v1.py` |
+| Screening | Blood alcohol level (BAL) | `cerebralos/features/etoh_uds_v1.py` |
+| Screening | Urine drug screen result | `cerebralos/features/etoh_uds_v1.py` |
+| Disposition | ICU admission (planned vs. unplanned) | `unplanned_icu` mapper key; E18 rule: `rules/ntds/logic/2026/18_unplanned_icu_admission.json` |
+| NTDS E01 | Acute Kidney Injury (KDIGO Stage 3) | `rules/ntds/logic/2026/01_aki.json` — 3+ gate logic |
 | NTDS E03 | Alcohol Withdrawal | `rules/ntds/logic/2026/03_alcohol_withdrawal_syndrome.json` |
 | NTDS E04 | Cardiac Arrest | `rules/ntds/logic/2026/04_cardiac_arrest_with_cpr.json` — dual gate |
-| NTDS E05 | CAUTI | `rules/ntds/logic/2026/05_cauti.json` — 6 gates + LDA |
-| NTDS E06 | CLABSI | `rules/ntds/logic/2026/06_clabsi.json` — 5 gates + LDA |
+| NTDS E05 | CAUTI (CDC SUTI 1a) | `rules/ntds/logic/2026/05_cauti.json` — 6 gates + LDA |
+| NTDS E06 | CLABSI (NHSN) | `rules/ntds/logic/2026/06_clabsi.json` — 5 gates + LDA |
 | NTDS E07 | Deep SSI | `rules/ntds/logic/2026/07_deep_ssi.json` |
 | NTDS E08 | DVT | `rules/ntds/logic/2026/08_dvt.json` — multi-gate with imaging early-exit |
 | NTDS E09 | Delirium | `rules/ntds/logic/2026/09_delirium.json` |
-| NTDS E10 | MI | `rules/ntds/logic/2026/10_mi.json` |
+| NTDS E10 | Myocardial Infarction | `rules/ntds/logic/2026/10_mi.json` |
 | NTDS E11 | Organ/Space SSI | `rules/ntds/logic/2026/11_organ_space_ssi.json` |
 | NTDS E12 | Osteomyelitis | `rules/ntds/logic/2026/12_osteomyelitis.json` |
 | NTDS E13 | Pressure Ulcer | `rules/ntds/logic/2026/13_pressure_ulcer.json` |
@@ -153,11 +152,11 @@ Coverage was assessed by:
 | NTDS E15 | Severe Sepsis | `rules/ntds/logic/2026/15_severe_sepsis.json` |
 | NTDS E16 | Stroke/CVA | `rules/ntds/logic/2026/16_stroke_cva.json` |
 | NTDS E17 | Superficial SSI | `rules/ntds/logic/2026/17_superficial_ssi.json` |
-| NTDS E18 | Unplanned ICU | `rules/ntds/logic/2026/18_unplanned_icu_admission.json` |
+| NTDS E18 | Unplanned ICU Admission | `rules/ntds/logic/2026/18_unplanned_icu_admission.json` |
 | NTDS E19 | Unplanned Intubation | `rules/ntds/logic/2026/19_unplanned_intubation.json` |
 | NTDS E20 | Unplanned Return to OR | `rules/ntds/logic/2026/20_or_return.json` |
-| NTDS E21 | VAP | `rules/ntds/logic/2026/21_vap.json` — multi-gate + LDA vent duration |
-| Operational | Trauma activation level | `cerebralos/features/category_activation_v1.py` |
+| NTDS E21 | Ventilator-Associated Pneumonia | `rules/ntds/logic/2026/21_vap.json` — multi-gate + LDA vent duration |
+| Operational | Trauma team activation level (Cat I / Cat II / Consult) | `cerebralos/features/category_activation_v1.py` |
 
 ---
 
@@ -167,60 +166,60 @@ Coverage was assessed by:
 |----------|---------|-------------|----------------|
 | Demographics | Transferring facility | `adt_transfer_timeline_v1.py` captures transfers | Facility name not structured |
 | ED Assessment | ED disposition time | `adt_transfer_timeline_v1.py` captures transfers | No explicit ED dispo timestamp |
-| Vital Signs | GCS (total + components) | `neuro_trigger_v1.py` detects GCS trigger patterns | No structured E/V/M component parsing |
+| Vital Signs | GCS (total + components E/V/M) | `neuro_trigger_v1.py` detects GCS trigger patterns | No structured E/V/M component parsing |
 | Vital Signs | Serial vital sign monitoring | `vitals_canonical_v1.py` captures values | Serial compliance not assessed |
 | Vital Signs | Shock index (HR/SBP) | `hemodynamic_instability_pattern_v1.py` + `shock_trigger_v1.py` | Ratio value not computed |
 | Neurologic | GCS post-resuscitation | `neuro_trigger_v1.py` captures GCS mentions | Post-resuscitation timing not determined |
-| Neurologic | Pupil reactivity | `neuro_trigger_v1.py` captures pupil mentions | Bilateral/reactive status not structured |
-| Neurologic | Motor exam | `neuro_trigger_v1.py` captures motor findings | Lateralizing signs not classified |
-| Neurologic | Sensory exam | `spine_clearance_v1.py` captures some sensory findings | Dermatome level not structured |
-| Neurologic | NEXUS / C-Spine criteria | `spine_clearance_v1.py` may capture mentions | Criteria not scored |
-| Neurologic | Delirium screening | `delirium_dx` mapper key for diagnosis | CAM-ICU/bCAM instrument scores not structured |
+| Neurologic | Pupil reactivity (bilateral) | `neuro_trigger_v1.py` captures pupil mentions | Bilateral/reactive status not structured |
+| Neurologic | Motor exam (lateralizing signs) | `neuro_trigger_v1.py` captures motor findings | Lateralizing signs not classified |
+| Neurologic | Sensory exam (dermatome level) | `spine_clearance_v1.py` captures some sensory findings | Dermatome level not structured |
+| Neurologic | NEXUS / Canadian C-Spine criteria | `spine_clearance_v1.py` may capture mentions | Criteria not scored |
+| Neurologic | Delirium screening (CAM-ICU / bCAM) | `delirium_dx` mapper key for diagnosis | CAM-ICU/bCAM instrument scores not structured |
 | Neurologic | Mental status changes | `neuro_trigger_v1.py` captures AMS patterns | Not classified by type |
 | Laboratory | CBC (H/H, WBC, platelets) | LAB section parsed | Individual lab values not structured |
-| Laboratory | BMP (Na, K, Cr, glucose) | `aki_stage3_lab` patterns match creatinine | Full BMP not structured |
-| Laboratory | Coagulation panel (PT/INR) | `cerebralos/features/inr_normalization_v1.py` | Full coag panel not structured |
-| Laboratory | ABG (pH, pCO2, base deficit) | `base_deficit_monitoring_v1.py` captures BD patterns | Full ABG not structured |
+| Laboratory | BMP (Na, K, Cl, CO2, BUN, Cr, glucose) | `aki_stage3_lab` patterns match creatinine | Full BMP not structured |
+| Laboratory | Coagulation panel (PT/INR, PTT, fibrinogen) | `cerebralos/features/inr_normalization_v1.py` | Full coag panel not structured |
+| Laboratory | ABG (pH, pCO2, pO2, base deficit, lactate) | `base_deficit_monitoring_v1.py` captures BD patterns | Full ABG not structured |
 | Laboratory | Lactate (serial) | `base_deficit_monitoring_v1.py` captures some lactate | Not fully structured |
-| Laboratory | Serum creatinine | `aki_stage3_lab` patterns match creatinine mentions | Values not parsed |
+| Laboratory | Serum creatinine (baseline + serial) | `aki_stage3_lab` patterns match creatinine mentions | Values not parsed |
 | Laboratory | Troponin | `mi_dx` mapper patterns may match troponin mentions | Values not parsed |
 | Imaging | CT head | `radiology_findings_v1.py` captures imaging mentions | Not CT-head-specific |
 | Imaging | CT cervical spine | `radiology_findings_v1.py` + `spine_clearance_v1.py` | Not specifically classified |
 | Imaging | CT chest/abdomen/pelvis | `radiology_findings_v1.py` captures imaging mentions | Not body-region-specific |
 | Imaging | CTA neck/chest | `radiology_findings_v1.py` captures CTA mentions | Not classified by target |
-| Imaging | Plain films | `radiology_findings_v1.py` captures x-ray mentions | Not modality-structured |
-| Imaging | Angiography | `radiology_findings_v1.py` may capture angiography | Not procedural-specific |
+| Imaging | Plain films (chest, pelvis, extremity) | `radiology_findings_v1.py` captures x-ray mentions | Not modality-structured |
+| Imaging | Angiography (diagnostic/interventional) | `radiology_findings_v1.py` may capture angiography | Not procedural-specific |
 | Imaging | MRI spine | `radiology_findings_v1.py` captures MRI mentions | Not spine-specific |
 | Imaging | Chest X-ray (serial) | `vap_cxr` mapper key captures CXR in VAP context | Generic CXR not structured |
-| Airway | Intubation (date/time) | `unplanned_intubation` mapper key; `note_index_events_v1.py` | Date/time not fully structured |
+| Airway | Intubation (date/time/indication) | `unplanned_intubation` mapper key; `note_index_events_v1.py` | Date/time not fully structured |
 | Airway | Ventilator days | `vent_dx` mapper key; flowsheet day rows present | LDA vent day extraction pending |
-| Airway | Oxygen/FiO2 | `cerebralos/features/incentive_spirometry_v1.py` captures IS | FiO2 not parsed |
-| Operative | Procedure type | `procedure_operatives_v1.py` captures mentions | CPT not extracted |
+| Airway | Oxygen supplementation type/FiO2 | `cerebralos/features/incentive_spirometry_v1.py` captures IS | FiO2 not parsed |
+| Operative | Procedure type / CPT | `procedure_operatives_v1.py` captures mentions | CPT not extracted |
 | Operative | Procedure date/time | `procedure_operatives_v1.py` captures some timing | Not fully structured |
-| Operative | Anesthesia type/duration | `cerebralos/features/anesthesia_case_metrics_v1.py` | Partial metrics |
+| Operative | Anesthesia type / duration | `cerebralos/features/anesthesia_case_metrics_v1.py` | Partial metrics |
 | Operative | Operative findings | `procedure_operatives_v1.py` captures operative note text | Not classified |
-| Operative | Spinal stabilization surgery timing | `spine_clearance_v1.py` captures surgery mention | Time-from-injury not computed |
-| Pharmacologic | Anticoagulant reversal agent | `anticoag_context_v1.py` captures anticoag mentions | Reversal agents not structured |
-| Pharmacologic | Pre-injury anticoag list | `pmh_social_allergies_v1.py` + `anticoag_context_v1.py` | Medication list not structured |
-| Device | Central venous catheter | `clabsi_central_line_in_place` mapper key; LDA CENTRAL_LINE defined in `lda_events_v1.py` | Type/site not structured |
-| Device | Central line duration | Flowsheet 'Catheter day' data present | LDA duration gate pending full activation |
-| Device | Urinary catheter placement | `cauti_catheter_in_place` mapper key; LDA URETHRAL_CATHETER defined | Placement date not structured |
-| Device | Urinary catheter duration | Flowsheet data present for ≥12 patients | LDA duration gate pending full activation |
-| Device | Mechanical ventilation dates | `vent_dx` mapper key; LDA infrastructure defined | Start/end timestamps not structured |
-| Device | SCDs | `dvt_prophylaxis_v1.py` may capture SCD mentions | Not specifically structured |
-| Infection | Pressure ulcer (stage/location) | `pressure_ulcer_dx` mapper key detects diagnosis | Stage/location/date not structured |
-| Infection | Infection source | Culture results per-event (E05 urine, E06 blood) | Generic source not structured |
-| Prophylaxis | DVT mechanical (SCDs) | `dvt_prophylaxis_v1.py` captures mentions | SCD start date not structured |
-| Prophylaxis | DVT contraindication | `dvt_prophylaxis_v1.py` may capture contraindication text | Not explicitly structured |
-| Screening | SBIRT brief intervention | `sbirt_screening_v1.py` captures screening | Intervention documentation not structured |
-| Screening | SBIRT referral | `sbirt_screening_v1.py` captures screening | Referral not structured |
-| Screening | Social work consult | `consultant_events_v1.py` may capture social work | Not SBIRT-specific |
-| Geriatric | Pre-injury anticoag use | `pmh_social_allergies_v1.py` + `anticoag_context_v1.py` | Medication specifics not structured |
+| Operative | Spinal stabilization surgery (time from injury) | `spine_clearance_v1.py` captures surgery mention | Time-from-injury not computed |
+| Pharmacologic | Anticoagulant reversal agent (4F-PCC, vitamin K, protamine, idarucizumab) | `anticoag_context_v1.py` captures anticoag mentions | Reversal agents not structured |
+| Pharmacologic | Pre-injury anticoagulant/antiplatelet list | `pmh_social_allergies_v1.py` + `anticoag_context_v1.py` | Medication list not structured |
+| Device | Central venous catheter (type, site, date placed) | `clabsi_central_line_in_place` mapper key; LDA CENTRAL_LINE defined in `lda_events_v1.py` | Type/site not structured |
+| Device | Central line duration (days) | Flowsheet 'Catheter day' data present | LDA duration gate pending full activation |
+| Device | Urinary catheter (Foley) placement date | `cauti_catheter_in_place` mapper key; LDA URETHRAL_CATHETER defined | Placement date not structured |
+| Device | Urinary catheter duration (days) | Flowsheet data present for ≥12 patients | LDA duration gate pending full activation |
+| Device | Mechanical ventilation (start/end date) | `vent_dx` mapper key; LDA infrastructure defined | Start/end timestamps not structured |
+| Device | Sequential compression devices (SCDs) | `dvt_prophylaxis_v1.py` may capture SCD mentions | Not specifically structured |
+| Infection | Pressure ulcer (stage, location, date identified) | `pressure_ulcer_dx` mapper key detects diagnosis | Stage/location/date not structured |
+| Infection | Infection source identification | Culture results per-event (E05 urine, E06 blood) | Generic source not structured |
+| Prophylaxis | DVT prophylaxis — mechanical (SCDs, date started) | `dvt_prophylaxis_v1.py` captures mentions | SCD start date not structured |
+| Prophylaxis | DVT prophylaxis — contraindication documented | `dvt_prophylaxis_v1.py` may capture contraindication text | Not explicitly structured |
+| Screening | SBIRT brief intervention provided | `sbirt_screening_v1.py` captures screening | Intervention documentation not structured |
+| Screening | SBIRT referral to treatment | `sbirt_screening_v1.py` captures screening | Referral not structured |
+| Screening | Social work consult ordered | `consultant_events_v1.py` may capture social work | Not SBIRT-specific |
+| Geriatric | Pre-injury anticoagulant use | `pmh_social_allergies_v1.py` + `anticoag_context_v1.py` | Medication specifics not structured |
 | Geriatric | Geriatric consult | `consultant_events_v1.py` may capture geriatric consult | Not geriatric-protocol-specific |
-| Disposition | Hospital LOS | `adt_transfer_timeline_v1.py` captures admit/discharge | LOS not computed |
-| Disposition | ICU LOS | `patient_movement_v1.py` captures ICU transfers | ICU LOS not computed |
+| Disposition | Hospital LOS (days) | `adt_transfer_timeline_v1.py` captures admit/discharge | LOS not computed |
+| Disposition | ICU LOS (days) | `patient_movement_v1.py` captures ICU transfers | ICU LOS not computed |
 | Disposition | Discharge date/time | DISCHARGE section parsed | Date/time not always structured |
-| Disposition | Transfer destination | `adt_transfer_timeline_v1.py` captures transfers | Destination facility not structured |
+| Disposition | Transfer destination (facility, level) | `adt_transfer_timeline_v1.py` captures transfers | Destination facility not structured |
 | NTDS E02 | ARDS (Berlin criteria) | E02 rule: `ards_dx` + `ards_onset` | P/F ratio components not structured |
 
 ---
@@ -316,36 +315,36 @@ trending. Foundation work that would unlock multiple downstream protocol element
 ```
 Category                                     Coverage  Bar
 ──────────────────────────────────────────── ─────── ──────────────────────
-Complications / NTDS Events                   100%   ████████████████████
-Operational / Call Panel (excl N/A)           100%   ████████████████████
-Neurologic Assessment                          89%   █████████████████▊
-Infection Prevention / HAI Monitoring          82%   ████████████████▍
-Vital Signs / Hemodynamic Monitoring           80%   ████████████████
-Imaging / Radiology                            75%   ███████████████
-Demographics / Patient Identification          71%   ██████████████▎
-Laboratory / Diagnostics                       69%   █████████████▊
-Screening / Behavioral Health                  64%   ████████████▊
-Operative / Procedural                         58%   ███████████▌
-Prophylaxis (DVT / GI / Hypothermia)           57%   ███████████▍
-Disposition / Discharge Planning               56%   ███████████
-Device / Line Management                       50%   ██████████
-Emergency Department Assessment                44%   ████████▊
-Pharmacologic Interventions                    44%   ████████▊
-Airway / Respiratory                           33%   ██████▋
-Special Populations — Geriatric                29%   █████▊
-Injury Mechanism / Classification              20%   ████
-Prehospital / EMS                              14%   ██▊
-Resuscitation / Blood Products                  0%   ▏
-Special Populations — Pediatric                 0%   ▏
-Special Populations — Obstetric                 0%   ▏
+19 · Complications / NTDS Events               100%   ████████████████████
+20 · Operational / Call Panel (excl N/A)        100%   ████████████████████
+ 6 · Neurologic Assessment                      89%   █████████████████▊
+14 · Infection Prevention / HAI Monitoring      82%   ████████████████▍
+ 5 · Vital Signs / Hemodynamic Monitoring       80%   ████████████████
+ 8 · Imaging / Radiology                        75%   ███████████████
+ 1 · Demographics / Patient Identification      71%   ██████████████▎
+ 7 · Laboratory / Diagnostics                   69%   █████████████▊
+16 · Screening / Behavioral Health              64%   ████████████▊
+11 · Operative / Procedural                     58%   ███████████▌
+15 · Prophylaxis (DVT / GI / Hypothermia)       57%   ███████████▍
+18 · Disposition / Discharge Planning           56%   ███████████
+13 · Device / Line Management                   50%   ██████████
+ 4 · Emergency Department Assessment            44%   ████████▊
+12 · Pharmacologic Interventions                44%   ████████▊
+ 9 · Airway / Respiratory                       33%   ██████▋
+17a· Special Populations — Geriatric            29%   █████▊
+ 3 · Injury Mechanism / Classification          20%   ████
+ 2 · Prehospital / EMS                          14%   ██▊
+10 · Resuscitation / Blood Products              0%   ▏
+17b· Special Populations — Pediatric             0%   ▏
+17c· Special Populations — Obstetric             0%   ▏
 ```
 
 > **Strongest areas:** NTDS event adjudication (21/21 events), vital signs,
 > infection prevention, and neurologic assessment.
 >
 > **Weakest areas:** Resuscitation / blood products (0 of 12), special
-> populations (0 of 20 across pediatric/obstetric/geriatric), and prehospital
-> (1 of 7 actionable).
+> populations (0 of 20 across 17a geriatric / 17b pediatric / 17c obstetric),
+> and prehospital (1 of 7 actionable).
 
 ---
 
