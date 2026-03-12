@@ -105,7 +105,7 @@
 | #214 | `8224bb1` | fix(lda): correctness hardening — overlap semantics, merge backfill, chest tube + drain patterns |
 | #215 | `64781e5` | docs(roadmap): add LDA intake loop and post-PR214 intake ledger |
 | #216 | `156c86f` | fix(lda): add [REMOVED] bracket patterns for Urethral Catheter and Non-Surgical Airway |
-| #217 | `156c86f` | docs(roadmap): add LDA intake loop and post-PR214 intake ledger (re-merge) |
+| #217 | `156c86f` | docs(roadmap): add LDA intake loop and post-PR214 intake ledger (re-merge) — same commit as #216; docs branch rebased onto LDA code commit before re-merge |
 
 ### Closed PRs
 
@@ -660,7 +660,107 @@ It does NOT replace the full gate — it accelerates the inner dev loop.
 
 ---
 
-## 5. Execution Protocol for New Chats
+## 5. Persistent Codex Operating Contract (Long-Horizon)
+
+This section codifies the full Codex workflow so it remains visible 6+ months
+from now, regardless of chat-session turnover.
+
+### Roles
+
+| Role | Actor | Responsibility |
+|------|-------|----------------|
+| Operator | Sarah | Copy/pastes terminal commands, reports outputs, makes final merge decisions |
+| Executor | Claude (VS Code) | Edits code, runs commands, produces structured handoffs |
+| Architect / Reviewer | Codex (ChatGPT in VS Code) | Proposes plan, writes exact Claude prompts, audits locally, provides findings-first review |
+
+### Non-Negotiables
+
+1. **Deterministic output only; fail-closed logic.** No LLM, no ML, no clinical inference.
+2. **No silent schema drift.** If schema changes, update docs + validators + consumers in the same PR.
+3. **Protected-engine rule.** Do NOT modify `cerebralos/ntds_logic/engine.py` or `cerebralos/protocol_engine/engine.py` unless explicitly instructed.
+4. **One PR = one goal.** No scope creep — each PR states what it changes and what it does NOT change.
+5. **Raw evidence policy.** Every stored evidence item must include `raw_line_id`. All `KEEP NOW` items require `Patient_File:line` citations before acceptance.
+
+### Mandatory Workflow Loop
+
+```text
+1. CEREBRALOS PREFLIGHT FIRST
+   └─ Run preflight commands before any merge / branch / PR guidance.
+2. Codex triage scope
+   └─ Classify findings as KEEP NOW | TIGHTEN NEXT | DEFER.
+3. Codex writes exact Claude prompt
+   └─ Branch name, goal, allowed files, terminal commands, acceptance criteria.
+4. Claude executes + structured handoff
+   └─ Files changed, gate output, diff, status, blockers.
+5. Codex audits locally
+   └─ Spec alignment, validation results, gaps/risks, 2-patient raw spot-check.
+6. Codex gives full response:
+   a) Findings-first (spec alignment, validation, risk)
+   b) Pre-merge commands
+   c) GitHub UI instructions
+   d) Post-merge verification
+   e) Next prompt (exact text for next Claude session)
+   f) Deferred items list
+```
+
+### Required Preflight Command Block
+
+```bash
+cd ~/NetrionSystems/netrion-cerebralos
+git branch --show-current
+git rev-parse --short HEAD
+git status --short
+gh pr status || echo "GH_STATUS:UNAVAILABLE"
+```
+
+### Required Codex Response Format (7-Part Findings-First)
+
+Every Codex response after a Claude handoff must include:
+
+1. **Findings** — spec alignment, precision/recall impact, risk assessment.
+2. **Pre-merge checklist** — targeted tests, full suite, cohort invariant, hash/distribution checks, `git diff --check`.
+3. **Merge commands** — exact terminal commands for Sarah to execute.
+4. **GitHub UI instructions** — PR merge button, delete branch, etc.
+5. **Post-merge verification** — `git switch main && git pull --ff-only`, re-run hash + distribution checks.
+6. **Next prompt** — exact copy/paste text for the next Claude session.
+7. **Deferred items** — anything triaged out of current scope, with rationale.
+
+### Lean Review Mode (Default)
+
+Use lean mode by default to reduce cycle time:
+
+1. Run `CEREBRALOS PREFLIGHT FIRST` once per cycle.
+2. One scope check: `git diff --name-only origin/main...HEAD`.
+3. One validation pass appropriate to scope.
+4. One final merge-readiness audit + command set.
+
+**Escalate to deep audit** when:
+- Protected files (`engine.py`) are touched.
+- Baseline or test output changes unexpectedly.
+- Branch/PR state changes mid-cycle.
+- Operator explicitly requests deep audit mode.
+
+### Raw Evidence Policy
+
+All pattern/gate proposals require:
+- `Patient_File:line` citations from raw `.txt` files in `data_raw/`.
+- Classification as `KEEP NOW`, `TIGHTEN NEXT`, or `DEFER`.
+- Deterministic/fail-closed rationale for every `KEEP NOW` item.
+
+### Completion Gate Requirement
+
+Codex/Claude may not declare "done" until:
+
+```bash
+./scripts/gate_pr.sh
+```
+
+passes with exit 0. Default gate patients: Anna_Dennis, William_Simmons,
+Timothy_Cowan, Timothy_Nachtwey.
+
+---
+
+## 6. Execution Protocol for New Chats
 
 When starting a new ChatGPT, Codex, or Claude session for this repo:
 
@@ -684,6 +784,9 @@ When starting a new ChatGPT, Codex, or Claude session for this repo:
 
 Every mapper, rule, or test change **must** follow this workflow:
 
+> See also §5 "Persistent Codex Operating Contract" for the full
+> findings-first response format and lean/deep audit triggers.
+
 1. **Raw-data evidence first.** Before editing mapper patterns or rule JSON, scan ≥2 raw patient `.txt` files (`data_raw/`) — one questionable case (potential edge case or near-miss) and one baseline (expected NO). Record the exact phrases that will drive pattern changes.
 2. **Implement scoped changes.** Mapper patterns, rule JSON, precision tests, and fixtures — all in one branch, one commit. No engine changes unless explicitly approved.
 3. **Run pre-merge validation checklist:**
@@ -706,7 +809,7 @@ Every mapper, rule, or test change **must** follow this workflow:
 
 ---
 
-## 6. Key References
+## 7. Key References
 
 | Doc | Purpose |
 |-----|---------|
