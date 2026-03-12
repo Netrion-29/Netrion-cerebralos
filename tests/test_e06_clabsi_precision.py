@@ -73,6 +73,7 @@ class TestE06RuleWiring:
         assert ids == {
             "clabsi_dx",
             "clabsi_central_line_gt2d",
+            "clabsi_central_line_duration_lda",
             "clabsi_lab_positive",
             "clabsi_symptoms",
             "clabsi_after_arrival",

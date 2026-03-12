@@ -71,6 +71,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "consultant_plan_items_v1",
     "consultant_plan_actionables_v1",
     "lda_events_v1",
+    "lda_episodes_v1",
     "urine_output_events_v1",
     "vitals_qa",
 })
@@ -542,6 +543,19 @@ def _check_evidence_line_ids(
                         f"LDA_EVENTS_EVIDENCE_MISSING_RAW_LINE_ID: "
                         f"{lda_missing} evidence entry(ies) without raw_line_id"
                     )
+
+        # ── lda_episodes_v1: structured device episodes ──
+        if feat_key == "lda_episodes_v1":
+            lda_ep_list = feat_val.get("episodes", [])
+            if isinstance(lda_ep_list, list):
+                for ep_idx, ep in enumerate(lda_ep_list):
+                    if not isinstance(ep, dict):
+                        continue
+                    if "device_type" not in ep:
+                        errors.append(
+                            f"LDA_EPISODES_MISSING_DEVICE_TYPE: "
+                            f"episode[{ep_idx}] missing required device_type"
+                        )
 
         # ── urine_output_events_v1: per-event evidence[] raw_line_id ──
         if feat_key == "urine_output_events_v1":

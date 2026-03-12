@@ -4,7 +4,7 @@
 |---|---|
 | Date | 2026-03-12 |
 | Author | Design doc (Sarah / CerebralOS team) |
-| Status | DRAFT — requires engine-change authorization |
+| Status | IMPLEMENTED (v1) — PR `tier2/lda-engine-impl-v1`; feature flag `ENABLE_LDA_GATES` default False |
 | Baseline | `d0b7f5c` (main, post PR #200) |
 | Predecessor | `docs/audits/CAUTI_ENGINE_DESIGN_v1.md` (CAUTI-specific; this doc generalizes to all LDA device types) |
 | Depends on | Engine authorization; no active PR dependency |

@@ -19,6 +19,18 @@
       "fail_reason": "No evidence of mechanical ventilation; VAP requires ventilator use."
     },
     {
+      "gate_type": "lda_duration",
+      "gate_id": "vent_duration_lda",
+      "gate_name": "LDA: Mechanical ventilator episode >2 calendar days",
+      "required": false,
+      "device_type": "MECHANICAL_VENTILATOR",
+      "days_gte": 2,
+      "min_confidence": "TEXT_DERIVED",
+      "outcome_if_missing": "NO",
+      "fail_outcome": "NO",
+      "fail_reason": "LDA: No mechanical ventilator episode >2 calendar days found (or LDA gates disabled)."
+    },
+    {
       "gate_type": "evidence_any",
       "gate_id": "vap_evidence",
       "gate_name": "Evidence consistent with VAP",

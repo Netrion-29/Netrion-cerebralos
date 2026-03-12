@@ -55,6 +55,18 @@
       "fail_reason": "No documentation of central line in place for >2 calendar days (requires explicit duration language — day 3+, >48h, or equivalent)."
     },
     {
+      "gate_type": "lda_duration",
+      "gate_id": "clabsi_central_line_duration_lda",
+      "gate_name": "LDA: Central line episode ≥2 calendar days (structured/text-derived)",
+      "required": false,
+      "device_type": "CENTRAL_LINE",
+      "days_gte": 2,
+      "min_confidence": "TEXT_DERIVED",
+      "outcome_if_missing": "NO",
+      "fail_outcome": "NO",
+      "fail_reason": "LDA: No central line episode ≥2 calendar days found (or LDA gates disabled)."
+    },
+    {
       "gate_type": "evidence_any",
       "gate_id": "clabsi_lab_positive",
       "gate_name": "Blood culture positive with recognized pathogen",

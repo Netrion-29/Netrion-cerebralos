@@ -48,7 +48,54 @@ class SourceType(Enum):
     PROGRESS_NOTE = "PROGRESS_NOTE"
     OPERATIVE_NOTE = "OPERATIVE_NOTE"
     ANESTHESIA_NOTE = "ANESTHESIA_NOTE"
+    LDA = "LDA"  # Lines / Drains / Airways structured device data
     UNKNOWN = "UNKNOWN"
+
+
+# ── LDA Device Types ────────────────────────────────────────────────
+# Canonical device_type values for LDA episodes.
+
+LDA_DEVICE_TYPES = frozenset({
+    "URINARY_CATHETER",
+    "CENTRAL_LINE",
+    "ENDOTRACHEAL_TUBE",
+    "TRACHEOSTOMY",
+    "MECHANICAL_VENTILATOR",
+    "CHEST_TUBE",
+    "NASOGASTRIC_TUBE",
+    "ARTERIAL_LINE",
+    "DRAIN_SURGICAL",
+    "PERIPHERAL_IV",
+})
+
+# Source confidence tiers for LDA episodes (ordered lowest → highest).
+LDA_CONFIDENCE_LEVELS = ("TEXT_APPROXIMATE", "TEXT_DERIVED", "STRUCTURED")
+
+
+@dataclass
+class LDAEpisode:
+    """A single device episode with start/stop timestamps.
+
+    Attributes:
+        device_type: Canonical device type (see LDA_DEVICE_TYPES)
+        start_ts: ISO timestamp of device placement (may be None)
+        stop_ts: ISO timestamp of device removal (may be None)
+        episode_days: Computed duration in calendar days (may be None)
+        source_confidence: TEXT_APPROXIMATE | TEXT_DERIVED | STRUCTURED
+        location: Optional anatomical location
+        inserted_by: Optional role that inserted the device
+        notes: Optional free-text notes
+        raw_line_ids: Source line references
+    """
+    device_type: str
+    start_ts: Optional[str] = None
+    stop_ts: Optional[str] = None
+    episode_days: Optional[int] = None
+    source_confidence: str = "TEXT_APPROXIMATE"
+    location: Optional[str] = None
+    inserted_by: Optional[str] = None
+    notes: Optional[str] = None
+    raw_line_ids: List[str] = field(default_factory=list)
 
 
 @dataclass

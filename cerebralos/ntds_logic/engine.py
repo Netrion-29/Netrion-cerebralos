@@ -14,6 +14,8 @@ from cerebralos.ntds_logic.model import (
     EventResult,
     GateResult,
     HardStop,
+    LDAEpisode,
+    LDA_CONFIDENCE_LEVELS,
     Outcome,
     PatientFacts,
     SourceType,
@@ -22,6 +24,12 @@ from cerebralos.ntds_logic.rules_loader import load_ruleset
 from cerebralos.ntds_logic.build_patientfacts_from_txt import build_patientfacts
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+# ── Feature flag: LDA device-duration gates ────────────────────────
+# When False (default), all lda_* gate types no-op to False so existing
+# text-pattern gates remain the sole decision path.  Set to True in
+# targeted tests or after cohort validation to activate LDA gates.
+ENABLE_LDA_GATES: bool = False
 
 
 _TS_PATTERNS = [
@@ -327,6 +335,159 @@ def eval_requires_treatment_any(gate: Dict[str, Any], patient: PatientFacts, con
     return GateResult(gate=str(gate.get("gate_id")), passed=passed, reason=reason, evidence=hits[:max_items])
 
 
+# ── LDA gate evaluation functions ──────────────────────────────────
+
+def _get_lda_episodes(patient: PatientFacts) -> List[Dict[str, Any]]:
+    """Extract LDA episodes from patient facts (lda_episodes_v1 key)."""
+    facts = patient.facts or {}
+    lda_data = facts.get("lda_episodes_v1") or {}
+    episodes = lda_data.get("episodes", [])
+    if not isinstance(episodes, list):
+        return []
+    return episodes
+
+
+def _confidence_meets_min(actual: str, minimum: str) -> bool:
+    """Return True if *actual* confidence >= *minimum* in the tier order."""
+    try:
+        actual_idx = LDA_CONFIDENCE_LEVELS.index(actual)
+        min_idx = LDA_CONFIDENCE_LEVELS.index(minimum)
+        return actual_idx >= min_idx
+    except ValueError:
+        return False
+
+
+def eval_lda_duration(gate: Dict[str, Any], patient: PatientFacts, contract: Dict[str, Any]) -> GateResult:
+    """Evaluate whether any LDA episode of the required device_type meets
+    a minimum duration threshold.
+
+    Gate parameters:
+        device_type: canonical device type string
+        days_gte: minimum episode_days (>=)
+        min_confidence: minimum source_confidence tier
+        outcome_if_missing: EXCLUDED | NO | UNKNOWN (when no LDA data at all)
+    """
+    gate_id = str(gate.get("gate_id", "lda_duration"))
+
+    if not ENABLE_LDA_GATES:
+        return GateResult(gate=gate_id, passed=False,
+                          reason="LDA gates disabled (ENABLE_LDA_GATES=False).", evidence=[])
+
+    device_type = str(gate.get("device_type", "")).upper()
+    days_gte = int(gate.get("days_gte", 2))
+    min_confidence = str(gate.get("min_confidence", "TEXT_APPROXIMATE")).upper()
+
+    episodes = _get_lda_episodes(patient)
+    if not episodes:
+        outcome_if_missing = str(gate.get("outcome_if_missing", "NO")).upper()
+        reason = f"No LDA episodes available (outcome_if_missing={outcome_if_missing})."
+        return GateResult(gate=gate_id, passed=False, reason=reason, evidence=[])
+
+    for ep in episodes:
+        if not isinstance(ep, dict):
+            continue
+        if str(ep.get("device_type", "")).upper() != device_type:
+            continue
+        conf = str(ep.get("source_confidence", "TEXT_APPROXIMATE")).upper()
+        if not _confidence_meets_min(conf, min_confidence):
+            continue
+        ep_days = ep.get("episode_days")
+        if ep_days is not None and int(ep_days) >= days_gte:
+            return GateResult(gate=gate_id, passed=True,
+                              reason=f"LDA episode {device_type} duration {ep_days}d >= {days_gte}d.",
+                              evidence=[])
+
+    return GateResult(gate=gate_id, passed=False,
+                      reason=f"No {device_type} episode meets duration >= {days_gte}d.",
+                      evidence=[])
+
+
+def eval_lda_present_at(gate: Dict[str, Any], patient: PatientFacts, contract: Dict[str, Any]) -> GateResult:
+    """Evaluate whether a device was active on the event date.
+
+    Gate parameters:
+        device_type: canonical device type
+        reference: currently only "event_date" is supported
+        min_confidence: minimum confidence tier
+    """
+    gate_id = str(gate.get("gate_id", "lda_present_at"))
+
+    if not ENABLE_LDA_GATES:
+        return GateResult(gate=gate_id, passed=False,
+                          reason="LDA gates disabled (ENABLE_LDA_GATES=False).", evidence=[])
+
+    device_type = str(gate.get("device_type", "")).upper()
+    min_confidence = str(gate.get("min_confidence", "TEXT_APPROXIMATE")).upper()
+
+    episodes = _get_lda_episodes(patient)
+    for ep in episodes:
+        if not isinstance(ep, dict):
+            continue
+        if str(ep.get("device_type", "")).upper() != device_type:
+            continue
+        conf = str(ep.get("source_confidence", "TEXT_APPROXIMATE")).upper()
+        if not _confidence_meets_min(conf, min_confidence):
+            continue
+        # If the episode has a start_ts, it was present at some point
+        if ep.get("start_ts"):
+            return GateResult(gate=gate_id, passed=True,
+                              reason=f"LDA {device_type} episode present.",
+                              evidence=[])
+
+    return GateResult(gate=gate_id, passed=False,
+                      reason=f"No active {device_type} episode found.",
+                      evidence=[])
+
+
+def eval_lda_overlap(gate: Dict[str, Any], patient: PatientFacts, contract: Dict[str, Any]) -> GateResult:
+    """Evaluate whether a device episode overlaps with another gate's window.
+
+    Gate parameters:
+        device_type: canonical device type
+        overlap_gate: gate_id of the gate to check overlap against
+        window_days: days of overlap required
+    """
+    gate_id = str(gate.get("gate_id", "lda_overlap"))
+
+    if not ENABLE_LDA_GATES:
+        return GateResult(gate=gate_id, passed=False,
+                          reason="LDA gates disabled (ENABLE_LDA_GATES=False).", evidence=[])
+
+    # Overlap evaluation requires temporal reasoning across gates —
+    # stub returns False until cross-gate timestamp correlation is implemented.
+    return GateResult(gate=gate_id, passed=False,
+                      reason="LDA overlap gate not yet fully implemented.",
+                      evidence=[])
+
+
+def eval_lda_device_day_count(gate: Dict[str, Any], patient: PatientFacts, contract: Dict[str, Any]) -> GateResult:
+    """Evaluate total device-day count for a device type.
+
+    Gate parameters:
+        device_type: canonical device type
+        count_gte: minimum device-day count
+    """
+    gate_id = str(gate.get("gate_id", "lda_device_day_count"))
+
+    if not ENABLE_LDA_GATES:
+        return GateResult(gate=gate_id, passed=False,
+                          reason="LDA gates disabled (ENABLE_LDA_GATES=False).", evidence=[])
+
+    device_type = str(gate.get("device_type", "")).upper()
+    count_gte = int(gate.get("count_gte", 1))
+
+    facts = patient.facts or {}
+    lda_data = facts.get("lda_episodes_v1") or {}
+    counts = lda_data.get("device_day_counts", {})
+    actual = int(counts.get(device_type, 0))
+
+    passed = actual >= count_gte
+    reason = (f"Device-day count {device_type}: {actual} >= {count_gte}."
+              if passed else
+              f"Device-day count {device_type}: {actual} < {count_gte}.")
+    return GateResult(gate=gate_id, passed=passed, reason=reason, evidence=[])
+
+
 def evaluate_event(event_rules: Dict[str, Any], contract: Dict[str, Any], patient: PatientFacts) -> EventResult:
     meta = event_rules.get("meta", {})
     event_id = int(meta.get("event_id"))
@@ -354,6 +515,14 @@ def evaluate_event(event_rules: Dict[str, Any], contract: Dict[str, Any], patien
             gr = eval_timing_after_arrival(gate, patient, contract)
         elif gt == "requires_treatment_any":
             gr = eval_requires_treatment_any(gate, patient, contract)
+        elif gt == "lda_duration":
+            gr = eval_lda_duration(gate, patient, contract)
+        elif gt == "lda_present_at":
+            gr = eval_lda_present_at(gate, patient, contract)
+        elif gt == "lda_overlap":
+            gr = eval_lda_overlap(gate, patient, contract)
+        elif gt == "lda_device_day_count":
+            gr = eval_lda_device_day_count(gate, patient, contract)
         else:
             gr = GateResult(gate=str(gate.get("gate_id")), passed=False, reason=f"Unknown gate_type: {gt}", evidence=[])
 

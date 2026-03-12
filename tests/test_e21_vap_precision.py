@@ -216,7 +216,7 @@ class TestVapRuleStructure:
         with open(rule_path) as f:
             rule = json.load(f)
         gates = {g["gate_id"]: g for g in rule["gates"]}
-        assert set(gates.keys()) == {"vent_evidence", "vap_evidence"}
+        assert set(gates.keys()) == {"vent_evidence", "vent_duration_lda", "vap_evidence"}
         assert "vap_negation_noise" in gates["vap_evidence"]["exclude_noise_keys"], \
             "vap_negation_noise must be wired into exclude_noise_keys"
         assert "history_noise" in gates["vap_evidence"]["exclude_noise_keys"], \
