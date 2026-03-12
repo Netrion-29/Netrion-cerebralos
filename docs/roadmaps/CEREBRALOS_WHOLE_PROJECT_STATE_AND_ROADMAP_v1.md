@@ -3,7 +3,7 @@
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
 | Date        | 2026-03-12                                               |
-| Baseline    | `95383e8` (main, after PR #217)                          |
+| Baseline    | `ce46c79` (main, after PR #220)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -106,6 +106,9 @@
 | #215 | `64781e5` | docs(roadmap): add LDA intake loop and post-PR214 intake ledger |
 | #216 | `156c86f` | fix(lda): add [REMOVED] bracket patterns for Urethral Catheter and Non-Surgical Airway |
 | #217 | `156c86f` | docs(roadmap): add LDA intake loop and post-PR214 intake ledger (re-merge) — same commit as #216; docs branch rebased onto LDA code commit before re-merge |
+| #218 | `85f06c7` | docs(roadmap): sync merged state through PR #217 — add PRs #208-#217, fix stale refs |
+| #219 | `29754bd` | docs(process): persist codex operating contract and new-chat master prompt |
+| #220 | `a0866ce` | docs(protocol): add first-pass protocol data coverage mapping matrix — `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` |
 
 ### Closed PRs
 
@@ -122,7 +125,7 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 3229 passed (pytest) |
+| Total tests         | 3229+ passed (pytest) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 47               |
 | Fixture runner      | **56 passed, 0 xfailed** |
@@ -562,7 +565,7 @@ and added two block filters:
 | 12 | PMH-aware gate handling | Engine proposal (PROTECTED `cerebralos/ntds_logic/engine.py`) | Medium | Large | Requires engine modification + design doc + explicit authorization; protocol engine has reference impl |
 | 13 | **CAUTI engine design (LDA duration gate + alt-source exclusion)** | Design doc `docs/audits/CAUTI_ENGINE_DESIGN_v1.md` | **High** | Medium–Large | ✅ DESIGN COMPLETE — requires engine-change authorization for implementation. LDA SourceType + catheter duration gate + alternative-source exclusion. See design doc for phased migration plan. |
 | ~~14~~ | ~~**E06 CLABSI spec fidelity (NHSN CLABSI)**~~ | ~~`rules/ntds/logic/2026/06_clabsi.json`, `rules/mappers/epic_deaconess_mapper_v1.json`, tests~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** — 5 required gates (clabsi_dx, clabsi_central_line_gt2d, clabsi_lab_positive, clabsi_symptoms, clabsi_after_arrival) + 2 exclusions (POA, chronic line); 7 mapper keys (clabsi_negation_noise, clabsi_central_line_in_place, clabsi_blood_culture_positive, clabsi_symptoms, clabsi_onset, clabsi_chronic_line + refined clabsi_dx) with ~56 patterns total; clabsi_dx noise filter; 76 precision tests + 3 new fixtures (chronic-line-excluded, no-culture-no, noncentral-line-no); baseline refreshed: E06 stays NO=39, 0 NTDS outcome deltas |
-| 15 | **Protocol Data Coverage Mapping** | `docs/audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md`, `docs/audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.csv` | Medium | Medium | NOT STARTED — master list of all protocol data elements committed (20 categories, ~180 elements across 51 protocol PDFs); next step: map each element to current CerebralOS extraction coverage (extracted / not extracted / partial) |
+| 15 | **Protocol Data Coverage Mapping** | `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` | Medium | Medium | **IN PROGRESS** (PR #220 merged) — first-pass coverage matrix complete: 60 EXTRACTED, 57 PARTIAL, 97 MISSING, 16 N/A across 20 categories and 230 elements. Baseline artifact: `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md`. Next slices: (A) Sex + Discharge Disposition extraction — small, (B) Blood Product Transfusion extraction — medium, (C) Structured Lab Value Parsing — large. See coverage doc for detail. |
 | 16 | **LDA engine support (Lines, Drains, Airways)** | `cerebralos/ntds_logic/engine.py`, `cerebralos/ntds_logic/build_patientfacts_from_txt.py`, `cerebralos/ntds_logic/model.py` | **High** | Large | ✅ IMPLEMENTED (v1+text+startstop+correctness+bracket-removed) — PRs #203, #206, #207, #214, #216 (all merged). SourceType `LDA` added to model; `LDAEpisode` dataclass; `build_lda_episodes()` builder (structured JSON + text-derived flowsheet day-counter + insertion/removal start/stop inference); 4 gate types in engine incl. `eval_lda_overlap` (interval overlap, one-sided admission window — PR #214); `TEXT_DERIVED_STARTSTOP` confidence level; merge precedence: structured > startstop > day-counter (backfill episode_days — PR #214); `ENABLE_LDA_GATES` feature flag (default False); optional LDA gates wired into E05/E06/E21 rules (`required: false`); bracket `[REMOVED]` patterns for Urethral Catheter + Non-Surgical Airway ETT (PR #216); 145 dedicated tests. Next: enable flag per-event after cohort validation. |
 
 ##### LDA Analysis Intake Loop (Roadmap-First)
