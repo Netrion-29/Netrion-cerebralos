@@ -93,11 +93,11 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 2204 passed (pytest) |
+| Total tests         | 2327 passed (pytest) |
 | NTDS event rules    | 21 (all mapped)  |
-| Fixture files       | 51               |
-| Fixture runner      | **51 passed, 0 xfailed** |
-| Precision tests     | 8 suites (E01, E01-stage3, E05, E10, E15, E16, E18, E19) |
+| Fixture files       | 44               |
+| Fixture runner      | **44 passed, 0 xfailed** |
+| Precision tests     | 7 suites (E01, E05, E10, E15, E16, E18, E19) |
 | Cohort invariant    | 39 canonical = 39 adjusted |
 | NTDS distribution   | 21 events baselined (YES/NO/UTD/EXCLUDED per event) |
 | Canonical patients  | 39               |
@@ -531,7 +531,6 @@ and added two block filters:
 | 11c | **E05 CAUTI follow-up (culture/symptom variants)** | `rules/mappers/epic_deaconess_mapper_v1.json`, tests | High | Small | OPEN (PR #190) — symptoms 14→15 (adds altered mental status, temp regex 38–42°C); culture patterns 11→14 (1e5 CFU, spaced caret, “>100,000” forms); 13 new precision tests; 0 NTDS deltas |
 | 12 | PMH-aware gate handling | Engine proposal (PROTECTED `cerebralos/ntds_logic/engine.py`) | Medium | Large | Requires engine modification + design doc + explicit authorization; protocol engine has reference impl |
 | 13 | **CAUTI engine design (LDA duration gate + alt-source exclusion)** | Design doc `docs/audits/CAUTI_ENGINE_DESIGN_v1.md` | **High** | Medium–Large | ✅ DESIGN COMPLETE — requires engine-change authorization for implementation. LDA SourceType + catheter duration gate + alternative-source exclusion. See design doc for phased migration plan. |
-| 14 | **E01 AKI Tier-2 spec fidelity (KDIGO Stage 3)** | `rules/ntds/logic/2026/01_aki.json`, `rules/mappers/epic_deaconess_mapper_v1.json`, tests | **High** | Medium | ✅ COMPLETE — 3 gates (aki_dx tightened + ATN, aki_stage3 KDIGO OR criteria via dual query_keys, aki_after_arrival enhanced onset) + 2 exclusions (POA, chronic RRT); 3 new mapper keys (aki_stage3_lab 12 patterns, aki_new_dialysis 5 patterns, aki_chronic_rrt 5 patterns); aki_onset expanded 6→11 patterns; aki_dx +2 (ATN, creatinine increasing); NURSING_NOTE + PROGRESS_NOTE added to all gates; 68 precision tests + 4 fixtures (dialysis-YES, chronic-RRT-EXCLUDED, PMH-EXCLUDED, subthreshold-NO); 0 NTDS outcome deltas across 39 patients |
 
 ---
 
@@ -601,6 +600,7 @@ When starting a new ChatGPT, Codex, or Claude session for this repo:
 5. **Create a single-goal PR** — one branch, one purpose, one commit message.
 6. **Use sentinel cohort** for dev-loop validation; **full cohort** only at pre-merge gate.
 7. **Never stage** `_tmp_*`, `docs/handoffs/`, `tests/test_negation.py`, `tests/test_ntds_events.py`, `tests/test_ntds_simple.py`.
+8. **Handoff reminder (Claude → Codex)**: Every handoff must include a concise post-handoff analysis (spec alignment, validation results, remaining gaps/risks, next actions) and a raw-data cross-check: compare raw NTDS/protocol sources vs current extraction, and spot-check two patient raw `.txt` files (one questionable, one baseline) for capture accuracy.
 
 ---
 
