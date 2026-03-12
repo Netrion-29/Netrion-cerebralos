@@ -49,6 +49,7 @@ from cerebralos.ntds_logic import engine
 from cerebralos.ntds_logic.build_patientfacts_from_txt import (
     build_lda_episodes,
     _extract_lda_episodes_from_lines,
+    _extract_lda_startstop_episodes,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -92,7 +93,7 @@ class TestSourceTypeLDA:
         assert "MECHANICAL_VENTILATOR" in LDA_DEVICE_TYPES
 
     def test_lda_confidence_order(self):
-        assert LDA_CONFIDENCE_LEVELS == ("TEXT_APPROXIMATE", "TEXT_DERIVED", "STRUCTURED")
+        assert LDA_CONFIDENCE_LEVELS == ("TEXT_APPROXIMATE", "TEXT_DERIVED", "TEXT_DERIVED_STARTSTOP", "STRUCTURED")
 
     def test_lda_episode_dataclass(self):
         ep = LDAEpisode(
@@ -261,15 +262,16 @@ class TestLDAGatesFlagOn:
         result = engine.eval_lda_device_day_count(gate, patient, _contract())
         assert not result.passed
 
-    # ── lda_overlap (stub) ──
+    # ── lda_overlap ──
 
-    def test_overlap_stub_returns_false(self):
+    def test_overlap_no_reference_ts(self):
+        """Without a reference timestamp, overlap should fail."""
         patient = _make_patient()
         gate = _gate("lda_overlap", "overlap_test", device_type="CENTRAL_LINE",
-                      overlap_gate="other", window_days=2)
+                      reference="event_date", window_days=2)
         result = engine.eval_lda_overlap(gate, patient, _contract())
         assert not result.passed
-        assert "not yet" in result.reason.lower()
+        assert "no reference" in result.reason.lower()
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -977,5 +979,643 @@ class TestE21VapTextDerivedPrecision:
         engine.ENABLE_LDA_GATES = True
         gate = self._load_e21_lda_gate()
         patient = _make_patient(lda_episodes=[])
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert not result.passed
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 13. Start/stop text extraction — insertion/removal patterns
+# ═══════════════════════════════════════════════════════════════════
+
+class TestStartStopExtraction:
+    """Unit tests for _extract_lda_startstop_episodes helper."""
+
+    # ── URINARY_CATHETER ──
+
+    def test_foley_placed(self):
+        eps = _extract_lda_startstop_episodes(
+            ["Foley catheter placed in ED."],
+            timestamps=["2026-01-15T09:00:00"],
+        )
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "URINARY_CATHETER"
+        assert eps[0]["start_ts"] == "2026-01-15T09:00:00"
+        assert eps[0]["stop_ts"] is None
+        assert eps[0]["source_confidence"] == "TEXT_DERIVED_STARTSTOP"
+
+    def test_foley_inserted(self):
+        eps = _extract_lda_startstop_episodes(
+            ["Foley inserted for strict I&O."],
+            timestamps=["2026-01-15T10:00:00"],
+        )
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "URINARY_CATHETER"
+        assert eps[0]["start_ts"] == "2026-01-15T10:00:00"
+
+    def test_urinary_catheter_inserted(self):
+        eps = _extract_lda_startstop_episodes(
+            ["Urinary catheter inserted by RN."],
+            timestamps=["2026-01-15T11:00:00"],
+        )
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "URINARY_CATHETER"
+
+    def test_foley_removed(self):
+        eps = _extract_lda_startstop_episodes(
+            ["Foley catheter placed.", "Foley removed at bedside."],
+            timestamps=["2026-01-15T09:00:00", "2026-01-18T08:00:00"],
+        )
+        assert len(eps) == 1
+        ep = eps[0]
+        assert ep["device_type"] == "URINARY_CATHETER"
+        assert ep["start_ts"] == "2026-01-15T09:00:00"
+        assert ep["stop_ts"] == "2026-01-18T08:00:00"
+        assert ep["episode_days"] == 3
+
+    def test_indwelling_catheter_in_place(self):
+        eps = _extract_lda_startstop_episodes(
+            ["Indwelling urinary catheter in place."],
+            timestamps=["2026-01-15T10:00:00"],
+        )
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "URINARY_CATHETER"
+
+    # ── CENTRAL_LINE ──
+
+    def test_central_line_placed(self):
+        eps = _extract_lda_startstop_episodes(
+            ["Central venous catheter placed, right IJ."],
+            timestamps=["2026-01-15T14:00:00"],
+        )
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "CENTRAL_LINE"
+        assert eps[0]["start_ts"] == "2026-01-15T14:00:00"
+
+    def test_picc_placed(self):
+        eps = _extract_lda_startstop_episodes(
+            ["PICC line placed in right arm."],
+            timestamps=["2026-01-16T10:00:00"],
+        )
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "CENTRAL_LINE"
+
+    def test_cvl_inserted_removed(self):
+        eps = _extract_lda_startstop_episodes(
+            ["CVL inserted left subclavian.", "CVL removed without complication."],
+            timestamps=["2026-01-15T08:00:00", "2026-01-20T10:00:00"],
+        )
+        assert len(eps) == 1
+        ep = eps[0]
+        assert ep["start_ts"] == "2026-01-15T08:00:00"
+        assert ep["stop_ts"] == "2026-01-20T10:00:00"
+        assert ep["episode_days"] == 5
+
+    def test_central_line_removed(self):
+        eps = _extract_lda_startstop_episodes(
+            ["Central line removed per MD order."],
+            timestamps=["2026-01-20T10:00:00"],
+        )
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "CENTRAL_LINE"
+        assert eps[0]["stop_ts"] == "2026-01-20T10:00:00"
+
+    def test_triple_lumen_placed(self):
+        eps = _extract_lda_startstop_episodes(
+            ["Triple-lumen catheter placed."],
+            timestamps=["2026-01-15T12:00:00"],
+        )
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "CENTRAL_LINE"
+
+    # ── MECHANICAL_VENTILATOR / ENDOTRACHEAL_TUBE ──
+
+    def test_intubated(self):
+        eps = _extract_lda_startstop_episodes(
+            ["Patient intubated in the ED."],
+            timestamps=["2026-01-15T08:30:00"],
+        )
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "ENDOTRACHEAL_TUBE"
+        assert eps[0]["start_ts"] == "2026-01-15T08:30:00"
+
+    def test_extubated(self):
+        eps = _extract_lda_startstop_episodes(
+            ["Patient intubated.", "Patient extubated successfully."],
+            timestamps=["2026-01-15T08:00:00", "2026-01-20T10:00:00"],
+        )
+        assert len(eps) == 1
+        ep = eps[0]
+        assert ep["device_type"] == "ENDOTRACHEAL_TUBE"
+        assert ep["start_ts"] == "2026-01-15T08:00:00"
+        assert ep["stop_ts"] == "2026-01-20T10:00:00"
+        assert ep["episode_days"] == 5
+
+    def test_mechanical_ventilation_initiated(self):
+        eps = _extract_lda_startstop_episodes(
+            ["Mechanical ventilation initiated for respiratory failure."],
+            timestamps=["2026-01-15T09:00:00"],
+        )
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "MECHANICAL_VENTILATOR"
+
+    def test_vent_discontinued(self):
+        eps = _extract_lda_startstop_episodes(
+            ["Patient placed on ventilator.", "Ventilator discontinued after wean trial."],
+            timestamps=["2026-01-15T08:00:00", "2026-01-22T14:00:00"],
+        )
+        assert len(eps) == 1
+        assert eps[0]["device_type"] == "MECHANICAL_VENTILATOR"
+        assert eps[0]["episode_days"] == 7
+
+    def test_trach_placed_ends_ett(self):
+        """Tracheostomy placement ends the ETT episode."""
+        eps = _extract_lda_startstop_episodes(
+            ["Patient intubated.", "Tracheostomy placed."],
+            timestamps=["2026-01-15T08:00:00", "2026-01-22T10:00:00"],
+        )
+        ett = [e for e in eps if e["device_type"] == "ENDOTRACHEAL_TUBE"]
+        assert len(ett) == 1
+        assert ett[0]["start_ts"] == "2026-01-15T08:00:00"
+        assert ett[0]["stop_ts"] == "2026-01-22T10:00:00"
+
+    # ── Edge cases ──
+
+    def test_no_matches_empty(self):
+        eps = _extract_lda_startstop_episodes(
+            ["Patient resting comfortably.", "Vitals stable."],
+            timestamps=["2026-01-15T08:00:00", "2026-01-15T09:00:00"],
+        )
+        assert eps == []
+
+    def test_no_timestamps_still_returns_episode(self):
+        """Episode still created without timestamps (nullable start/stop)."""
+        eps = _extract_lda_startstop_episodes(
+            ["Foley catheter placed."],
+            timestamps=[None],
+        )
+        assert len(eps) == 1
+        assert eps[0]["start_ts"] is None
+        assert eps[0]["episode_days"] is None
+
+    def test_no_timestamps_list_at_all(self):
+        """timestamps arg omitted entirely."""
+        eps = _extract_lda_startstop_episodes(["Foley catheter placed."])
+        assert len(eps) == 1
+        assert eps[0]["start_ts"] is None
+
+    def test_multiple_device_types(self):
+        """Multiple devices in same text."""
+        eps = _extract_lda_startstop_episodes(
+            ["Foley catheter placed.", "Central line placed left IJ."],
+            timestamps=["2026-01-15T08:00:00", "2026-01-15T09:00:00"],
+        )
+        types = {e["device_type"] for e in eps}
+        assert "URINARY_CATHETER" in types
+        assert "CENTRAL_LINE" in types
+
+    def test_all_schema_fields_present(self):
+        """Every start/stop episode must have all LDAEpisode fields."""
+        eps = _extract_lda_startstop_episodes(
+            ["Foley catheter placed."],
+            timestamps=["2026-01-15T08:00:00"],
+        )
+        expected = {
+            "device_type", "episode_days", "source_confidence",
+            "start_ts", "stop_ts", "location", "inserted_by",
+            "notes", "raw_line_ids",
+        }
+        assert set(eps[0].keys()) == expected
+
+    def test_raw_line_ids_populated(self):
+        eps = _extract_lda_startstop_episodes(
+            ["Some intro", "Foley catheter placed.", "More text", "Foley removed."],
+            timestamps=[None, "2026-01-15T08:00:00", None, "2026-01-18T10:00:00"],
+        )
+        assert len(eps) == 1
+        assert "L2" in eps[0]["raw_line_ids"]
+        assert "L4" in eps[0]["raw_line_ids"]
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 14. eval_lda_overlap tests
+# ═══════════════════════════════════════════════════════════════════
+
+class TestEvalLDAOverlap:
+    """Tests for the eval_lda_overlap gate function."""
+
+    def setup_method(self):
+        self._orig = engine.ENABLE_LDA_GATES
+        engine.ENABLE_LDA_GATES = True
+
+    def teardown_method(self):
+        engine.ENABLE_LDA_GATES = self._orig
+
+    def _make_overlap_patient(self, episodes, event_date=None, arrival_time=None):
+        facts = {"query_patterns": {}}
+        if event_date:
+            facts["event_date"] = event_date
+        if arrival_time:
+            facts["arrival_time"] = arrival_time
+        if episodes is not None:
+            facts["lda_episodes_v1"] = {"episodes": episodes, "device_day_counts": {}}
+        return PatientFacts(patient_id="test", facts=facts, evidence=[])
+
+    def test_overlap_device_active_during_event(self):
+        """Device episode spans the event date → passes."""
+        patient = self._make_overlap_patient(
+            episodes=[{
+                "device_type": "URINARY_CATHETER",
+                "start_ts": "2026-01-15T08:00:00",
+                "stop_ts": "2026-01-20T10:00:00",
+                "source_confidence": "TEXT_DERIVED_STARTSTOP",
+            }],
+            event_date="2026-01-18T10:00:00",
+        )
+        gate = _gate("lda_overlap", "test_overlap",
+                      device_type="URINARY_CATHETER", reference="event_date")
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        assert result.passed
+
+    def test_overlap_device_before_event(self):
+        """Device removed before event date → fails."""
+        patient = self._make_overlap_patient(
+            episodes=[{
+                "device_type": "URINARY_CATHETER",
+                "start_ts": "2026-01-10T08:00:00",
+                "stop_ts": "2026-01-12T10:00:00",
+                "source_confidence": "TEXT_DERIVED_STARTSTOP",
+            }],
+            event_date="2026-01-18T10:00:00",
+        )
+        gate = _gate("lda_overlap", "test_overlap",
+                      device_type="URINARY_CATHETER", reference="event_date")
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        assert not result.passed
+
+    def test_overlap_device_after_event(self):
+        """Device placed after event date → fails."""
+        patient = self._make_overlap_patient(
+            episodes=[{
+                "device_type": "URINARY_CATHETER",
+                "start_ts": "2026-01-22T08:00:00",
+                "stop_ts": "2026-01-25T10:00:00",
+                "source_confidence": "TEXT_DERIVED_STARTSTOP",
+            }],
+            event_date="2026-01-18T10:00:00",
+        )
+        gate = _gate("lda_overlap", "test_overlap",
+                      device_type="URINARY_CATHETER", reference="event_date")
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        assert not result.passed
+
+    def test_overlap_with_window_days(self):
+        """Device within ±2 days of event → passes."""
+        patient = self._make_overlap_patient(
+            episodes=[{
+                "device_type": "CENTRAL_LINE",
+                "start_ts": "2026-01-10T08:00:00",
+                "stop_ts": "2026-01-17T10:00:00",
+                "source_confidence": "STRUCTURED",
+            }],
+            event_date="2026-01-18T10:00:00",
+        )
+        gate = _gate("lda_overlap", "test_overlap",
+                      device_type="CENTRAL_LINE", reference="event_date", window_days=2)
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        assert result.passed
+
+    def test_overlap_open_ended_start_only(self):
+        """Device with only start_ts (no removal) → treat as still active."""
+        patient = self._make_overlap_patient(
+            episodes=[{
+                "device_type": "URINARY_CATHETER",
+                "start_ts": "2026-01-15T08:00:00",
+                "stop_ts": None,
+                "source_confidence": "TEXT_DERIVED_STARTSTOP",
+            }],
+            event_date="2026-01-18T10:00:00",
+        )
+        gate = _gate("lda_overlap", "test_overlap",
+                      device_type="URINARY_CATHETER", reference="event_date")
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        assert result.passed
+
+    def test_overlap_no_timestamps_fails(self):
+        """Episode with no timestamps at all → no overlap possible."""
+        patient = self._make_overlap_patient(
+            episodes=[{
+                "device_type": "URINARY_CATHETER",
+                "start_ts": None,
+                "stop_ts": None,
+                "source_confidence": "TEXT_DERIVED",
+            }],
+            event_date="2026-01-18T10:00:00",
+        )
+        gate = _gate("lda_overlap", "test_overlap",
+                      device_type="URINARY_CATHETER", reference="event_date")
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        assert not result.passed
+
+    def test_overlap_wrong_device_type(self):
+        """Overlapping episode but wrong device → fails."""
+        patient = self._make_overlap_patient(
+            episodes=[{
+                "device_type": "CENTRAL_LINE",
+                "start_ts": "2026-01-15T08:00:00",
+                "stop_ts": "2026-01-20T10:00:00",
+                "source_confidence": "STRUCTURED",
+            }],
+            event_date="2026-01-18T10:00:00",
+        )
+        gate = _gate("lda_overlap", "test_overlap",
+                      device_type="URINARY_CATHETER", reference="event_date")
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        assert not result.passed
+
+    def test_overlap_flag_off_noop(self):
+        """With flag off, overlap should no-op to False."""
+        engine.ENABLE_LDA_GATES = False
+        patient = self._make_overlap_patient(
+            episodes=[{
+                "device_type": "URINARY_CATHETER",
+                "start_ts": "2026-01-15T08:00:00",
+                "stop_ts": "2026-01-20T10:00:00",
+                "source_confidence": "STRUCTURED",
+            }],
+            event_date="2026-01-18T10:00:00",
+        )
+        gate = _gate("lda_overlap", "test_overlap",
+                      device_type="URINARY_CATHETER", reference="event_date")
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        assert not result.passed
+        assert "disabled" in result.reason.lower()
+
+    def test_overlap_confidence_filter(self):
+        """Episode below min_confidence → skipped."""
+        patient = self._make_overlap_patient(
+            episodes=[{
+                "device_type": "URINARY_CATHETER",
+                "start_ts": "2026-01-15T08:00:00",
+                "stop_ts": "2026-01-20T10:00:00",
+                "source_confidence": "TEXT_APPROXIMATE",
+            }],
+            event_date="2026-01-18T10:00:00",
+        )
+        gate = _gate("lda_overlap", "test_overlap",
+                      device_type="URINARY_CATHETER", reference="event_date",
+                      min_confidence="STRUCTURED")
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        assert not result.passed
+
+    def test_overlap_no_reference_timestamp(self):
+        """No event_date or arrival_time in facts → fails."""
+        patient = self._make_overlap_patient(
+            episodes=[{
+                "device_type": "URINARY_CATHETER",
+                "start_ts": "2026-01-15T08:00:00",
+                "stop_ts": "2026-01-20T10:00:00",
+                "source_confidence": "STRUCTURED",
+            }],
+        )
+        gate = _gate("lda_overlap", "test_overlap",
+                      device_type="URINARY_CATHETER", reference="event_date")
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        assert not result.passed
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 15. Merge precedence: structured > startstop > day-counter
+# ═══════════════════════════════════════════════════════════════════
+
+class TestMergePrecedenceStartStop:
+    """Tests for build_lda_episodes merge precedence with start/stop tier."""
+
+    def test_startstop_overrides_day_counter(self):
+        """TEXT_DERIVED_STARTSTOP takes precedence over TEXT_DERIVED day-counter."""
+        eps = build_lda_episodes(
+            patient_id="test",
+            raw_lines=[
+                "Foley catheter placed.",
+                "Catheter day 3",
+                "Foley removed at bedside.",
+            ],
+            raw_timestamps=[
+                "2026-01-15T09:00:00",
+                None,
+                "2026-01-18T08:00:00",
+            ],
+        )
+        cath = [e for e in eps if e["device_type"] == "URINARY_CATHETER"]
+        assert len(cath) == 1
+        assert cath[0]["source_confidence"] == "TEXT_DERIVED_STARTSTOP"
+        assert cath[0]["start_ts"] == "2026-01-15T09:00:00"
+        assert cath[0]["stop_ts"] == "2026-01-18T08:00:00"
+        assert cath[0]["episode_days"] == 3
+
+    def test_structured_overrides_startstop(self):
+        """STRUCTURED JSON episode takes precedence over TEXT_DERIVED_STARTSTOP."""
+        import tempfile
+        feed = {
+            "lda_records": [{
+                "device_type": "URINARY_CATHETER",
+                "episode_days": 5,
+                "source_confidence": "STRUCTURED",
+                "start_ts": "2026-01-12T08:00:00",
+                "stop_ts": "2026-01-17T08:00:00",
+            }],
+        }
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(feed, f)
+            tmp_path = Path(f.name)
+
+        try:
+            eps = build_lda_episodes(
+                patient_id="test",
+                lda_json_path=tmp_path,
+                raw_lines=["Foley catheter placed.", "Foley removed."],
+                raw_timestamps=["2026-01-15T09:00:00", "2026-01-18T08:00:00"],
+            )
+            cath = [e for e in eps if e["device_type"] == "URINARY_CATHETER"]
+            assert len(cath) == 1
+            assert cath[0]["source_confidence"] == "STRUCTURED"
+            assert cath[0]["episode_days"] == 5
+        finally:
+            tmp_path.unlink()
+
+    def test_different_devices_all_tiers(self):
+        """Different device types from different tiers coexist."""
+        eps = build_lda_episodes(
+            patient_id="test",
+            raw_lines=[
+                "Foley catheter placed.",
+                "Foley removed.",
+                "Line Day 5",
+                "Patient intubated.",
+            ],
+            raw_timestamps=[
+                "2026-01-15T09:00:00",
+                "2026-01-18T08:00:00",
+                None,
+                "2026-01-15T10:00:00",
+            ],
+        )
+        types = {e["device_type"] for e in eps}
+        assert "URINARY_CATHETER" in types   # TEXT_DERIVED_STARTSTOP
+        assert "CENTRAL_LINE" in types       # TEXT_DERIVED
+        assert "ENDOTRACHEAL_TUBE" in types  # TEXT_DERIVED_STARTSTOP
+
+    def test_day_counter_kept_when_no_startstop(self):
+        """Day-counter episode retained when no start/stop patterns match."""
+        eps = build_lda_episodes(
+            patient_id="test",
+            raw_lines=["Catheter day 5"],
+        )
+        assert len(eps) == 1
+        assert eps[0]["source_confidence"] == "TEXT_DERIVED"
+        assert eps[0]["episode_days"] == 5
+
+    def test_new_raw_timestamps_param_backward_compat(self):
+        """Existing callers without raw_timestamps still work."""
+        eps = build_lda_episodes(
+            patient_id="test",
+            raw_lines=["Catheter day 3", "Line Day 5"],
+        )
+        assert len(eps) == 2
+
+    def test_startstop_confidence_in_tier(self):
+        """TEXT_DERIVED_STARTSTOP is between TEXT_DERIVED and STRUCTURED."""
+        assert LDA_CONFIDENCE_LEVELS.index("TEXT_DERIVED_STARTSTOP") > LDA_CONFIDENCE_LEVELS.index("TEXT_DERIVED")
+        assert LDA_CONFIDENCE_LEVELS.index("TEXT_DERIVED_STARTSTOP") < LDA_CONFIDENCE_LEVELS.index("STRUCTURED")
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 16. Precision tests: E05/E06/E21 with start/stop + flag toggle
+# ═══════════════════════════════════════════════════════════════════
+
+class TestE05StartStopPrecision:
+    """E05 CAUTI: lda_duration gate with start/stop-derived episodes."""
+
+    def setup_method(self):
+        self._orig = engine.ENABLE_LDA_GATES
+
+    def teardown_method(self):
+        engine.ENABLE_LDA_GATES = self._orig
+
+    def _load_e05_lda_gate(self):
+        with open(RULE_DIR / "05_cauti.json") as f:
+            rule = json.load(f)
+        for g in rule["gates"]:
+            if g["gate_id"] == "cauti_catheter_duration_lda":
+                return g
+        pytest.fail("cauti_catheter_duration_lda gate not found")
+
+    def test_flag_on_startstop_3d_passes(self):
+        """Flag on + foley placed/removed (3d) → gate passes."""
+        engine.ENABLE_LDA_GATES = True
+        gate = self._load_e05_lda_gate()
+        episodes = _extract_lda_startstop_episodes(
+            ["Foley catheter placed.", "Foley removed."],
+            timestamps=["2026-01-15T09:00:00", "2026-01-18T09:00:00"],
+        )
+        patient = _make_patient(lda_episodes=episodes)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert result.passed
+
+    def test_flag_off_startstop_noop(self):
+        """Flag off + foley start/stop → gate disabled."""
+        engine.ENABLE_LDA_GATES = False
+        gate = self._load_e05_lda_gate()
+        episodes = _extract_lda_startstop_episodes(
+            ["Foley catheter placed.", "Foley removed."],
+            timestamps=["2026-01-15T09:00:00", "2026-01-18T09:00:00"],
+        )
+        patient = _make_patient(lda_episodes=episodes)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert not result.passed
+        assert "disabled" in result.reason.lower()
+
+
+class TestE06StartStopPrecision:
+    """E06 CLABSI: lda_duration gate with start/stop-derived episodes."""
+
+    def setup_method(self):
+        self._orig = engine.ENABLE_LDA_GATES
+
+    def teardown_method(self):
+        engine.ENABLE_LDA_GATES = self._orig
+
+    def _load_e06_lda_gate(self):
+        with open(RULE_DIR / "06_clabsi.json") as f:
+            rule = json.load(f)
+        for g in rule["gates"]:
+            if g["gate_id"] == "clabsi_central_line_duration_lda":
+                return g
+        pytest.fail("clabsi_central_line_duration_lda gate not found")
+
+    def test_flag_on_cvl_5d_passes(self):
+        """Flag on + CVL placed/removed (5d) → gate passes."""
+        engine.ENABLE_LDA_GATES = True
+        gate = self._load_e06_lda_gate()
+        episodes = _extract_lda_startstop_episodes(
+            ["Central venous catheter placed right IJ.", "Central line removed."],
+            timestamps=["2026-01-15T08:00:00", "2026-01-20T08:00:00"],
+        )
+        patient = _make_patient(lda_episodes=episodes)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert result.passed
+
+    def test_flag_off_cvl_noop(self):
+        """Flag off → gate disabled."""
+        engine.ENABLE_LDA_GATES = False
+        gate = self._load_e06_lda_gate()
+        episodes = _extract_lda_startstop_episodes(
+            ["Central venous catheter placed.", "Central line removed."],
+            timestamps=["2026-01-15T08:00:00", "2026-01-20T08:00:00"],
+        )
+        patient = _make_patient(lda_episodes=episodes)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert not result.passed
+
+
+class TestE21StartStopPrecision:
+    """E21 VAP: lda_duration gate with start/stop-derived episodes."""
+
+    def setup_method(self):
+        self._orig = engine.ENABLE_LDA_GATES
+
+    def teardown_method(self):
+        engine.ENABLE_LDA_GATES = self._orig
+
+    def _load_e21_lda_gate(self):
+        with open(RULE_DIR / "21_vap.json") as f:
+            rule = json.load(f)
+        for g in rule["gates"]:
+            if g["gate_id"] == "vent_duration_lda":
+                return g
+        pytest.fail("vent_duration_lda not found")
+
+    def test_flag_on_intubation_7d_passes(self):
+        """Flag on + intubated/extubated (7d) → gate passes."""
+        engine.ENABLE_LDA_GATES = True
+        gate = self._load_e21_lda_gate()
+        # Intubation creates ETT episode, but vent gate expects MECHANICAL_VENTILATOR.
+        # Use placed on ventilator / vent discontinued.
+        episodes = _extract_lda_startstop_episodes(
+            ["Patient placed on mechanical ventilator.", "Ventilator discontinued."],
+            timestamps=["2026-01-15T08:00:00", "2026-01-22T08:00:00"],
+        )
+        patient = _make_patient(lda_episodes=episodes)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert result.passed
+
+    def test_flag_off_vent_noop(self):
+        """Flag off → gate disabled."""
+        engine.ENABLE_LDA_GATES = False
+        gate = self._load_e21_lda_gate()
+        episodes = _extract_lda_startstop_episodes(
+            ["Patient placed on ventilator.", "Ventilator discontinued."],
+            timestamps=["2026-01-15T08:00:00", "2026-01-22T08:00:00"],
+        )
+        patient = _make_patient(lda_episodes=episodes)
         result = engine.eval_lda_duration(gate, patient, _contract())
         assert not result.passed

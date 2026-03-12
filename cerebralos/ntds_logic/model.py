@@ -69,7 +69,7 @@ LDA_DEVICE_TYPES = frozenset({
 })
 
 # Source confidence tiers for LDA episodes (ordered lowest → highest).
-LDA_CONFIDENCE_LEVELS = ("TEXT_APPROXIMATE", "TEXT_DERIVED", "STRUCTURED")
+LDA_CONFIDENCE_LEVELS = ("TEXT_APPROXIMATE", "TEXT_DERIVED", "TEXT_DERIVED_STARTSTOP", "STRUCTURED")
 
 
 @dataclass
@@ -101,7 +101,7 @@ class LDAEpisode:
 @dataclass
 class EvidencePointer:
     """Reference to source location in clinical documentation.
-    
+
     Attributes:
         ref: Dictionary containing source reference (file, line, offset, etc.)
     """
@@ -111,7 +111,7 @@ class EvidencePointer:
 @dataclass
 class Evidence:
     """A single piece of clinical documentation evidence.
-    
+
     Attributes:
         source_type: Type of clinical documentation source
         timestamp: Optional ISO timestamp of the evidence
@@ -127,7 +127,7 @@ class Evidence:
 @dataclass
 class HardStop:
     """Represents an exclusion or early termination condition.
-    
+
     Attributes:
         rule_id: Identifier of the rule that triggered the hard stop
         reason: Human-readable explanation
@@ -141,7 +141,7 @@ class HardStop:
 @dataclass
 class GateResult:
     """Result of evaluating a single gate.
-    
+
     Attributes:
         gate: Identifier of the gate
         passed: Whether the gate passed
@@ -157,7 +157,7 @@ class GateResult:
 @dataclass
 class EventResult:
     """Final result of NTDS event evaluation.
-    
+
     Attributes:
         event_id: NTDS event identifier
         canonical_name: Human-readable event name
@@ -179,7 +179,7 @@ class EventResult:
 @dataclass
 class PatientFacts:
     """Container for patient data and clinical evidence.
-    
+
     Attributes:
         patient_id: De-identified patient identifier (optional)
         facts: Dictionary of extracted facts (arrival_time, query_patterns, etc.)

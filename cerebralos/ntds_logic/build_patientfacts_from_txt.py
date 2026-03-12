@@ -227,16 +227,16 @@ def build_patientfacts(
     patient_id: Optional[str] = None,
 ) -> PatientFacts:
     """Parse Epic TXT export into PatientFacts.
-    
+
     Args:
         txt_path: Path to the Epic .txt export file
         query_patterns: Dictionary of query pattern keys to regex patterns
         arrival_time: Optional override for arrival time (ISO format preferred)
         patient_id: Optional de-identified patient identifier
-        
+
     Returns:
         PatientFacts containing parsed evidence and facts
-        
+
     Note:
         - Fails closed: if file is missing or unreadable, returns empty PatientFacts
         - PHI in txt_path is the caller's responsibility to handle
@@ -246,24 +246,24 @@ def build_patientfacts(
         "arrival_time": arrival_time,
     }
     evidence_list: List[Evidence] = []
-    
+
     if not txt_path.exists():
         return PatientFacts(patient_id=patient_id, facts=facts, evidence=[])
-    
+
     try:
         content = txt_path.read_text(encoding="utf-8")
     except (IOError, UnicodeDecodeError):
         return PatientFacts(patient_id=patient_id, facts=facts, evidence=[])
-    
+
     lines = content.splitlines()
     current_source = SourceType.UNKNOWN
     current_timestamp: Optional[str] = None
-    
+
     for line_num, line in enumerate(lines, start=1):
         stripped = line.strip()
         if not stripped:
             continue
-        
+
         # Check for section header - section headers define the source type for
         # subsequent lines until a new section is detected. Any timestamp in the
         # header is preserved and applied to following evidence entries until
@@ -276,19 +276,19 @@ def build_patientfacts(
             if ts:
                 current_timestamp = ts
             continue
-        
+
         # Check for timestamp in line - updates current_timestamp for this and
         # subsequent evidence entries
         ts = _extract_timestamp(stripped)
         if ts:
             current_timestamp = ts
-        
+
         # Create evidence for this line
         pointer = EvidencePointer(ref={
             "file": txt_path.name,
             "line": line_num,
         })
-        
+
         ev = Evidence(
             source_type=current_source,
             timestamp=current_timestamp,
@@ -296,7 +296,7 @@ def build_patientfacts(
             pointer=pointer,
         )
         evidence_list.append(ev)
-    
+
     return PatientFacts(
         patient_id=patient_id,
         facts=facts,
@@ -305,6 +305,133 @@ def build_patientfacts(
 
 
 # ── LDA text-derived extraction helpers ────────────────────────────
+
+# ── Insertion / removal patterns for start/stop inference ──────────
+# Each entry: (compiled regex, device_type, "insert" | "remove").
+# Patterns are case-insensitive.  The regex does NOT capture timestamps;
+# the calling code must pair each match with the line's timestamp
+# (extracted from the surrounding section header or inline timestamp).
+
+_LDA_STARTSTOP_PATTERNS: List[tuple] = [
+    # ── URINARY_CATHETER insertion ──
+    (re.compile(r"\bfoley\b.*?\b(?:placed|inserted|in\s+place)\b", re.IGNORECASE), "URINARY_CATHETER", "insert"),
+    (re.compile(r"\burinary\s+catheter\b.*?\b(?:inserted|placed|in\s+place)\b", re.IGNORECASE), "URINARY_CATHETER", "insert"),
+    (re.compile(r"\bindwelling\s+(?:urinary\s+)?catheter\b.*?\b(?:inserted|placed|in\s+place)\b", re.IGNORECASE), "URINARY_CATHETER", "insert"),
+    # ── URINARY_CATHETER removal ──
+    (re.compile(r"\bfoley\b.*?\b(?:removed|discontinued|d/?c['\u2019]?d)\b", re.IGNORECASE), "URINARY_CATHETER", "remove"),
+    (re.compile(r"\burinary\s+catheter\b.*?\b(?:removed|discontinued)\b", re.IGNORECASE), "URINARY_CATHETER", "remove"),
+    (re.compile(r"\b(?:remove|discontinue|d/?c)\b.*?\bfoley\b", re.IGNORECASE), "URINARY_CATHETER", "remove"),
+
+    # ── CENTRAL_LINE insertion ──
+    (re.compile(r"\bcentral\s+(?:venous\s+)?(?:line|catheter|access)\b.*?\b(?:placed|inserted|in\s+place)\b", re.IGNORECASE), "CENTRAL_LINE", "insert"),
+    (re.compile(r"\b(?:PICC|picc)\b.*?\b(?:placed|inserted|in\s+place)\b", re.IGNORECASE), "CENTRAL_LINE", "insert"),
+    (re.compile(r"\b(?:CVL|CVC|CVP)\b.*?\b(?:placed|inserted|in\s+place)\b", re.IGNORECASE), "CENTRAL_LINE", "insert"),
+    (re.compile(r"\btriple[- ]lumen\b.*?\b(?:placed|inserted|in\s+place)\b", re.IGNORECASE), "CENTRAL_LINE", "insert"),
+    (re.compile(r"\b(?:Hickman|Broviac|port-?a-?cath)\b.*?\b(?:placed|inserted)\b", re.IGNORECASE), "CENTRAL_LINE", "insert"),
+    # ── CENTRAL_LINE removal ──
+    (re.compile(r"\bcentral\s+(?:venous\s+)?(?:line|catheter)\b.*?\b(?:removed|discontinued|pulled)\b", re.IGNORECASE), "CENTRAL_LINE", "remove"),
+    (re.compile(r"\b(?:PICC|picc)\b.*?\b(?:removed|discontinued|pulled)\b", re.IGNORECASE), "CENTRAL_LINE", "remove"),
+    (re.compile(r"\b(?:CVL|CVC|CVP)\b.*?\b(?:removed|discontinued|pulled)\b", re.IGNORECASE), "CENTRAL_LINE", "remove"),
+    (re.compile(r"\b(?:remove|discontinue|pull)\b.*?\bcentral\s+(?:venous\s+)?(?:line|catheter)\b", re.IGNORECASE), "CENTRAL_LINE", "remove"),
+
+    # ── MECHANICAL_VENTILATOR / ENDOTRACHEAL_TUBE insertion ──
+    (re.compile(r"\bintubat(?:ed|ion)\b", re.IGNORECASE), "ENDOTRACHEAL_TUBE", "insert"),
+    (re.compile(r"\bmechanical\s+ventilation\s+(?:initiated|started|begun)\b", re.IGNORECASE), "MECHANICAL_VENTILATOR", "insert"),
+    (re.compile(r"\bplaced\s+on\s+(?:mechanical\s+)?vent(?:ilat(?:or|ion))?\b", re.IGNORECASE), "MECHANICAL_VENTILATOR", "insert"),
+    # ── MECHANICAL_VENTILATOR / ENDOTRACHEAL_TUBE removal ──
+    (re.compile(r"\bextubat(?:ed|ion)\b", re.IGNORECASE), "ENDOTRACHEAL_TUBE", "remove"),
+    (re.compile(r"\bvent(?:ilat(?:or|ion))?\s+(?:discontinued|weaned\s+off|removed)\b", re.IGNORECASE), "MECHANICAL_VENTILATOR", "remove"),
+    (re.compile(r"\btrach(?:eostomy)?\s+placed\b", re.IGNORECASE), "ENDOTRACHEAL_TUBE", "remove"),  # trach placement ends ETT episode
+]
+
+
+def _extract_lda_startstop_episodes(
+    lines: List[str],
+    timestamps: Optional[List[Optional[str]]] = None,
+) -> List[Dict[str, Any]]:
+    """Scan raw clinical text for device insertion/removal language.
+
+    Args:
+        lines: Raw text lines from the clinical note.
+        timestamps: Parallel list of ISO timestamp strings (one per line).
+            If a line's timestamp is ``None``, the match is still recorded
+            but the episode will lack that boundary.
+
+    Returns:
+        One episode dict per device type containing ``start_ts``,
+        ``stop_ts``, and ``episode_days`` (computed when both timestamps
+        are available).  Source confidence is ``TEXT_DERIVED_STARTSTOP``.
+
+    Current simplification: one episode per device type (earliest insert,
+    latest remove).  Multiple non-overlapping episodes per device are a
+    future enhancement.
+    """
+    from cerebralos.ntds_logic.model import LDA_DEVICE_TYPES
+
+    # Collect (device_type, action, timestamp, line_idx) tuples.
+    hits: List[tuple] = []
+    for idx, line in enumerate(lines):
+        ts = timestamps[idx] if timestamps and idx < len(timestamps) else None
+        for pattern, device_type, action in _LDA_STARTSTOP_PATTERNS:
+            if pattern.search(line):
+                hits.append((device_type, action, ts, idx))
+
+    if not hits:
+        return []
+
+    # Group by device_type.
+    from collections import defaultdict
+    by_device: Dict[str, List[tuple]] = defaultdict(list)
+    for device_type, action, ts, idx in hits:
+        by_device[device_type].append((action, ts, idx))
+
+    episodes: List[Dict[str, Any]] = []
+    for device_type, actions in sorted(by_device.items()):
+        if device_type not in LDA_DEVICE_TYPES:
+            continue
+
+        inserts = [(ts, idx) for act, ts, idx in actions if act == "insert"]
+        removes = [(ts, idx) for act, ts, idx in actions if act == "remove"]
+
+        # Pick earliest insert timestamp, latest remove timestamp.
+        start_ts: Optional[str] = None
+        stop_ts: Optional[str] = None
+        if inserts:
+            ts_vals = [t for t, _ in inserts if t]
+            start_ts = min(ts_vals) if ts_vals else None
+        if removes:
+            ts_vals = [t for t, _ in removes if t]
+            stop_ts = max(ts_vals) if ts_vals else None
+
+        # Compute episode_days when both timestamps present.
+        # Use calendar-day difference (date-to-date), not timed-delta floor,
+        # so 2026-01-15 09:00 -> 2026-01-18 08:00 is 3 days.
+        episode_days: Optional[int] = None
+        if start_ts and stop_ts:
+            try:
+                from datetime import datetime as _dt
+                s = _dt.fromisoformat(start_ts)
+                e = _dt.fromisoformat(stop_ts)
+                episode_days = max(0, (e.date() - s.date()).days)
+            except Exception:
+                pass
+
+        all_line_ids = sorted({idx + 1 for _, _, idx in actions})
+
+        episodes.append({
+            "device_type": device_type,
+            "start_ts": start_ts,
+            "stop_ts": stop_ts,
+            "episode_days": episode_days,
+            "source_confidence": "TEXT_DERIVED_STARTSTOP",
+            "location": None,
+            "inserted_by": None,
+            "notes": None,
+            "raw_line_ids": [f"L{n}" for n in all_line_ids],
+        })
+
+    return episodes
+
 
 # Maps a regex pattern to the canonical device_type it produces.
 # Each pattern captures at least one group containing the day count.
@@ -365,13 +492,23 @@ def build_lda_episodes(
     patient_id: Optional[str] = None,
     lda_json_path: Optional[Path] = None,
     raw_lines: Optional[List[str]] = None,
+    raw_timestamps: Optional[List[Optional[str]]] = None,
 ) -> List[Any]:
     """Build LDA device episodes from structured JSON and/or raw text.
 
-    Sources (combined, structured episodes take precedence):
+    Sources (combined; highest-fidelity wins per device_type):
     1. *lda_json_path* — structured JSON feed (highest fidelity).
-    2. *raw_lines* — raw clinical text scanned for flowsheet day-counter
-       patterns such as ``Catheter day 3`` or ``Line Day: 5``.
+    2. *raw_lines* + *raw_timestamps* — insertion/removal language
+       producing start/stop episodes (``TEXT_DERIVED_STARTSTOP``).
+    3. *raw_lines* — flowsheet day-counter patterns such as
+       ``Catheter day 3`` (``TEXT_DERIVED``).
+
+    Merge precedence per device_type:
+        STRUCTURED > TEXT_DERIVED_STARTSTOP > TEXT_DERIVED
+
+    When a higher-tier episode exists for a device, it *replaces* the
+    lower-tier one entirely.  Within the same tier, the episode with the
+    higher ``episode_days`` wins.
 
     Returns:
         List of dicts matching the LDAEpisode schema defined in model.py.
@@ -411,29 +548,63 @@ def build_lda_episodes(
                 "notes": rec.get("notes"),
                 "raw_line_ids": rec.get("raw_line_ids", []),
             }
-            # Compute episode_days if not provided but timestamps available
+            # Compute episode_days if not provided but timestamps available.
+            # Use calendar-day difference (date-to-date), not timed-delta floor.
             if ep["episode_days"] is None and ep["start_ts"] and ep["stop_ts"]:
                 try:
                     from datetime import datetime as _dt
                     start = _dt.fromisoformat(ep["start_ts"])
                     stop = _dt.fromisoformat(ep["stop_ts"])
-                    ep["episode_days"] = max(0, (stop - start).days)
+                    ep["episode_days"] = max(0, (stop.date() - start.date()).days)
                 except Exception:
                     pass
             structured.append(ep)
 
-    # ── 2. Text-derived from raw lines ───────────────────────────────────
+    # ── 2. Text-derived start/stop from insertion/removal language ──────
+    startstop_derived: List[Dict[str, Any]] = []
+    if raw_lines:
+        startstop_derived = _extract_lda_startstop_episodes(
+            raw_lines, timestamps=raw_timestamps,
+        )
+
+    # ── 3. Text-derived from flowsheet day-counter patterns ──────────────
     text_derived: List[Dict[str, Any]] = []
     if raw_lines:
         text_derived = _extract_lda_episodes_from_lines(raw_lines)
 
-    # ── 3. Merge: structured wins per device_type ────────────────────────
-    # If a device_type appears in both, keep only the structured episode
-    # (higher fidelity).
-    structured_types = {ep["device_type"] for ep in structured}
-    merged = list(structured)
-    for ep in text_derived:
-        if ep["device_type"] not in structured_types:
-            merged.append(ep)
+    # ── 4. Merge: highest-fidelity wins per device_type ──────────────────
+    # Priority: STRUCTURED > TEXT_DERIVED_STARTSTOP > TEXT_DERIVED
+    # Within the same tier, keep the one with higher episode_days.
+    best: Dict[str, Dict[str, Any]] = {}
 
-    return merged
+    _TIER_ORDER = {c: i for i, c in enumerate(LDA_CONFIDENCE_LEVELS)}
+
+    def _pick(existing: Optional[Dict[str, Any]], candidate: Dict[str, Any]) -> Dict[str, Any]:
+        if existing is None:
+            return candidate
+        e_tier = _TIER_ORDER.get(str(existing.get("source_confidence", "")), -1)
+        c_tier = _TIER_ORDER.get(str(candidate.get("source_confidence", "")), -1)
+        if c_tier > e_tier:
+            return candidate
+        if c_tier == e_tier:
+            e_days = existing.get("episode_days") or 0
+            c_days = candidate.get("episode_days") or 0
+            return candidate if c_days > e_days else existing
+        return existing
+
+    for ep in text_derived:
+        dt = ep["device_type"]
+        best[dt] = _pick(best.get(dt), ep)
+
+    for ep in startstop_derived:
+        dt = ep["device_type"]
+        best[dt] = _pick(best.get(dt), ep)
+
+    for ep in structured:
+        dt = ep["device_type"]
+        best[dt] = _pick(best.get(dt), ep)
+
+    # Preserve stable insertion order from merge precedence:
+    # TEXT_DERIVED -> TEXT_DERIVED_STARTSTOP -> STRUCTURED.
+    # This keeps structured-only outputs aligned with source record order.
+    return list(best.values())
