@@ -339,6 +339,50 @@ class TestClabsiCentralLineDurationMatches:
         pats = _load_patterns()["clabsi_central_line_duration"]
         assert _any_pattern_matches(pats, "CVC >48 hours, site clean.")
 
+    # ── punctuation-separated variants (colon / em-dash / en-dash) ──
+    # Evidence: David Gross.txt — "Line Day" rows use em-dash separators;
+    #           Lolita Calcia.txt — "Line Day: 5" uses colon separator.
+
+    def test_cvc_colon_day_5(self):
+        """CVC: day 5  — colon between device and day count."""
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "CVC: day 5")
+
+    def test_picc_line_colon_in_place(self):
+        """PICC line: in place for 5 days  — colon before 'in place'."""
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "PICC line: in place for 5 days")
+
+    def test_central_line_emdash_day_4(self):
+        """central line \u2014 day 4  — em-dash separator."""
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "central line \u2014 day 4")
+
+    def test_cvl_endash_day_6(self):
+        """CVL \u2013 day 6  — en-dash separator."""
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "CVL \u2013 day 6")
+
+    def test_picc_colon_day_3(self):
+        """PICC: day 3  — colon between device and day."""
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "PICC: day 3")
+
+    def test_central_line_hyphen_day_5(self):
+        """central line - day 5  — simple hyphen separator."""
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "central line - day 5")
+
+    def test_cvc_colon_in_place_for_4_days(self):
+        """CVC: in place for 4 days  — colon before 'in place'."""
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "CVC: in place for 4 days")
+
+    def test_central_line_emdash_gt48h(self):
+        """central line \u2014 >48 hours  — em-dash before >48h."""
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "central line \u2014 >48 hours")
+
 
 class TestClabsiCentralLineDurationRejects:
     """Duration patterns must NOT fire on day 0/1/2, generic durations, or non-central devices."""
@@ -406,6 +450,40 @@ class TestClabsiCentralLineDurationRejects:
     def test_generic_line_present_3_days(self):
         pats = _load_patterns()["clabsi_central_line_duration"]
         assert not _any_pattern_matches(pats, "Line present for 3 days.")
+
+    # ── punctuation-separated negatives (non-central / missing device) ──
+    # Evidence: Lolita Calcia.txt — "Line Day: 5" is Peripheral IV,
+    #           not central line.  Must NOT match.
+
+    def test_foley_colon_day_5(self):
+        """Foley: day 5  — non-central device with colon."""
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert not _any_pattern_matches(pats, "Foley: day 5")
+
+    def test_hospital_day_5_colon(self):
+        """Hospital day 5:  — trailing colon, no device."""
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert not _any_pattern_matches(pats, "Hospital day 5:")
+
+    def test_generic_line_day_colon_5(self):
+        """Line Day: 5  — peripheral IV pattern from Lolita Calcia."""
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert not _any_pattern_matches(pats, "Line Day: 5")
+
+    def test_arterial_line_colon_day_4(self):
+        """Arterial line: day 4  — non-central device with colon."""
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert not _any_pattern_matches(pats, "Arterial line: day 4")
+
+    def test_peripheral_iv_colon_day_6(self):
+        """Peripheral IV: Line Day: 6  — peripheral IV from raw EHR."""
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert not _any_pattern_matches(pats, "Peripheral IV: Line Day: 6")
+
+    def test_foley_emdash_day_3(self):
+        """Foley \u2014 day 3  — non-central device with em-dash."""
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert not _any_pattern_matches(pats, "Foley \u2014 day 3")
 
 
 # ─── clabsi_blood_culture_positive: must match positive blood culture ────
