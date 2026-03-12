@@ -2011,3 +2011,45 @@ class TestSurgicalDrainExtraction:
         ds = [e for e in episodes if e["device_type"] == "DRAIN_SURGICAL"]
         assert len(ds) == 1
         assert ds[0]["episode_days"] == 4
+
+
+class TestBracketRemovedPatterns:
+    """Tests for [REMOVED] bracket-marker patterns (structured EHR metadata).
+
+    Raw evidence:
+      - Lee_Woodard:6959     "[REMOVED] Urethral Catheter 16 fr Anchored"
+      - Margaret_Rudd:10729  "[REMOVED] Urethral Catheter 16 fr Anchored"
+      - Jamie_Hunter:19994   "[REMOVED] Urethral Catheter 16 fr"
+      - Jamie_Hunter:19974   "[REMOVED] Non-Surgical Airway ETT- Cuffed"
+      - James_Eaton:10857    "[REMOVED] Non-Surgical Airway ETT- Cuffed"
+    """
+
+    def test_removed_urethral_catheter(self):
+        """[REMOVED] Urethral Catheter → URINARY_CATHETER remove."""
+        episodes = _extract_lda_startstop_episodes(
+            ["[REMOVED] Urethral Catheter 16 fr Anchored"],
+            timestamps=["2026-01-09T14:00:00"],
+        )
+        uc = [e for e in episodes if e["device_type"] == "URINARY_CATHETER"]
+        assert len(uc) == 1
+        assert uc[0]["stop_ts"] == "2026-01-09T14:00:00"
+        assert uc[0]["source_confidence"] == "TEXT_DERIVED_STARTSTOP"
+
+    def test_removed_non_surgical_airway_ett(self):
+        """[REMOVED] Non-Surgical Airway ETT- Cuffed → ENDOTRACHEAL_TUBE remove."""
+        episodes = _extract_lda_startstop_episodes(
+            ["[REMOVED] Non-Surgical Airway ETT- Cuffed"],
+            timestamps=["2026-01-06T10:30:00"],
+        )
+        ett = [e for e in episodes if e["device_type"] == "ENDOTRACHEAL_TUBE"]
+        assert len(ett) == 1
+        assert ett[0]["stop_ts"] == "2026-01-06T10:30:00"
+        assert ett[0]["source_confidence"] == "TEXT_DERIVED_STARTSTOP"
+
+    def test_removed_peripheral_iv_no_lda_episode(self):
+        """[REMOVED] Peripheral IV must NOT create an LDA episode."""
+        episodes = _extract_lda_startstop_episodes(
+            ["[REMOVED] Peripheral IV 12/07/25 Posterior;Right Forearm"],
+            timestamps=["2026-01-05T08:00:00"],
+        )
+        assert len(episodes) == 0

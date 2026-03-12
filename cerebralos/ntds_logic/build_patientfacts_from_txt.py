@@ -321,6 +321,9 @@ _LDA_STARTSTOP_PATTERNS: List[tuple] = [
     (re.compile(r"\bfoley\b.*?\b(?:removed|discontinued|d/?c['\u2019]?d)\b", re.IGNORECASE), "URINARY_CATHETER", "remove"),
     (re.compile(r"\burinary\s+catheter\b.*?\b(?:removed|discontinued)\b", re.IGNORECASE), "URINARY_CATHETER", "remove"),
     (re.compile(r"\b(?:remove|discontinue|d/?c)\b.*?\bfoley\b", re.IGNORECASE), "URINARY_CATHETER", "remove"),
+    # Raw evidence: "[REMOVED] Urethral Catheter 16 fr Anchored"
+    # (Lee_Woodard:6959, Margaret_Rudd:10729, Jamie_Hunter:19994)
+    (re.compile(r"\[REMOVED\]\s+Urethral\s+Catheter\b", re.IGNORECASE), "URINARY_CATHETER", "remove"),
 
     # ── CENTRAL_LINE insertion ──
     (re.compile(r"\bcentral\s+(?:venous\s+)?(?:line|catheter|access)\b.*?\b(?:placed|inserted|in\s+place)\b", re.IGNORECASE), "CENTRAL_LINE", "insert"),
@@ -342,6 +345,9 @@ _LDA_STARTSTOP_PATTERNS: List[tuple] = [
     (re.compile(r"\bextubat(?:ed|ion)\b", re.IGNORECASE), "ENDOTRACHEAL_TUBE", "remove"),
     (re.compile(r"\bvent(?:ilat(?:or|ion))?\s+(?:discontinued|weaned\s+off|removed)\b", re.IGNORECASE), "MECHANICAL_VENTILATOR", "remove"),
     (re.compile(r"\btrach(?:eostomy)?\s+placed\b", re.IGNORECASE), "ENDOTRACHEAL_TUBE", "remove"),  # trach placement ends ETT episode
+    # Raw evidence: "[REMOVED] Non-Surgical Airway ETT- Cuffed"
+    # (Jamie_Hunter:19974, James_Eaton:10857)
+    (re.compile(r"\[REMOVED\]\s+Non-Surgical\s+Airway\b", re.IGNORECASE), "ENDOTRACHEAL_TUBE", "remove"),
 
     # ── CHEST_TUBE insertion ──
     # Raw evidence: "right chest tube placed" (Ronald_Bittner:4675),
