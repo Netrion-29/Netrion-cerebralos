@@ -178,8 +178,9 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - FLAG 001 Spinal 36 h timing: ✅ COMPLETE — REQ_REQUIRED_DATA_ELEMENTS + REQ_TIMING_CRITICAL (temporal:within:36:hours) added to spinal protocol, 12 surgery patterns in shared_action_buckets, 1 fixture added (spinal_timing_noncompliant), 1 fixture updated (spinal_compliant +surgery), 0 NTDS outcome deltas
 > - Baseline hash coverage: ✅ COMPLETE — 39-patient NTDS event hash baseline + gate wiring + standalone checker, 0 NTDS outcome deltas
 > - D4 DISCHARGE precision audit: ✅ COMPLETE — 14 events audited, 39 patients, 0 false positives, 1 TP (Ronald_Bittner E13 Pressure Ulcer), no rule changes needed, baseline realigned (Anna_Dennis hash), 0 NTDS outcome deltas
+> - N3 residual precision pass (E08 DVT + E09 Delirium): ✅ COMPLETE — E09 `delirium_negation_noise` (10 patterns), 2 FP corrections (Barbara_Burgdorf YES→NO, Christine_Adelitzo YES→NO); E08 `dvt_dx_noise_prophylaxis` wired (defensive, 0 outcome changes); 2 NTDS outcome deltas
 > - Open PRs: None
-> - **Backlog priority:** (1) 15-event precision pass, (2) 5 AKI UTD residuals, (3) per-event distribution automation, (4) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
+> - **Backlog priority:** (1) 5 AKI UTD residuals, (2) per-event distribution automation, (3) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
 >
 > See Roadmap doc §3 for full backlog detail, N3 residuals, and N4 queue.
 

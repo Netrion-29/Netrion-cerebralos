@@ -282,6 +282,18 @@
 			"\\bacute\\s+confusion\\b",
 			"\\bacute\\s+altered\\s+mental\\s+status\\b"
 		],
+		"delirium_negation_noise": [
+			"\\bat\\s+risk\\s+(for\\s+)?delirium\\b",
+			"\\brisk\\s+for\\s+delirium\\b",
+			"\\bprevent\\w*\\s+(\\w+\\s+)?delirium\\b",
+			"\\bpast\\s+\\w*\\s*diagnos\\w*.*\\bdelirium\\b",
+			"\\bpsychiatric\\s+diagnos\\w*.*\\bdelirium\\b",
+			"\\b(history|hx)\\s+of\\b.*\\bdelirium\\b",
+			"\\bpmh\\b.*\\bdelirium\\b",
+			"\\bdelirium\\s+screen\\b",
+			"\\bdelirium\\s+protocol\\b",
+			"\\bdelirium\\s+precaution\\b"
+		],
 		"pressure_ulcer_dx": [
 			"\\bpressure\\s+(ulcer|injury|sore)\\b",
 			"\\bdecubitus\\s+ulcer\\b",

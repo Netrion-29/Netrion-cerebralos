@@ -51,6 +51,7 @@
       "query_keys": [
         "dvt_dx"
       ],
+      "exclude_noise_keys": ["dvt_dx_noise_prophylaxis"],
       "allowed_sources": [
         "PHYSICIAN_NOTE",
         "CONSULT_NOTE",
