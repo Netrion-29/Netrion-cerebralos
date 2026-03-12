@@ -478,8 +478,17 @@ def eval_lda_overlap(gate: Dict[str, Any], patient: PatientFacts, contract: Dict
                           evidence=[])
 
     from datetime import timedelta
-    window_start = ref_dt - timedelta(days=window_days) if window_days else ref_dt
-    window_end = ref_dt + timedelta(days=window_days) if window_days else ref_dt
+
+    # ── Build reference window ──────────────────────────────────────
+    # "admission" → one-sided: [arrival, arrival + window_days].
+    #   The device must overlap with the period *after* arrival.
+    # "event_date" → symmetric: [ref − window_days, ref + window_days].
+    if reference == "admission":
+        window_start = ref_dt
+        window_end = ref_dt + timedelta(days=window_days) if window_days else ref_dt
+    else:
+        window_start = ref_dt - timedelta(days=window_days) if window_days else ref_dt
+        window_end = ref_dt + timedelta(days=window_days) if window_days else ref_dt
 
     # ── Check episodes for overlap ──────────────────────────────────
     episodes = _get_lda_episodes(patient)
@@ -498,6 +507,19 @@ def eval_lda_overlap(gate: Dict[str, Any], patient: PatientFacts, contract: Dict
         # If episode has no timestamps at all, skip it for overlap
         if ep_start is None and ep_stop is None:
             continue
+
+        # ── Normalize timezone-awareness: fail-closed ───────────────
+        # If one side is tz-aware and the other naive, strip tzinfo
+        # so comparison proceeds deterministically rather than raising.
+        def _strip_tz(dt):
+            return dt.replace(tzinfo=None) if dt and dt.tzinfo else dt
+
+        if ((ep_start and ep_start.tzinfo) or (ep_stop and ep_stop.tzinfo)) != \
+           (window_start.tzinfo is not None):
+            ep_start = _strip_tz(ep_start)
+            ep_stop = _strip_tz(ep_stop)
+            window_start = _strip_tz(window_start)
+            window_end = _strip_tz(window_end)
 
         # Build effective episode interval
         # If only start_ts: treat device as still active (open-ended)

@@ -1619,3 +1619,395 @@ class TestE21StartStopPrecision:
         patient = _make_patient(lda_episodes=episodes)
         result = engine.eval_lda_duration(gate, patient, _contract())
         assert not result.passed
+
+
+# ═══════════════════════════════════════════════════════════════════
+# CORRECTNESS HARDENING — eval_lda_overlap
+# ═══════════════════════════════════════════════════════════════════
+
+class TestEvalLdaOverlapAdmissionOneSided:
+    """Admission reference window must be one-sided [arrival, arrival+window].
+
+    Before this fix, admission used a symmetric ±window_days centred on
+    arrival, which incorrectly matched pre-admission device episodes.
+    """
+
+    def setup_method(self):
+        self._orig = engine.ENABLE_LDA_GATES
+        engine.ENABLE_LDA_GATES = True
+
+    def teardown_method(self):
+        engine.ENABLE_LDA_GATES = self._orig
+
+    def test_admission_does_not_match_pre_arrival_episode(self):
+        """Device that ended before admission must NOT overlap admission window."""
+        # Arrival: 2026-01-10.  Device: 2026-01-05 → 2026-01-08 (ended 2 days before).
+        # Old symmetric window with window_days=3 → [Jan-07, Jan-13] → would match.
+        # One-sided window → [Jan-10, Jan-13] → no overlap.
+        episodes = [{
+            "device_type": "URINARY_CATHETER",
+            "start_ts": "2026-01-05T08:00:00",
+            "stop_ts": "2026-01-08T08:00:00",
+            "episode_days": 3,
+            "source_confidence": "TEXT_DERIVED_STARTSTOP",
+            "raw_line_ids": ["L1", "L2"],
+        }]
+        patient = _make_patient(lda_episodes=episodes)
+        patient.facts["arrival_time"] = "2026-01-10T08:00:00"
+        gate = _gate("lda_overlap", "catheter_overlap",
+                      device_type="URINARY_CATHETER", reference="admission", window_days=3)
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        assert not result.passed
+
+    def test_admission_matches_post_arrival_episode(self):
+        """Device placed after arrival must overlap admission window."""
+        episodes = [{
+            "device_type": "URINARY_CATHETER",
+            "start_ts": "2026-01-11T08:00:00",
+            "stop_ts": "2026-01-14T08:00:00",
+            "episode_days": 3,
+            "source_confidence": "TEXT_DERIVED_STARTSTOP",
+            "raw_line_ids": ["L1", "L2"],
+        }]
+        patient = _make_patient(lda_episodes=episodes)
+        patient.facts["arrival_time"] = "2026-01-10T08:00:00"
+        gate = _gate("lda_overlap", "catheter_overlap",
+                      device_type="URINARY_CATHETER", reference="admission", window_days=5)
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        assert result.passed
+
+    def test_admission_matches_spanning_episode(self):
+        """Device that spans arrival must overlap admission window."""
+        episodes = [{
+            "device_type": "CENTRAL_LINE",
+            "start_ts": "2026-01-08T08:00:00",
+            "stop_ts": "2026-01-12T08:00:00",
+            "episode_days": 4,
+            "source_confidence": "TEXT_DERIVED_STARTSTOP",
+            "raw_line_ids": ["L1", "L2"],
+        }]
+        patient = _make_patient(lda_episodes=episodes)
+        patient.facts["arrival_time"] = "2026-01-10T08:00:00"
+        gate = _gate("lda_overlap", "line_overlap",
+                      device_type="CENTRAL_LINE", reference="admission", window_days=2)
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        assert result.passed
+
+    def test_event_date_remains_symmetric(self):
+        """event_date reference should still use symmetric window."""
+        # Device: Jan 5-8.  event_date: Jan 10.  window_days=3 → [Jan 7, Jan 13].
+        # Device stop (Jan 8) ≥ window_start (Jan 7) → overlap.
+        episodes = [{
+            "device_type": "URINARY_CATHETER",
+            "start_ts": "2026-01-05T08:00:00",
+            "stop_ts": "2026-01-08T08:00:00",
+            "episode_days": 3,
+            "source_confidence": "TEXT_DERIVED_STARTSTOP",
+            "raw_line_ids": ["L1", "L2"],
+        }]
+        patient = _make_patient(lda_episodes=episodes)
+        patient.facts["event_date"] = "2026-01-10T08:00:00"
+        gate = _gate("lda_overlap", "catheter_overlap",
+                      device_type="URINARY_CATHETER", reference="event_date", window_days=3)
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        assert result.passed
+
+
+class TestEvalLdaOverlapTimezoneGuard:
+    """Timezone-aware vs naive timestamp comparisons must not raise."""
+
+    def setup_method(self):
+        self._orig = engine.ENABLE_LDA_GATES
+        engine.ENABLE_LDA_GATES = True
+
+    def teardown_method(self):
+        engine.ENABLE_LDA_GATES = self._orig
+
+    def test_tz_aware_episode_vs_naive_reference(self):
+        """tz-aware episode + naive reference → normalizes, no exception."""
+        episodes = [{
+            "device_type": "CENTRAL_LINE",
+            "start_ts": "2026-01-10T08:00:00Z",  # UTC tz-aware
+            "stop_ts": "2026-01-15T08:00:00Z",
+            "episode_days": 5,
+            "source_confidence": "TEXT_DERIVED_STARTSTOP",
+            "raw_line_ids": ["L1"],
+        }]
+        patient = _make_patient(lda_episodes=episodes)
+        patient.facts["arrival_time"] = "2026-01-10T08:00:00"  # naive
+        gate = _gate("lda_overlap", "line_overlap",
+                      device_type="CENTRAL_LINE", reference="admission", window_days=5)
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        # Should not raise TypeError; should pass because they overlap.
+        assert result.passed
+
+    def test_naive_episode_vs_tz_aware_reference(self):
+        """Naive episode + tz-aware reference → normalizes, no exception."""
+        episodes = [{
+            "device_type": "CENTRAL_LINE",
+            "start_ts": "2026-01-10T08:00:00",  # naive
+            "stop_ts": "2026-01-15T08:00:00",
+            "episode_days": 5,
+            "source_confidence": "TEXT_DERIVED_STARTSTOP",
+            "raw_line_ids": ["L1"],
+        }]
+        patient = _make_patient(lda_episodes=episodes)
+        patient.facts["arrival_time"] = "2026-01-10T08:00:00Z"  # UTC tz-aware
+        gate = _gate("lda_overlap", "line_overlap",
+                      device_type="CENTRAL_LINE", reference="admission", window_days=5)
+        result = engine.eval_lda_overlap(gate, patient, _contract())
+        assert result.passed
+
+
+# ═══════════════════════════════════════════════════════════════════
+# CORRECTNESS HARDENING — build_lda_episodes merge precedence
+# ═══════════════════════════════════════════════════════════════════
+
+class TestMergePrecedenceEpisodeDaysBackfill:
+    """Higher-tier episode missing episode_days gets backfill from lower tier."""
+
+    def test_startstop_backfills_days_from_day_counter(self):
+        """TEXT_DERIVED_STARTSTOP without episode_days inherits from TEXT_DERIVED."""
+        lines = [
+            "Catheter day 5",
+            "Foley catheter inserted.",
+        ]
+        timestamps = [None, "2026-01-15T08:00:00"]
+
+        episodes = build_lda_episodes(raw_lines=lines, raw_timestamps=timestamps)
+        # Find URINARY_CATHETER episode.
+        uc = [e for e in episodes if e["device_type"] == "URINARY_CATHETER"]
+        assert len(uc) == 1
+        ep = uc[0]
+        # Should have TEXT_DERIVED_STARTSTOP confidence (higher tier wins).
+        assert ep["source_confidence"] == "TEXT_DERIVED_STARTSTOP"
+        # episode_days should be backfilled from TEXT_DERIVED (day counter = 5).
+        assert ep["episode_days"] == 5
+
+    def test_startstop_with_own_days_does_not_backfill(self):
+        """When higher-tier has its own episode_days, no backfill occurs."""
+        lines = [
+            "Catheter day 3",
+            "Foley catheter inserted.",
+            "Foley removed.",
+        ]
+        timestamps = [None, "2026-01-15T08:00:00", "2026-01-20T08:00:00"]
+
+        episodes = build_lda_episodes(raw_lines=lines, raw_timestamps=timestamps)
+        uc = [e for e in episodes if e["device_type"] == "URINARY_CATHETER"]
+        assert len(uc) == 1
+        ep = uc[0]
+        assert ep["source_confidence"] == "TEXT_DERIVED_STARTSTOP"
+        # Higher tier computed its own episode_days (5) from timestamps.
+        assert ep["episode_days"] == 5
+
+    def test_structured_backfills_from_startstop(self):
+        """STRUCTURED without episode_days inherits from TEXT_DERIVED_STARTSTOP."""
+        lines = [
+            "Foley catheter inserted.",
+            "Foley removed.",
+        ]
+        timestamps = ["2026-01-15T08:00:00", "2026-01-20T08:00:00"]
+
+        # First produce startstop episodes
+        startstop = _extract_lda_startstop_episodes(lines, timestamps)
+        assert len(startstop) == 1
+        assert startstop[0]["episode_days"] == 5
+
+        # Create structured JSON without episode_days
+        import tempfile
+        import json as _json
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            _json.dump({
+                "lda_records": [{
+                    "device_type": "URINARY_CATHETER",
+                    "start_ts": "2026-01-15T08:00:00",
+                    "stop_ts": "2026-01-20T08:00:00",
+                    # episode_days omitted — will be computed from timestamps
+                }]
+            }, f)
+            f.flush()
+            structured_path = Path(f.name)
+
+        episodes = build_lda_episodes(
+            lda_json_path=structured_path,
+            raw_lines=lines,
+            raw_timestamps=timestamps,
+        )
+        structured_path.unlink()
+
+        uc = [e for e in episodes if e["device_type"] == "URINARY_CATHETER"]
+        assert len(uc) == 1
+        ep = uc[0]
+        assert ep["source_confidence"] == "STRUCTURED"
+        # Structured computed its own episode_days from timestamps
+        assert ep["episode_days"] == 5
+
+
+# ═══════════════════════════════════════════════════════════════════
+# CORRECTNESS HARDENING — chest tube + surgical drain extraction
+# ═══════════════════════════════════════════════════════════════════
+
+class TestChestTubeExtraction:
+    """Chest tube start/stop patterns grounded in raw evidence.
+
+    Raw citations:
+      - Ronald_Bittner:3784  "Pulled chest tube"
+      - Ronald_Bittner:4675  "1/6 - right chest tube placed"
+      - Ronald_Bittner:5185  "S/p chest tube removal"
+      - Ronald_Bittner:5215  "post chest tube placement"
+      - Ronald_Bittner:41210 "pigtail catheter placement right side"
+    """
+
+    def test_chest_tube_placed(self):
+        """'right chest tube placed' → CHEST_TUBE insert."""
+        episodes = _extract_lda_startstop_episodes(
+            ["1/6 - right chest tube placed"],
+            timestamps=["2026-01-06T13:06:00"],
+        )
+        ct = [e for e in episodes if e["device_type"] == "CHEST_TUBE"]
+        assert len(ct) == 1
+        assert ct[0]["start_ts"] == "2026-01-06T13:06:00"
+
+    def test_chest_tube_removed(self):
+        """'Pulled chest tube' → CHEST_TUBE remove."""
+        episodes = _extract_lda_startstop_episodes(
+            ["Pulled chest tube"],
+            timestamps=["2026-01-09T15:30:00"],
+        )
+        ct = [e for e in episodes if e["device_type"] == "CHEST_TUBE"]
+        assert len(ct) == 1
+        assert ct[0]["stop_ts"] == "2026-01-09T15:30:00"
+
+    def test_chest_tube_placed_and_removed(self):
+        """Full cycle: placed → removed → episode_days computed."""
+        episodes = _extract_lda_startstop_episodes(
+            ["right chest tube placed", "S/p chest tube removal"],
+            timestamps=["2026-01-06T13:06:00", "2026-01-09T15:30:00"],
+        )
+        ct = [e for e in episodes if e["device_type"] == "CHEST_TUBE"]
+        assert len(ct) == 1
+        assert ct[0]["episode_days"] == 3  # Jan 6 → Jan 9
+
+    def test_thoracostomy_placed(self):
+        """'thoracostomy tube placed' → CHEST_TUBE insert."""
+        episodes = _extract_lda_startstop_episodes(
+            ["Tube thoracostomy performed on the right"],
+            timestamps=["2026-01-06T12:00:00"],
+        )
+        ct = [e for e in episodes if e["device_type"] == "CHEST_TUBE"]
+        assert len(ct) == 1
+
+    def test_pigtail_catheter_placement(self):
+        """'pigtail catheter placement right side' → CHEST_TUBE insert."""
+        episodes = _extract_lda_startstop_episodes(
+            ["plan made for pigtail catheter placement right side"],
+            timestamps=["2026-01-06T08:00:00"],
+        )
+        ct = [e for e in episodes if e["device_type"] == "CHEST_TUBE"]
+        assert len(ct) == 1
+
+    def test_chest_tube_day_counter(self):
+        """'Chest tube day 4' → TEXT_DERIVED episode with 4 days."""
+        from cerebralos.ntds_logic.build_patientfacts_from_txt import _extract_lda_episodes_from_lines
+        episodes = _extract_lda_episodes_from_lines(["Chest tube day 4"])
+        ct = [e for e in episodes if e["device_type"] == "CHEST_TUBE"]
+        assert len(ct) == 1
+        assert ct[0]["episode_days"] == 4
+
+    def test_no_false_positive_on_ct_chest_imaging(self):
+        """'CT CHEST' must NOT match chest tube patterns."""
+        episodes = _extract_lda_startstop_episodes(
+            ["CT CHEST WITH CONTRAST performed today"],
+            timestamps=["2026-01-06T08:00:00"],
+        )
+        ct = [e for e in episodes if e["device_type"] == "CHEST_TUBE"]
+        assert len(ct) == 0
+
+    def test_no_false_positive_on_chest_xray(self):
+        """'XR CHEST PORTABLE' must NOT match chest tube patterns."""
+        episodes = _extract_lda_startstop_episodes(
+            ["EXAMINATION: XR CHEST PORTABLE REFERRING PROVIDER"],
+            timestamps=["2026-01-06T08:00:00"],
+        )
+        ct = [e for e in episodes if e["device_type"] == "CHEST_TUBE"]
+        assert len(ct) == 0
+
+
+class TestSurgicalDrainExtraction:
+    """Surgical drain patterns grounded in raw evidence.
+
+    Raw citations:
+      - Timothy_Cowan:20599  "[REMOVED] Surgical Drain 1 Anterior;Left;Superior Other (Comment) Hemovac"
+      - Timothy_Cowan:20605  "Drain Tube Type: Hemovac"
+      - Timothy_Cowan:20613  "JP/Blake drain stripped"
+      - Timothy_Cowan:28511  "[REMOVED] Surgical Drain 1 Anterior;Left;Superior Other (Comment) Hemovac"
+    """
+
+    def test_jp_drain_placed(self):
+        """'JP drain placed' → DRAIN_SURGICAL insert."""
+        episodes = _extract_lda_startstop_episodes(
+            ["JP drain placed in surgical site"],
+            timestamps=["2026-01-10T08:00:00"],
+        )
+        ds = [e for e in episodes if e["device_type"] == "DRAIN_SURGICAL"]
+        assert len(ds) == 1
+        assert ds[0]["start_ts"] == "2026-01-10T08:00:00"
+
+    def test_hemovac_placed(self):
+        """'Hemovac placed' → DRAIN_SURGICAL insert."""
+        episodes = _extract_lda_startstop_episodes(
+            ["Hemovac drain placed in wound bed"],
+            timestamps=["2026-01-10T08:00:00"],
+        )
+        ds = [e for e in episodes if e["device_type"] == "DRAIN_SURGICAL"]
+        assert len(ds) == 1
+
+    def test_blake_drain_placed(self):
+        """'Blake drain placed' → DRAIN_SURGICAL insert."""
+        episodes = _extract_lda_startstop_episodes(
+            ["Blake drain placed intraoperatively"],
+            timestamps=["2026-01-10T08:00:00"],
+        )
+        ds = [e for e in episodes if e["device_type"] == "DRAIN_SURGICAL"]
+        assert len(ds) == 1
+
+    def test_surgical_drain_removed_bracket(self):
+        """'[REMOVED] Surgical Drain 1' → DRAIN_SURGICAL remove."""
+        episodes = _extract_lda_startstop_episodes(
+            ["[REMOVED] Surgical Drain 1 Anterior;Left;Superior Other (Comment) Hemovac"],
+            timestamps=["2026-01-12T08:00:00"],
+        )
+        ds = [e for e in episodes if e["device_type"] == "DRAIN_SURGICAL"]
+        assert len(ds) == 1
+        assert ds[0]["stop_ts"] == "2026-01-12T08:00:00"
+
+    def test_jp_drain_removed(self):
+        """'JP drain removed' → DRAIN_SURGICAL remove."""
+        episodes = _extract_lda_startstop_episodes(
+            ["JP drain removed from surgical site"],
+            timestamps=["2026-01-14T08:00:00"],
+        )
+        ds = [e for e in episodes if e["device_type"] == "DRAIN_SURGICAL"]
+        assert len(ds) == 1
+        assert ds[0]["stop_ts"] == "2026-01-14T08:00:00"
+
+    def test_no_false_positive_on_bare_drain(self):
+        """'drain the wound' or 'wound drainage noted' must NOT match."""
+        episodes = _extract_lda_startstop_episodes(
+            ["Continue to drain the wound as needed",
+             "Wound drainage noted to be serous"],
+            timestamps=["2026-01-10T08:00:00", "2026-01-11T08:00:00"],
+        )
+        ds = [e for e in episodes if e["device_type"] == "DRAIN_SURGICAL"]
+        assert len(ds) == 0
+
+    def test_full_cycle_jp_drain(self):
+        """JP drain placed → removed → episode_days computed."""
+        episodes = _extract_lda_startstop_episodes(
+            ["JP drain placed in surgical site", "JP drain removed"],
+            timestamps=["2026-01-10T08:00:00", "2026-01-14T08:00:00"],
+        )
+        ds = [e for e in episodes if e["device_type"] == "DRAIN_SURGICAL"]
+        assert len(ds) == 1
+        assert ds[0]["episode_days"] == 4
