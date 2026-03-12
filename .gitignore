@@ -90,3 +90,9 @@ docs/handoffs/
 # Protocol alignment log (untracked audit artifact)
 docs/audits/NTDS_PROTOCOL_ALIGNMENT_LOG_v1.md
 
+# Local scratch/QA artifacts
+_validate_sbirt.py
+docs/QA_REVIEW_FLAGS.md
+tests/test_negation.py
+tests/test_ntds_events.py
+tests/test_ntds_simple.py
