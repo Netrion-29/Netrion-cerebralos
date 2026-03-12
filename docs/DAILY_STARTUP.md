@@ -150,7 +150,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 - [Trauma Build-Forward Plan v1](roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md) (historical)
 - [LDA Engine Design v1](audits/LDA_ENGINE_DESIGN_v1.md) — ✅ IMPLEMENTED (v1+text+startstop) Lines/Drains/Airways device-duration engine design; text-derived flowsheet day-counter extraction; insertion/removal start/stop inference (`TEXT_DERIVED_STARTSTOP`); `eval_lda_overlap` interval overlap gate; `ENABLE_LDA_GATES` feature flag (default False); gates wired into E05/E06/E21 (`required: false`); 118 dedicated tests (PRs #203, #206, #207)
 - [CAUTI Engine Design v1](audits/CAUTI_ENGINE_DESIGN_v1.md) — CAUTI-specific LDA duration gate + alternative-source exclusion design (predecessor; CAUTI clinical requirements still authoritative; engine approval needed)
-- [Protocol Data Element Master v1](audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md) — comprehensive inventory of all data elements across 51 protocol PDFs; coverage mapping is a backlog item (NOT STARTED, see Roadmap §3 item 15)
+- [Protocol Data Element Master v1](audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md) — comprehensive inventory of all data elements across 51 protocol PDFs; coverage mapping IN PROGRESS (PR #220 merged — `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md`; see Roadmap §3 item 15 for next slices A/B/C)
 
 > **NTDS Coverage:** 21/21 events fully mapped (PRs #118 – #124).
 > Fixture runner: 43 passed, 0 xfailed.
@@ -199,7 +199,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - .gitignore cleanup: ✅ COMPLETE — `_tmp_*`, `rules/deaconess/*.pdf`, `docs/handoffs/`, audit log added to `.gitignore`
 
 > - E05 CAUTI duration-scope tightening: ✅ COMPLETE — duration gate requires explicit urinary device (foley/indwelling/urethral/urinary catheter) + duration ≥3d/>48h; `cauti_catheter_duration` (6 patterns); 65→89 E05 precision tests; 0 NTDS outcome deltas
-> - **Backlog priority:** (1) Tier 2 PROGRESS_NOTE scoping pass, (2) Delirium shift compliance audit script, (3) PMH-aware gate handling (engine-protected), (4) LDA flag-on cohort validation per event — see Roadmap doc §3
+> - **Backlog priority:** (1) Protocol Data Coverage — Slice A: Sex + Discharge Disposition extraction, (2) Slice B: Blood Product Transfusion extraction, (3) Slice C: Structured Lab Value Parsing, (4) Tier 2 PROGRESS_NOTE scoping pass — see Roadmap doc §3
 > - Handoff reminder: Every Claude handoff must include Codex post-handoff analysis (spec alignment, validation results, gaps/risks, next actions) plus a raw-data cross-check: compare raw NTDS/protocol sources vs current extraction and spot-check two patient raw `.txt` files (one questionable, one baseline) for capture accuracy.
 > - **Standard PR workflow:** (1) Raw-data evidence first — scan ≥2 patient `.txt` files, record exact phrases before mapper/rule edits; (2) Pre-merge checklist: targeted pytest → full pytest → `audit_cohort_counts.py --check` → `check_ntds_hashes.py` → `check_ntds_distribution.py` → `git diff --check`; (3) Address all Copilot review comments before handoff; (4) Post-handoff analysis by Codex (spec alignment, validation, gaps/risks, next actions, 2-patient raw-data spot-check); (5) Post-merge: `git switch main && git pull --ff-only`, re-run hash + distribution checks.
 >
