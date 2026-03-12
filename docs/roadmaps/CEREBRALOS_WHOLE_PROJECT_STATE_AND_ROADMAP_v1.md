@@ -604,6 +604,30 @@ When starting a new ChatGPT, Codex, or Claude session for this repo:
 7. **Never stage** `_tmp_*`, `docs/handoffs/`, `tests/test_negation.py`, `tests/test_ntds_events.py`, `tests/test_ntds_simple.py`.
 8. **Handoff reminder (Claude → Codex)**: Every handoff must include a concise post-handoff analysis (spec alignment, validation results, remaining gaps/risks, next actions) and a raw-data cross-check: compare raw NTDS/protocol sources vs current extraction, and spot-check two patient raw `.txt` files (one questionable, one baseline) for capture accuracy.
 
+### Standard PR Workflow
+
+Every mapper, rule, or test change **must** follow this workflow:
+
+1. **Raw-data evidence first.** Before editing mapper patterns or rule JSON, scan ≥2 raw patient `.txt` files (`data_raw/`) — one questionable case (potential edge case or near-miss) and one baseline (expected NO). Record the exact phrases that will drive pattern changes.
+2. **Implement scoped changes.** Mapper patterns, rule JSON, precision tests, and fixtures — all in one branch, one commit. No engine changes unless explicitly approved.
+3. **Run pre-merge validation checklist:**
+   ```bash
+   pytest -q tests/<targeted_precision_file>.py
+   pytest -q tests/                                  # full suite
+   python3 scripts/audit_cohort_counts.py --check     # 39-patient invariant
+   python3 scripts/check_ntds_hashes.py               # 0 NTDS drift
+   python3 scripts/check_ntds_distribution.py         # 0 distribution drift
+   git diff --check                                   # no whitespace errors
+   ```
+4. **Address Copilot review comments** before completing the handoff.
+5. **Post-handoff analysis (Codex).** Codex performs: spec alignment check, validation summary, gaps/risks assessment, next-actions list, and raw-data spot-check note (2 patients: one questionable, one baseline).
+6. **Post-merge verification:**
+   ```bash
+   git switch main && git pull --ff-only
+   python3 scripts/check_ntds_hashes.py
+   python3 scripts/check_ntds_distribution.py
+   ```
+
 ---
 
 ## 6. Key References

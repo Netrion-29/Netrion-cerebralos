@@ -55,6 +55,7 @@
 | E06 CLABSI spec fidelity | ✅ COMPLETE — NHSN CLABSI: 5 required gates (clabsi_dx, clabsi_central_line_gt2d, clabsi_lab_positive, clabsi_symptoms, clabsi_after_arrival) + 2 exclusions (POA, chronic line); 7 mapper keys (~56 patterns); 76 precision tests + 3 new fixtures; 0 NTDS outcome deltas across 39 patients |
 | E06 CLABSI duration-scope tightening | ✅ COMPLETE — duration patterns require explicit central-line/PICC/CVL/CVC device mention; dropped generic patterns (hospital day, standalone >48h, unqualified placed/in-place); 7→4 duration patterns; +9 net precision tests (13 positives, 17 negatives covering generic/foley/arterial rejects); 105 total precision tests; 0 NTDS outcome deltas |
 | Next phase | **Backlog priority:** (1) Tier 2 PROGRESS_NOTE scoping pass, (2) Delirium shift compliance audit script, (3) PMH-aware gate handling (engine-protected), (4) CAUTI engine changes (pending approval, see design doc) — see Roadmap §3 |
+| PR workflow | Every mapper/rule/test PR requires: raw `.txt` evidence review (≥2 patients) → pre-merge validation checklist → Copilot comments resolved → Codex post-handoff analysis + 2-patient spot-check. See Roadmap §5.1. |
 
 ## Quick Chat Starter
 

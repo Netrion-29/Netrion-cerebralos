@@ -195,6 +195,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - E06 CLABSI duration-scope tightening: ✅ COMPLETE — duration patterns require explicit device mention (central line/PICC/CVL/CVC); dropped generic patterns; 7→4 duration patterns; 105 total precision tests; 0 NTDS outcome deltas
 > - **Backlog priority:** (1) Tier 2 PROGRESS_NOTE scoping pass, (2) Delirium shift compliance audit script, (3) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
 > - Handoff reminder: Every Claude handoff must include Codex post-handoff analysis (spec alignment, validation results, gaps/risks, next actions) plus a raw-data cross-check: compare raw NTDS/protocol sources vs current extraction and spot-check two patient raw `.txt` files (one questionable, one baseline) for capture accuracy.
+> - **Standard PR workflow:** (1) Raw-data evidence first — scan ≥2 patient `.txt` files, record exact phrases before mapper/rule edits; (2) Pre-merge checklist: targeted pytest → full pytest → `audit_cohort_counts.py --check` → `check_ntds_hashes.py` → `check_ntds_distribution.py` → `git diff --check`; (3) Address all Copilot review comments before handoff; (4) Post-handoff analysis by Codex (spec alignment, validation, gaps/risks, next actions, 2-patient raw-data spot-check); (5) Post-merge: `git switch main && git pull --ff-only`, re-run hash + distribution checks.
 >
 > See Roadmap doc §3 for full backlog detail, N3 residuals, and N4 queue.
 
