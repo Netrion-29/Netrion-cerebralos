@@ -82,7 +82,7 @@ If side-track findings appear (NTDS/protocol/archive audits),
 triage them: current PR vs doc-only note vs future dedicated
 fix track, and explain why.
 
-Handoff reminder: Every Claude handoff must include Codex post-handoff analysis (spec alignment, validation results, remaining gaps/risks, next actions) and a raw-data cross-check: compare raw NTDS/protocol sources vs current extraction and spot-check two patient raw `.txt` files (one questionable, one baseline) for capture accuracy.
+Handoff reminder: Every Claude handoff must include PR metadata (branch, HEAD, PR URL/number), unresolved Copilot/GitHub review comment summary (path:line + must-fix-now vs defer), and a Codex post-handoff analysis request (spec alignment, validation results, remaining gaps/risks, next actions) plus a raw-data cross-check: compare raw NTDS/protocol sources vs current extraction and spot-check two patient raw `.txt` files (one questionable, one baseline) for capture accuracy.
 ```
 
 ## Execution Model
