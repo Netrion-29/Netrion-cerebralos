@@ -2,15 +2,18 @@ PATIENT_ID: TEST_CAUTI_001
 ARRIVAL_TIME: 2026-01-15 08:00:00
 
 [NURSING_NOTE] 2026-01-15 09:00:00
-Foley catheter in place, draining clear yellow urine.
-Indwelling urinary catheter inserted in ED.
+Foley catheter inserted in ED.
+Indwelling urinary catheter in place, draining clear yellow urine.
+
+[NURSING_NOTE] 2026-01-17 08:00:00
+Foley catheter in place since admission day 1. Catheter day 3.
 
 [PHYSICIAN_NOTE] 2026-01-18 10:00:00
 Patient developed fever, temperature 38.6 C.
 Suprapubic tenderness on exam.
 Urine cloudy. Suspected catheter-associated UTI.
-Dysuria reported after catheter removal.
+Onset of symptoms after arrival to hospital.
 
 [LAB] 2026-01-18 11:00:00
 Urine culture positive for E. coli.
-100,000 CFU per mL.
+100,000 CFU per mL. Single organism identified.
