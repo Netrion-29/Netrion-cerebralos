@@ -782,6 +782,43 @@ def _extract_header_dos(lines):
 
 
 # ============================================================
+# Sex/gender HPI fallback extraction
+# ============================================================
+
+# Matches: "65 y.o. female", "72 yo male", "55-year-old female",
+#          "60 year old male", "86 year old male patient who..."
+_RE_HPI_SEX = re.compile(
+    r"\b(\d+)[\s\-]*(?:y\.?o\.?|year[\s\-]*old)\s+(male|female)\b",
+    re.IGNORECASE,
+)
+
+# Lines that mention sex-related words but are NOT patient sex.
+_RE_SEX_NOISE = re.compile(
+    r"Partners:\s*(?:Male|Female)|Sexual\s+activity|Sexually\s+Abused",
+    re.IGNORECASE,
+)
+
+
+def _extract_sex_hpi_fallback(lines, scan_limit=60):
+    """
+    Scan the first *scan_limit* lines for an HPI-style age/sex phrase.
+
+    Returns (sex, line_number) or (None, None).
+    Guardrails: skips lines matching _RE_SEX_NOISE.
+    """
+    for idx, raw in enumerate(lines[:scan_limit]):
+        stripped = raw.strip()
+        if not stripped:
+            continue
+        if _RE_SEX_NOISE.search(stripped):
+            continue
+        m = _RE_HPI_SEX.search(stripped)
+        if m:
+            return m.group(2).capitalize(), idx
+    return None, None
+
+
+# ============================================================
 # New-format item parsing (DoS boundaries + supplemental)
 # ============================================================
 
@@ -1521,6 +1558,12 @@ def _build_evidence_object(src_path, patient_slug):
         header = _extract_header(lines)
         arrival_dt = header.get("ARRIVAL_TIME")
         items = _parse_items(lines, arrival_dt_str=arrival_dt)
+
+    # ── Sex fallback: if header extraction didn't capture SEX, try HPI ──
+    if "SEX" not in header:
+        sex_val, _sex_line = _extract_sex_hpi_fallback(lines)
+        if sex_val:
+            header["SEX"] = sex_val
 
     # Strictly "no inference": only set these meta fields if explicit header exists
     patient_id = header.get("PATIENT_ID")

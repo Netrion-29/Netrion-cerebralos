@@ -129,6 +129,114 @@ from typing import Any, Dict, List, Optional, Tuple
 
 _DNA = "DATA NOT AVAILABLE"
 
+# ── Discharge disposition normalization ───────────────────────────
+# Maps raw values (case-insensitive) to canonical disposition strings.
+_DISPOSITION_NORM: Dict[str, str] = {
+    "home": "Home",
+    "home health": "Home Health",
+    "home health care": "Home Health",
+    "skilled nursing facility": "SNF",
+    "snf": "SNF",
+    "rehab-inpt": "Rehab",
+    "rehab": "Rehab",
+    "acute rehab": "Rehab",
+    "long term hospital": "LTAC",
+    "ltac": "LTAC",
+    "swing bed": "Swing Bed",
+    "expired": "Expired",
+    "deceased": "Expired",
+}
+
+
+def _normalize_disposition(raw: Optional[str]) -> Optional[str]:
+    """Normalize a raw disposition string to its canonical form."""
+    if not raw:
+        return None
+    cleaned = raw.strip()
+    if not cleaned:
+        return None
+    return _DISPOSITION_NORM.get(cleaned.lower(), cleaned)
+
+
+# ── Discharge disposition fallback patterns ───────────────────────
+# For patients without a structured "Discharge Disposition" in the
+# Patient Movement section, scan the raw file for these patterns.
+
+# "9. Disposition: Discharged to home."
+_RE_NUMBERED_DISPO = re.compile(
+    r"^\s*9\.\s*Disposition:\s*Discharged\s+to\s+(.+?)\.?\s*$",
+    re.IGNORECASE,
+)
+
+# "Discharge Plan: SNF"
+_RE_DISCHARGE_PLAN = re.compile(
+    r"^\s*Discharge\s+Plan:\s*(.+?)\s*$",
+    re.IGNORECASE,
+)
+
+# "Discharge Disposition: Home"  (outside the Patient Movement block)
+_RE_DISCHARGE_DISPO_LINE = re.compile(
+    r"^\s*Discharge\s+Disposition:\s*(.+?)\s*$",
+    re.IGNORECASE,
+)
+
+# Values that indicate an interim/uncertain disposition — skip these.
+_DISPO_EXCLUDE = re.compile(
+    r"defer|pending|per\s+trauma|per\s+\w+\s+team|"
+    r"to\s+be\s+determined|likely|possible|probably|if\s|when\s|consider",
+    re.IGNORECASE,
+)
+
+
+def _scan_raw_disposition_fallback(source_file: str) -> Optional[str]:
+    """
+    Scan the raw patient file for discharge disposition patterns
+    outside the Patient Movement structured table.
+
+    Returns the LAST canonical match (most recent/final disposition)
+    or None.
+    """
+    if not source_file or not os.path.isfile(source_file):
+        return None
+    try:
+        with open(source_file, encoding="utf-8", errors="replace") as f:
+            raw_lines = f.readlines()
+    except OSError:
+        return None
+
+    last_dispo: Optional[str] = None
+    for line in raw_lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        # Try "Discharge Disposition:" field first
+        m = _RE_DISCHARGE_DISPO_LINE.match(stripped)
+        if m:
+            val = m.group(1).strip()
+            if val and not _DISPO_EXCLUDE.search(val):
+                normed = _normalize_disposition(val)
+                if normed:
+                    last_dispo = normed
+            continue
+        # Try "9. Disposition: Discharged to <value>."
+        m = _RE_NUMBERED_DISPO.match(stripped)
+        if m:
+            val = m.group(1).strip()
+            if val and not _DISPO_EXCLUDE.search(val):
+                normed = _normalize_disposition(val)
+                if normed:
+                    last_dispo = normed
+            continue
+        # Try "Discharge Plan:" (lower priority, but valid)
+        m = _RE_DISCHARGE_PLAN.match(stripped)
+        if m:
+            val = m.group(1).strip()
+            if val and not _DISPO_EXCLUDE.search(val):
+                normed = _normalize_disposition(val)
+                if normed:
+                    last_dispo = normed
+    return last_dispo
+
 # ── Patient Movement section header pattern ────────────────────────
 # Epic export format: "Patient Movement" followed by whitespace/tabs
 RE_PM_HEADER = re.compile(r"^Patient Movement\s*$")
@@ -549,6 +657,22 @@ def extract_patient_movement(
 
     # ── Build summary ───────────────────────────────────────────
     summary = _build_summary(entries)
+
+    # ── Normalize structured disposition if present ─────────────
+    if summary["discharge_disposition_final"]:
+        summary["discharge_disposition_final"] = _normalize_disposition(
+            summary["discharge_disposition_final"]
+        )
+
+    # ── Disposition fallback: scan raw file if not found in PM section ──
+    if not summary["discharge_disposition_final"] and source_file:
+        fallback_dispo = _scan_raw_disposition_fallback(source_file)
+        if fallback_dispo:
+            summary["discharge_disposition_final"] = fallback_dispo
+            notes.append(
+                f"discharge_disposition_fallback=raw_file_scan, "
+                f"value={fallback_dispo}"
+            )
 
     # ── Build evidence list ─────────────────────────────────────
     evidence: List[Dict[str, Any]] = []

@@ -590,6 +590,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
     age_extraction = extract_patient_age(days_data)
     features["age_extraction_v1"] = age_extraction
 
+    # ── Demographics v1 (sex from evidence header) ──
+    sex_raw = meta.get("sex")  # injected by main() from evidence header
+    features["demographics_v1"] = {
+        "sex": sex_raw if sex_raw in ("Male", "Female") else None,
+    }
+
     return {
         "patient_id": meta.get("patient_id", "unknown"),
         "build": {
@@ -647,6 +653,10 @@ def main() -> int:
             ev_trauma_cat = (ev_data.get("meta") or {}).get("trauma_category")
             if ev_trauma_cat:
                 days_data.setdefault("meta", {})["evidence_trauma_category"] = ev_trauma_cat
+            # Inject evidence-level sex for demographics_v1
+            ev_sex = (ev_data.get("header") or {}).get("SEX")
+            if ev_sex:
+                days_data.setdefault("meta", {})["sex"] = ev_sex
         except (json.JSONDecodeError, OSError):
             pass  # fail-closed: no header lines available
 

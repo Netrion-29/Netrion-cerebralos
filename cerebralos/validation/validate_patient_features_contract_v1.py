@@ -74,6 +74,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "lda_episodes_v1",
     "urine_output_events_v1",
     "vitals_qa",
+    "demographics_v1",
 })
 
 
