@@ -52,14 +52,6 @@
 > ./scripts/gate_pr.sh
 > ```
 >
-> If a PR exists, also collect review comments:
->
-> ```bash
-> gh api repos/Netrion-29/Netrion-cerebralos/pulls/<PR_NUMBER>/comments --paginate
-> gh api repos/Netrion-29/Netrion-cerebralos/issues/<PR_NUMBER>/comments --paginate
-> gh api repos/Netrion-29/Netrion-cerebralos/pulls/<PR_NUMBER>/reviews --paginate
-> ```
->
 > Always include this exact `Return:` block at the end of the prompt:
 >
 > ```text
@@ -68,9 +60,7 @@
 > 2) Terminal output tail (include baseline drift check block + final gate line)
 > 3) git diff --name-only
 > 4) git status --short
-> 5) PR metadata (branch, HEAD commit hash, PR URL/number or "no PR")
-> 6) Copilot/GitHub review comments summary (unresolved only; path:line, author, must-fix-now vs defer)
-> 7) Any blockers/open questions
+> 5) Any blockers/open questions
 > ```
 
 ---
@@ -132,19 +122,8 @@ back to Codex:
 <paste last ~30 lines of gate output, including baseline drift check
  and "Gate complete.">
 
-## PR review comments (required if PR exists)
-- <unresolved comment 1: file:line, author, text>
-- <classification: must-fix-now or defer>
-
-## PR metadata
-- Branch: <branch>
-- HEAD: <commit hash>
-- PR: <url/number or "no PR">
-
 ## Request
-Please perform Codex post-handoff analysis (spec alignment, validation
-summary, Copilot comment triage, risks/gaps, next actions), then provide
-commit + push commands.
+Please audit the changes and provide commit + push commands.
 ```
 
 ---
@@ -218,9 +197,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - LDA engine implementation (v1+text+startstop): ✅ COMPLETE (PRs #203, #206, #207) — LDAEpisode model, build_lda_episodes() builder (structured JSON + text day-counter + insertion/removal start/stop inference), 4 gate types incl. eval_lda_overlap, TEXT_DERIVED_STARTSTOP confidence level, ENABLE_LDA_GATES=False, 118 dedicated tests
 > - Open PRs: none
 > - .gitignore cleanup: ✅ COMPLETE — `_tmp_*`, `rules/deaconess/*.pdf`, `docs/handoffs/`, audit log added to `.gitignore`
-> - E06 CLABSI spec fidelity: ✅ COMPLETE — NHSN CLABSI: 5 required gates + 2 exclusions, 7 mapper keys (~56 patterns), 76 precision tests + 3 new fixtures, 0 NTDS outcome deltas
-> - E06 CLABSI duration-scope tightening: ✅ COMPLETE — duration patterns require explicit device mention (central line/PICC/CVL/CVC); dropped generic patterns; 7→4 duration patterns; 105 total precision tests; 0 NTDS outcome deltas
-> - E06 CLABSI punctuation variant tests: ✅ COMPLETE — duration patterns accept colon/em-dash/en-dash/hyphen separators; +14 precision tests (8 positives, 6 negatives); 119 total precision tests; 0 NTDS outcome deltas
+
 > - E05 CAUTI duration-scope tightening: ✅ COMPLETE — duration gate requires explicit urinary device (foley/indwelling/urethral/urinary catheter) + duration ≥3d/>48h; `cauti_catheter_duration` (6 patterns); 65→89 E05 precision tests; 0 NTDS outcome deltas
 > - **Backlog priority:** (1) Tier 2 PROGRESS_NOTE scoping pass, (2) Delirium shift compliance audit script, (3) PMH-aware gate handling (engine-protected), (4) LDA flag-on cohort validation per event — see Roadmap doc §3
 > - Handoff reminder: Every Claude handoff must include Codex post-handoff analysis (spec alignment, validation results, gaps/risks, next actions) plus a raw-data cross-check: compare raw NTDS/protocol sources vs current extraction and spot-check two patient raw `.txt` files (one questionable, one baseline) for capture accuracy.
@@ -245,9 +222,8 @@ After `./scripts/dev_start.sh` completes, paste this block into Codex:
 > 1) Verify changes obey AGENTS.md constraints.
 > 2) Confirm no renderer/NTDS/protocol drift.
 > 3) Confirm baseline gate behavior matches spec.
-> 4) Review unresolved Copilot/GitHub comments and triage each as must-fix-now vs defer.
-> 5) Perform post-handoff analysis: spec alignment, validation summary, gaps/risks, next actions.
-> 6) If clean, give commit message and exact git commands.
+> 4) List any risks or edge cases.
+> 5) If clean, give commit message and exact git commands.
 
 If `codex_handoff.md` contains placeholders, treat as FAIL and re-run the gate.
 
@@ -264,9 +240,7 @@ Return:
 2) Terminal output tail (include baseline drift check block + final gate line)
 3) git diff --name-only
 4) git status --short
-5) PR metadata (branch, HEAD commit hash, PR URL/number or "no PR")
-6) Copilot/GitHub review comments summary (unresolved only; path:line, author, must-fix-now vs defer)
-7) Any blockers/open questions
+5) Any blockers/open questions
 ```
 
 ---
