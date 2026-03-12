@@ -148,6 +148,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 
 - **[Whole-Project State and Roadmap v1](roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md)** ← primary context-recovery doc
 - [Trauma Build-Forward Plan v1](roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md) (historical)
+- [CAUTI Engine Design v1](audits/CAUTI_ENGINE_DESIGN_v1.md) — LDA duration gate + alternative-source exclusion design (**engine approval needed**)
 
 > **NTDS Coverage:** 21/21 events fully mapped (PRs #118 – #124).
 > Fixture runner: 43 passed, 0 xfailed.

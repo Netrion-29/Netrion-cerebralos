@@ -49,7 +49,8 @@
 | Baseline refresh post-CAUTI v2 | ✅ COMPLETE — 39-patient cohort rerun, hash + distribution baselines updated; E05 delta: NO=39→NO=35 EXCLUDED=4; all other 20 events unchanged; 2313 tests passed, cohort invariant PASS, 0 drift |
 | E05 CAUTI follow-up (culture/symptom variants) | 🔵 OPEN (PR #190) — symptoms 14→15 (adds altered mental status, temp regex 38–42°C); culture patterns 11→14 (1e5 CFU, spaced caret, “>100,000” forms); +13 precision tests; 0 NTDS deltas |
 | Open PRs | none |
-| Next phase | **Backlog priority:** (1) Tier 2 PROGRESS_NOTE scoping pass, (2) Delirium shift compliance audit script, (3) PMH-aware gate handling (engine-protected) — see Roadmap §3 |
+| CAUTI engine design | 📐 DESIGN COMPLETE — LDA duration gate + alternative-source exclusion design doc (`docs/audits/CAUTI_ENGINE_DESIGN_v1.md`); requires engine-change authorization for implementation (LDA SourceType, `lda_catheter_duration` gate, `excluded_sources` / `exclude_if_only_source`) |
+| Next phase | **Backlog priority:** (1) Tier 2 PROGRESS_NOTE scoping pass, (2) Delirium shift compliance audit script, (3) PMH-aware gate handling (engine-protected), (4) CAUTI engine changes (pending approval, see design doc) — see Roadmap §3 |
 
 ## Quick Chat Starter
 

@@ -530,6 +530,7 @@ and added two block filters:
 | ~~11b~~ | ~~**Baseline refresh post-CAUTI v2**~~ | ~~`scripts/baselines/ntds_hashes_v1.json`, `scripts/baselines/ntds_distribution_v1.json`~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** — 39-patient cohort rerun, hash + distribution baselines updated; E05 distribution delta: NO=39→NO=35 EXCLUDED=4; all other events unchanged; 2313 tests passed, cohort invariant PASS, 0 drift |
 | 11c | **E05 CAUTI follow-up (culture/symptom variants)** | `rules/mappers/epic_deaconess_mapper_v1.json`, tests | High | Small | OPEN (PR #190) — symptoms 14→15 (adds altered mental status, temp regex 38–42°C); culture patterns 11→14 (1e5 CFU, spaced caret, “>100,000” forms); 13 new precision tests; 0 NTDS deltas |
 | 12 | PMH-aware gate handling | Engine proposal (PROTECTED `cerebralos/ntds_logic/engine.py`) | Medium | Large | Requires engine modification + design doc + explicit authorization; protocol engine has reference impl |
+| 13 | **CAUTI engine design (LDA duration gate + alt-source exclusion)** | Design doc `docs/audits/CAUTI_ENGINE_DESIGN_v1.md` | **High** | Medium–Large | ✅ DESIGN COMPLETE — requires engine-change authorization for implementation. LDA SourceType + catheter duration gate + alternative-source exclusion. See design doc for phased migration plan. |
 
 ---
 
