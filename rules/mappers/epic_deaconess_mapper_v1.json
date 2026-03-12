@@ -629,11 +629,72 @@
 		"clabsi_dx": [
 			"\\bcentral\\s+line[- ]associated\\s+bloodstream\\s+infection\\b",
 			"\\bCLABSI\\b",
-			"\\bblood\\s+culture\\s+positive\\b",
 			"\\bbacteremia\\b.*\\bcentral\\s+(line|venous)\\b",
 			"\\bcentral\\s+(line|venous)\\b.*\\bbacteremia\\b",
 			"\\bline\\s+sepsis\\b",
-			"\\bcatheter[- ]related\\s+(bloodstream|infection)\\b"
+			"\\bcatheter[- ]related\\s+(bloodstream|infection)\\b",
+			"\\bbloodstream\\s+infection\\b.*\\bcentral\\s+(line|catheter)\\b",
+			"\\bcentral\\s+(line|catheter)\\b.*\\bbloodstream\\s+infection\\b"
+		],
+		"clabsi_negation_noise": [
+			"\\bno\\s+(evidence\\s+of\\s+)?CLABSI\\b",
+			"\\bno\\s+(evidence\\s+of\\s+)?(central\\s+line|catheter)[- ]?(associated|related)?\\s*(bloodstream\\s+)?infection\\b",
+			"\\bnegative\\s+(for\\s+)?(CLABSI|line\\s+sepsis|bacteremia)\\b",
+			"\\brule\\s*out\\s+(CLABSI|line\\s+sepsis|bacteremia)\\b",
+			"\\b(CLABSI|line\\s+sepsis)\\s+ruled\\s+out\\b",
+			"\\bno\\s+(evidence\\s+of\\s+)?bacteremia\\b",
+			"\\bwithout\\b.*\\b(CLABSI|bacteremia|line\\s+sepsis)\\b"
+		],
+		"clabsi_central_line_in_place": [
+			"\\bcentral\\s+(line|venous\\s+catheter)\\s+(in\\s+place|inserted|placed)\\b",
+			"\\b(PICC|picc)\\s+(line\\s+)?(in\\s+place|inserted|placed)\\b",
+			"\\bcentral\\s+venous\\s+catheter\\b",
+			"\\bcentral\\s+line\\b.*\\b(subclavian|jugular|femoral)\\b",
+			"\\b(subclavian|jugular|femoral)\\b.*\\bcentral\\s+(line|venous)\\b",
+			"\\btriple[- ]lumen\\s+catheter\\b",
+			"\\bCVL\\b.*\\b(in\\s+place|inserted|placed|site)\\b",
+			"\\bcentral\\s+line\\s+(day|since)\\b",
+			"\\bPICC\\b.*\\b(in\\s+place|inserted|placed)\\b",
+			"\\b(hickman|broviac|port[- ]?a[- ]?cath)\\b.*\\b(in\\s+place|accessed)\\b",
+			"\\bcentral\\s+(line|catheter)\\s+in\\s+place\\s+(since|for|day)\\b"
+		],
+		"clabsi_blood_culture_positive": [
+			"\\bblood\\s+culture\\s+positive\\b",
+			"\\bpositive\\s+blood\\s+culture\\b",
+			"\\bblood\\s+culture\\b.*\\bgrew\\b",
+			"\\bblood\\s+culture\\b.*\\b(S\\.\\s*aureus|staph|strep|enterococcus|candida|E\\.\\s*coli|klebsiella|pseudomonas)\\b",
+			"\\bbacteremia\\b.*\\bconfirmed\\b",
+			"\\bblood\\s+culture\\b.*\\bpositive\\s+for\\b",
+			"\\b(grew|isolated|identified)\\b.*\\bblood\\s+culture\\b",
+			"\\bblood\\s+culture\\b.*\\borganism\\b"
+		],
+		"clabsi_symptoms": [
+			"\\bfever\\b.*\\b(3[89]|4[0-2])\\b",
+			"\\btemperature\\b.*\\b(3[89]|4[0-2])\\b",
+			"\\btemp\\b.*\\b(3[89]|4[0-2])\\b",
+			"\\b(3[89]|4[0-2])\\.\\d\\s*[°]?\\s*C\\b",
+			"\\bfebrile\\b",
+			"\\bchills\\b",
+			"\\brigors\\b",
+			"\\bhypotension\\b",
+			"\\bhemodynamic\\s+instability\\b",
+			"\\bseptic\\s+shock\\b"
+		],
+		"clabsi_onset": [
+			"\\bonset\\b.*\\bafter\\b.*\\b(arrival|admission|admit)\\b",
+			"\\bdeveloped\\b.*\\b(CLABSI|bacteremia|line\\s+sepsis|fever|bloodstream\\s+infection)\\b",
+			"\\bnew\\s+(onset\\s+)?(CLABSI|bacteremia|fever|bloodstream\\s+infection)\\b",
+			"\\bhospital[- ]?(acquired|onset)\\b.*\\b(CLABSI|bacteremia|infection|bloodstream)\\b",
+			"\\bnosocomial\\b.*\\b(CLABSI|bacteremia|infection|bloodstream)\\b"
+		],
+		"clabsi_chronic_line": [
+			"\\bchronic\\s+(central\\s+)?(line|venous\\s+catheter|catheter)\\b",
+			"\\blong[- ]?term\\s+(central\\s+)?(line|venous\\s+catheter|catheter)\\b",
+			"\\bchronic\\s+dialysis\\s+catheter\\b",
+			"\\btunneled\\s+(dialysis\\s+)?catheter\\b.*\\bchronic\\b",
+			"\\bchronic\\s+tunneled\\s+catheter\\b",
+			"\\b(dialysis|HD)\\s+catheter\\b.*\\bprior\\s+to\\s+(arrival|admission)\\b",
+			"\\bpre[- ]?admission\\s+(central\\s+)?(line|catheter)\\b"
 		],
 		"deep_ssi_dx": [
 			"\\bdeep\\s+(surgical\\s+site\\s+infection|SSI)\\b",

@@ -1,0 +1,16 @@
+PATIENT_ID: TEST_CLABSI_NOCULTURE_001
+ARRIVAL_TIME: 2026-01-15 08:00:00
+
+[NURSING_NOTE] 2026-01-15 10:00:00
+Central venous catheter in place, right internal jugular.
+CVL site clean.
+
+[LAB] 2026-01-19 08:00:00
+Blood cultures drawn — no growth at 5 days.
+CBC within normal limits.
+
+[PHYSICIAN_NOTE] 2026-01-19 10:00:00
+Patient febrile, temperature 38.6 C.
+Suspected central line-associated bloodstream infection.
+Blood cultures negative, no organism identified.
+New onset fever on hospital day 4.
