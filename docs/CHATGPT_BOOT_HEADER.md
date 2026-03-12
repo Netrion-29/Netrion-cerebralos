@@ -47,8 +47,11 @@
 | Tier 1 source alignment + CAM/bCAM patterns | ✅ COMPLETE — CONSULT_NOTE added to 4 gates (aki_dx, mi_dx, sepsis_dx, stroke_dx), NURSING_NOTE added to 3 gates (cauti_dx, clabsi_dx, sepsis_dx), 4 CAM-ICU/bCAM positive patterns added to delirium_dx, 4 negative patterns added to delirium_negation_noise, 3 fixtures added, 0 NTDS outcome deltas |
 | E05 CAUTI Tier-1 spec fidelity | ✅ COMPLETE — CDC SUTI 1a: 5 required gates (dx, catheter >2d, symptoms, culture ≥10^5, timing) + 2 exclusions (POA, chronic catheter); 6 new mapper keys (52 patterns); cauti_dx expanded with negation noise filter; 52 precision tests + 3 fixtures; baseline refreshed: E05 NO=39→NO=35 EXCLUDED=4 |
 | Baseline refresh post-CAUTI v2 | ✅ COMPLETE — 39-patient cohort rerun, hash + distribution baselines updated; E05 delta: NO=39→NO=35 EXCLUDED=4; all other 20 events unchanged; 2313 tests passed, cohort invariant PASS, 0 drift |
-| E05 CAUTI follow-up (culture/symptom variants) | 🔵 OPEN (PR #190) — symptoms 14→15 (adds altered mental status, temp regex 38–42°C); culture patterns 11→14 (1e5 CFU, spaced caret, ">100,000" forms); +13 precision tests; 0 NTDS deltas |
+| E05 CAUTI follow-up (culture/symptom variants) | ✅ COMPLETE (PR #190, merged) — symptoms 14→15 (adds altered mental status, temp regex 38–42°C); culture patterns 11→14 (1e5 CFU, spaced caret, ">100,000" forms); +13 precision tests; 0 NTDS deltas |
 | E01 AKI Tier-2 spec fidelity (KDIGO Stage 3) | ✅ COMPLETE — 3 gates (aki_dx tightened, aki_stage3 KDIGO criteria, aki_after_arrival enhanced) + 2 exclusions (POA, chronic RRT); 3 new mapper keys (aki_stage3_lab 12 patterns, aki_new_dialysis 5 patterns, aki_chronic_rrt 5 patterns); aki_onset expanded 6→11 patterns; aki_dx +2 (ATN); NURSING_NOTE + PROGRESS_NOTE added to all gates; 68 new precision tests + 4 fixtures; 0 NTDS outcome deltas across 39 patients |
+| LDA engine correctness hardening | ✅ COMPLETE (PR #214, merged) — overlap semantics, merge backfill, chest tube + drain patterns, 145 dedicated tests |
+| LDA bracket [REMOVED] patterns | ✅ COMPLETE (PR #216, merged) — Urethral Catheter + Non-Surgical Airway ETT, 3 tests added |
+| Roadmap sync (through PR #217) | ✅ COMPLETE (PR #218, merged) — all merged-PR state references updated |
 | Open PRs | none |
 | CAUTI engine design | 📐 DESIGN COMPLETE — LDA duration gate + alternative-source exclusion design doc (`docs/audits/CAUTI_ENGINE_DESIGN_v1.md`); requires engine-change authorization for implementation (LDA SourceType, `lda_catheter_duration` gate, `excluded_sources` / `exclude_if_only_source`) |
 | LDA engine design (generalised) | ✅ IMPLEMENTED (v1+text) — PRs `tier2/lda-engine-impl-v1` (merged), `tier2/lda-text-episodes-v1`; SourceType `LDA` + `LDAEpisode` dataclass; `build_lda_episodes()` builder with text-derived flowsheet day-counter extraction; 4 gate types in engine with `ENABLE_LDA_GATES` flag (default False); optional LDA gates wired into E05/E06/E21 (`required: false`); contract updated; 75 dedicated tests; 0 NTDS outcome deltas (Roadmap §3 item 16) |
@@ -60,6 +63,16 @@
 | Protocol data element master | ✅ COMPLETE — `docs/audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md` + `.csv`: 20 categories, ~180 elements across 51 protocol PDFs; coverage mapping NOT STARTED (Roadmap §3 item 15) |
 | Next phase | **Backlog priority:** (1) Tier 2 PROGRESS_NOTE scoping pass, (2) Delirium shift compliance audit script, (3) PMH-aware gate handling (engine-protected), (4) LDA flag-on cohort validation per event, (5) Protocol Data Coverage Mapping — see Roadmap §3 |
 | PR workflow | Every mapper/rule/test PR requires: raw `.txt` evidence review (≥2 patients) → pre-merge validation checklist → Copilot comments resolved → Codex post-handoff analysis + 2-patient spot-check. See Roadmap §5.1. |
+
+## Canonical Operating Contract Pointer
+
+> **Canonical long-form operating contract** lives in:
+> - `docs/roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md` §5 (Persistent Codex Operating Contract)
+> - `docs/DAILY_STARTUP.md` §13 (New-Chat Master Prompt)
+>
+> This boot header is a **quick starter** — refer to those sections for
+> the full findings-first response format, lean/deep audit triggers,
+> mandatory workflow loop, and raw evidence policy.
 
 ## Quick Chat Starter
 
