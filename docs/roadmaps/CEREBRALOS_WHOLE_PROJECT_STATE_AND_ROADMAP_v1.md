@@ -2,8 +2,8 @@
 
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
-| Date        | 2026-03-09                                               |
-| Baseline    | `ac31ac0` (main, after PR #158)                          |
+| Date        | 2026-03-11                                               |
+| Baseline    | `b3757cc` (main, after PR #188)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -78,8 +78,6 @@
 | #186 | `ee214d9` | docs(design): source alignment + geriatric delirium nursing shift design v1 |
 | #187 | `8030ee6` | feat(ntds): Tier 1 source alignment + CAM/bCAM delirium patterns |
 | #188 | `b3757cc` | feat(E05): CAUTI Tier-1 spec fidelity — CDC SUTI 1a gates |
-| #189 | — | baseline refresh post-CAUTI v2 |
-| #190 | — | feat(E05): CAUTI follow-up — culture/symptom pattern coverage hardening |
 
 ### Closed PRs
 
@@ -95,7 +93,7 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 2327 passed (pytest) |
+| Total tests         | 2313 passed (pytest) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 44               |
 | Fixture runner      | **44 passed, 0 xfailed** |
@@ -530,7 +528,7 @@ and added two block filters:
 | ~~10~~ | ~~**Automate per-event NTDS outcome distribution in gate/CI**~~ | ~~CI/gate script~~ | ~~Low~~ | ~~Small~~ | **✅ COMPLETE** — `scripts/check_ntds_distribution.py` + baseline `scripts/baselines/ntds_distribution_v1.json` (21 events × 39 patients); per-event YES/NO/UTD/EXCLUDED counts computed from `outputs/ntds/`, compared against stored baseline; wired into `gate_pr.sh` between NTDS hash check and pytest; `--update` and `--summary` modes; 0 NTDS outcome deltas |
 | ~~11~~ | ~~**E05 CAUTI Tier-1 spec fidelity (CDC SUTI 1a)**~~ | ~~`rules/ntds/logic/2026/05_cauti.json`, `rules/mappers/epic_deaconess_mapper_v1.json`, tests~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** — 5 required gates (cauti_dx, cauti_catheter_gt2d, cauti_symptoms, cauti_culture, cauti_after_arrival) + 2 exclusions (POA, chronic catheter); 6 new mapper keys (cauti_negation_noise, cauti_catheter_in_place, cauti_symptoms, cauti_culture_positive, cauti_onset, cauti_chronic_catheter) with 52 patterns total; cauti_dx expanded (UTI standalone + noise filter); 52 precision tests + 3 fixtures (YES, nursing-YES, no-catheter-NO); baseline refreshed post-rerun: E05 NO=39→NO=35 EXCLUDED=4 (4 patients excluded by catheter/chronic gates) |
 | ~~11b~~ | ~~**Baseline refresh post-CAUTI v2**~~ | ~~`scripts/baselines/ntds_hashes_v1.json`, `scripts/baselines/ntds_distribution_v1.json`~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** — 39-patient cohort rerun, hash + distribution baselines updated; E05 distribution delta: NO=39→NO=35 EXCLUDED=4; all other events unchanged; 2313 tests passed, cohort invariant PASS, 0 drift |
-| ~~11c~~ | ~~**E05 CAUTI follow-up — culture/symptom pattern coverage**~~ | ~~`rules/mappers/epic_deaconess_mapper_v1.json`, `tests/test_e05_cauti_precision.py`~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** — cauti_symptoms 14→15 patterns (temperature range 38–42°C, altered mental status for elderly); cauti_culture_positive 11→14 patterns (1e5 scientific notation, >100000/>=100000 threshold without CFU suffix, spaced caret 10^5); 13 new precision tests (65 total); 0 NTDS outcome deltas across 39 patients. **Deferred:** LDA-based catheter duration check (no LDA SourceType, no lda_duration gate type — requires engine changes), alternative-source exclusion (no gate type supports this pattern) |
+| 11c | **E05 CAUTI follow-up (culture/symptom variants)** | `rules/mappers/epic_deaconess_mapper_v1.json`, tests | High | Small | OPEN (PR #190) — symptoms 14→15 (adds altered mental status, temp regex 38–42°C); culture patterns 11→14 (1e5 CFU, spaced caret, “>100,000” forms); 13 new precision tests; 0 NTDS deltas |
 | 12 | PMH-aware gate handling | Engine proposal (PROTECTED `cerebralos/ntds_logic/engine.py`) | Medium | Large | Requires engine modification + design doc + explicit authorization; protocol engine has reference impl |
 
 ---
