@@ -182,8 +182,9 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - N3 residual precision pass (E08 DVT + E09 Delirium): ✅ COMPLETE — E09 `delirium_negation_noise` (10 patterns), 2 FP corrections (Barbara_Burgdorf YES→NO, Christine_Adelitzo YES→NO); E08 `dvt_dx_noise_prophylaxis` wired (defensive, 0 outcome changes); 2 NTDS outcome deltas
 > - AKI UTD reduction v2: ✅ COMPLETE — 3 noise patterns + 1 onset pattern + arrival-time extraction in runner; 4 outcome deltas (Barbara_Burgdorf UTD→NO, Gary_Linder UTD→NO, William_Simmons UTD→NO, Floy_Geary UTD→YES); E01 UTD 7→3
 > - Per-event distribution CI: ✅ COMPLETE — `scripts/check_ntds_distribution.py` + baseline (21 events × 39 patients), wired into `gate_pr.sh`, 0 NTDS outcome deltas
+> - Source alignment + geri delirium design: ✅ COMPLETE (design doc) — 3-tier source recommendations, CAM/bCAM mapper gaps, shift compliance design, Ronald_Bittner follow-up; 0 NTDS outcome deltas
 > - Open PRs: None
-> - **Backlog priority:** (1) Source alignment (PROGRESS_NOTE/NURSING_NOTE) doc + recommendations, (2) Geriatric delirium nursing shift assessment design, (3) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
+> - **Backlog priority:** (1) Tier 1 source alignment implementation (CONSULT_NOTE + NURSING_NOTE → 7 gates), (2) CAM-ICU/bCAM mapper expansion, (3) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
 >
 > See Roadmap doc §3 for full backlog detail, N3 residuals, and N4 queue.
 
