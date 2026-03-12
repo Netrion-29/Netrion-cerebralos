@@ -148,7 +148,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 
 - **[Whole-Project State and Roadmap v1](roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md)** ← primary context-recovery doc
 - [Trauma Build-Forward Plan v1](roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md) (historical)
-- [LDA Engine Design v1](audits/LDA_ENGINE_DESIGN_v1.md) — ✅ IMPLEMENTED (v1) Lines/Drains/Airways device-duration engine design; `ENABLE_LDA_GATES` feature flag (default False); gates wired into E05/E06/E21 (`required: false`); 37 dedicated tests (Roadmap §3 item 16)
+- [LDA Engine Design v1](audits/LDA_ENGINE_DESIGN_v1.md) — ✅ IMPLEMENTED (v1+text) Lines/Drains/Airways device-duration engine design; text-derived flowsheet day-counter extraction; `ENABLE_LDA_GATES` feature flag (default False); gates wired into E05/E06/E21 (`required: false`); 75 dedicated tests (Roadmap §3 item 16)
 - [CAUTI Engine Design v1](audits/CAUTI_ENGINE_DESIGN_v1.md) — CAUTI-specific LDA duration gate + alternative-source exclusion design (predecessor; CAUTI clinical requirements still authoritative; engine approval needed)
 - [Protocol Data Element Master v1](audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md) — comprehensive inventory of all data elements across 51 protocol PDFs; coverage mapping is a backlog item (NOT STARTED, see Roadmap §3 item 15)
 

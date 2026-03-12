@@ -304,66 +304,136 @@ def build_patientfacts(
     )
 
 
-# ── LDA episode builder (stub) ─────────────────────────────────────
+# ── LDA text-derived extraction helpers ────────────────────────────
+
+# Maps a regex pattern to the canonical device_type it produces.
+# Each pattern captures at least one group containing the day count.
+# Patterns are tried in order; the *highest* day count per device
+# wins (a patient note may mention the same device multiple times).
+_LDA_TEXT_PATTERNS: List[tuple] = [
+    # "Catheter day 3", "Catheter day: 3", "Catheter day  3  -MW —"
+    (re.compile(r"\b(?:catheter)\s+day[:\s]+(\d+)", re.IGNORECASE), "URINARY_CATHETER"),
+    # "Central line day 4", "Central line day: 4"
+    (re.compile(r"\b(?:central\s+line)\s+day[:\s]+(\d+)", re.IGNORECASE), "CENTRAL_LINE"),
+    # "Line Day: 5", "Line day 5"
+    (re.compile(r"\b(?:line)\s+day[:\s]+(\d+)", re.IGNORECASE), "CENTRAL_LINE"),
+    # "CVC day: 3", "CVC day 3"
+    (re.compile(r"\b(?:cvc)\s+day[:\s]+(\d+)", re.IGNORECASE), "CENTRAL_LINE"),
+    # "Ventilator day 3", "Vent day: 4"
+    (re.compile(r"\b(?:vent(?:ilator)?)\s+day[:\s]+(\d+)", re.IGNORECASE), "MECHANICAL_VENTILATOR"),
+]
+
+
+def _extract_lda_episodes_from_lines(lines: List[str]) -> List[Dict[str, Any]]:
+    """Scan raw clinical text lines for flowsheet day-counter patterns.
+
+    Returns one episode dict per device type, using the **highest** day
+    count observed across all matching lines.  Source confidence is
+    ``TEXT_DERIVED``.
+    """
+    best: Dict[str, int] = {}       # device_type -> max day count
+    refs: Dict[str, set] = {}       # device_type -> set of line numbers
+
+    for line_idx, line in enumerate(lines):
+        for pattern, device_type in _LDA_TEXT_PATTERNS:
+            m = pattern.search(line)
+            if m:
+                day_count = int(m.group(1))
+                if device_type not in best or day_count > best[device_type]:
+                    best[device_type] = day_count
+                refs.setdefault(device_type, set()).add(line_idx + 1)
+
+    episodes: List[Dict[str, Any]] = []
+    for device_type, days in sorted(best.items()):
+        episodes.append({
+            "device_type": device_type,
+            "episode_days": days,
+            "source_confidence": "TEXT_DERIVED",
+            "start_ts": None,
+            "stop_ts": None,
+            "location": None,
+            "inserted_by": None,
+            "notes": None,
+            "raw_line_ids": [f"L{n}" for n in sorted(refs.get(device_type, set()))],
+        })
+    return episodes
+
+
+# ── LDA episode builder ────────────────────────────────────────────
 
 def build_lda_episodes(
     patient_id: Optional[str] = None,
     lda_json_path: Optional[Path] = None,
+    raw_lines: Optional[List[str]] = None,
 ) -> List[Any]:
-    """Build LDA device episodes from a structured JSON feed.
+    """Build LDA device episodes from structured JSON and/or raw text.
 
-    If *lda_json_path* is provided and exists, parse it and return a list
-    of ``LDAEpisode`` dicts.  Otherwise return an empty list (text-derived
-    fallback is a future phase — this stub keeps the interface stable).
+    Sources (combined, structured episodes take precedence):
+    1. *lda_json_path* — structured JSON feed (highest fidelity).
+    2. *raw_lines* — raw clinical text scanned for flowsheet day-counter
+       patterns such as ``Catheter day 3`` or ``Line Day: 5``.
 
     Returns:
         List of dicts matching the LDAEpisode schema defined in model.py.
     """
     from cerebralos.ntds_logic.model import LDA_DEVICE_TYPES, LDA_CONFIDENCE_LEVELS
 
-    if lda_json_path is None or not lda_json_path.exists():
-        return []
+    # ── 1. Structured JSON feed ──────────────────────────────────────────
+    structured: List[Any] = []
+    if lda_json_path is not None and lda_json_path.exists():
+        try:
+            import json as _json
+            raw = _json.loads(lda_json_path.read_text(encoding="utf-8"))
+        except Exception:
+            raw = {}
 
-    try:
-        import json as _json
-        raw = _json.loads(lda_json_path.read_text(encoding="utf-8"))
-    except Exception:
-        return []
+        records = raw.get("lda_records", [])
+        if not isinstance(records, list):
+            records = []
 
-    records = raw.get("lda_records", [])
-    if not isinstance(records, list):
-        return []
+        for rec in records:
+            if not isinstance(rec, dict):
+                continue
+            device_type = str(rec.get("device_type", "")).upper()
+            if device_type not in LDA_DEVICE_TYPES:
+                continue
+            confidence = str(rec.get("source_confidence", "STRUCTURED")).upper()
+            if confidence not in LDA_CONFIDENCE_LEVELS:
+                confidence = "STRUCTURED"
+            ep = {
+                "device_type": device_type,
+                "start_ts": rec.get("start_ts"),
+                "stop_ts": rec.get("stop_ts"),
+                "episode_days": rec.get("episode_days"),
+                "source_confidence": confidence,
+                "location": rec.get("location"),
+                "inserted_by": rec.get("inserted_by"),
+                "notes": rec.get("notes"),
+                "raw_line_ids": rec.get("raw_line_ids", []),
+            }
+            # Compute episode_days if not provided but timestamps available
+            if ep["episode_days"] is None and ep["start_ts"] and ep["stop_ts"]:
+                try:
+                    from datetime import datetime as _dt
+                    start = _dt.fromisoformat(ep["start_ts"])
+                    stop = _dt.fromisoformat(ep["stop_ts"])
+                    ep["episode_days"] = max(0, (stop - start).days)
+                except Exception:
+                    pass
+            structured.append(ep)
 
-    episodes: List[Any] = []
-    for rec in records:
-        if not isinstance(rec, dict):
-            continue
-        device_type = str(rec.get("device_type", "")).upper()
-        if device_type not in LDA_DEVICE_TYPES:
-            continue
-        confidence = str(rec.get("source_confidence", "STRUCTURED")).upper()
-        if confidence not in LDA_CONFIDENCE_LEVELS:
-            confidence = "STRUCTURED"
-        ep = {
-            "device_type": device_type,
-            "start_ts": rec.get("start_ts"),
-            "stop_ts": rec.get("stop_ts"),
-            "episode_days": rec.get("episode_days"),
-            "source_confidence": confidence,
-            "location": rec.get("location"),
-            "inserted_by": rec.get("inserted_by"),
-            "notes": rec.get("notes"),
-            "raw_line_ids": rec.get("raw_line_ids", []),
-        }
-        # Compute episode_days if not provided but timestamps available
-        if ep["episode_days"] is None and ep["start_ts"] and ep["stop_ts"]:
-            try:
-                from datetime import datetime as _dt
-                start = _dt.fromisoformat(ep["start_ts"])
-                stop = _dt.fromisoformat(ep["stop_ts"])
-                ep["episode_days"] = max(0, (stop - start).days)
-            except Exception:
-                pass
-        episodes.append(ep)
+    # ── 2. Text-derived from raw lines ───────────────────────────────────
+    text_derived: List[Dict[str, Any]] = []
+    if raw_lines:
+        text_derived = _extract_lda_episodes_from_lines(raw_lines)
 
-    return episodes
+    # ── 3. Merge: structured wins per device_type ────────────────────────
+    # If a device_type appears in both, keep only the structured episode
+    # (higher fidelity).
+    structured_types = {ep["device_type"] for ep in structured}
+    merged = list(structured)
+    for ep in text_derived:
+        if ep["device_type"] not in structured_types:
+            merged.append(ep)
+
+    return merged

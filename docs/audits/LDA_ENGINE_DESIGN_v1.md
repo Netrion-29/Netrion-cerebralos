@@ -4,7 +4,7 @@
 |---|---|
 | Date | 2026-03-12 |
 | Author | Design doc (Sarah / CerebralOS team) |
-| Status | IMPLEMENTED (v1) — PR `tier2/lda-engine-impl-v1`; feature flag `ENABLE_LDA_GATES` default False |
+| Status | IMPLEMENTED (v1+text) — PRs `tier2/lda-engine-impl-v1` (merged), `tier2/lda-text-episodes-v1`; feature flag `ENABLE_LDA_GATES` default False |
 | Baseline | `d0b7f5c` (main, post PR #200) |
 | Predecessor | `docs/audits/CAUTI_ENGINE_DESIGN_v1.md` (CAUTI-specific; this doc generalizes to all LDA device types) |
 | Depends on | Engine authorization; no active PR dependency |
@@ -288,6 +288,14 @@ NHSN device utilization ratios require:
 ## 4. Backfill Strategy
 
 ### Phase 1 — Text-Derived Episodes (No Structured Feed Required)
+
+**Flowsheet day-counter extraction** (IMPLEMENTED in `tier2/lda-text-episodes-v1`):
+Scans raw `.txt` lines for flowsheet day-counter patterns such as `Catheter day 3`,
+`Line Day: 5`, `CVC day: 2`, `Vent day: 4`. The *highest* day count per device
+type is kept. Source confidence = `TEXT_DERIVED`. Covers 13 of 39 cohort patients
+(169 matching lines). Helper: `_extract_lda_episodes_from_lines()` in builder.
+
+**Insertion/removal scanning** (DEFERRED — future phase):
 
 Deploy LDA builder in text-derivation mode. For each patient `.txt` file:
 
