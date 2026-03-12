@@ -184,9 +184,11 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - Per-event distribution CI: ✅ COMPLETE — `scripts/check_ntds_distribution.py` + baseline (21 events × 39 patients), wired into `gate_pr.sh`, 0 NTDS outcome deltas
 > - Source alignment + geri delirium design: ✅ COMPLETE (design doc) — 3-tier source recommendations, CAM/bCAM mapper gaps, shift compliance design, Ronald_Bittner follow-up; 0 NTDS outcome deltas
 > - Tier 1 source alignment + CAM/bCAM patterns: ✅ COMPLETE — CONSULT_NOTE added to 4 gates (aki_dx, mi_dx, sepsis_dx, stroke_dx), NURSING_NOTE added to 3 gates (cauti_dx, clabsi_dx, sepsis_dx), 4 CAM-ICU/bCAM positive patterns to delirium_dx, 4 negative patterns to delirium_negation_noise, 3 fixtures added, 0 NTDS outcome deltas
-> - E05 CAUTI Tier-1 spec fidelity (CDC SUTI 1a): ✅ COMPLETE — 5 required gates (cauti_dx, cauti_catheter_gt2d, cauti_symptoms, cauti_culture, cauti_after_arrival) + 2 exclusions (POA, chronic catheter); 6 new mapper keys (52 patterns total); cauti_dx expanded with UTI standalone + negation noise filter; 52 precision tests + 3 fixtures (YES, nursing-YES, no-catheter-NO); 0 NTDS outcome deltas (rule-only, pre-rerun)
-> - Open PRs: tier2/e05-cauti-spec-v1
-> - **Backlog priority:** (1) E05 CAUTI cohort rerun + baseline update, (2) Tier 2 PROGRESS_NOTE scoping pass, (3) Delirium shift compliance audit script, (4) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
+> - E05 CAUTI Tier-1 spec fidelity (CDC SUTI 1a): ✅ COMPLETE — 5 required gates (cauti_dx, cauti_catheter_gt2d, cauti_symptoms, cauti_culture, cauti_after_arrival) + 2 exclusions (POA, chronic catheter); 6 new mapper keys (52 patterns total); cauti_dx expanded with UTI standalone + negation noise filter; 52 precision tests + 3 fixtures (YES, nursing-YES, no-catheter-NO); baseline refreshed: E05 NO=39→NO=35 EXCLUDED=4
+> - Baseline refresh post-CAUTI v2: ✅ COMPLETE — 39-patient cohort rerun, hash + distribution baselines updated; E05 delta: NO=39→NO=35 EXCLUDED=4 (4 patients excluded by catheter/chronic gates); all other 20 events unchanged; 2313 tests passed, cohort invariant PASS, 0 drift
+> - E05 CAUTI follow-up (culture/symptom pattern coverage): ✅ COMPLETE — cauti_symptoms 14→15 patterns (temperature range 38–42°C, altered mental status); cauti_culture_positive 11→14 patterns (1e5, >100000 threshold, spaced caret); 13 new precision tests (65 total); 0 NTDS outcome deltas. Deferred: LDA-based catheter duration (engine-protected), alternative-source exclusion (no gate type)
+> - Open PRs: none
+> - **Backlog priority:** (1) Tier 2 PROGRESS_NOTE scoping pass, (2) Delirium shift compliance audit script, (3) PMH-aware gate handling (engine-protected) — see Roadmap doc §3
 >
 > See Roadmap doc §3 for full backlog detail, N3 residuals, and N4 queue.
 
