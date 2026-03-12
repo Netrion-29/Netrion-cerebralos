@@ -102,6 +102,7 @@ None.
 | NTDS distribution   | 21 events baselined (YES/NO/UTD/EXCLUDED per event) |
 | Canonical patients  | 39               |
 | Known flaky         | `test_ntds_runtime_wire_e2e::test_ntds_on_exit_zero` (intermittent, passes in isolation) |
+| .gitignore cleanup   | ✅ `_tmp_*`, `rules/deaconess/*.pdf`, `docs/handoffs/`, audit log — status noise reduced |
 
 ### Engine Inventory
 
