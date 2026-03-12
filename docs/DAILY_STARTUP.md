@@ -350,3 +350,20 @@ If side-track findings appear (NTDS/protocol/archive audits),
 triage them: current PR vs doc-only note vs future dedicated
 fix track, and explain why.
 ```
+
+---
+
+## 13) Analysis-Only Intake (Build Plan Required)
+
+When Terminal-Claude runs analysis-only passes (no edits), Codex must:
+
+1. Triage findings into `KEEP NOW`, `TIGHTEN NEXT`, and `DEFER`.
+2. Explain deterministic/fail-closed rationale for all `KEEP NOW` items.
+3. Require raw citations (`Patient_File:line`) before any pattern/gate proposal is accepted.
+4. Update the build plan ledger in
+   `docs/roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md`
+   under the relevant backlog item before implementation starts.
+
+Current LDA intake ledger:
+- `Roadmap §3, Item 16A` (PR #214 correctness hardening intake)
+- `Roadmap §3, Item 16B` (post-PR #214 raw-scan intake)
