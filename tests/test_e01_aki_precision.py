@@ -233,8 +233,9 @@ class TestAkiNegationNoiseRejects:
         )
 
     def test_aki_abbreviation_standalone(self):
+        """Bare abbreviation with parenthetical expansion = PMH list entry."""
         pats = _load_patterns()["aki_negation_noise"]
-        assert not _any_pattern_matches(
+        assert _any_pattern_matches(
             pats,
             "AKI (acute kidney injury)",
         )
@@ -275,8 +276,9 @@ class TestAkiNegationNoiseRejects:
         )
 
     def test_aki_after_chemotherapy(self):
+        """PMH note referencing prior AKI after chemotherapy."""
         pats = _load_patterns()["aki_negation_noise"]
-        assert not _any_pattern_matches(
+        assert _any_pattern_matches(
             pats,
             "hospital stay due to dehydration, acute kidney injury after chemotherapy",
         )
