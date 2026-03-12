@@ -2,8 +2,8 @@
 
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
-| Date        | 2026-03-09                                               |
-| Baseline    | `ac31ac0` (main, after PR #158)                          |
+| Date        | 2026-03-11                                               |
+| Baseline    | `b3757cc` (main, after PR #188)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -73,6 +73,11 @@
 | #173 | — | feat(ntds): add ED_NOTE to 12 NTDS event allowed_sources |
 | #174 | `e5426d5` | feat(ntds): add ANESTHESIA_NOTE SourceType + wire E19/E20 |
 | #175 | `3215247` | fix(protocols): remove stale ROLE_OF_TRAUMA_SERVICES artifacts |
+| #184 | `b6dffbc` | fix(ntds): AKI UTD reduction v2 — noise + onset + arrival-time extraction |
+| #185 | `80d61da` | feat(gate): per-event NTDS distribution baseline + CI check |
+| #186 | `ee214d9` | docs(design): source alignment + geriatric delirium nursing shift design v1 |
+| #187 | `8030ee6` | feat(ntds): Tier 1 source alignment + CAM/bCAM delirium patterns |
+| #188 | `b3757cc` | feat(E05): CAUTI Tier-1 spec fidelity — CDC SUTI 1a gates |
 
 ### Closed PRs
 
@@ -88,11 +93,11 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | 2787 passed (pytest) |
+| Total tests         | 2313 passed (pytest) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 44               |
 | Fixture runner      | **44 passed, 0 xfailed** |
-| Precision tests     | 6 suites (E01, E10, E15, E16, E18, E19) |
+| Precision tests     | 7 suites (E01, E05, E10, E15, E16, E18, E19) |
 | Cohort invariant    | 39 canonical = 39 adjusted |
 | NTDS distribution   | 21 events baselined (YES/NO/UTD/EXCLUDED per event) |
 | Canonical patients  | 39               |
@@ -521,7 +526,8 @@ and added two block filters:
 | ~~8~~ | ~~Ronald_Bittner targeted audit follow-up~~ | ~~Patient-level trace check~~ | ~~Low~~ | ~~Small~~ | **✅ COMPLETE (design doc)** — `docs/audits/SOURCE_ALIGNMENT_AND_GERI_DELIRIUM_v1.md` §3: E01 UTD root cause ("Held" SourceType not recognised), E13 TP confirmed (D4 audit), E21 VAP TP confirmed, 4 actionable items listed |
 | ~~9~~ | ~~**5 AKI UTD residuals**~~ | ~~`rules/ntds/logic/2026/01_aki.json`, evidence tuning~~ | ~~Medium~~ | ~~Hard~~ | **✅ COMPLETE (v2)** — 3 `aki_negation_noise` patterns (PMH date format, chemo history, parenthetical format), 1 `aki_onset` pattern (clinical trajectory), arrival-time extraction added to runner; E01 UTD 7→3; 4 outcome deltas: Barbara_Burgdorf UTD→NO, Gary_Linder UTD→NO, William_Simmons UTD→NO, Floy_Geary UTD→YES; 3 residual UTDs (Carlton_Van_Ness, David_Gross, Ronald_Bittner) — genuine clinical ambiguity or source-detection limitation |
 | ~~10~~ | ~~**Automate per-event NTDS outcome distribution in gate/CI**~~ | ~~CI/gate script~~ | ~~Low~~ | ~~Small~~ | **✅ COMPLETE** — `scripts/check_ntds_distribution.py` + baseline `scripts/baselines/ntds_distribution_v1.json` (21 events × 39 patients); per-event YES/NO/UTD/EXCLUDED counts computed from `outputs/ntds/`, compared against stored baseline; wired into `gate_pr.sh` between NTDS hash check and pytest; `--update` and `--summary` modes; 0 NTDS outcome deltas |
-| ~~11~~ | ~~**E05 CAUTI Tier-1 spec fidelity (CDC SUTI 1a)**~~ | ~~`rules/ntds/logic/2026/05_cauti.json`, `rules/mappers/epic_deaconess_mapper_v1.json`, tests~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** — 5 required gates (cauti_dx, cauti_catheter_gt2d, cauti_symptoms, cauti_culture, cauti_after_arrival) + 2 exclusions (POA, chronic catheter); 6 new mapper keys (cauti_negation_noise, cauti_catheter_in_place, cauti_symptoms, cauti_culture_positive, cauti_onset, cauti_chronic_catheter) with 52 patterns total; cauti_dx expanded (UTI standalone + noise filter); 52 precision tests + 3 fixtures (YES, nursing-YES, no-catheter-NO); 0 NTDS outcome deltas (rule-only, pre-rerun) |
+| ~~11~~ | ~~**E05 CAUTI Tier-1 spec fidelity (CDC SUTI 1a)**~~ | ~~`rules/ntds/logic/2026/05_cauti.json`, `rules/mappers/epic_deaconess_mapper_v1.json`, tests~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** — 5 required gates (cauti_dx, cauti_catheter_gt2d, cauti_symptoms, cauti_culture, cauti_after_arrival) + 2 exclusions (POA, chronic catheter); 6 new mapper keys (cauti_negation_noise, cauti_catheter_in_place, cauti_symptoms, cauti_culture_positive, cauti_onset, cauti_chronic_catheter) with 52 patterns total; cauti_dx expanded (UTI standalone + noise filter); 52 precision tests + 3 fixtures (YES, nursing-YES, no-catheter-NO); baseline refreshed post-rerun: E05 NO=39→NO=35 EXCLUDED=4 (4 patients excluded by catheter/chronic gates) |
+| ~~11b~~ | ~~**Baseline refresh post-CAUTI v2**~~ | ~~`scripts/baselines/ntds_hashes_v1.json`, `scripts/baselines/ntds_distribution_v1.json`~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** — 39-patient cohort rerun, hash + distribution baselines updated; E05 distribution delta: NO=39→NO=35 EXCLUDED=4; all other events unchanged; 2313 tests passed, cohort invariant PASS, 0 drift |
 | 12 | PMH-aware gate handling | Engine proposal (PROTECTED `cerebralos/ntds_logic/engine.py`) | Medium | Large | Requires engine modification + design doc + explicit authorization; protocol engine has reference impl |
 
 ---
