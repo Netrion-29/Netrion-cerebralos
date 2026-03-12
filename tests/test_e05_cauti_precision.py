@@ -6,11 +6,12 @@ Infection — CAUTI) gate coverage.
 Verifies that mapper patterns correctly detect:
   1. cauti_dx — UTI / CAUTI diagnosis
   2. cauti_catheter_in_place — indwelling urinary catheter documentation
-  3. cauti_symptoms — CDC SUTI 1a signs/symptoms
-  4. cauti_culture_positive — urine culture >= 10^5 CFU/ml
-  5. cauti_negation_noise — negated / ruled-out UTI/CAUTI
-  6. cauti_chronic_catheter — chronic/pre-admission catheter terms
-  7. cauti_onset — timing/onset language
+  3. cauti_catheter_duration — device-qualified urinary catheter duration ≥3d/>48h
+  4. cauti_symptoms — CDC SUTI 1a signs/symptoms
+  5. cauti_culture_positive — urine culture >= 10^5 CFU/ml
+  6. cauti_negation_noise — negated / ruled-out UTI/CAUTI
+  7. cauti_chronic_catheter — chronic/pre-admission catheter terms
+  8. cauti_onset — timing/onset language
 
 Also verifies E05 rule JSON wiring against the NTDS spec:
   - 5 required gates (dx, catheter >2d, symptoms, culture, timing)
@@ -88,6 +89,10 @@ class TestE05RuleWiring:
     def test_timing_gate_type(self):
         tg = next(g for g in self.rule["gates"] if g["gate_id"] == "cauti_after_arrival")
         assert tg["gate_type"] == "timing_after_arrival"
+
+    def test_catheter_gt2d_uses_duration_key(self):
+        gate = next(g for g in self.rule["gates"] if g["gate_id"] == "cauti_catheter_gt2d")
+        assert gate["query_keys"] == ["cauti_catheter_duration"]
 
 
 # ─── cauti_dx: must match UTI/CAUTI diagnosis text ──────────────────────
@@ -405,3 +410,116 @@ class TestCautiSymptomsExtended:
     def test_no_match_36c(self):
         pats = _load_patterns()["cauti_symptoms"]
         assert not _any_pattern_matches(pats, "temp 36.5")
+
+
+# ─── cauti_catheter_duration: device-qualified duration ≥3d / >48h ──────
+
+
+class TestCautiCatheterDuration:
+    """cauti_catheter_duration: positives require urinary device + duration."""
+
+    def test_foley_day_3(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert _any_pattern_matches(pats, "foley day 3")
+
+    def test_foley_catheter_day_4(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert _any_pattern_matches(pats, "foley catheter day 4")
+
+    def test_foley_colon_day_5(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert _any_pattern_matches(pats, "foley: day 5")
+
+    def test_foley_em_dash_day_3(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert _any_pattern_matches(pats, "foley \u2014 day 3")
+
+    def test_indwelling_catheter_day_colon_3(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert _any_pattern_matches(pats, "indwelling catheter day: 3")
+
+    def test_urinary_catheter_in_place_5_days(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert _any_pattern_matches(pats, "urinary catheter in place for 5 days")
+
+    def test_foley_gt48h(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert _any_pattern_matches(pats, "foley >48h")
+
+    def test_urinary_catheter_gt48_hours(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert _any_pattern_matches(pats, "urinary catheter >48 hours")
+
+    def test_indwelling_foley_day_hash_4(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert _any_pattern_matches(pats, "indwelling foley day #4")
+
+    def test_foley_catheter_placed_4_days_ago(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert _any_pattern_matches(pats, "foley catheter placed 4 days ago")
+
+    def test_urethral_catheter_present_3_days(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert _any_pattern_matches(pats, "urethral catheter present for 3 days")
+
+    def test_real_ehr_urethral_assessment_day_3(self):
+        """Real EHR phrasing from Jamie Hunter.txt."""
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert _any_pattern_matches(
+            pats,
+            "Urethral Catheter 16 fr Assessment      Catheter day: 3",
+        )
+
+    def test_foley_in_place_since_day1_catheter_day_3(self):
+        """Fixture phrasing: device + bridge + catheter day."""
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert _any_pattern_matches(
+            pats,
+            "Foley catheter in place since admission day 1. Catheter day 3.",
+        )
+
+
+class TestCautiCatheterDurationRejects:
+    """cauti_catheter_duration negatives — no device, wrong device, or <3 days."""
+
+    def test_hospital_day_22_no_device(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert not _any_pattern_matches(pats, "hospital day 22")
+
+    def test_hospital_day_field_no_device(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert not _any_pattern_matches(pats, "Hospital Day: 8")
+
+    def test_los_day_no_device(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert not _any_pattern_matches(pats, "LOS Day 11")
+
+    def test_cvc_day_5_wrong_device(self):
+        """CVC = central venous catheter, not urinary."""
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert not _any_pattern_matches(pats, "CVC day 5")
+
+    def test_central_line_day_4_wrong_device(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert not _any_pattern_matches(pats, "central line day 4")
+
+    def test_foley_day_1_too_short(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert not _any_pattern_matches(pats, "foley day 1")
+
+    def test_bare_catheter_day_2_no_device_too_short(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert not _any_pattern_matches(pats, "catheter day: 2")
+
+    def test_bare_catheter_day_3_no_device(self):
+        """Duration ≥3 but no urinary device qualifier."""
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert not _any_pattern_matches(pats, "catheter day: 3")
+
+    def test_arterial_line_day_5_wrong_device(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert not _any_pattern_matches(pats, "arterial line day 5")
+
+    def test_in_place_5_days_no_device(self):
+        pats = _load_patterns()["cauti_catheter_duration"]
+        assert not _any_pattern_matches(pats, "in place for 5 days")

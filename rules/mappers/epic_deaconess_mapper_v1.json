@@ -293,6 +293,14 @@
 			"\\b(foley|urinary\\s+catheter)\\s+(day|since)\\b",
 			"\\bcatheter\\s+in\\s+place\\s+(since|for|day)\\b"
 		],
+		"cauti_catheter_duration": [
+			"\\b(foley(\\s+catheter)?|indwelling\\s+(urinary\\s+)?catheter|urethral\\s+catheter|urinary\\s+catheter)[\\s:\u2014\u2013-]+(catheter[\\s:\u2014\u2013-]+)?day[\\s:\u2014\u2013-]+#?([3-9]|\\d{2,})\\b",
+			"\\b(foley(\\s+catheter)?|indwelling\\s+(urinary\\s+)?catheter|urethral\\s+catheter|urinary\\s+catheter)[\\s:\u2014\u2013-]+(in\\s+place|present)\\s+(for\\s+)?([3-9]|\\d{2,})\\s+days\\b",
+			"\\b(foley(\\s+catheter)?|indwelling\\s+(urinary\\s+)?catheter|urethral\\s+catheter|urinary\\s+catheter)\\b.{0,30}>\\s*48\\s*(h|hours?)\\b",
+			"\\b(foley(\\s+catheter)?|indwelling\\s+(urinary\\s+)?catheter|urethral\\s+catheter|urinary\\s+catheter)[\\s:\u2014\u2013-]+(catheter[\\s:\u2014\u2013-]+)?placed\\s+([3-9]|\\d{2,})\\s+days\\s+ago\\b",
+			"\\bindwelling\\s+foley[\\s:\u2014\u2013-]+day[\\s:\u2014\u2013-]+#?([3-9]|\\d{2,})\\b",
+			"\\b(foley(\\s+catheter)?|indwelling\\s+(urinary\\s+)?catheter|urethral\\s+catheter|urinary\\s+catheter)\\b.{0,80}\\bcatheter\\s+day[\\s:\u2014\u2013-]+#?([3-9]|\\d{2,})\\b"
+		],
 		"cauti_symptoms": [
 			"\\bfever\\b.*\\b(3[89]|4[0-2])\\b",
 			"\\btemperature\\b.*\\b(3[89]|4[0-2])\\b",
