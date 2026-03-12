@@ -1,0 +1,231 @@
+category,element,notes_protocols
+Demographics / Patient Identification,Patient name / MRN,All protocols — patient identification
+Demographics / Patient Identification,Date of birth / Age,"Geriatric Trauma (≥65); Geriatric Hip Fx (≥65); DVT Pediatric (≤17); Pediatric (≤14); NAT (≤14); Obstetrical"
+Demographics / Patient Identification,Sex,All protocols — demographic baseline
+Demographics / Patient Identification,Race / Ethnicity,Registry requirement — not protocol-specific
+Demographics / Patient Identification,Admission date/time,All protocols — timeline anchor
+Demographics / Patient Identification,Trauma activation category,"Activation Process; Definition of Trauma Patient; Base Deficit Monitoring (Cat I only)"
+Demographics / Patient Identification,Attending trauma surgeon,"Trauma Team Attending Requirements; Trauma Surgeon Call Panel"
+Demographics / Patient Identification,Transferring facility,Transfer TO/FROM Deaconess Midtown
+Prehospital / EMS,EMS run number / agency,"Activation Process; all injury protocols"
+Prehospital / EMS,Transport mode (ground/air),"Activation Process; Transfer TO/FROM Deaconess"
+Prehospital / EMS,"Scene vital signs (BP, HR, RR, SpO2)","Activation Process; Traumatic Arrest; Drowning"
+Prehospital / EMS,Prehospital GCS,"TBI Management; Traumatic Arrest"
+Prehospital / EMS,"Prehospital interventions (intubation, IV, tourniquet)","TBI Management; Penetrating protocols; Traumatic Arrest"
+Prehospital / EMS,Mechanism of injury narrative,All injury protocols — trigger gate
+Prehospital / EMS,Estimated time of injury,"Spinal Clearance (36h timing); TBI Management"
+Prehospital / EMS,Prehospital fluids / blood products,"Blood and Blood Product Transfusion; Hypothermia Prevention"
+Injury Mechanism / Classification,Blunt vs. penetrating classification,"Blunt Abdominal; Blunt Chest; Penetrating Abdominal; Penetrating Chest; Penetrating Neck; Transmediastinal GSW"
+Injury Mechanism / Classification,Body region(s) involved,All injury-specific protocols
+Injury Mechanism / Classification,ICD-10 injury diagnosis codes,Registry requirement — derived from all protocols
+Injury Mechanism / Classification,ISS / AIS scores,Registry requirement — composite from all injuries
+Injury Mechanism / Classification,Injury severity (isolated vs. polytrauma),"Activation Process; Resuscitation Role Assignments"
+Injury Mechanism / Classification,"Burn mechanism (thermal/chemical/electrical)",Burned Patient Management
+Injury Mechanism / Classification,TBSA (total body surface area burned),Burned Patient Management
+Injury Mechanism / Classification,"Burn depth (superficial/partial/full thickness)",Burned Patient Management
+Injury Mechanism / Classification,Drowning/submersion mechanism,Drowning
+Injury Mechanism / Classification,Hanging/strangulation mechanism,Suspected Hanging Guideline
+Injury Mechanism / Classification,Gunshot wound trajectory,"Transmediastinal GSW; Penetrating protocols"
+Injury Mechanism / Classification,Fall height / MVC speed,"Activation Process; Geriatric Trauma"
+Emergency Department Assessment,ED arrival date/time,All protocols — timeline anchor
+Emergency Department Assessment,"Triage category (Cat I / Cat II / Consult)","Activation Process; Definition of Trauma Patient; Trauma Surgeon Consult"
+Emergency Department Assessment,Primary survey (ABCDE) findings,"All injury protocols; Resuscitation Role Assignments"
+Emergency Department Assessment,Secondary survey findings,All injury protocols
+Emergency Department Assessment,"FAST exam (positive/negative/indeterminate)","Blunt Abdominal Trauma; Penetrating Abdominal Trauma; Obstetrical Trauma"
+Emergency Department Assessment,Digital rectal exam,"Penetrating Abdominal; Pelvic Fractures"
+Emergency Department Assessment,Wound exploration findings,"Penetrating Neck; Penetrating Abdominal"
+Emergency Department Assessment,Tetanus immunization status,"Burned Patient Management; Musculoskeletal Injuries"
+Emergency Department Assessment,ED disposition time,"All protocols — time-to-OR, time-to-ICU"
+Vital Signs / Hemodynamic Monitoring,"Blood pressure (systolic/diastolic/MAP)","All injury protocols; Hypothermia Prevention (target MAP)"
+Vital Signs / Hemodynamic Monitoring,Heart rate,"All injury protocols; Traumatic Arrest; Blood Transfusion"
+Vital Signs / Hemodynamic Monitoring,Respiratory rate,"All injury protocols; Drowning; TBI Management"
+Vital Signs / Hemodynamic Monitoring,SpO2 (pulse oximetry),"All injury protocols; Drowning; Hypothermia"
+Vital Signs / Hemodynamic Monitoring,Temperature (core),"Hypothermia Prevention (target ≥36°C); Burned Patient Mgmt; NTDS infection events"
+Vital Signs / Hemodynamic Monitoring,"GCS (total + components E/V/M)","TBI Management; Neurosurgical Emergencies; Spinal Clearance"
+Vital Signs / Hemodynamic Monitoring,Serial vital sign monitoring,"Solid Organ Injuries; Rib Fracture; Blunt Chest/Abdominal"
+Vital Signs / Hemodynamic Monitoring,ICP (intracranial pressure),"TBI Management; Neurosurgical Emergencies"
+Vital Signs / Hemodynamic Monitoring,CPP (cerebral perfusion pressure),TBI Management (CPP ≥60 mmHg)
+Vital Signs / Hemodynamic Monitoring,Shock index (HR/SBP),"Blood and Blood Product Transfusion; Vascular Intervention"
+Neurologic Assessment,GCS post-resuscitation,TBI Management (REQ_TIMING_CRITICAL)
+Neurologic Assessment,Pupil reactivity (bilateral),"TBI Management; Neurosurgical Emergencies"
+Neurologic Assessment,Motor exam (lateralizing signs),"TBI Management; Spinal Clearance; Neurosurgical Emergencies"
+Neurologic Assessment,Sensory exam (dermatome level),"Spinal Clearance; Musculoskeletal Injuries"
+Neurologic Assessment,Spinal clearance status,Spinal Clearance and Spinal Injury Management
+Neurologic Assessment,NEXUS / Canadian C-Spine criteria,Spinal Clearance
+Neurologic Assessment,Delirium screening (CAM-ICU / bCAM),"Geriatric Trauma; NTDS E09 Delirium"
+Neurologic Assessment,Mental status changes,"TBI Management; Suspected Hanging; Drowning"
+Neurologic Assessment,Seizure activity,"TBI Management; Neurosurgical Emergencies"
+Laboratory / Diagnostics,"CBC (H/H, WBC, platelets)","Laboratory Studies; Blood Transfusion; all injury protocols"
+Laboratory / Diagnostics,"BMP (Na, K, Cl, CO2, BUN, Cr, glucose)","Laboratory Studies; AKI monitoring (NTDS E01)"
+Laboratory / Diagnostics,"Coagulation panel (PT/INR, PTT, fibrinogen)","Laboratory Studies; Anticoagulation Reversal; Blood Transfusion"
+Laboratory / Diagnostics,Type and screen / crossmatch,"Laboratory Studies; Blood Transfusion"
+Laboratory / Diagnostics,"ABG (pH, pCO2, pO2, base deficit, lactate)","Base Deficit Monitoring; ROTEM; Blood Transfusion"
+Laboratory / Diagnostics,Base deficit (serial),"Base Deficit Monitoring (Cat I, q4-6h until normalized)"
+Laboratory / Diagnostics,Lactate (serial),"Base Deficit Monitoring; Blood Transfusion; Sepsis (NTDS E15)"
+Laboratory / Diagnostics,"ROTEM parameters (EXTEM, FIBTEM, INTEM)",ROTEM Guideline (MTP activation)
+Laboratory / Diagnostics,Serum creatinine (baseline + serial),AKI monitoring (NTDS E01 — KDIGO Stage 3)
+Laboratory / Diagnostics,Blood culture results,"CLABSI (NTDS E06); Sepsis (NTDS E15)"
+Laboratory / Diagnostics,Urine culture results,CAUTI (NTDS E05 — ≥10^5 CFU)
+Laboratory / Diagnostics,Urine drug screen / BAL,"SBIRT Screening; Laboratory Studies"
+Laboratory / Diagnostics,Pregnancy test (urine/serum β-hCG),"Obstetrical Trauma; Laboratory Studies"
+Laboratory / Diagnostics,Troponin,"MI monitoring (NTDS E10); Blunt Chest Trauma"
+Laboratory / Diagnostics,Procalcitonin,"Sepsis (NTDS E15); infection monitoring"
+Laboratory / Diagnostics,Thromboelastography (TEG),Blood Transfusion (adjunct to ROTEM)
+Imaging / Radiology,CT head,"TBI Management; Neurosurgical Emergencies; BCVI screening"
+Imaging / Radiology,CT cervical spine,"Spinal Clearance; BCVI screening (Denver criteria)"
+Imaging / Radiology,CT chest/abdomen/pelvis,"Blunt Abdominal; Blunt Chest; Pelvic Fractures; Solid Organ Injuries"
+Imaging / Radiology,CTA neck/chest,"BCVI (Biffl grading); Penetrating Neck; Transmediastinal GSW; Vascular Intervention"
+Imaging / Radiology,"Plain films (chest, pelvis, extremity)","Rib Fracture; Pelvic Fractures; Musculoskeletal Injuries"
+Imaging / Radiology,FAST/eFAST,"Blunt Abdominal; Penetrating Abdominal; Blunt Chest (hemothorax)"
+Imaging / Radiology,Angiography (diagnostic/interventional),"Vascular Intervention; Peripheral Vascular Trauma; Pelvic Fractures"
+Imaging / Radiology,MRI spine,"Spinal Clearance (obtunded patients); Musculoskeletal Injuries"
+Imaging / Radiology,Echocardiography (TTE/TEE),"Blunt Chest (cardiac contusion); Transmediastinal GSW"
+Imaging / Radiology,Chest X-ray (serial),"Rib Fracture; Penetrating Chest; Drowning"
+Imaging / Radiology,Solid organ injury grade (AAST),Solid Organ Injuries (I–V grading)
+Imaging / Radiology,Fracture classification,"Pelvic Fractures (Young-Burgess); Musculoskeletal (Gustilo-Anderson)"
+Airway / Respiratory,"Intubation (date/time/indication)","TBI Management (GCS ≤8); Drowning; Hanging; Traumatic Arrest; NTDS E19"
+Airway / Respiratory,Ventilator mode / settings,"ARDS monitoring (NTDS E02); TBI Management (PaCO2 target)"
+Airway / Respiratory,Ventilator days,"VAP screening (NTDS E21 — ≥48h); ARDS"
+Airway / Respiratory,"Chest tube placement (date/time/output)","Blunt Chest; Penetrating Chest; Rib Fracture"
+Airway / Respiratory,Chest tube output (serial),"Penetrating Chest (>1500 mL = OR trigger); Blunt Chest"
+Airway / Respiratory,Needle decompression,"Blunt Chest; Penetrating Chest; Traumatic Arrest"
+Airway / Respiratory,Tracheostomy (date/time),"TBI Management; prolonged intubation"
+Airway / Respiratory,Oxygen supplementation type/FiO2,"Drowning; Rib Fracture (incentive spirometry)"
+Airway / Respiratory,PaO2/FiO2 ratio,ARDS monitoring (NTDS E02 — Berlin criteria)
+Resuscitation / Blood Products,"MTP activation (yes/no, time)","Blood and Blood Product Transfusion; ROTEM Guideline"
+Resuscitation / Blood Products,ED Blood Box use,"ROTEM Guideline; Blood Transfusion"
+Resuscitation / Blood Products,pRBC units transfused,"Blood Transfusion (ratio targets 1:1:1); ROTEM"
+Resuscitation / Blood Products,FFP units transfused,Blood Transfusion (ratio targets)
+Resuscitation / Blood Products,Platelet units transfused,Blood Transfusion (ratio targets)
+Resuscitation / Blood Products,Cryoprecipitate administered,"Blood Transfusion; ROTEM (fibrinogen <150)"
+Resuscitation / Blood Products,TXA administration (time),Blood Transfusion (within 3h of injury)
+Resuscitation / Blood Products,Calcium supplementation,Blood Transfusion (ionized Ca monitoring)
+Resuscitation / Blood Products,Crystalloid volume (total),"All resuscitation protocols; Hypothermia (warmed fluids)"
+Resuscitation / Blood Products,"Vasopressor use (agent, dose, duration)","Traumatic Arrest; Sepsis (NTDS E15)"
+Resuscitation / Blood Products,Resuscitative thoracotomy performed,Emergency Resuscitative Thoracotomy
+Resuscitation / Blood Products,REBOA (if applicable),"Vascular Intervention; Pelvic Fractures"
+Operative / Procedural,Procedure type / CPT,"All surgical protocols; NTDS E20 OR Return"
+Operative / Procedural,Procedure date/time,"Spinal Clearance (surgery within 36h); all surgical protocols"
+Operative / Procedural,Time from arrival to OR,"Neurosurgical Emergencies; Penetrating protocols; Pelvic Fractures"
+Operative / Procedural,Anesthesia type / duration,"Rib Fracture (epidural/nerve block); Anesthesia Trauma Panel"
+Operative / Procedural,Operative findings,"Solid Organ Injuries; Penetrating protocols; Musculoskeletal"
+Operative / Procedural,Damage control surgery (DCS),"Penetrating Abdominal; Solid Organ Injuries; Pelvic Fractures"
+Operative / Procedural,Fasciotomy,"Musculoskeletal Injuries (compartment syndrome); Peripheral Vascular"
+Operative / Procedural,Spinal stabilization surgery (time from injury),Spinal Clearance (within 36h — REQ_TIMING_CRITICAL)
+Operative / Procedural,Surgical complications,"All surgical protocols; NTDS E07 Deep SSI; E11 Organ Space SSI; E17 Superficial SSI"
+Operative / Procedural,Unplanned return to OR,NTDS E20 OR Return
+Operative / Procedural,ICP monitor placement,"TBI Management; Neurosurgical Emergencies"
+Operative / Procedural,Angioembolization,"Vascular Intervention; Pelvic Fractures; Solid Organ Injuries"
+Pharmacologic Interventions,"Anticoagulant reversal agent (4F-PCC, vitamin K, protamine, idarucizumab)",Anticoagulation and Antiplatelet Medication Reversal
+Pharmacologic Interventions,Pre-injury anticoagulant/antiplatelet list,"Anticoagulation Reversal; Geriatric Trauma; TBI Management"
+Pharmacologic Interventions,"Antibiotic administration (type, time)","Open fractures (Musculoskeletal, within 1h); Penetrating Abdominal"
+Pharmacologic Interventions,Tetanus prophylaxis,"Burned Patient; Musculoskeletal; Penetrating protocols"
+Pharmacologic Interventions,Pain management (opioid/non-opioid),"Rib Fracture (multimodal); Orthopedic/Neurologic Splint"
+Pharmacologic Interventions,Sedation agents (for intubated patients),"TBI Management (avoid hypotension); Drowning"
+Pharmacologic Interventions,Anti-seizure prophylaxis,"TBI Management (levetiracetam/phenytoin)"
+Pharmacologic Interventions,GI prophylaxis agent (PPI/H2 blocker),"Geriatric Trauma; TBI Management"
+Pharmacologic Interventions,"VTE chemoprophylaxis (LMWH/UFH, timing)","DVT Prophylaxis Adult; DVT Prophylaxis Pediatric; Geriatric Trauma"
+Device / Line Management,"Central venous catheter (type, site, date placed)",CLABSI monitoring (NTDS E06 — in place >2 calendar days)
+Device / Line Management,Central line duration (days),CLABSI (NTDS E06 — central_line_gt2d gate)
+Device / Line Management,Urinary catheter (Foley) placement date,CAUTI monitoring (NTDS E05 — in place >2 calendar days)
+Device / Line Management,Urinary catheter duration (days),CAUTI (NTDS E05 — catheter_gt2d gate)
+Device / Line Management,Arterial line,"Hemodynamic monitoring; Base Deficit (ABG draws)"
+Device / Line Management,"ICP monitor (type, date placed)","TBI Management; Neurosurgical Emergencies"
+Device / Line Management,"Chest tube (date placed, date removed)","Blunt/Penetrating Chest; Rib Fracture"
+Device / Line Management,External fixator,"Pelvic Fractures; Musculoskeletal Injuries"
+Device / Line Management,Pelvic binder,Pelvic Fractures (hemodynamic instability)
+Device / Line Management,"Splint / brace (type, application)",Orthopedic/Neurologic Splint and/or Brace
+Device / Line Management,Mechanical ventilation (start/end date),"VAP screening (NTDS E21); ARDS (NTDS E02)"
+Device / Line Management,Sequential compression devices (SCDs),"DVT Prophylaxis Adult; DVT Prophylaxis Pediatric"
+Infection Prevention / HAI Monitoring,CAUTI diagnosis (CDC criteria),NTDS E05 — SUTI 1a: catheter >2d + symptoms + culture ≥10^5 CFU
+Infection Prevention / HAI Monitoring,CLABSI diagnosis (NHSN criteria),NTDS E06 — central line >2d + positive blood culture + no other source
+Infection Prevention / HAI Monitoring,SSI — superficial,NTDS E17 — incisional infection within 30 days
+Infection Prevention / HAI Monitoring,SSI — deep,NTDS E07 — deep incisional infection within 30/90 days
+Infection Prevention / HAI Monitoring,SSI — organ/space,NTDS E11 — organ/space infection within 30/90 days
+Infection Prevention / HAI Monitoring,VAP diagnosis,NTDS E21 — mechanical ventilation ≥48h + clinical criteria
+Infection Prevention / HAI Monitoring,"Pressure ulcer (stage, location, date identified)","NTDS E13 — hospital-acquired, not POA"
+Infection Prevention / HAI Monitoring,"Sepsis / severe sepsis (qSOFA, SIRS criteria)",NTDS E15 — Severe Sepsis
+Infection Prevention / HAI Monitoring,Infection source identification,"All HAI events — blood, urine, wound culture"
+Infection Prevention / HAI Monitoring,Central line bundle compliance,CLABSI prevention — daily assessment documented
+Infection Prevention / HAI Monitoring,Catheter necessity review,CAUTI prevention — daily necessity documented
+Prophylaxis (DVT / GI / Hypothermia),"DVT prophylaxis — mechanical (SCDs, date started)","DVT Prophylaxis Adult/Pediatric"
+Prophylaxis (DVT / GI / Hypothermia),"DVT prophylaxis — chemical (agent, dose, start date)","DVT Prophylaxis Adult/Pediatric; Geriatric Trauma"
+Prophylaxis (DVT / GI / Hypothermia),DVT prophylaxis — contraindication documented,"DVT Prophylaxis Adult/Pediatric (active bleeding, craniotomy, spinal surgery)"
+Prophylaxis (DVT / GI / Hypothermia),"GI prophylaxis (PPI/H2 blocker, start date)","Geriatric Trauma; TBI Management"
+Prophylaxis (DVT / GI / Hypothermia),"Hypothermia prevention (warming method, target temp)",Hypothermia Prevention and Treatment (target ≥36°C)
+Prophylaxis (DVT / GI / Hypothermia),Hypothermia — rewarming modality,Hypothermia Prevention (passive → active external → active internal)
+Prophylaxis (DVT / GI / Hypothermia),Temperature monitoring frequency,Hypothermia Prevention (continuous in OR/ICU; q1h in ED)
+Screening / Behavioral Health,SBIRT screening completed (yes/no),SBIRT (all trauma patients)
+Screening / Behavioral Health,SBIRT screening result (negative/positive),SBIRT
+Screening / Behavioral Health,SBIRT brief intervention provided,SBIRT (if positive screen)
+Screening / Behavioral Health,SBIRT referral to treatment,SBIRT (if positive screen)
+Screening / Behavioral Health,Blood alcohol level (BAL),"SBIRT; Laboratory Studies"
+Screening / Behavioral Health,Urine drug screen result,"SBIRT; Laboratory Studies"
+Screening / Behavioral Health,Mental health screening completed,Mental Health Screening for the Trauma Patient
+Screening / Behavioral Health,PHQ-2 / PHQ-9 score,Mental Health Screening
+Screening / Behavioral Health,PC-PTSD screen,Mental Health Screening
+Screening / Behavioral Health,Social work consult ordered,"Mental Health Screening; NAT; SBIRT"
+Screening / Behavioral Health,"NAT screening (skeletal survey, fundoscopic exam)",Non-Accidental Trauma (Pediatric ≤14)
+Special Populations — Geriatric,Falls risk assessment,Geriatric Trauma Guideline
+Special Populations — Geriatric,Pre-injury functional status,"Geriatric Trauma; Geriatric Hip Fracture"
+Special Populations — Geriatric,Pre-injury anticoagulant use,"Geriatric Trauma; Anticoagulation Reversal"
+Special Populations — Geriatric,Frailty screening,Geriatric Trauma Guideline
+Special Populations — Geriatric,Hip fracture type / classification,Geriatric Hip Fracture Guideline
+Special Populations — Geriatric,Time to hip fracture surgery,Geriatric Hip Fracture (target <24–48h)
+Special Populations — Geriatric,Geriatric consult,Geriatric Trauma Guideline
+Special Populations — Pediatric,Weight (kg) — for dosing,"Pediatric Special Consideration; DVT Prophylaxis Pediatric"
+Special Populations — Pediatric,Broselow color / length-based tape,Pediatric Special Consideration
+Special Populations — Pediatric,Pediatric GCS,TBI Management (pediatric variant)
+Special Populations — Pediatric,NAT concern documented,Non-Accidental Trauma
+Special Populations — Pediatric,Skeletal survey ordered/completed,Non-Accidental Trauma
+Special Populations — Pediatric,Child protective services notified,Non-Accidental Trauma
+Special Populations — Pediatric,Pediatric intensivist consult,Pediatric Intensive Trauma Panel
+Special Populations — Obstetric,Gestational age (weeks),Obstetrical Trauma (≥18 weeks)
+Special Populations — Obstetric,Fetal heart monitoring (continuous),Obstetrical Trauma
+Special Populations — Obstetric,OB consult date/time,Obstetrical Trauma
+Special Populations — Obstetric,Kleihauer-Betke test,Obstetrical Trauma (Rh-negative patients)
+Special Populations — Obstetric,RhoGAM administered,Obstetrical Trauma (if indicated)
+Special Populations — Obstetric,Tocodynamometry / contraction monitoring,Obstetrical Trauma
+Disposition / Discharge Planning,Hospital LOS (days),All protocols — registry requirement
+Disposition / Discharge Planning,ICU LOS (days),"TBI Management; Neurosurgical Emergencies; ARDS"
+Disposition / Discharge Planning,ICU admission (planned vs. unplanned),NTDS E18 — Unplanned ICU Admission
+Disposition / Discharge Planning,Discharge date/time,All protocols
+Disposition / Discharge Planning,Discharge disposition (home/rehab/SNF/LTAC/death),Rehabilitative Services and Discharge Planning
+Disposition / Discharge Planning,30-day mortality,"Autopsy in the Trauma Patient; registry requirement"
+Disposition / Discharge Planning,"Autopsy performed (yes/no, findings)",Autopsy in the Trauma Patient
+Disposition / Discharge Planning,Rehab services ordered (PT/OT/SLP),Rehabilitative Services and Discharge Planning
+Disposition / Discharge Planning,Follow-up plan documented,"All protocols; Geriatric Trauma; Orthopedic Splint"
+Disposition / Discharge Planning,"Transfer destination (facility, level)",Transfer TO/FROM Deaconess Midtown
+Disposition / Discharge Planning,Transfer reason,Transfer TO/FROM Deaconess Midtown
+Complications / NTDS Events,E01 — Acute Kidney Injury (KDIGO Stage 3),AKI dx + stage 3 labs + after arrival − POA − chronic RRT
+Complications / NTDS Events,E02 — ARDS (Berlin criteria),Bilateral opacities + PaO2/FiO2 ≤300 + not cardiogenic
+Complications / NTDS Events,E03 — Alcohol Withdrawal,Documented withdrawal requiring treatment
+Complications / NTDS Events,E04 — Cardiac Arrest,In-hospital cardiac arrest requiring CPR
+Complications / NTDS Events,E05 — CAUTI (CDC SUTI 1a),Catheter >2d + symptoms + culture ≥10^5 + after arrival
+Complications / NTDS Events,E06 — CLABSI (NHSN),Central line >2d + positive blood culture + after arrival
+Complications / NTDS Events,E07 — Deep SSI,Deep incisional infection within 30/90 days
+Complications / NTDS Events,E08 — DVT,New DVT diagnosis after arrival
+Complications / NTDS Events,E09 — Delirium,New delirium diagnosis (CAM-ICU/bCAM positive)
+Complications / NTDS Events,E10 — Myocardial Infarction,New MI diagnosis after arrival
+Complications / NTDS Events,E11 — Organ/Space SSI,Organ/space infection within 30/90 days
+Complications / NTDS Events,E12 — Osteomyelitis,New osteomyelitis diagnosis after arrival
+Complications / NTDS Events,E13 — Pressure Ulcer,"Hospital-acquired pressure injury, not POA"
+Complications / NTDS Events,E14 — Pulmonary Embolism,New PE diagnosis after arrival
+Complications / NTDS Events,E15 — Severe Sepsis,Sepsis with organ dysfunction after arrival
+Complications / NTDS Events,E16 — Stroke/CVA,New stroke/CVA after arrival
+Complications / NTDS Events,E17 — Superficial SSI,Superficial incisional infection within 30 days
+Complications / NTDS Events,E18 — Unplanned ICU Admission,Unplanned transfer to ICU
+Complications / NTDS Events,E19 — Unplanned Intubation,Unplanned intubation/reintubation
+Complications / NTDS Events,E20 — Unplanned Return to OR,Unplanned return to operating room
+Complications / NTDS Events,E21 — Ventilator-Associated Pneumonia,Mechanical vent ≥48h + clinical/micro/radiographic criteria
+Operational / Call Panel,Trauma team activation level (Cat I / Cat II / Consult),Activation Process for Trauma Patients
+Operational / Call Panel,Attending surgeon arrival time,Trauma Team Attending Requirements (Cat I: ≤15 min)
+Operational / Call Panel,Attending surgeon notification time,Trauma Team Attending Requirements
+Operational / Call Panel,Trauma surgeon on-call roster,Trauma Surgeon Call Panel Process
+Operational / Call Panel,Neurosurgeon on-call roster,Neurosurgeon Trauma Panel
+Operational / Call Panel,Orthopedic surgeon on-call roster,Orthopedic Surgeon Trauma Call Panel Process
+Operational / Call Panel,Anesthesia on-call roster,Anesthesia Trauma Panel
+Operational / Call Panel,Pediatric intensivist on-call roster,Pediatric Intensive Trauma Panel
+Operational / Call Panel,Advanced practice provider (APP) role,Advanced Practice Trauma Provider Requirements
+Operational / Call Panel,"Resuscitation role assignments","Resuscitation Role Assignments (team leader, airway, circulation, etc.)"
+Operational / Call Panel,Performance improvement review flags,"Performance Improvement and Patient Safety Plan; Quality Plan"
