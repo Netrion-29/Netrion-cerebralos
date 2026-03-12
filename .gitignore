@@ -78,3 +78,15 @@ data_raw/
 data_validated/
 outputs/
 
+# Scratch / tmp scripts (local dev only)
+_tmp_*
+
+# Deaconess protocol PDFs (local reference only)
+rules/deaconess/*.pdf
+
+# Handoff archives (local session artifacts)
+docs/handoffs/
+
+# Protocol alignment log (untracked audit artifact)
+docs/audits/NTDS_PROTOCOL_ALIGNMENT_LOG_v1.md
+
