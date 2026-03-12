@@ -17,6 +17,7 @@ Also verifies E06 rule JSON wiring against the NTDS spec:
   - 2 exclusions (POA, chronic line)
 """
 
+import functools
 import json
 import re
 import sys
@@ -31,6 +32,7 @@ MAPPER_PATH = REPO_ROOT / "rules" / "mappers" / "epic_deaconess_mapper_v1.json"
 RULE_PATH = REPO_ROOT / "rules" / "ntds" / "logic" / "2026" / "06_clabsi.json"
 
 
+@functools.lru_cache(maxsize=1)
 def _load_patterns() -> dict:
     with open(MAPPER_PATH) as f:
         data = json.load(f)
@@ -106,7 +108,7 @@ class TestE06RuleWiring:
             for g in self.rule["gates"]
             if g["gate_id"] == "clabsi_central_line_gt2d"
         )
-        assert "clabsi_central_line_in_place" in cg["query_keys"]
+        assert "clabsi_central_line_duration" in cg["query_keys"]
 
 
 # ─── clabsi_dx: must match CLABSI / catheter-related BSI ────────────────
@@ -277,6 +279,97 @@ class TestClabsiCentralLineRejects:
     def test_foley_catheter_not_central(self):
         pats = _load_patterns()["clabsi_central_line_in_place"]
         assert not _any_pattern_matches(pats, "Foley catheter in place.")
+
+
+# ─── clabsi_central_line_duration: >2 calendar days enforcement ─────────
+
+
+class TestClabsiCentralLineDurationMatches:
+    """Duration patterns must fire on text documenting ≥3 days / >48h."""
+
+    def test_central_line_day_3(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "Central line day 3.")
+
+    def test_central_line_day_4(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "Central line day 4.")
+
+    def test_central_line_day_5(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "Central line day 5.")
+
+    def test_in_place_gt48_hours(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "Central line in place >48 hours.")
+
+    def test_line_present_for_3_days(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "Line present for 3 days.")
+
+    def test_hospital_day_3(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "Hospital day 3, central line still in.")
+
+    def test_hospital_day_5(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "Hospital day 5.")
+
+    def test_picc_day_4(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "PICC day #4.")
+
+    def test_placed_5_days_ago(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "Central line placed 5 days ago.")
+
+    def test_in_place_for_4_days(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "Catheter in place for 4 days.")
+
+    def test_line_day_7(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "Line day 7.")
+
+    def test_cvl_day_3(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert _any_pattern_matches(pats, "CVL day 3, site clean.")
+
+
+class TestClabsiCentralLineDurationRejects:
+    """Duration patterns must NOT fire on day 0/1/2 or no-duration language."""
+
+    def test_day_0(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert not _any_pattern_matches(pats, "Central line day 0.")
+
+    def test_day_1(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert not _any_pattern_matches(pats, "Central line day 1.")
+
+    def test_day_2(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert not _any_pattern_matches(pats, "Central line day 2.")
+
+    def test_placed_yesterday(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert not _any_pattern_matches(pats, "Central line placed yesterday.")
+
+    def test_post_op_day_1(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert not _any_pattern_matches(pats, "Post-op day 1, central line in place.")
+
+    def test_placed_today(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert not _any_pattern_matches(pats, "Central line placed today.")
+
+    def test_hospital_day_2(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert not _any_pattern_matches(pats, "Hospital day 2.")
+
+    def test_hospital_day_1(self):
+        pats = _load_patterns()["clabsi_central_line_duration"]
+        assert not _any_pattern_matches(pats, "Hospital day 1.")
 
 
 # ─── clabsi_blood_culture_positive: must match positive blood culture ────
