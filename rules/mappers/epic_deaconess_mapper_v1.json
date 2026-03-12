@@ -294,10 +294,10 @@
 			"\\bcatheter\\s+in\\s+place\\s+(since|for|day)\\b"
 		],
 		"cauti_symptoms": [
-			"\\bfever\\b.*\\b3[89]\\b",
-			"\\btemperature\\b.*\\b3[89]\\b",
-			"\\btemp\\b.*\\b3[89]\\b",
-			"\\b3[89]\\.\\d\\s*[°]?\\s*C\\b",
+			"\\bfever\\b.*\\b(3[89]|4[0-2])\\b",
+			"\\btemperature\\b.*\\b(3[89]|4[0-2])\\b",
+			"\\btemp\\b.*\\b(3[89]|4[0-2])\\b",
+			"\\b(3[89]|4[0-2])\\.\\d\\s*[°]?\\s*C\\b",
 			"\\bfebrile\\b",
 			"\\bsuprapubic\\s+tenderness\\b",
 			"\\bcostovertebral\\s+angle\\s+(pain|tenderness)\\b",
@@ -307,7 +307,8 @@
 			"\\burinary\\s+urgency\\b",
 			"\\burgency\\b.*\\burin\\w*\\b",
 			"\\burinary\\s+frequency\\b",
-			"\\bfrequency\\b.*\\burin\\w*\\b"
+			"\\bfrequency\\b.*\\burin\\w*\\b",
+			"\\baltered\\s+mental\\s+status\\b"
 		],
 		"cauti_culture_positive": [
 			"\\burine\\s+culture\\s+positive\\b",
@@ -320,7 +321,10 @@
 			"\\b\\d{5,}\\s*(CFU|cfu)\\s*(per|/)\\s*m[Ll]\\b.*\\burin\\w*\\b",
 			"\\burin\\w*\\b.*\\b\\d{5,}\\s*(CFU|cfu)\\s*(per|/)\\s*m[Ll]\\b",
 			"\\b100\\s*,?\\s*000\\s*(CFU|cfu)\\s*(per|/)\\s*m[Ll]\\b",
-			"\\b\\d{5,}\\s*(CFU|cfu)\\s*(per|/)\\s*m[Ll]\\b"
+			"\\b\\d{5,}\\s*(CFU|cfu)\\s*(per|/)\\s*m[Ll]\\b",
+			"\\b1e5\\s*(CFU|cfu)\\b",
+			"\\burine\\s+culture\\b.*(?:>|>=|greater\\s+than)\\s*100\\s*,?\\s*000\\b",
+			"\\b10\\s*\\^\\s*5\\s*(CFU|cfu)\\s*(per|/)\\s*m[Ll]\\b"
 		],
 		"cauti_onset": [
 			"\\bonset\\b.*\\bafter\\b.*\\b(arrival|admission|admit)\\b",

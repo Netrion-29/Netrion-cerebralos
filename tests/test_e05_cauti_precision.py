@@ -329,3 +329,79 @@ class TestCautiOnset:
     def test_nosocomial_uti(self):
         pats = _load_patterns()["cauti_onset"]
         assert _any_pattern_matches(pats, "Nosocomial UTI suspected.")
+
+
+# ─── cauti_culture_positive: format variant coverage ────────────────────
+
+
+class TestCautiCultureFormatVariants:
+    """Additional culture format variants per NTDS spec."""
+
+    def test_1e5_cfu(self):
+        pats = _load_patterns()["cauti_culture_positive"]
+        assert _any_pattern_matches(pats, "urine culture grew E. coli 1e5 CFU")
+
+    def test_greater_than_100000_no_cfu(self):
+        pats = _load_patterns()["cauti_culture_positive"]
+        assert _any_pattern_matches(pats, "urine culture >100,000")
+
+    def test_gte_100000_no_cfu(self):
+        pats = _load_patterns()["cauti_culture_positive"]
+        assert _any_pattern_matches(pats, "urine culture >=100000")
+
+    def test_10_caret_5_spaced(self):
+        pats = _load_patterns()["cauti_culture_positive"]
+        assert _any_pattern_matches(pats, "10 ^ 5 CFU/mL")
+
+    def test_culture_with_organism_and_count(self):
+        pats = _load_patterns()["cauti_culture_positive"]
+        assert _any_pattern_matches(pats, "urine culture: E. coli 100,000 CFU/mL")
+
+    def test_greater_than_100000_cfu_ml(self):
+        pats = _load_patterns()["cauti_culture_positive"]
+        assert _any_pattern_matches(pats, "urine culture greater than 100,000 CFU")
+
+
+class TestCautiCultureRejectsSubthreshold:
+    """Culture patterns should NOT match counts below 10^5 in general text."""
+
+    def test_10000_cfu_no_match_positive_pattern(self):
+        """10,000 CFU is below threshold — should not match 'positive' or '>10^5'."""
+        pats = _load_patterns()["cauti_culture_positive"]
+        # 'urine culture positive' pattern would match any 'positive' text,
+        # but '10,000 CFU/mL' alone should not match the numeric patterns
+        assert not _any_pattern_matches(pats, "10,000 CFU/mL from urinary sample")
+
+
+# ─── cauti_symptoms: extended coverage ──────────────────────────────────
+
+
+class TestCautiSymptomsExtended:
+    """Additional symptom patterns per NTDS spec."""
+
+    def test_altered_mental_status(self):
+        """NTDS E05 spec: altered mental status in elderly."""
+        pats = _load_patterns()["cauti_symptoms"]
+        assert _any_pattern_matches(pats, "Patient with altered mental status.")
+
+    def test_fever_40c(self):
+        """Fever above 39.9 should match (>38C threshold)."""
+        pats = _load_patterns()["cauti_symptoms"]
+        assert _any_pattern_matches(pats, "Temperature 40.2 C.")
+
+    def test_fever_41c(self):
+        pats = _load_patterns()["cauti_symptoms"]
+        assert _any_pattern_matches(pats, "fever 41.0")
+
+    def test_temp_42c(self):
+        pats = _load_patterns()["cauti_symptoms"]
+        assert _any_pattern_matches(pats, "temp 42.0")
+
+    def test_no_match_37c(self):
+        """Temperature below 38 should not match."""
+        pats = _load_patterns()["cauti_symptoms"]
+        assert not _any_pattern_matches(pats, "Temperature 37.2 C.")
+
+    def test_no_match_36c(self):
+        pats = _load_patterns()["cauti_symptoms"]
+        assert not _any_pattern_matches(pats, "temp 36.5")
