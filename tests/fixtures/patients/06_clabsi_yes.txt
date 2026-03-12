@@ -4,6 +4,7 @@ ARRIVAL_TIME: 2026-01-15 08:00:00
 [NURSING_NOTE] 2026-01-15 10:00:00
 Central venous catheter in place, right subclavian.
 CVL site clean and dry, no erythema.
+Central line day 4, in place >48 hours.
 
 [LAB] 2026-01-19 08:00:00
 Blood culture positive for S. aureus.

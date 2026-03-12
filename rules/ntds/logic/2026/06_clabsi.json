@@ -45,14 +45,14 @@
     {
       "gate_type": "evidence_any",
       "gate_id": "clabsi_central_line_gt2d",
-      "gate_name": "Central line in place >2 calendar days",
+      "gate_name": "Central line in place >2 calendar days (duration documented)",
       "required": true,
       "min_count": 1,
-      "query_keys": ["clabsi_central_line_in_place"],
+      "query_keys": ["clabsi_central_line_duration"],
       "exclude_noise_keys": [],
       "allowed_sources": ["NURSING_NOTE", "PHYSICIAN_NOTE", "CONSULT_NOTE", "PROGRESS_NOTE", "ED_NOTE", "DISCHARGE"],
       "fail_outcome": "NO",
-      "fail_reason": "No evidence of central line in place for >2 calendar days."
+      "fail_reason": "No documentation of central line in place for >2 calendar days (requires explicit duration language — day 3+, >48h, or equivalent)."
     },
     {
       "gate_type": "evidence_any",

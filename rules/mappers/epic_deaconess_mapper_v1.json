@@ -645,6 +645,15 @@
 			"\\bno\\s+(evidence\\s+of\\s+)?bacteremia\\b",
 			"\\bwithout\\b.*\\b(CLABSI|bacteremia|line\\s+sepsis)\\b"
 		],
+		"clabsi_central_line_duration": [
+			"\\b(central\\s+(line|venous\\s+catheter)|PICC|CVL)\\s+(line\\s+)?day\\s+#?([3-9]|\\d{2,})\\b",
+			"\\bhospital\\s+day\\s+([3-9]|\\d{2,})\\b",
+			"\\b(in\\s+place|present)\\s+(for\\s+)?([3-9]|\\d{2,})\\s+days\\b",
+			"\\bline\\s+present\\s+(for\\s+)?([3-9]|\\d{2,})\\s+days\\b",
+			">\\s*48\\s*(h|hours?)\\b",
+			"\\bplaced\\s+([3-9]|\\d{2,})\\s+days\\s+ago\\b",
+			"\\bline\\s+day\\s+#?([3-9]|\\d{2,})\\b"
+		],
 		"clabsi_central_line_in_place": [
 			"\\bcentral\\s+(line|venous\\s+catheter)\\s+(in\\s+place|inserted|placed)\\b",
 			"\\b(PICC|picc)\\s+(line\\s+)?(in\\s+place|inserted|placed)\\b",
