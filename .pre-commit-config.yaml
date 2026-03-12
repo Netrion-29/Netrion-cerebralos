@@ -1,0 +1,16 @@
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: check-merge-conflict
+  - id: check-yaml
+
+- repo: local
+  hooks:
+  - id: block-scratch-files
+    name: block scratch files
+    entry: bash -c 'git diff --cached --name-only | grep -E "^(_tmp_|docs/handoffs/|tests/test_negation.py|tests/test_ntds_events.py|tests/test_ntds_simple.py)" && { echo "Scratch file staged"; exit 1; } || exit 0'
+    language: system
+    pass_filenames: false
