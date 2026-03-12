@@ -40,8 +40,9 @@
 | FLAG 001 Spinal 36 h timing | ✅ COMPLETE — REQ_REQUIRED_DATA_ELEMENTS + REQ_TIMING_CRITICAL (temporal:within:36:hours) added to spinal protocol, 12 surgery patterns, 1 fixture added, 1 fixture updated, 0 NTDS outcome deltas |
 | Baseline hash coverage | ✅ COMPLETE — 39-patient NTDS event hash baseline in `scripts/baselines/ntds_hashes_v1.json`, standalone checker `scripts/check_ntds_hashes.py`, wired into `gate_pr.sh`, 0 NTDS outcome deltas |
 | D4 DISCHARGE precision audit | ✅ COMPLETE — 14 events audited, 39 patients, 0 false positives, 1 TP (Ronald_Bittner E13 Pressure Ulcer), no rule changes needed, baseline realigned (Anna_Dennis hash), 0 NTDS outcome deltas |
+| N3 residual precision pass (E08 DVT + E09 Delirium) | ✅ COMPLETE — E09 `delirium_negation_noise` (10 patterns) added, 2 FP corrections (Barbara_Burgdorf YES→NO, Christine_Adelitzo YES→NO); E08 `dvt_dx_noise_prophylaxis` wired (defensive, 0 outcome changes); fixture updated; 2 NTDS outcome deltas |
 | Open PRs | None |
-| Next phase | **Backlog priority:** (1) 15-event precision pass, (2) 5 AKI UTD residuals, (3) per-event distribution automation — see Roadmap §3 |
+| Next phase | **Backlog priority:** (1) 5 AKI UTD residuals, (2) per-event distribution automation, (3) PMH-aware gate handling — see Roadmap §3 |
 
 ## Quick Chat Starter
 
