@@ -177,6 +177,23 @@ class TestBuildComponentBlock:
         assert block["series"][0]["value"] == 12.0  # earlier first
         assert block["series"][1]["value"] == 8.0   # later second
 
+    def test_synonym_fallback_skips_invalid_first_candidate(self):
+        """First candidate key present but only invalid (null) rows;
+        later candidate key has valid numeric row -> available."""
+        series = {
+            "Hemoglobin": [
+                {"observed_dt": "2025-12-18T10:00:00", "value_num": None,
+                 "value_raw": "pending", "flags": [], "source_line": 1},
+            ],
+            "HGB": [
+                _make_series_entry("HGB", "2025-12-18T12:00:00", 13.5, source_line=2),
+            ],
+        }
+        block = _build_component_block("Hgb", series, ["Hemoglobin", "HGB"])
+        assert block["status"] == "available"
+        assert block["first"] == 13.5
+        assert block["n_values"] == 1
+
 
 # ── Panel tests ────────────────────────────────────────────────────
 

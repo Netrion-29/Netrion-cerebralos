@@ -151,17 +151,20 @@ def _find_series_for_component(
     Find series entries matching any candidate name (case-insensitive).
 
     Iterates candidates in priority order; returns entries for the FIRST
-    matching key found in series (no cross-key merging).  Sorting is
-    deferred to the caller (_build_component_block).
+    matching key that contains at least one entry with a non-null
+    value_num.  If a candidate key exists but all its entries have
+    value_num=None, it is skipped so later candidates can match.
+    Sorting is deferred to the caller (_build_component_block).
 
-    Returns (entries_for_first_match, matched_series_key | None).
+    Returns (entries_for_first_viable_match, matched_series_key | None).
     """
     series_lower = {k.lower(): (k, v) for k, v in series.items()}
     for candidate in candidates:
         key_lower = candidate.lower()
         if key_lower in series_lower:
             orig_key, vals = series_lower[key_lower]
-            return vals, orig_key
+            if any(e.get("value_num") is not None for e in vals):
+                return vals, orig_key
     return [], None
 
 
