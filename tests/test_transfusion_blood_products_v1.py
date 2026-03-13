@@ -270,12 +270,24 @@ class TestIsExcluded:
     def test_transfuse_threshold_excluded(self):
         assert _is_excluded(" Transfuse for hemoglobin below 7") is True
 
+    def test_transfuse_threshold_hgb_excluded(self):
+        """Hgb abbreviation variant is also excluded."""
+        assert _is_excluded("Transfuse for Hgb < 7") is True
+
+    def test_transfuse_for_non_threshold_not_excluded(self):
+        """'Transfuse for procedure tomorrow' is NOT a threshold instruction."""
+        assert _is_excluded("Transfuse for procedure tomorrow") is False
+
     # Patient_File: Johnny_Stokes.txt:2685
     def test_prepare_platelet_excluded(self):
         assert _is_excluded("PREPARE PLATELET PHERESIS") is True
 
     def test_prepare_platelet_with_order_excluded(self):
         assert _is_excluded("PREPARE PLATELET PHERESIS (Order #466725827) on 1/1/26") is True
+
+    def test_prepared_not_excluded(self):
+        """Past tense 'PREPARED PLATELET' should NOT match PREPARE exclusion."""
+        assert _is_excluded("PREPARED PLATELET sent to lab") is False
 
 
 # ── raw_line_id determinism ─────────────────────────────────────────

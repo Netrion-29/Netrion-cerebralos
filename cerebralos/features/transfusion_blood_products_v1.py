@@ -177,13 +177,13 @@ _RE_OK_TO_TRANSFUSE = re.compile(
 
 # "Transfuse for hemoglobin below 7" — threshold instruction, not event
 _RE_TRANSFUSE_THRESHOLD = re.compile(
-    r"Transfuse\s+for\s+",
+    r"\bTransfuse\s+for\s+(?:hemoglobin|hgb)\b.*?(?:below|less\s+than|<)\s*\d+(?:\.\d+)?",
     re.IGNORECASE,
 )
 
 # "PREPARE PLATELET PHERESIS" — lab preparation order, not transfusion
 _RE_PREPARE_BLOOD = re.compile(
-    r"PREPARE\s+(?:PLATELET|RBC|FFP|CRYO)",
+    r"\bPREPARE\b\s+(?:PLATELET(?:\s+PHERESIS)?|RBC|FFP|CRYO(?:PRECIPITATE)?)\b",
     re.IGNORECASE,
 )
 
