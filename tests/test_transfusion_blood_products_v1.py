@@ -38,46 +38,46 @@ class TestClassifyLine:
     """Positive and negative classification of individual lines."""
 
     # --- pRBC positives ---
-    # Patient_File: Timothy_Cowan.txt:5090
+    # Synthetic — no newer-list patient has pRBC orders
     def test_rbc_order_header(self):
         line = "TRANSFUSE RED BLOOD CELLS (Order 464694986)"
         assert _classify_line(line) == "prbc"
 
-    # Patient_File: Timothy_Cowan.txt:5076
+    # Synthetic — no newer-list patient has pRBC orders
     def test_rbc_order_line_with_units(self):
         line = "Transfuse RBC , 1 Units [NUR619] (Order 464666348)"
         assert _classify_line(line) == "prbc"
 
-    # Patient_File: Timothy_Cowan.txt:21758
+    # Synthetic — no newer-list patient has pRBC summary lines
     def test_rbc_summary_table(self):
         line = "Transfuse RBC   12/22   1015    1 more"
         assert _classify_line(line) == "prbc"
 
-    # Patient_File: Timothy_Cowan.txt:5416
+    # Synthetic — no newer-list patient has pRBC info block
     def test_rbc_info_block(self):
         line = "     Transfuse RBC"
         assert _classify_line(line) == "prbc"
 
     # --- FFP positives ---
-    # Patient_File: Timothy_Cowan.txt:5162
+    # Synthetic — no newer-list patient has FFP orders
     def test_ffp_order_header(self):
         line = "TRANSFUSE FRESH FROZEN PLASMAOrder: 464668835"
         assert _classify_line(line) == "ffp"
 
-    # Patient_File: Timothy_Cowan.txt:5148
+    # Synthetic — no newer-list patient has FFP orders
     def test_ffp_order_line_with_units(self):
         line = "Transfuse fresh frozen plasma , 1 Units [NUR621] (Order 464668835)"
         assert _classify_line(line) == "ffp"
 
     # --- Platelet positives ---
-    # Patient_File: Timothy_Cowan.txt:5310
+    # Synthetic — tests pattern variant with different order number
     def test_platelet_order_header(self):
         line = "TRANSFUSE PLATELET PHERESIS (Order 464673838)"
         assert _classify_line(line) == "platelets"
 
-    # Patient_File: Timothy_Cowan.txt:21748
+    # Patient_File: Johnny_Stokes.txt:11057
     def test_platelet_summary_line(self):
-        line = "Transfuse platelet pheresis     12/19   0030    1 more"
+        line = "Transfuse platelet pheresis     01/01   2242    1 more"
         assert _classify_line(line) == "platelets"
 
     # Patient_File: Johnny_Stokes.txt:7162
@@ -86,17 +86,17 @@ class TestClassifyLine:
         assert _classify_line(line) == "platelets"
 
     # --- TXA positives ---
-    # Patient_File: Carlton_Van_Ness.txt:13066
+    # Synthetic — no newer-list patient has TXA operative notes
     def test_txa_operative_note(self):
         line = "TXA: 1 g was administered at the time of skin incision"
         assert _classify_line(line) == "txa"
 
-    # Patient_File: Valerie_Parker.txt:31809
+    # Synthetic — no newer-list patient has TXA medication orders
     def test_txa_med_order(self):
         line = "tranexamic acid-NaCl IV premix   [466266640]"
         assert _classify_line(line) == "txa"
 
-    # Patient_File: Valerie_Parker.txt:35073
+    # Synthetic — no newer-list patient has TXA administration
     def test_txa_admin_line(self):
         line = "tranexamic acid 1 gram bolus   1,000 mg"
         assert _classify_line(line) == "txa"
@@ -119,37 +119,37 @@ class TestClassifyLine:
 class TestExclusions:
     """Lines that must NOT be classified as transfusion events."""
 
-    # Patient_File: Anna_Dennis.txt:820
+    # Patient_File: Betty_Roll.txt:1493
     def test_platelet_count_lab(self):
-        line = "   Platelet Count  354     130 - 400 THOUS/uL"
+        line = "        Platelet Count  425 (H) 130 - 400 THOUS/uL"
         assert _classify_line(line) is None
 
-    # Patient_File: Anna_Dennis.txt:821
+    # Patient_File: Betty_Roll.txt:1494
     def test_mean_platelet_volume_lab(self):
-        line = "    Mean Platelet Volume    9.0     7.4 - 10.4 FL"
+        line = "        Mean Platelet Volume    9.1     7.4 - 10.4 FL"
         assert _classify_line(line) is None
 
-    # Patient_File: Timothy_Cowan.txt:276
+    # Patient_File: Johnny_Stokes.txt:1335
     def test_transfusion_status_ok(self):
-        line = "•       Transfusion Status      12/18/2025      OK TO TRANSFUSE"
+        line = "•  Transfusion Status      01/01/2026      OK TO TRANSFUSE"
         assert _classify_line(line) is None
 
-    # Patient_File: Timothy_Nachtwey.txt:18438
+    # Patient_File: Johnny_Stokes.txt:2702
     def test_transfusion_status_inline(self):
-        line = "Transfusion Status   OK TO TRANSFUSE"
+        line = "Transfusion Status      OK TO TRANSFUSE DHI"
         assert _classify_line(line) is None
 
-    # Patient_File: William_Simmons.txt:6206
+    # Synthetic — no newer-list patient has this pattern
     def test_radiology_without_blood_product(self):
         line = "Sinuses and mastoids without blood product."
         assert _classify_line(line) is None
 
-    # Patient_File: William_Simmons.txt:11463
+    # Synthetic — no newer-list patient has this pattern
     def test_billing_transfusion_code(self):
         line = "Blood transfusion without reported diagnosis"
         assert _classify_line(line) is None
 
-    # Patient_File: Anna_Dennis.txt:6259
+    # Synthetic — no newer-list patient has this pattern
     def test_platelet_instruction(self):
         line = "If platelets less than 100,000 or decrease by 50%"
         assert _classify_line(line) is None
@@ -158,9 +158,21 @@ class TestExclusions:
         line = "OK TO TRANSFUSE"
         assert _classify_line(line) is None
 
-    # Patient_File: Anna_Dennis.txt:3721
+    # Patient_File: Betty_Roll.txt:3204
     def test_platelet_count_high_flag(self):
-        line = "Platelet Count     423 High"
+        line = "Platelet Count  437 High"
+        assert _classify_line(line) is None
+
+    # Patient_File: Ronald_Bittner.txt:38818
+    def test_transfuse_threshold_not_product(self):
+        """'Transfuse for hemoglobin below 7' is a threshold instruction, not an event."""
+        line = " Transfuse for hemoglobin below 7"
+        assert _classify_line(line) is None
+
+    # Patient_File: Betty_Roll.txt:9448
+    def test_pmh_blood_transfusion_not_event(self):
+        """Past medical history mention is not a current transfusion event."""
+        line = "Blood transfusion          no adverse reaction"
         assert _classify_line(line) is None
 
 
@@ -263,7 +275,7 @@ class TestEndToEnd:
 
     def test_mixed_products(self):
         """Multiple product types in one day."""
-        # Patient_File refs: Timothy_Cowan.txt lines 5076, 5148, 5310
+        # Synthetic mixed-product scenario (no newer-list patient has all three)
         days = _make_days_data([
             "Transfuse RBC , 1 Units [NUR619] (Order 464666348)",
             "Transfuse fresh frozen plasma , 1 Units [NUR621] (Order 464668835)",
@@ -278,7 +290,7 @@ class TestEndToEnd:
 
     def test_txa_detection(self):
         """TXA line → txa_administered=True."""
-        # Patient_File: Carlton_Van_Ness.txt:13066
+        # Synthetic — no newer-list patient has TXA
         days = _make_days_data([
             "TXA: 1 g was administered at the time of skin incision",
         ])
@@ -362,7 +374,7 @@ class TestEndToEnd:
 
     def test_txa_med_order_forms(self):
         """Both TXA medication order formats are captured."""
-        # Patient_File: Valerie_Parker.txt:31809, 35073
+        # Synthetic — no newer-list patient has TXA med orders
         days = _make_days_data([
             "tranexamic acid-NaCl IV premix   [466266640]",
             "tranexamic acid 1 gram bolus   1,000 mg",
@@ -371,3 +383,27 @@ class TestEndToEnd:
         assert result["txa_administered"] is True
         txa_events = [e for e in result["evidence"] if e["product"] == "txa"]
         assert len(txa_events) == 2
+
+    def test_johnny_stokes_platelet_pheresis(self):
+        """Real platelet pheresis from newer-list patient."""
+        # Patient_File: Johnny_Stokes.txt:7162, 11057
+        days = _make_days_data([
+            "TRANSFUSE PLATELET PHERESIS (Order 466725819)",
+            "Transfuse platelet pheresis     01/01   2242    1 more",
+        ], day="2026-01-01")
+        result = extract_transfusion_blood_products({}, days)
+        assert result["status"] == "available"
+        assert result["platelet_events"] == 2
+        assert "platelets" in result["products_detected"]
+        assert result["total_events"] == 2
+
+    def test_johnny_stokes_exclusions_mixed(self):
+        """Real exclusion lines from newer-list patient mixed with positive."""
+        # Patient_File: Johnny_Stokes.txt:1335, 2702, 7162
+        days = _make_days_data([
+            "Transfusion Status      OK TO TRANSFUSE DHI",
+            "TRANSFUSE PLATELET PHERESIS (Order 466725819)",
+        ], day="2026-01-01")
+        result = extract_transfusion_blood_products({}, days)
+        assert result["total_events"] == 1
+        assert result["platelet_events"] == 1
