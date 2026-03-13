@@ -137,7 +137,7 @@ class TestExclusions:
         line = "Transfusion Status      OK TO TRANSFUSE DHI"
         assert _classify_line(line) is None
 
-    # Synthetic — no newer-list patient has this pattern
+    # Patient_File: Mary_King.txt:1291
     def test_radiology_without_blood_product(self):
         line = "Sinuses and mastoids without blood product."
         assert _classify_line(line) is None
@@ -171,6 +171,56 @@ class TestExclusions:
     def test_pmh_blood_transfusion_not_event(self):
         """Past medical history mention is not a current transfusion event."""
         line = "Blood transfusion          no adverse reaction"
+        assert _classify_line(line) is None
+
+    # Patient_File: Johnny_Stokes.txt:2685
+    def test_prepare_platelet_pheresis_not_event(self):
+        """Lab preparation order is not a transfusion event."""
+        line = "PREPARE PLATELET PHERESIS"
+        assert _is_excluded(line) is True
+        assert _classify_line(line) is None
+
+    # Patient_File: Johnny_Stokes.txt:2784
+    def test_prepare_platelet_with_order_not_event(self):
+        """Prep order with order number is not a transfusion event."""
+        line = "PREPARE PLATELET PHERESIS (Order #466725827) on 1/1/26"
+        assert _is_excluded(line) is True
+        assert _classify_line(line) is None
+
+    # Patient_File: Lee_Woodard.txt:163
+    def test_blood_transfusions_not_asked_history(self):
+        """History question 'Blood Transfusions Not Asked' is not an event."""
+        line = "\u2022   Blood Transfusions      Not Asked"
+        assert _classify_line(line) is None
+
+    # Patient_File: Lee_Woodard.txt:7147
+    def test_transfusions_no_data_section(self):
+        """Section header 'Transfusions No data' is not an event."""
+        line = "Transfusions       No data for this category"
+        assert _classify_line(line) is None
+
+    # Patient_File: Johnny_Stokes.txt:11961
+    def test_blood_transfusion_record_header(self):
+        """Section header 'Blood Transfusion Record' is not an event."""
+        line = "Blood Transfusion Record"
+        assert _classify_line(line) is None
+
+    # Patient_File: Linda_Hufford.txt:7832
+    def test_extra_axial_blood_product_radiology(self):
+        """Radiology finding 'extra-axial blood product' is not a transfusion."""
+        line = "Significant motion again degrades the exam.  Small extra-axial blood product on"
+        assert _classify_line(line) is None
+
+    # Patient_File: Jamie_Hunter.txt:664
+    def test_consent_blood_product_transfusion(self):
+        """Consent discussion mentioning 'blood product transfusion' is not an event."""
+        line = "need for blood product transfusion as well as other complications."
+        assert _classify_line(line) is None
+
+    # Patient_File: Mary_King.txt:139
+    def test_blood_transfusions_no_history(self):
+        """History answer 'Blood Transfusions No' is not an event."""
+        line = "\u2022   Blood Transfusions      No"
         assert _classify_line(line) is None
 
 
@@ -215,6 +265,29 @@ class TestIsExcluded:
 
     def test_transfuse_platelet_not_excluded(self):
         assert _is_excluded("Transfuse platelet pheresis") is False
+
+    # Patient_File: Ronald_Bittner.txt:38818
+    def test_transfuse_threshold_excluded(self):
+        assert _is_excluded(" Transfuse for hemoglobin below 7") is True
+
+    def test_transfuse_threshold_hgb_excluded(self):
+        """Hgb abbreviation variant is also excluded."""
+        assert _is_excluded("Transfuse for Hgb < 7") is True
+
+    def test_transfuse_for_non_threshold_not_excluded(self):
+        """'Transfuse for procedure tomorrow' is NOT a threshold instruction."""
+        assert _is_excluded("Transfuse for procedure tomorrow") is False
+
+    # Patient_File: Johnny_Stokes.txt:2685
+    def test_prepare_platelet_excluded(self):
+        assert _is_excluded("PREPARE PLATELET PHERESIS") is True
+
+    def test_prepare_platelet_with_order_excluded(self):
+        assert _is_excluded("PREPARE PLATELET PHERESIS (Order #466725827) on 1/1/26") is True
+
+    def test_prepared_not_excluded(self):
+        """Past tense 'PREPARED PLATELET' should NOT match PREPARE exclusion."""
+        assert _is_excluded("PREPARED PLATELET sent to lab") is False
 
 
 # ── raw_line_id determinism ─────────────────────────────────────────
@@ -415,3 +488,36 @@ class TestEndToEnd:
         result = extract_transfusion_blood_products({}, days)
         assert result["total_events"] == 1
         assert result["platelet_events"] == 1
+
+    def test_johnny_stokes_prepare_vs_transfuse(self):
+        """PREPARE order excluded, TRANSFUSE order captured."""
+        # Patient_File: Johnny_Stokes.txt:2685, 7162
+        days = _make_days_data([
+            "PREPARE PLATELET PHERESIS",
+            "TRANSFUSE PLATELET PHERESIS (Order 466725819)",
+        ], day="2026-01-01")
+        result = extract_transfusion_blood_products({}, days)
+        assert result["total_events"] == 1
+        assert result["platelet_events"] == 1
+
+    def test_raw_line_id_determinism_johnny_stokes(self):
+        """raw_line_id for Johnny Stokes platelet pheresis is deterministic."""
+        # Patient_File: Johnny_Stokes.txt:7162
+        days = _make_days_data([
+            "TRANSFUSE PLATELET PHERESIS (Order 466725819)",
+        ], day="2026-01-01")
+        r1 = extract_transfusion_blood_products({}, days)
+        r2 = extract_transfusion_blood_products({}, days)
+        assert r1["evidence"][0]["raw_line_id"] == r2["evidence"][0]["raw_line_id"]
+        assert len(r1["evidence"][0]["raw_line_id"]) == 16
+
+    def test_ronald_bittner_threshold_not_event(self):
+        """Threshold instructions mixed with non-transfusion lines → no events."""
+        # Patient_File: Ronald_Bittner.txt:38818, 39315
+        days = _make_days_data([
+            " Transfuse for hemoglobin below 7",
+            "Platelet Count  228     130 - 400 THOUS/uL",
+        ], day="2025-12-31")
+        result = extract_transfusion_blood_products({}, days)
+        assert result["status"] == "DATA NOT AVAILABLE"
+        assert result["total_events"] == 0
