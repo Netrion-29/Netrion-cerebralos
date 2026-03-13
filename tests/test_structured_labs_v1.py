@@ -24,6 +24,8 @@ from cerebralos.features.structured_labs_v1 import (
     _BMP_COMPONENTS,
     _COAG_COMPONENTS,
     _ABG_COMPONENTS,
+    _CARDIAC_COMPONENTS,
+    _SEPSIS_COMPONENTS,
 )
 
 _DNA = "DATA NOT AVAILABLE"
@@ -107,6 +109,21 @@ class TestRangeGates:
     def test_glucose_boundary_invalid(self):
         assert _in_range("Glucose", 9.9) is False
         assert _in_range("Glucose", 2001.0) is False
+
+    def test_troponin_valid(self):
+        assert _in_range("Troponin_T", 11.0) is True
+
+    def test_troponin_negative_invalid(self):
+        assert _in_range("Troponin_T", -1.0) is False
+
+    def test_procalcitonin_valid(self):
+        assert _in_range("Procalcitonin", 0.08) is True
+
+    def test_procalcitonin_negative_invalid(self):
+        assert _in_range("Procalcitonin", -0.5) is False
+
+    def test_bnp_valid(self):
+        assert _in_range("BNP", 3588.0) is True
 
 
 # ── Component block tests ──────────────────────────────────────────
@@ -261,6 +278,56 @@ class TestBuildPanel:
         assert panel["complete"] is True
         assert panel["available_count"] == 5
 
+    def test_cardiac_panel_troponin_only(self):
+        """Cardiac panel with Troponin T only -> partial."""
+        series = {
+            "TROPONIN T": [_make_series_entry("Troponin_T", "2025-12-31T10:00:00", 11.0)],
+        }
+        panel = _build_panel(_CARDIAC_COMPONENTS, series, "2025-12-31")
+        assert panel["complete"] is False
+        assert panel["available_count"] == 1
+        assert panel["components"]["Troponin_T"]["status"] == "available"
+        assert panel["components"]["Troponin_T"]["first"] == 11.0
+        assert panel["components"]["BNP"]["status"] == _DNA
+
+    def test_cardiac_panel_complete(self):
+        """Cardiac panel with both Troponin T and PRO BNP -> complete."""
+        series = {
+            "TROPONIN T": [_make_series_entry("Troponin_T", "2025-12-31T10:00:00", 11.0)],
+            "PRO BNP": [_make_series_entry("BNP", "2025-12-31T10:00:00", 36.0)],
+        }
+        panel = _build_panel(_CARDIAC_COMPONENTS, series, "2025-12-31")
+        assert panel["complete"] is True
+        assert panel["available_count"] == 2
+
+    def test_cardiac_highly_sensitive_troponin(self):
+        """Troponin T(Highly Sensitive) synonym matches."""
+        series = {
+            "Troponin T(Highly Sensitive)": [
+                _make_series_entry("Troponin_T", "2025-12-31T10:00:00", 3.8),
+            ],
+        }
+        panel = _build_panel(_CARDIAC_COMPONENTS, series, "2025-12-31")
+        assert panel["components"]["Troponin_T"]["status"] == "available"
+        assert panel["components"]["Troponin_T"]["first"] == 3.8
+
+    def test_sepsis_panel_procalcitonin(self):
+        """Sepsis markers panel with Procalcitonin -> complete."""
+        series = {
+            "Procalcitonin": [_make_series_entry("Procalcitonin", "2026-01-18T06:00:00", 0.08)],
+        }
+        panel = _build_panel(_SEPSIS_COMPONENTS, series, "2026-01-18")
+        assert panel["complete"] is True
+        assert panel["available_count"] == 1
+        assert panel["components"]["Procalcitonin"]["status"] == "available"
+        assert panel["components"]["Procalcitonin"]["first"] == 0.08
+
+    def test_sepsis_panel_empty(self):
+        """Sepsis markers panel with no data -> DNA."""
+        panel = _build_panel(_SEPSIS_COMPONENTS, {}, "2026-01-18")
+        assert panel["complete"] is False
+        assert panel["available_count"] == 0
+
     def test_empty_panel(self):
         panel = _build_panel(_CBC_COMPONENTS, {}, "2025-12-18")
         assert panel["complete"] is False
@@ -331,6 +398,9 @@ class TestExtractStructuredLabs:
         assert result["summary"]["days_with_labs"] == 1
         day_data = result["panels_by_day"]["2025-12-18"]
         assert day_data["cbc"]["complete"] is True
+        # New panels present even when empty
+        assert "cardiac" in day_data
+        assert "sepsis_markers" in day_data
 
     def test_multi_day(self):
         features = {
@@ -397,10 +467,12 @@ class TestExtractStructuredLabs:
             "Sodium": [_make_series_entry("Na", "2025-12-18T10:00:00", 140.0)],
             "INR": [_make_series_entry("INR", "2025-12-18T10:00:00", 1.1)],
             "pH Arterial": [_make_series_entry("pH", "2025-12-18T10:00:00", 7.35)],
+            "TROPONIN T": [_make_series_entry("Troponin_T", "2025-12-18T10:00:00", 11.0)],
+            "Procalcitonin": [_make_series_entry("Procalcitonin", "2025-12-18T10:00:00", 0.08)],
         })
         result = extract_structured_labs(features)
         day_data = result["panels_by_day"]["2025-12-18"]
-        for panel_name in ("cbc", "bmp", "coag", "abg"):
+        for panel_name in ("cbc", "bmp", "coag", "abg", "cardiac", "sepsis_markers"):
             panel = day_data[panel_name]
             for comp_name, comp_data in panel["components"].items():
                 if comp_data.get("status") == "available":
@@ -450,3 +522,47 @@ class TestFalsePositiveControls:
         assert block["status"] == "available"
         assert block["n_values"] == 1
         assert block["first"] == 12.0
+
+
+# ── Cardiac + Sepsis integration tests ─────────────────────────────
+
+class TestCardiacSepsisIntegration:
+    def test_cardiac_appears_in_extract(self):
+        """Cardiac panel appears in extract_structured_labs output."""
+        features = _wrap_features("2025-12-31", {
+            "TROPONIN T": [
+                _make_series_entry("Troponin_T", "2025-12-31T10:00:00", 11.0),
+                _make_series_entry("Troponin_T", "2026-01-01T10:00:00", 11.0, source_line=2),
+            ],
+            "PRO BNP": [_make_series_entry("BNP", "2025-12-31T10:00:00", 36.0)],
+        })
+        result = extract_structured_labs(features)
+        day_data = result["panels_by_day"]["2025-12-31"]
+        assert day_data["cardiac"]["complete"] is True
+        assert day_data["cardiac"]["components"]["Troponin_T"]["n_values"] == 2
+
+    def test_sepsis_appears_in_extract(self):
+        """Sepsis markers panel appears in extract_structured_labs output."""
+        features = _wrap_features("2026-01-18", {
+            "Procalcitonin": [
+                _make_series_entry("Procalcitonin", "2026-01-18T06:00:00", 0.08),
+            ],
+        })
+        result = extract_structured_labs(features)
+        day_data = result["panels_by_day"]["2026-01-18"]
+        assert day_data["sepsis_markers"]["complete"] is True
+        assert day_data["sepsis_markers"]["components"]["Procalcitonin"]["first"] == 0.08
+
+    def test_troponin_delta_across_day(self):
+        """Troponin delta tracks value changes within a day."""
+        features = _wrap_features("2026-01-03", {
+            "TROPONIN T": [
+                _make_series_entry("Troponin_T", "2026-01-03T06:00:00", 8.0, source_line=253),
+                _make_series_entry("Troponin_T", "2026-01-03T14:00:00", 9.0, source_line=321),
+            ],
+        })
+        result = extract_structured_labs(features)
+        trop = result["panels_by_day"]["2026-01-03"]["cardiac"]["components"]["Troponin_T"]
+        assert trop["first"] == 8.0
+        assert trop["last"] == 9.0
+        assert trop["delta"] == pytest.approx(1.0)

@@ -6,10 +6,12 @@ Provides deterministic, typed, per-panel structured lab extraction with
 full raw_line_id traceability for protocol coverage and NTDS analysis.
 
 Panels:
-  CBC:  Hgb / Hct / WBC / Plt
-  BMP:  Na / K / Cl / CO2 / BUN / Cr / Glucose
-  Coag: PT / INR / PTT / Fibrinogen
-  ABG:  pH / pCO2 / pO2 / Base Deficit / Lactate
+  CBC:     Hgb / Hct / WBC / Plt
+  BMP:     Na / K / Cl / CO2 / BUN / Cr / Glucose
+  Coag:    PT / INR / PTT / Fibrinogen
+  ABG:     pH / pCO2 / pO2 / Base Deficit / Lactate
+  Cardiac: Troponin_T / BNP
+  Sepsis:  Procalcitonin
   P/F ratio: computed when PaO2 + FiO2 are both explicit
 
 For each panel, produces per-day structured values with:
@@ -38,6 +40,12 @@ Raw evidence citations:
   Timothy_Nachtwey.txt:251-252 — Coag via tab-delimited (PROTIME/INR)
   Timothy_Nachtwey.txt:1140 — FiO2 from flowsheet (FIO2 : 30 %)
   William_Simmons.txt:343-349 — CBC in newline-delimited Recent Labs matrix
+  Ronald_Bittner.txt:265    — Cardiac: TROPONIN T 11, 0-21 NG/L
+  Ronald_Bittner.txt:266    — Cardiac: PRO BNP <36, 0-125 PG/ML
+  Roscella_Weatherly.txt:258 — Cardiac: Troponin T(Highly Sensitive) 3.8 pg/mL
+  James_Eaton.txt:253       — Cardiac: TROPONIN T 8, 0-21 NG/L
+  Ronald_Bittner.txt:880    — Sepsis: Procalcitonin 0.08, <0.10 NG/ML
+  Lee_Woodard.txt:7283      — Sepsis: Procalcitonin 0.07
 
 Design:
   Deterministic, fail-closed.
@@ -88,6 +96,15 @@ _ABG_COMPONENTS: Dict[str, List[str]] = {
     "Lactate":      ["Lactate", "Lactic Acid", "LACTATE"],
 }
 
+_CARDIAC_COMPONENTS: Dict[str, List[str]] = {
+    "Troponin_T": ["TROPONIN T", "Troponin T", "Troponin T(Highly Sensitive)"],
+    "BNP":        ["PRO BNP", "PRO BRAIN NATRIURETIC PEPTIDE (BNP)", "BNP"],
+}
+
+_SEPSIS_COMPONENTS: Dict[str, List[str]] = {
+    "Procalcitonin": ["Procalcitonin", "PROCALCITONIN"],
+}
+
 # FiO2 candidates — used for P/F ratio computation only.
 # Only numeric lab components are supported; non-numeric qualitative
 # entries (e.g. "ROOM AIR" text) are excluded because the upstream
@@ -118,6 +135,9 @@ _RANGE_GATES: Dict[str, Tuple[float, float]] = {
     "pO2":           (10.0, 700.0),
     "Base_Deficit":  (-30.0, 30.0),
     "Lactate":       (0.1, 30.0),
+    "Troponin_T":    (0.0, 50000.0),
+    "BNP":           (0.0, 100000.0),
+    "Procalcitonin": (0.0, 1000.0),
 }
 
 # P/F acceptable FiO2 range (fraction, 0-1 scale).
@@ -383,6 +403,8 @@ def extract_structured_labs(
         bmp = _build_panel(_BMP_COMPONENTS, series, day_iso)
         coag = _build_panel(_COAG_COMPONENTS, series, day_iso)
         abg = _build_panel(_ABG_COMPONENTS, series, day_iso)
+        cardiac = _build_panel(_CARDIAC_COMPONENTS, series, day_iso)
+        sepsis = _build_panel(_SEPSIS_COMPONENTS, series, day_iso)
 
         # P/F ratio
         pf_ratio = _compute_pf_ratio(abg, series, day_iso)
@@ -390,7 +412,7 @@ def extract_structured_labs(
             pf_available_count += 1
 
         # Count completeness
-        for panel in (cbc, bmp, coag, abg):
+        for panel in (cbc, bmp, coag, abg, cardiac, sepsis):
             if panel["complete"]:
                 panels_complete_total += 1
 
@@ -399,6 +421,8 @@ def extract_structured_labs(
             "bmp": bmp,
             "coag": coag,
             "abg": abg,
+            "cardiac": cardiac,
+            "sepsis_markers": sepsis,
             "pf_ratio": pf_ratio,
         }
 

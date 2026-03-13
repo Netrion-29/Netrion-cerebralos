@@ -13,11 +13,13 @@
 {
   "panels_by_day": {
     "2025-12-18": {
-      "cbc":      "<panel_block, see below>",
-      "bmp":      "<panel_block, see below>",
-      "coag":     "<panel_block, see below>",
-      "abg":      "<panel_block, see below>",
-      "pf_ratio": "<pf_ratio_block, see below>"
+      "cbc":            "<panel_block, see below>",
+      "bmp":            "<panel_block, see below>",
+      "coag":           "<panel_block, see below>",
+      "abg":            "<panel_block, see below>",
+      "cardiac":        "<panel_block, see below>",
+      "sepsis_markers": "<panel_block, see below>",
+      "pf_ratio":       "<pf_ratio_block, see below>"
     }
   },
   "summary": {
@@ -74,6 +76,8 @@ is emitted (no first/last/series keys).
 | BMP   | Na, K, Cl, CO2, BUN, Cr, Glucose |
 | Coag  | PT, INR, PTT, Fibrinogen |
 | ABG   | pH, pCO2, pO2, Base_Deficit, Lactate |
+| Cardiac | Troponin_T, BNP |
+| Sepsis  | Procalcitonin |
 
 ### P/F Ratio Block
 
@@ -171,3 +175,9 @@ These requirements are enforced by:
 | Timothy_Nachtwey.txt | 251–252 | Coag via tab-delimited (PROTIME/INR) |
 | Timothy_Nachtwey.txt | 1140 | FiO2 from flowsheet (FIO2 : 30 %) |
 | William_Simmons.txt | 343–349 | CBC in newline-delimited Recent Labs matrix |
+| Ronald_Bittner.txt | 265 | Cardiac: TROPONIN T 11, 0–21 NG/L |
+| Ronald_Bittner.txt | 266 | Cardiac: PRO BNP <36, 0–125 PG/ML |
+| Roscella_Weatherly.txt | 258 | Cardiac: Troponin T(Highly Sensitive) 3.8 pg/mL |
+| James_Eaton.txt | 253 | Cardiac: TROPONIN T 8, 0–21 NG/L |
+| Ronald_Bittner.txt | 880 | Sepsis: Procalcitonin 0.08, <0.10 NG/ML |
+| Lee_Woodard.txt | 7283 | Sepsis: Procalcitonin 0.07 |
