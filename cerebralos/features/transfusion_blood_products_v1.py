@@ -47,11 +47,16 @@ from typing import Any, Dict, List, Optional
 
 def _make_raw_line_id(
     product: str,
+    day: str,
     line_num: Any,
     snippet: str,
 ) -> str:
-    """Deterministic raw_line_id — SHA-256[:16] of extraction coordinates."""
-    key = f"{product}|{line_num}|{snippet}"
+    """Deterministic raw_line_id — SHA-256[:16] of extraction coordinates.
+
+    Includes day + line_num so identical text at different positions
+    yields distinct IDs (per-occurrence preservation, not content dedup).
+    """
+    key = f"{product}|{day}|{line_num}|{snippet}"
     return hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
 
 
@@ -256,7 +261,8 @@ def extract_transfusion_blood_products(
     Parameters
     ----------
     pat_features : dict
-        Partial patient features (must have "days" key).
+        Accepted for API consistency with other feature
+        extractors; not consumed by this module.
     days_data : dict, optional
         Full days_json with raw text lines under
         days_data["days"][date]["raw_lines"].
@@ -292,9 +298,10 @@ def extract_transfusion_blood_products(
             if product is None:
                 continue
 
-            # Deduplicate by hash of line content + line index
+            # Per-occurrence dedup: day + line_idx + full text in hash,
+            # so identical content at different positions → distinct events.
             raw_line_id = _make_raw_line_id(
-                product, line_idx, raw_line.strip()[:120],
+                product, day_iso, line_idx, raw_line.strip(),
             )
 
             if raw_line_id in seen_hashes:

@@ -11,10 +11,8 @@ Covers:
   - False-positive rejection (Platelet Count, Transfusion Status, etc.)
   - Deterministic raw_line_id generation
   - Empty / missing days → fail-closed
-  - Deduplication of identical lines
+  - Per-occurrence preservation for repeated identical lines
 """
-
-import pytest
 
 from cerebralos.features.transfusion_blood_products_v1 import (
     _classify_line,
@@ -225,18 +223,24 @@ class TestRawLineId:
     """raw_line_id must be deterministic and 16-char hex."""
 
     def test_deterministic(self):
-        id1 = _make_raw_line_id("prbc", 100, "Transfuse RBC")
-        id2 = _make_raw_line_id("prbc", 100, "Transfuse RBC")
+        id1 = _make_raw_line_id("prbc", "2025-12-19", 100, "Transfuse RBC")
+        id2 = _make_raw_line_id("prbc", "2025-12-19", 100, "Transfuse RBC")
         assert id1 == id2
 
     def test_length_and_hex(self):
-        rid = _make_raw_line_id("ffp", 42, "Test line")
+        rid = _make_raw_line_id("ffp", "2025-12-19", 42, "Test line")
         assert len(rid) == 16
         assert all(c in "0123456789abcdef" for c in rid)
 
     def test_different_inputs_different_ids(self):
-        id1 = _make_raw_line_id("prbc", 100, "Transfuse RBC")
-        id2 = _make_raw_line_id("ffp", 100, "Transfuse FFP")
+        id1 = _make_raw_line_id("prbc", "2025-12-19", 100, "Transfuse RBC")
+        id2 = _make_raw_line_id("ffp", "2025-12-19", 100, "Transfuse FFP")
+        assert id1 != id2
+
+    def test_different_days_different_ids(self):
+        """Same product/line_idx/text on different days → distinct IDs."""
+        id1 = _make_raw_line_id("prbc", "2025-12-19", 0, "Transfuse RBC")
+        id2 = _make_raw_line_id("prbc", "2025-12-20", 0, "Transfuse RBC")
         assert id1 != id2
 
 
@@ -306,8 +310,12 @@ class TestEndToEnd:
         result = extract_transfusion_blood_products({}, days)
         assert result["mtp_activated"] is True
 
-    def test_deduplication(self):
-        """Identical lines produce only one event."""
+    def test_per_occurrence_preservation(self):
+        """Identical content at different line positions → separate events.
+
+        Dedup is per-occurrence (day + line_idx in hash), not content-based,
+        so repeated lines at distinct positions are preserved.
+        """
         days = _make_days_data([
             "TRANSFUSE RED BLOOD CELLS (Order 464694986)",
             "TRANSFUSE RED BLOOD CELLS (Order 464694986)",
