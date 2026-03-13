@@ -12,18 +12,18 @@
 ```json
 {
   "panels_by_day": {
-    "<YYYY-MM-DD>": {
-      "cbc":      { "<panel_block>" },
-      "bmp":      { "<panel_block>" },
-      "coag":     { "<panel_block>" },
-      "abg":      { "<panel_block>" },
-      "pf_ratio": { "<pf_ratio_block>" }
+    "2025-12-18": {
+      "cbc":      "<panel_block, see below>",
+      "bmp":      "<panel_block, see below>",
+      "coag":     "<panel_block, see below>",
+      "abg":      "<panel_block, see below>",
+      "pf_ratio": "<pf_ratio_block, see below>"
     }
   },
   "summary": {
-    "days_with_labs":        "<int>",
-    "panels_complete_count": "<int>",
-    "pf_available_count":    "<int>"
+    "days_with_labs": 1,
+    "panels_complete_count": 0,
+    "pf_available_count": 0
   },
   "parse_warnings": [],
   "notes": []
@@ -37,26 +37,29 @@ Each panel (cbc, bmp, coag, abg) has this structure:
 ```json
 {
   "components": {
-    "<canonical_name>": {
-      "status": "available | DATA NOT AVAILABLE",
-      "first":     "<float>",
-      "last":      "<float>",
-      "delta":     "<float>",
-      "n_values":  "<int>",
-      "abnormal":  "<bool>",
+    "Hgb": {
+      "status": "available",
+      "first": 12.7,
+      "last": 10.8,
+      "delta": -1.9,
+      "n_values": 2,
+      "abnormal": true,
       "series": [
         {
-          "observed_dt": "<ISO datetime or null>",
-          "value":       "<float>",
-          "flags":       ["<string>"],
-          "raw_line_id": "<hex16>"
+          "observed_dt": "2025-12-18T06:00:00",
+          "value": 12.7,
+          "flags": [],
+          "raw_line_id": "a1b2c3d4e5f67890"
         }
       ]
+    },
+    "Hct": {
+      "status": "DATA NOT AVAILABLE"
     }
   },
-  "complete":        "<bool>",
-  "available_count": "<int>",
-  "total_count":     "<int>"
+  "complete": false,
+  "available_count": 1,
+  "total_count": 4
 }
 ```
 
@@ -76,12 +79,12 @@ is emitted (no first/last/series keys).
 
 ```json
 {
-  "status": "available | DATA NOT AVAILABLE",
-  "pf_ratio":    "<float>",
-  "pao2":        "<float>",
-  "fio2":        "<float, 0-1 fraction>",
-  "fio2_source": "<string>",
-  "raw_line_id": "<hex16>"
+  "status": "available",
+  "pf_ratio": 1446.7,
+  "pao2": 434.0,
+  "fio2": 0.30,
+  "fio2_source": "FIO2",
+  "raw_line_id": "b2c3d4e5f6789012"
 }
 ```
 
@@ -89,9 +92,11 @@ When unavailable:
 ```json
 {
   "status": "DATA NOT AVAILABLE",
-  "reason": "pO2_not_available | fio2_not_available | pO2_series_empty"
+  "reason": "fio2_not_available"
 }
 ```
+
+Valid `reason` values: `pO2_not_available`, `fio2_not_available`, `pO2_series_empty`.
 
 **P/F ratio behavior:**
 - Computed only when BOTH PaO2 and FiO2 are present as numeric lab
@@ -114,7 +119,9 @@ When unavailable:
    Values outside the range are silently dropped.
 2. **Non-numeric values:** Rows with `value_num is None` are skipped.
 3. **Unknown components:** If no series key matches any candidate for a
-   component, status is `"DATA NOT AVAILABLE"`.
+   component, status is `"DATA NOT AVAILABLE"`.  If a candidate key
+   exists but all its entries have null `value_num`, that candidate is
+   skipped and later candidates are tried.
 4. **FiO2 missing/ambiguous:** If no valid numeric FiO2 is found,
    P/F ratio is `"DATA NOT AVAILABLE"`.
 5. **`__UNDATED__` days:** Skipped entirely.
@@ -132,8 +139,16 @@ MUST include a `raw_line_id` field (SHA-256[:16] hex string):
 - **P/F ratio:** When `status` is `"available"`,
   `panels_by_day.<day>.pf_ratio` must have `raw_line_id`.
 
-The `raw_line_id` is computed deterministically from
-`(component, observed_dt, value, source_line)` via SHA-256[:16].
+The `raw_line_id` is computed deterministically via SHA-256[:16]:
+
+- **Panel component series entries:** hash of
+  `(component, observed_dt, value, source_line)` — where `component`
+  is the canonical name (e.g. `"Hgb"`), and `source_line` is the
+  integer line number from the raw patient file.
+- **P/F ratio:** hash of
+  `("P/F", pao2_observed_dt, pf_ratio_value, pao2_raw_line_id)` —
+  where `pao2_raw_line_id` is the raw_line_id of the last PaO2 series
+  entry used in the computation (not a numeric source_line).
 
 These requirements are enforced by:
 `cerebralos/validation/validate_patient_features_contract_v1.py`
