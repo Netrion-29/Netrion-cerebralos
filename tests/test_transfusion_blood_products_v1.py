@@ -11,7 +11,7 @@ Covers:
   - False-positive rejection (Platelet Count, Transfusion Status, etc.)
   - Deterministic raw_line_id generation
   - Empty / missing days → fail-closed
-  - Deduplication of identical lines
+  - Per-occurrence preservation for repeated identical lines
 """
 
 from cerebralos.features.transfusion_blood_products_v1 import (
