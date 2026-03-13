@@ -9,6 +9,7 @@ Checks:
   4. Evidence entries in feature modules have raw_line_id (blocking).
   5. bd_series entries in base_deficit_monitoring_v1 have raw_line_id.
   6. vitals_canonical_v1 record entries have raw_line_id.
+  7. structured_labs_v1 panel series + pf_ratio entries have raw_line_id.
 
 Exit codes:
   0 — contract valid
@@ -574,6 +575,41 @@ def _check_evidence_line_ids(
                     errors.append(
                         f"URINE_OUTPUT_EVIDENCE_MISSING_RAW_LINE_ID: "
                         f"{uo_missing} evidence entry(ies) without raw_line_id"
+                    )
+
+        # ── structured_labs_v1: panel series + pf_ratio raw_line_id ──
+        if feat_key == "structured_labs_v1":
+            panels_by_day = feat_val.get("panels_by_day", {})
+            if isinstance(panels_by_day, dict):
+                sl_missing = 0
+                for day_key, day_panels in panels_by_day.items():
+                    if not isinstance(day_panels, dict):
+                        continue
+                    # Check each panel's component series entries
+                    for panel_name in ("cbc", "bmp", "coag", "abg"):
+                        panel = day_panels.get(panel_name, {})
+                        if not isinstance(panel, dict):
+                            continue
+                        components = panel.get("components", {})
+                        if not isinstance(components, dict):
+                            continue
+                        for comp_name, comp_data in components.items():
+                            if not isinstance(comp_data, dict):
+                                continue
+                            if comp_data.get("status") != "available":
+                                continue
+                            for entry in comp_data.get("series", []):
+                                if isinstance(entry, dict) and "raw_line_id" not in entry:
+                                    sl_missing += 1
+                    # Check pf_ratio when available
+                    pf = day_panels.get("pf_ratio", {})
+                    if isinstance(pf, dict) and pf.get("status") == "available":
+                        if "raw_line_id" not in pf:
+                            sl_missing += 1
+                if sl_missing > 0:
+                    errors.append(
+                        f"STRUCTURED_LABS_MISSING_RAW_LINE_ID: "
+                        f"{sl_missing} series/pf_ratio entry(ies) without raw_line_id"
                     )
 
 

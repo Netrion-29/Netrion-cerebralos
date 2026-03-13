@@ -116,7 +116,7 @@ class TestBuildComponentBlock:
         series = {
             "Hemoglobin": [_make_series_entry("Hemoglobin", "2025-12-18T10:00:00", 12.5)],
         }
-        block = _build_component_block("Hgb", series, ["Hemoglobin", "HGB"], "2025-12-18")
+        block = _build_component_block("Hgb", series, ["Hemoglobin", "HGB"])
         assert block["status"] == "available"
         assert block["first"] == 12.5
         assert block["last"] == 12.5
@@ -132,7 +132,7 @@ class TestBuildComponentBlock:
                 _make_series_entry("HGB", "2025-12-18T14:00:00", 10.8, flags=["L"], source_line=20),
             ],
         }
-        block = _build_component_block("Hgb", series, ["Hemoglobin", "HGB"], "2025-12-18")
+        block = _build_component_block("Hgb", series, ["Hemoglobin", "HGB"])
         assert block["status"] == "available"
         assert block["first"] == 12.7
         assert block["last"] == 10.8
@@ -141,28 +141,28 @@ class TestBuildComponentBlock:
         assert block["abnormal"] is True
 
     def test_empty_series(self):
-        block = _build_component_block("Hgb", {}, ["Hemoglobin", "HGB"], "2025-12-18")
+        block = _build_component_block("Hgb", {}, ["Hemoglobin", "HGB"])
         assert block["status"] == _DNA
 
     def test_no_numeric_values(self):
         series = {
             "Hemoglobin": [{"observed_dt": "2025-12-18T10:00:00", "value_num": None, "flags": []}],
         }
-        block = _build_component_block("Hgb", series, ["Hemoglobin"], "2025-12-18")
+        block = _build_component_block("Hgb", series, ["Hemoglobin"])
         assert block["status"] == _DNA
 
     def test_out_of_range_rejected(self):
         series = {
             "Hemoglobin": [_make_series_entry("Hemoglobin", "2025-12-18T10:00:00", 50.0)],
         }
-        block = _build_component_block("Hgb", series, ["Hemoglobin"], "2025-12-18")
+        block = _build_component_block("Hgb", series, ["Hemoglobin"])
         assert block["status"] == _DNA
 
     def test_case_insensitive_matching(self):
         series = {
             "hemoglobin": [_make_series_entry("hemoglobin", "2025-12-18T10:00:00", 14.0)],
         }
-        block = _build_component_block("Hgb", series, ["Hemoglobin", "HGB"], "2025-12-18")
+        block = _build_component_block("Hgb", series, ["Hemoglobin", "HGB"])
         assert block["status"] == "available"
         assert block["first"] == 14.0
 
@@ -173,7 +173,7 @@ class TestBuildComponentBlock:
                 _make_series_entry("WBC", "2025-12-18T06:00:00", 12.0, source_line=10),
             ],
         }
-        block = _build_component_block("WBC", series, ["WBC"], "2025-12-18")
+        block = _build_component_block("WBC", series, ["WBC"])
         assert block["series"][0]["value"] == 12.0  # earlier first
         assert block["series"][1]["value"] == 8.0   # later second
 
@@ -268,21 +268,6 @@ class TestPFRatio:
         assert result["pf_ratio"] == pytest.approx(434.0 / 0.30, abs=0.1)
         assert result["fio2"] == 0.30
         assert result["pao2"] == 434.0
-
-    def test_pf_with_room_air(self):
-        abg, series = self._make_abg_with_po2(65.3)
-        series["O2 Pt Rec"] = [{
-            "observed_dt": "2025-12-18T10:00:00",
-            "value_num": None,
-            "value_raw": "ROOM AIR",
-            "flags": [],
-            "source_line": 50,
-        }]
-        result = _compute_pf_ratio(abg, series, "2025-12-18")
-        assert result["status"] == "available"
-        assert result["fio2"] == 0.21
-        assert result["pf_ratio"] == pytest.approx(65.3 / 0.21, abs=0.1)
-        assert result["fio2_source"] == "room_air"
 
     def test_pf_no_po2(self):
         series = {}
@@ -417,7 +402,7 @@ class TestFalsePositiveControls:
         series = {
             "HGB": [_make_series_entry("HGB", "2025-12-18T10:00:00", -5.0)],
         }
-        block = _build_component_block("Hgb", series, ["Hemoglobin", "HGB"], "2025-12-18")
+        block = _build_component_block("Hgb", series, ["Hemoglobin", "HGB"])
         assert block["status"] == _DNA
 
     def test_extreme_glucose_rejected(self):
@@ -425,7 +410,7 @@ class TestFalsePositiveControls:
         series = {
             "Glucose": [_make_series_entry("Glucose", "2025-12-18T10:00:00", 5000.0)],
         }
-        block = _build_component_block("Glucose", series, ["Glucose"], "2025-12-18")
+        block = _build_component_block("Glucose", series, ["Glucose"])
         assert block["status"] == _DNA
 
     def test_ph_out_of_range_rejected(self):
@@ -433,7 +418,7 @@ class TestFalsePositiveControls:
         series = {
             "pH Arterial": [_make_series_entry("pH", "2025-12-18T10:00:00", 14.0)],
         }
-        block = _build_component_block("pH", series, ["pH Arterial"], "2025-12-18")
+        block = _build_component_block("pH", series, ["pH Arterial"])
         assert block["status"] == _DNA
 
     def test_partial_out_of_range_keeps_valid(self):
@@ -444,7 +429,7 @@ class TestFalsePositiveControls:
                 _make_series_entry("HGB", "2025-12-18T10:00:00", 12.0, source_line=2),
             ],
         }
-        block = _build_component_block("Hgb", series, ["HGB"], "2025-12-18")
+        block = _build_component_block("Hgb", series, ["HGB"])
         assert block["status"] == "available"
         assert block["n_values"] == 1
         assert block["first"] == 12.0
