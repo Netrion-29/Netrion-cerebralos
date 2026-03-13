@@ -96,6 +96,7 @@ from cerebralos.features.lda_events_v1 import extract_lda_events
 from cerebralos.features.urine_output_events_v1 import extract_urine_output_events
 from cerebralos.features.structured_labs_v1 import extract_structured_labs
 from cerebralos.features.transfusion_blood_products_v1 import extract_transfusion_blood_products
+from cerebralos.features.ventilator_settings_v1 import extract_ventilator_settings
 from cerebralos.features.trauma_daily_plan_by_day_v1 import extract_trauma_daily_plan_by_day
 from cerebralos.features.consultant_day_plans_by_day_v1 import extract_consultant_day_plans_by_day
 from cerebralos.features.non_trauma_team_day_plans_v1 import extract_non_trauma_team_day_plans
@@ -605,6 +606,13 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
     features["transfusion_blood_products_v1"] = transfusion_blood_products
+
+    # ── Ventilator Settings v1 (cross-day, vent slice foundation) ──
+    ventilator_settings = extract_ventilator_settings(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+    features["ventilator_settings_v1"] = ventilator_settings
 
     # ── Demographics v1 (sex from evidence header) ──
     sex_raw = meta.get("sex")  # injected by main() from evidence header

@@ -76,6 +76,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "urine_output_events_v1",
     "structured_labs_v1",
     "transfusion_blood_products_v1",
+    "ventilator_settings_v1",
     "vitals_qa",
     "demographics_v1",
 })
@@ -625,6 +626,20 @@ def _check_evidence_line_ids(
                     errors.append(
                         f"TRANSFUSION_BLOOD_PRODUCTS_EVIDENCE_MISSING_RAW_LINE_ID: "
                         f"{tbp_missing} evidence entry(ies) without raw_line_id"
+                    )
+
+        # ── ventilator_settings_v1: events[] raw_line_id ──
+        if feat_key == "ventilator_settings_v1":
+            vs_events = feat_val.get("events", [])
+            if isinstance(vs_events, list):
+                vs_missing = sum(
+                    1 for e in vs_events
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if vs_missing > 0:
+                    errors.append(
+                        f"VENTILATOR_SETTINGS_EVENTS_MISSING_RAW_LINE_ID: "
+                        f"{vs_missing} event(s) without raw_line_id"
                     )
 
 

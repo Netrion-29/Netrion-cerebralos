@@ -1,0 +1,439 @@
+#!/usr/bin/env python3
+"""
+Ventilator Settings Foundation — Protocol Coverage (Vent Slice)
+
+Deterministic extraction of ventilator setting parameters from raw
+patient text with full raw_line_id traceability.
+
+Parameters extracted:
+  - vent_status      : "mechanical" | "niv" | None (from O2 Device / NIV headers)
+  - fio2             : numeric FiO2 value (percent, 0-100)
+  - peep             : numeric PEEP value (cm H2O)
+  - tidal_volume     : numeric tidal volume (mL)
+  - resp_rate_set    : numeric set respiratory rate
+  - ventilated_flag  : boolean from "Ventilated Patient?: Yes"
+
+Sources (structured, deterministic):
+  Vent Settings block (flowsheet):
+    "Vent Settings" header line, followed by:
+      Resp Rate (Set): 24
+      Vt (Set, ml): 460 ml
+      PEEP/CPAP : 14 cm H20
+      FIO2 : 60 %
+
+  O2 Device: Ventilator / Non-Invasive Mechanical Ventilation headers
+
+  Inline narrative:
+    FiO2 50% peep is 12
+    PEEP 14/ FiO2 70%
+    PEEP 12 FiO2 70%
+
+Raw evidence citations:
+  Ronald_Bittner.txt:514    — O2 Device: Ventilator
+  Ronald_Bittner.txt:5455-5459 — Vent Settings block (RR 24 / Vt 460 / PEEP 14 / FiO2 60)
+  Ronald_Bittner.txt:5700   — Inline FiO2 50% peep is 12
+  Ronald_Bittner.txt:14405  — O2 Device: Ventilator (flowsheet)
+  Ronald_Bittner.txt:17658  — PEEP 14/ FiO@ 70%
+  Ronald_Bittner.txt:18697  — PEEP 12 FiO2 70%
+  Ronald_Bittner.txt:19706  — FiO2 40%, peep 8
+  Lee_Woodard.txt:7999      — Non-Invasive Mechanical Ventilation header
+  Jamie_Hunter.txt:21449    — Non-Invasive Mechanical Ventilation header
+  Jamie_Hunter.txt:7989     — Daily Vent Weaning Worksheet
+
+Design:
+  - Deterministic, fail-closed.
+  - No LLM, no ML, no clinical inference.
+  - Every evidence item carries raw_line_id (SHA-256[:16]).
+  - Range gates reject physiologically impossible values.
+
+Output key: ventilator_settings_v1 (under features dict)
+"""
+
+from __future__ import annotations
+
+import hashlib
+import re
+from typing import Any, Dict, List, Optional
+
+
+# ── raw_line_id generation ──────────────────────────────────────────
+
+def _make_raw_line_id(
+    param: str,
+    day: str,
+    line_num: Any,
+    snippet: str,
+) -> str:
+    """Deterministic raw_line_id — SHA-256[:16] of extraction coordinates."""
+    key = f"{param}|{day}|{line_num}|{snippet}"
+    return hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
+
+
+# ── Range gates (fail-closed) ──────────────────────────────────────
+
+_RANGE_GATES = {
+    "fio2": (0.2, 100.0),       # 0.2 (fraction) to 100 (percent)
+    "peep": (0, 30),             # cm H2O
+    "tidal_volume": (50, 2000),  # mL
+    "resp_rate_set": (1, 60),    # breaths/min
+}
+
+
+def _in_range(param: str, value: float) -> bool:
+    """Return True if value is within valid physiological range."""
+    lo, hi = _RANGE_GATES.get(param, (float("-inf"), float("inf")))
+    return lo <= value <= hi
+
+
+# ── Regex patterns ──────────────────────────────────────────────────
+
+# --- Structured flowsheet block ---
+# "Vent Settings" header triggers block capture of next 4 lines
+_RE_VENT_SETTINGS_HEADER = re.compile(
+    r"^\s*Vent\s+Settings\s*$", re.IGNORECASE,
+)
+
+# Block fields (after "Vent Settings" header)
+_RE_RESP_RATE_SET = re.compile(
+    r"Resp\s+Rate\s*\(Set\)\s*:\s*(\d+)", re.IGNORECASE,
+)
+_RE_VT_SET = re.compile(
+    r"Vt\s*\(Set,?\s*ml\)\s*:\s*(\d+)", re.IGNORECASE,
+)
+_RE_PEEP_CPAP = re.compile(
+    r"PEEP/CPAP\s*:\s*(\d+)", re.IGNORECASE,
+)
+_RE_FIO2_BLOCK = re.compile(
+    r"FIO2\s*:\s*(\d+\.?\d*)\s*%?", re.IGNORECASE,
+)
+
+# --- Standalone / flowsheet lines ---
+_RE_O2_DEVICE_VENT = re.compile(
+    r"O2\s+Device\s*:\s*Ventilator\b", re.IGNORECASE,
+)
+_RE_VENTILATED_PATIENT = re.compile(
+    r"Ventilated\s+Patient\??\s*:\s*Yes", re.IGNORECASE,
+)
+_RE_NIV_HEADER = re.compile(
+    r"Non-Invasive\s+Mechanical\s+Ventilation\b", re.IGNORECASE,
+)
+
+# --- Inline narrative patterns ---
+# "FiO2 50% peep is 12" / "FiO2 50%, peep 12"
+_RE_FIO2_PEEP_INLINE = re.compile(
+    r"FiO2\s+(\d+\.?\d*)\s*%?\s*,?\s*(?:peep|PEEP)\s+(?:is\s+)?(\d+)",
+    re.IGNORECASE,
+)
+# "PEEP 14/ FiO2 70%" / "PEEP 12 FiO2 70%"
+_RE_PEEP_FIO2_INLINE = re.compile(
+    r"(?:PEEP|peep)\s+(\d+)\s*[/,]?\s*FiO2?\s*@?\s+(\d+\.?\d*)\s*%?",
+    re.IGNORECASE,
+)
+# Standalone "PEEP 10" or "peep is 12" in clinical context
+_RE_PEEP_STANDALONE = re.compile(
+    r"\b(?:PEEP|peep)\s+(?:is\s+)?(\d+)\b",
+)
+# "FiO2 40%, peep 8" (with comma separator)
+_RE_FIO2_COMMA_PEEP = re.compile(
+    r"FiO2\s+(\d+\.?\d*)\s*%?\s*,\s*(?:peep|PEEP)\s+(\d+)",
+    re.IGNORECASE,
+)
+
+
+# ── Classification helpers ──────────────────────────────────────────
+
+# Negative exclusion patterns (false positives)
+_NOISE_PATTERNS = [
+    re.compile(r"Saint\s+Louis\s+University\s+Mental\s+Status\s*\(SLUMS\)", re.IGNORECASE),
+    re.compile(r"Isbt\s+Product\s+Code", re.IGNORECASE),
+    re.compile(r"respiratory\s+rate\s+is\s+less\s+than\s+\d+\s+breaths", re.IGNORECASE),
+    re.compile(r"administer\s+naloxone", re.IGNORECASE),
+]
+
+
+def _is_noise(line: str) -> bool:
+    """Return True if line matches a known false-positive pattern."""
+    for pat in _NOISE_PATTERNS:
+        if pat.search(line):
+            return True
+    return False
+
+
+# ── Core extraction ────────────────────────────────────────────────
+
+def _extract_from_lines(
+    raw_lines: List[str],
+    day: str,
+) -> List[Dict[str, Any]]:
+    """
+    Extract ventilator setting events from a list of raw text lines.
+
+    Returns a list of event dicts, each with:
+      param, value, day, line_index, snippet, raw_line_id
+    """
+    events: List[Dict[str, Any]] = []
+    in_vent_block = False
+    block_remaining = 0
+
+    for line_idx, raw_line in enumerate(raw_lines):
+        if not isinstance(raw_line, str):
+            continue
+
+        line = raw_line.strip()
+        if not line:
+            continue
+
+        if _is_noise(line):
+            continue
+
+        # --- Vent Settings block header ---
+        if _RE_VENT_SETTINGS_HEADER.match(line):
+            in_vent_block = True
+            block_remaining = 5  # capture next 5 lines for block fields
+            continue
+
+        # --- Inside Vent Settings block ---
+        if in_vent_block and block_remaining > 0:
+            block_remaining -= 1
+            if block_remaining == 0:
+                in_vent_block = False
+
+            m = _RE_RESP_RATE_SET.search(line)
+            if m:
+                val = float(m.group(1))
+                if _in_range("resp_rate_set", val):
+                    events.append(_make_event(
+                        "resp_rate_set", val, day, line_idx, line,
+                        source="vent_settings_block",
+                    ))
+
+            m = _RE_VT_SET.search(line)
+            if m:
+                val = float(m.group(1))
+                if _in_range("tidal_volume", val):
+                    events.append(_make_event(
+                        "tidal_volume", val, day, line_idx, line,
+                        source="vent_settings_block",
+                    ))
+
+            m = _RE_PEEP_CPAP.search(line)
+            if m:
+                val = float(m.group(1))
+                if _in_range("peep", val):
+                    events.append(_make_event(
+                        "peep", val, day, line_idx, line,
+                        source="vent_settings_block",
+                    ))
+
+            m = _RE_FIO2_BLOCK.search(line)
+            if m:
+                val = float(m.group(1))
+                if _in_range("fio2", val):
+                    events.append(_make_event(
+                        "fio2", val, day, line_idx, line,
+                        source="vent_settings_block",
+                    ))
+            continue
+
+        # --- O2 Device: Ventilator ---
+        if _RE_O2_DEVICE_VENT.search(line):
+            events.append(_make_event(
+                "vent_status", "mechanical", day, line_idx, line,
+                source="o2_device_flowsheet",
+            ))
+
+        # --- Ventilated Patient?: Yes ---
+        if _RE_VENTILATED_PATIENT.search(line):
+            events.append(_make_event(
+                "ventilated_flag", True, day, line_idx, line,
+                source="ventilated_patient_flowsheet",
+            ))
+
+        # --- Non-Invasive Mechanical Ventilation ---
+        if _RE_NIV_HEADER.search(line):
+            events.append(_make_event(
+                "vent_status", "niv", day, line_idx, line,
+                source="niv_header",
+            ))
+
+        # --- Inline FiO2 + PEEP patterns ---
+        m = _RE_FIO2_PEEP_INLINE.search(line)
+        if m:
+            fio2_val = float(m.group(1))
+            peep_val = float(m.group(2))
+            if _in_range("fio2", fio2_val):
+                events.append(_make_event(
+                    "fio2", fio2_val, day, line_idx, line,
+                    source="inline_narrative",
+                ))
+            if _in_range("peep", peep_val):
+                events.append(_make_event(
+                    "peep", peep_val, day, line_idx, line,
+                    source="inline_narrative",
+                ))
+            continue  # already captured both
+
+        m = _RE_PEEP_FIO2_INLINE.search(line)
+        if m:
+            peep_val = float(m.group(1))
+            fio2_val = float(m.group(2))
+            if _in_range("peep", peep_val):
+                events.append(_make_event(
+                    "peep", peep_val, day, line_idx, line,
+                    source="inline_narrative",
+                ))
+            if _in_range("fio2", fio2_val):
+                events.append(_make_event(
+                    "fio2", fio2_val, day, line_idx, line,
+                    source="inline_narrative",
+                ))
+            continue  # already captured both
+
+        m = _RE_FIO2_COMMA_PEEP.search(line)
+        if m:
+            fio2_val = float(m.group(1))
+            peep_val = float(m.group(2))
+            if _in_range("fio2", fio2_val):
+                events.append(_make_event(
+                    "fio2", fio2_val, day, line_idx, line,
+                    source="inline_narrative",
+                ))
+            if _in_range("peep", peep_val):
+                events.append(_make_event(
+                    "peep", peep_val, day, line_idx, line,
+                    source="inline_narrative",
+                ))
+            continue
+
+        # --- Standalone FIO2 from flowsheet (not in block) ---
+        m = _RE_FIO2_BLOCK.search(line)
+        if m and not in_vent_block:
+            val = float(m.group(1))
+            if _in_range("fio2", val):
+                events.append(_make_event(
+                    "fio2", val, day, line_idx, line,
+                    source="fio2_flowsheet",
+                ))
+
+    return events
+
+
+def _make_event(
+    param: str,
+    value: Any,
+    day: str,
+    line_idx: int,
+    snippet: str,
+    source: str = "unknown",
+) -> Dict[str, Any]:
+    """Construct a single vent setting event dict."""
+    raw_line_id = _make_raw_line_id(param, day, line_idx, snippet[:200])
+    return {
+        "param": param,
+        "value": value,
+        "day": day,
+        "line_index": line_idx,
+        "snippet": snippet[:200],
+        "raw_line_id": raw_line_id,
+        "source": source,
+    }
+
+
+# ── Result assembly ────────────────────────────────────────────────
+
+def _empty_result() -> Dict[str, Any]:
+    """Return empty/default result dict."""
+    return {
+        "events": [],
+        "summary": {
+            "total_events": 0,
+            "days_with_vent_data": 0,
+            "mechanical_vent_days": [],
+            "niv_days": [],
+            "params_found": [],
+        },
+    }
+
+
+def _build_result(events: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Assemble final result from event list."""
+    if not events:
+        return _empty_result()
+
+    mechanical_days: set = set()
+    niv_days: set = set()
+    all_days: set = set()
+    params_found: set = set()
+
+    for ev in events:
+        all_days.add(ev["day"])
+        params_found.add(ev["param"])
+        if ev["param"] == "vent_status":
+            if ev["value"] == "mechanical":
+                mechanical_days.add(ev["day"])
+            elif ev["value"] == "niv":
+                niv_days.add(ev["day"])
+
+    return {
+        "events": events,
+        "summary": {
+            "total_events": len(events),
+            "days_with_vent_data": len(all_days),
+            "mechanical_vent_days": sorted(mechanical_days),
+            "niv_days": sorted(niv_days),
+            "params_found": sorted(params_found),
+        },
+    }
+
+
+# ── Public API ──────────────────────────────────────────────────────
+
+def extract_ventilator_settings(
+    pat_features: Dict[str, Any],
+    days_data: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """
+    Extract ventilator setting parameters from raw patient text.
+
+    Parameters
+    ----------
+    pat_features : dict
+        Accepted for API consistency with other feature
+        extractors; not consumed by this module.
+    days_data : dict, optional
+        Full days_json with raw text lines under
+        days_data["days"][date]["raw_lines"].
+
+    Returns
+    -------
+    dict
+        Ventilator settings summary with evidence list,
+        per-parameter values, and day-level flags.
+    """
+    events: List[Dict[str, Any]] = []
+    seen_hashes: set = set()
+
+    if days_data is None:
+        return _empty_result()
+
+    raw_days = days_data.get("days", {})
+    if not isinstance(raw_days, dict):
+        return _empty_result()
+
+    for day_iso, day_obj in sorted(raw_days.items()):
+        if not isinstance(day_obj, dict):
+            continue
+        raw_lines = day_obj.get("raw_lines", [])
+        if not isinstance(raw_lines, list):
+            continue
+
+        day_events = _extract_from_lines(raw_lines, day_iso)
+
+        for ev in day_events:
+            raw_line_id = ev["raw_line_id"]
+            if raw_line_id in seen_hashes:
+                continue
+            seen_hashes.add(raw_line_id)
+            events.append(ev)
+
+    return _build_result(events)
