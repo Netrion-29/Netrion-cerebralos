@@ -587,7 +587,7 @@ def _check_evidence_line_ids(
                     if not isinstance(day_panels, dict):
                         continue
                     # Check each panel's component series entries
-                    for panel_name in ("cbc", "bmp", "coag", "abg"):
+                    for panel_name in ("cbc", "bmp", "coag", "abg", "cardiac", "sepsis_markers"):
                         panel = day_panels.get(panel_name, {})
                         if not isinstance(panel, dict):
                             continue
