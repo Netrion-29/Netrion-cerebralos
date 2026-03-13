@@ -75,6 +75,7 @@ KNOWN_FEATURE_KEYS = frozenset({
     "lda_episodes_v1",
     "urine_output_events_v1",
     "structured_labs_v1",
+    "transfusion_blood_products_v1",
     "vitals_qa",
     "demographics_v1",
 })
@@ -610,6 +611,20 @@ def _check_evidence_line_ids(
                     errors.append(
                         f"STRUCTURED_LABS_MISSING_RAW_LINE_ID: "
                         f"{sl_missing} series/pf_ratio entry(ies) without raw_line_id"
+                    )
+
+        # ── transfusion_blood_products_v1: evidence[] raw_line_id ──
+        if feat_key == "transfusion_blood_products_v1":
+            tbp_evidence = feat_val.get("evidence", [])
+            if isinstance(tbp_evidence, list):
+                tbp_missing = sum(
+                    1 for e in tbp_evidence
+                    if isinstance(e, dict) and "raw_line_id" not in e
+                )
+                if tbp_missing > 0:
+                    errors.append(
+                        f"TRANSFUSION_BLOOD_PRODUCTS_EVIDENCE_MISSING_RAW_LINE_ID: "
+                        f"{tbp_missing} evidence entry(ies) without raw_line_id"
                     )
 
 
