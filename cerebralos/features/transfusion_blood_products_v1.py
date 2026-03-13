@@ -175,6 +175,18 @@ _RE_OK_TO_TRANSFUSE = re.compile(
     re.IGNORECASE,
 )
 
+# "Transfuse for hemoglobin below 7" — threshold instruction, not event
+_RE_TRANSFUSE_THRESHOLD = re.compile(
+    r"Transfuse\s+for\s+",
+    re.IGNORECASE,
+)
+
+# "PREPARE PLATELET PHERESIS" — lab preparation order, not transfusion
+_RE_PREPARE_BLOOD = re.compile(
+    r"PREPARE\s+(?:PLATELET|RBC|FFP|CRYO)",
+    re.IGNORECASE,
+)
+
 
 def _is_excluded(line: str) -> bool:
     """Return True if line matches a known false-positive pattern."""
@@ -185,6 +197,8 @@ def _is_excluded(line: str) -> bool:
         or _RE_BILLING_TRANSFUSION.search(line)
         or _RE_PLATELET_INSTRUCTION.search(line)
         or _RE_OK_TO_TRANSFUSE.search(line)
+        or _RE_TRANSFUSE_THRESHOLD.search(line)
+        or _RE_PREPARE_BLOOD.search(line)
     )
 
 
