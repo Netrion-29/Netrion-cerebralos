@@ -20,10 +20,10 @@ For each panel, produces per-day structured values with:
 
 P/F ratio:
   Computed only when BOTH PaO2 and FiO2 are explicitly present in the
-  same day's lab data.  FiO2 is accepted from:
-    1. ABG lab rows with explicit FiO2 value
-    2. "O2 Pt Rec" / "FIO2" lab components
-  Fail-closed: missing or ambiguous FiO2 -> P/F not computed.
+  same day's lab data as numeric lab components.  FiO2 is accepted from
+  any numeric lab row matching _FIO2_CANDIDATES (e.g. "FIO2", "FiO2 (%)").
+  Values >1.0 are treated as percentages and normalized to fractions.
+  Fail-closed: missing or non-numeric FiO2 -> P/F not computed.
 
 Raw evidence citations:
   Anna_Dennis.txt:144-147   — CBC in Recent Labs matrix (WBC/HGB/HCT/PLT)
@@ -89,8 +89,11 @@ _ABG_COMPONENTS: Dict[str, List[str]] = {
 }
 
 # FiO2 candidates — used for P/F ratio computation only.
+# Only numeric lab components are supported; non-numeric qualitative
+# entries (e.g. "ROOM AIR" text) are excluded because the upstream
+# lab pipeline filters rows where value_num is None.
 _FIO2_CANDIDATES: List[str] = [
-    "FIO2", "FiO2", "FiO2 (%)", "FiO2 (%) **", "O2 Pt Rec",
+    "FIO2", "FiO2", "FiO2 (%)", "FiO2 (%) **",
 ]
 
 # Value sanity ranges — values outside these are rejected (fail-closed).
@@ -146,7 +149,12 @@ def _find_series_for_component(
 ) -> Tuple[List[Dict[str, Any]], Optional[str]]:
     """
     Find series entries matching any candidate name (case-insensitive).
-    Returns (merged entries sorted by dt, matched_candidate_name).
+
+    Iterates candidates in priority order; returns entries for the FIRST
+    matching key found in series (no cross-key merging).  Sorting is
+    deferred to the caller (_build_component_block).
+
+    Returns (entries_for_first_match, matched_series_key | None).
     """
     series_lower = {k.lower(): (k, v) for k, v in series.items()}
     for candidate in candidates:
@@ -161,7 +169,6 @@ def _build_component_block(
     canonical: str,
     series: Dict[str, List[Dict[str, Any]]],
     candidates: List[str],
-    day_iso: str,
 ) -> Dict[str, Any]:
     """
     Build structured component block for one canonical lab component.
@@ -172,7 +179,7 @@ def _build_component_block(
       series: list of {observed_dt, value, flags, raw_line_id}
       abnormal: bool
     """
-    entries, matched_name = _find_series_for_component(series, candidates)
+    entries, _ = _find_series_for_component(series, candidates)
     if not entries:
         return {"status": _DNA}
 
@@ -237,7 +244,7 @@ def _build_panel(
     total_count = len(panel_map)
 
     for canonical, candidates in panel_map.items():
-        block = _build_component_block(canonical, series, candidates, day_iso)
+        block = _build_component_block(canonical, series, candidates)
         components[canonical] = block
         if block.get("status") == "available":
             available_count += 1
@@ -256,12 +263,13 @@ def _compute_pf_ratio(
     day_iso: str,
 ) -> Dict[str, Any]:
     """
-    Compute P/F ratio when BOTH PaO2 and FiO2 are explicitly available.
+    Compute P/F ratio when BOTH PaO2 and FiO2 are explicitly available
+    as numeric lab components.
 
-    FiO2 sources (in priority order):
-      1. Explicit FiO2 lab components (FIO2, FiO2 (%), etc.)
-      2. "O2 Pt Rec" with parseable percentage
-      3. "ROOM AIR" -> 0.21
+    FiO2 is sourced from numeric lab rows matching _FIO2_CANDIDATES.
+    Values > 1.0 are treated as percentages and normalized to fractions
+    (e.g. 30 -> 0.30).  Only rows with non-null value_num are considered
+    (the upstream pipeline filters non-numeric rows).
 
     Fail-closed: if FiO2 cannot be determined, returns DATA NOT AVAILABLE.
     """
@@ -284,22 +292,6 @@ def _compute_pf_ratio(
         orig_key, vals = series_lower[key_lower]
 
         for entry in vals:
-            # Handle "O2 Pt Rec" special cases
-            if orig_key.lower() == "o2 pt rec":
-                raw = str(entry.get("value_raw", "")).strip().upper()
-                if "ROOM AIR" in raw:
-                    fio2_value = 0.21
-                    fio2_source = "room_air"
-                    break
-                # Try to parse "%O2=XX" or just a number
-                val = entry.get("value_num")
-                if val is not None and 21 <= val <= 100:
-                    fio2_value = val / 100.0
-                    fio2_source = "o2_pt_rec"
-                    break
-                continue
-
-            # Standard FiO2 numeric component
             val = entry.get("value_num")
             if val is None:
                 continue
