@@ -188,7 +188,7 @@ _DISPO_EXCLUDE = re.compile(
 )
 
 
-def _scan_raw_disposition_fallback(source_file: str) -> Optional[str]:
+def _scan_raw_disposition_fallback(source_file: Optional[str]) -> Optional[str]:
     """
     Scan the raw patient file for discharge disposition patterns
     outside the Patient Movement structured table.

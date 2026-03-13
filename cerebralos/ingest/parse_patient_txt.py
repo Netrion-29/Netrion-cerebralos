@@ -804,6 +804,7 @@ def _extract_sex_hpi_fallback(lines, scan_limit=60):
     Scan the first *scan_limit* lines for an HPI-style age/sex phrase.
 
     Returns (sex, line_number) or (None, None).
+    *line_number* is a 0-based index into the provided *lines* list.
     Guardrails: skips lines matching _RE_SEX_NOISE.
     """
     for idx, raw in enumerate(lines[:scan_limit]):
