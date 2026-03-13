@@ -31,7 +31,7 @@ Design principles:
 
 ```json
 {
-  "sex": "Male" | "Female" | null
+  "sex": "Male"
 }
 ```
 
