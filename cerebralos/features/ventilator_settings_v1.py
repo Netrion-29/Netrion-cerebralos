@@ -7,7 +7,8 @@ patient text with full raw_line_id traceability.
 
 Parameters extracted:
   - vent_status      : "mechanical" | "niv" | None (from O2 Device / NIV headers)
-  - fio2             : numeric FiO2 value (percent, 0-100)
+  - fio2             : numeric FiO2 value (canonicalized to percent, 0-100;
+                       if raw value <= 1.0, auto-converted via *100)
   - peep             : numeric PEEP value (cm H2O)
   - tidal_volume     : numeric tidal volume (mL)
   - resp_rate_set    : numeric set respiratory rate
@@ -72,7 +73,7 @@ def _make_raw_line_id(
 # ── Range gates (fail-closed) ──────────────────────────────────────
 
 _RANGE_GATES = {
-    "fio2": (0.2, 100.0),       # 0.2 (fraction) to 100 (percent)
+    "fio2": (20, 100),           # percent (post-canonicalization)
     "peep": (0, 30),             # cm H2O
     "tidal_volume": (50, 2000),  # mL
     "resp_rate_set": (1, 60),    # breaths/min
@@ -85,10 +86,17 @@ def _in_range(param: str, value: float) -> bool:
     return lo <= value <= hi
 
 
+def _canonicalize_fio2(raw_val: float) -> float:
+    """Canonicalize FiO2 to percent scale (0-100). Fraction <= 1.0 → *100."""
+    if raw_val <= 1.0:
+        return raw_val * 100
+    return raw_val
+
+
 # ── Regex patterns ──────────────────────────────────────────────────
 
 # --- Structured flowsheet block ---
-# "Vent Settings" header triggers block capture of next 4 lines
+# "Vent Settings" header triggers block capture of next N lines
 _RE_VENT_SETTINGS_HEADER = re.compile(
     r"^\s*Vent\s+Settings\s*$", re.IGNORECASE,
 )
@@ -128,10 +136,6 @@ _RE_FIO2_PEEP_INLINE = re.compile(
 _RE_PEEP_FIO2_INLINE = re.compile(
     r"(?:PEEP|peep)\s+(\d+)\s*[/,]?\s*FiO2?\s*@?\s+(\d+\.?\d*)\s*%?",
     re.IGNORECASE,
-)
-# Standalone "PEEP 10" or "peep is 12" in clinical context
-_RE_PEEP_STANDALONE = re.compile(
-    r"\b(?:PEEP|peep)\s+(?:is\s+)?(\d+)\b",
 )
 # "FiO2 40%, peep 8" (with comma separator)
 _RE_FIO2_COMMA_PEEP = re.compile(
@@ -189,7 +193,7 @@ def _extract_from_lines(
         # --- Vent Settings block header ---
         if _RE_VENT_SETTINGS_HEADER.match(line):
             in_vent_block = True
-            block_remaining = 5  # capture next 5 lines for block fields
+            block_remaining = 4  # capture next 4 lines for block fields
             continue
 
         # --- Inside Vent Settings block ---
@@ -227,7 +231,7 @@ def _extract_from_lines(
 
             m = _RE_FIO2_BLOCK.search(line)
             if m:
-                val = float(m.group(1))
+                val = _canonicalize_fio2(float(m.group(1)))
                 if _in_range("fio2", val):
                     events.append(_make_event(
                         "fio2", val, day, line_idx, line,
@@ -259,7 +263,7 @@ def _extract_from_lines(
         # --- Inline FiO2 + PEEP patterns ---
         m = _RE_FIO2_PEEP_INLINE.search(line)
         if m:
-            fio2_val = float(m.group(1))
+            fio2_val = _canonicalize_fio2(float(m.group(1)))
             peep_val = float(m.group(2))
             if _in_range("fio2", fio2_val):
                 events.append(_make_event(
@@ -276,7 +280,7 @@ def _extract_from_lines(
         m = _RE_PEEP_FIO2_INLINE.search(line)
         if m:
             peep_val = float(m.group(1))
-            fio2_val = float(m.group(2))
+            fio2_val = _canonicalize_fio2(float(m.group(2)))
             if _in_range("peep", peep_val):
                 events.append(_make_event(
                     "peep", peep_val, day, line_idx, line,
@@ -291,7 +295,7 @@ def _extract_from_lines(
 
         m = _RE_FIO2_COMMA_PEEP.search(line)
         if m:
-            fio2_val = float(m.group(1))
+            fio2_val = _canonicalize_fio2(float(m.group(1)))
             peep_val = float(m.group(2))
             if _in_range("fio2", fio2_val):
                 events.append(_make_event(
@@ -308,7 +312,7 @@ def _extract_from_lines(
         # --- Standalone FIO2 from flowsheet (not in block) ---
         m = _RE_FIO2_BLOCK.search(line)
         if m and not in_vent_block:
-            val = float(m.group(1))
+            val = _canonicalize_fio2(float(m.group(1)))
             if _in_range("fio2", val):
                 events.append(_make_event(
                     "fio2", val, day, line_idx, line,

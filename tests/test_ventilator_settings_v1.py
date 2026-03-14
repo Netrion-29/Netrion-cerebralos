@@ -17,6 +17,7 @@ Covers:
 import pytest
 
 from cerebralos.features.ventilator_settings_v1 import (
+    _canonicalize_fio2,
     _extract_from_lines,
     _in_range,
     _is_noise,
@@ -53,10 +54,10 @@ class TestRangeGates:
     def test_fio2_valid(self):
         assert _in_range("fio2", 21)
         assert _in_range("fio2", 100)
-        assert _in_range("fio2", 0.4)
+        assert _in_range("fio2", 40)
 
     def test_fio2_invalid(self):
-        assert not _in_range("fio2", 0.1)    # below 0.2
+        assert not _in_range("fio2", 19)     # below 20
         assert not _in_range("fio2", 101)     # above 100
 
     def test_peep_valid(self):
@@ -71,8 +72,11 @@ class TestRangeGates:
         assert _in_range("tidal_volume", 460)
         assert _in_range("tidal_volume", 500)
 
+    def test_tidal_volume_boundary(self):
+        assert _in_range("tidal_volume", 50)   # at lower boundary
+        assert _in_range("tidal_volume", 2000) # at upper boundary
+
     def test_tidal_volume_invalid(self):
-        assert _in_range("tidal_volume", 50)   # at boundary
         assert not _in_range("tidal_volume", 49)
         assert not _in_range("tidal_volume", 2001)
 
@@ -82,6 +86,26 @@ class TestRangeGates:
     def test_resp_rate_invalid(self):
         assert not _in_range("resp_rate_set", 0)
         assert not _in_range("resp_rate_set", 61)
+
+
+# ── FiO2 canonicalization ──────────────────────────────────────────
+
+class TestFio2Canonicalization:
+    def test_fraction_to_percent(self):
+        assert _canonicalize_fio2(0.4) == 40.0
+        assert _canonicalize_fio2(0.6) == 60.0
+        assert _canonicalize_fio2(1.0) == 100.0
+
+    def test_already_percent_unchanged(self):
+        assert _canonicalize_fio2(60) == 60
+        assert _canonicalize_fio2(100) == 100
+
+    def test_fraction_extraction_pipeline(self):
+        """FiO2 parsed as 0.6 should be stored as 60."""
+        lines = ["FIO2 : 0.6 %"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        assert len(events) == 1
+        assert events[0]["value"] == 60.0
 
 
 # ── Noise exclusion ────────────────────────────────────────────────
@@ -162,6 +186,27 @@ class TestVentSettingsBlock:
         events = _extract_from_lines(lines, "2026-01-10")
         assert len(events) == 0
 
+    def test_o2_device_after_4_block_lines_still_extracted(self):
+        """Regression: O2 Device line immediately after the 4 block lines
+        must NOT be swallowed by block capture (off-by-one guard)."""
+        lines = [
+            "Vent Settings",
+            "Resp Rate (Set): 24",
+            "Vt (Set, ml): 460 ml",
+            "PEEP/CPAP : 14 cm H20",
+            "FIO2 : 60 %",
+            "O2 Device: Ventilator",  # line 5 — outside block
+        ]
+        events = _extract_from_lines(lines, "2026-01-10")
+        params = {e["param"]: e["value"] for e in events}
+        # Block fields extracted
+        assert params["resp_rate_set"] == 24
+        assert params["tidal_volume"] == 460
+        assert params["peep"] == 14
+        assert params["fio2"] == 60
+        # O2 Device line NOT consumed by block → extracted as vent_status
+        assert params["vent_status"] == "mechanical"
+
 
 # ── O2 Device / Ventilated Patient / NIV ───────────────────────────
 
@@ -224,7 +269,7 @@ class TestInlinePatterns:
         assert params["peep"] == 8
 
     def test_standalone_fio2_flowsheet(self):
-        """'FIO2 : 0.2 %' standalone."""
+        """'FIO2 : 60 %' standalone flowsheet line."""
         lines = ["FIO2 : 60 %"]
         events = _extract_from_lines(lines, "2026-01-10")
         assert len(events) == 1
