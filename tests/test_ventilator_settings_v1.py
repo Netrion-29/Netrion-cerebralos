@@ -130,6 +130,15 @@ class TestNoiseExclusion:
         assert not _is_noise("Vent Settings")
         assert not _is_noise("FIO2 : 60 %")
 
+    def test_ac_insulin_dosing_excluded(self):
+        assert _is_noise("0-8 Units      Subcutaneous   4x Daily AC and HS")
+
+    def test_ac_ap_medication_excluded(self):
+        assert _is_noise("- Hold AC/AP medications.  Mechanical DVT prophylaxis.")
+
+    def test_tid_ac_excluded(self):
+        assert _is_noise("0-4 Units      Subcutaneous   TID AC")
+
 
 # ── Vent Settings block extraction ─────────────────────────────────
 
@@ -277,6 +286,133 @@ class TestInlinePatterns:
         assert events[0]["value"] == 60
 
 
+# ── Explicit ventilator mode extraction ───────────────────────────────
+
+class TestVentModeExtraction:
+    def test_placed_on_bipap(self):
+        """'Placed on BiPAP' standalone explicit mode."""
+        lines = ["Placed on BiPAP"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        assert len(events) == 1
+        assert events[0]["param"] == "vent_mode"
+        assert events[0]["value"] == "BiPAP"
+        assert events[0]["source"] == "placed_on_mode"
+
+    def test_placed_back_on_bipap(self):
+        """'placed back on bipap' narrative."""
+        lines = ["pt was noted to be less responsive and was placed back on bipap."]
+        events = _extract_from_lines(lines, "2026-01-10")
+        mode_events = [e for e in events if e["param"] == "vent_mode"]
+        assert len(mode_events) == 1
+        assert mode_events[0]["value"] == "BiPAP"
+        assert mode_events[0]["source"] == "placed_on_mode"
+
+    def test_extubated_and_placed_on_bipap(self):
+        """'extubated and placed on BiPAP' narrative."""
+        lines = ["On January 7 patient was extubated and placed on BiPAP."]
+        events = _extract_from_lines(lines, "2026-01-10")
+        mode_events = [e for e in events if e["param"] == "vent_mode"]
+        assert len(mode_events) == 1
+        assert mode_events[0]["value"] == "BiPAP"
+        assert mode_events[0]["source"] == "extubated_to_mode"
+
+    def test_recommend_bipap(self):
+        """'Recommend BiPAP as much as tolerated' clinical recommendation."""
+        lines = ["Recommend BiPAP as much as tolerated today."]
+        events = _extract_from_lines(lines, "2026-01-10")
+        mode_events = [e for e in events if e["param"] == "vent_mode"]
+        assert len(mode_events) == 1
+        assert mode_events[0]["value"] == "BiPAP"
+        assert mode_events[0]["source"] == "recommend_mode"
+
+    def test_remained_on_bipap(self):
+        """'Remained on BiPAP until 1/11' narrative."""
+        lines = ["Remained on BiPAP until 1/11 intubated overnight."]
+        events = _extract_from_lines(lines, "2026-01-10")
+        mode_events = [e for e in events if e["param"] == "vent_mode"]
+        assert len(mode_events) == 1
+        assert mode_events[0]["value"] == "BiPAP"
+        assert mode_events[0]["source"] == "remained_on_mode"
+
+    def test_placed_on_cpap(self):
+        """'placed on CPAP' explicit mode."""
+        lines = ["Patient was placed on CPAP for sleep apnea."]
+        events = _extract_from_lines(lines, "2026-01-10")
+        mode_events = [e for e in events if e["param"] == "vent_mode"]
+        assert len(mode_events) == 1
+        assert mode_events[0]["value"] == "CPAP"
+
+    def test_weaned_to_cpap(self):
+        """'weaned to CPAP' mode transition."""
+        lines = ["Patient weaned to CPAP overnight."]
+        events = _extract_from_lines(lines, "2026-01-10")
+        mode_events = [e for e in events if e["param"] == "vent_mode"]
+        assert len(mode_events) == 1
+        assert mode_events[0]["value"] == "CPAP"
+        assert mode_events[0]["source"] == "weaned_to_mode"
+
+    def test_case_insensitive_bipap(self):
+        """'bipap' lowercase should canonicalize to 'BiPAP'."""
+        lines = ["refused to wear bipap"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        # This should NOT match — no placement verb
+        mode_events = [e for e in events if e["param"] == "vent_mode"]
+        assert len(mode_events) == 0
+
+    def test_vent_mode_has_raw_line_id(self):
+        """vent_mode events must carry raw_line_id."""
+        lines = ["Placed on BiPAP"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        assert events[0]["raw_line_id"]
+        assert len(events[0]["raw_line_id"]) == 16
+
+    def test_one_mode_event_per_line(self):
+        """Multiple mode patterns on same line should emit only one event."""
+        lines = ["Patient extubated and placed on BiPAP, recommend BiPAP overnight."]
+        events = _extract_from_lines(lines, "2026-01-10")
+        mode_events = [e for e in events if e["param"] == "vent_mode"]
+        assert len(mode_events) == 1
+
+
+# ── Vent mode false-positive guards ─────────────────────────────
+
+class TestVentModeFalsePositives:
+    def test_ac_insulin_not_mode(self):
+        """'4x Daily AC and HS' insulin dosing — no vent_mode event."""
+        lines = ["insulin lispro vial   0-8 Units   Subcutaneous   4x Daily AC and HS"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        mode_events = [e for e in events if e["param"] == "vent_mode"]
+        assert len(mode_events) == 0
+
+    def test_ac_ap_medication_not_mode(self):
+        """'Hold AC/AP medications' — no vent_mode event."""
+        lines = ["- Hold AC/AP medications.  Mechanical DVT prophylaxis."]
+        events = _extract_from_lines(lines, "2026-01-10")
+        mode_events = [e for e in events if e["param"] == "vent_mode"]
+        assert len(mode_events) == 0
+
+    def test_communication_barriers_not_mode(self):
+        """'Communication Barriers: on BiPAP' — no placement verb."""
+        lines = ["Communication Barriers: on BiPAP, SOB"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        mode_events = [e for e in events if e["param"] == "vent_mode"]
+        assert len(mode_events) == 0
+
+    def test_refused_bipap_not_mode(self):
+        """'refused to wear bipap' — no placement verb."""
+        lines = ["refused to wear bipap"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        mode_events = [e for e in events if e["param"] == "vent_mode"]
+        assert len(mode_events) == 0
+
+    def test_history_bipap_not_mode(self):
+        """'BiPAP for respiratory failure post-procedure' in history — no placement verb."""
+        lines = ["history of bilateral PE requiring BiPAP for respiratory failure post-procedure"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        mode_events = [e for e in events if e["param"] == "vent_mode"]
+        assert len(mode_events) == 0
+
+
 # ── Negative tests ─────────────────────────────────────────────────
 
 class TestNegatives:
@@ -333,6 +469,7 @@ class TestExtractVentilatorSettings:
         assert "peep" in result["summary"]["params_found"]
         assert "tidal_volume" in result["summary"]["params_found"]
         assert "resp_rate_set" in result["summary"]["params_found"]
+        assert "vent_modes_found" in result["summary"]
 
         # Every event has raw_line_id
         for ev in result["events"]:
@@ -357,3 +494,18 @@ class TestExtractVentilatorSettings:
         ], day="2026-01-02")
         result = extract_ventilator_settings({}, days_data)
         assert "2026-01-02" in result["summary"]["niv_days"]
+
+    def test_vent_mode_in_summary(self):
+        """vent_modes_found summary field collects explicit modes."""
+        days_data = _days_data_from_lines([
+            "Placed on BiPAP",
+            "O2 Device: Ventilator",
+        ])
+        result = extract_ventilator_settings({}, days_data)
+        assert "BiPAP" in result["summary"]["vent_modes_found"]
+        assert "vent_mode" in result["summary"]["params_found"]
+
+    def test_empty_result_has_vent_modes_found(self):
+        """Empty result should include vent_modes_found key."""
+        result = extract_ventilator_settings({}, None)
+        assert result["summary"]["vent_modes_found"] == []

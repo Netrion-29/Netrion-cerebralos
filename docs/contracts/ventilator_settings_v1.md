@@ -11,8 +11,8 @@
 
 Deterministic extraction of ventilator setting parameters from raw patient
 text with full `raw_line_id` traceability. Covers structured Vent Settings
-blocks (flowsheet), O2 Device / NIV headers, and inline FiO2+PEEP narrative
-patterns.
+blocks (flowsheet), O2 Device / NIV headers, inline FiO2+PEEP narrative
+patterns, and explicit ventilator mode labels (BiPAP, CPAP).
 
 ---
 
@@ -36,7 +36,8 @@ patterns.
     "days_with_vent_data": 2,
     "mechanical_vent_days": ["2026-01-10"],
     "niv_days": ["2026-01-12"],
-    "params_found": ["fio2", "peep", "resp_rate_set", "tidal_volume", "vent_status"]
+    "params_found": ["fio2", "peep", "resp_rate_set", "tidal_volume", "vent_mode", "vent_status"],
+    "vent_modes_found": ["BiPAP"]
   }
 }
 ```
@@ -47,7 +48,7 @@ patterns.
 
 | Field | Type | Description |
 |---|---|---|
-| `param` | string | One of: `vent_status`, `fio2`, `peep`, `tidal_volume`, `resp_rate_set`, `ventilated_flag` |
+| `param` | string | One of: `vent_status`, `vent_mode`, `fio2`, `peep`, `tidal_volume`, `resp_rate_set`, `ventilated_flag` |
 | `value` | number / string / bool | Extracted value (see param-specific semantics below) |
 | `day` | string | ISO date (`YYYY-MM-DD`) of the day the line belongs to |
 | `line_index` | int | Zero-based index into `raw_lines` for the day |
@@ -65,6 +66,11 @@ patterns.
 | `niv_header` | From `Non-Invasive Mechanical Ventilation` header |
 | `inline_narrative` | From inline FiO2/PEEP patterns in clinical narrative |
 | `fio2_flowsheet` | Standalone FiO2 flowsheet line outside a block |
+| `placed_on_mode` | From explicit "Placed on BiPAP/CPAP" pattern |
+| `extubated_to_mode` | From "extubated and placed on BiPAP/CPAP" pattern |
+| `recommend_mode` | From "Recommend BiPAP/CPAP" pattern |
+| `remained_on_mode` | From "Remained/Remains on BiPAP/CPAP" pattern |
+| `weaned_to_mode` | From "weaned to BiPAP/CPAP" pattern |
 
 ---
 
@@ -77,6 +83,7 @@ patterns.
 | `mechanical_vent_days` | list[str] | Sorted ISO dates where `vent_status == "mechanical"` |
 | `niv_days` | list[str] | Sorted ISO dates where `vent_status == "niv"` |
 | `params_found` | list[str] | Sorted unique param names across all events |
+| `vent_modes_found` | list[str] | Sorted unique explicit mode labels found (e.g., `["BiPAP"]`) |
 
 ---
 
@@ -85,6 +92,7 @@ patterns.
 | Param | Value Type | Unit / Scale | Notes |
 |---|---|---|---|
 | `vent_status` | `"mechanical"` or `"niv"` | — | Ventilator mode classification |
+| `vent_mode` | `"BiPAP"` or `"CPAP"` | — | Explicit mode label from placement/recommendation/transition verbs |
 | `fio2` | float | percent (0–100) | **Canonicalized**: if raw parsed value ≤ 1.0, converted via ×100 before storage |
 | `peep` | float | cm H₂O | — |
 | `tidal_volume` | float | mL | — |
@@ -139,3 +147,7 @@ source line in the raw patient text.
 - **Fail-closed**: Unknown patterns are ignored, not guessed.
 - **Additive only**: Does not modify any other feature module output.
 - **Block capture**: Vent Settings header captures exactly the next 4 lines.
+- **One mode per line**: Only one `vent_mode` event emitted per source line.
+- **Explicit verbs only**: `vent_mode` requires a placement/recommendation/transition
+  verb (placed, recommend, remained, weaned, extubated). Bare mentions of
+  "BiPAP" or "CPAP" without an explicit verb are not extracted.
