@@ -49,6 +49,7 @@ def test_validate_contract_accepts_minimal_ventilator_settings():
                     "mechanical_vent_days": [],
                     "niv_days": [],
                     "params_found": [],
+                    "vent_modes_found": [],
                 },
             },
         },
