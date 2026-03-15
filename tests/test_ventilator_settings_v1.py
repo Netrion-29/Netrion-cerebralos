@@ -541,6 +541,110 @@ class TestNivPressureSettings:
         assert len(ipap_events) == 0
 
 
+# ── NIV backup rate (niv_rate) ──────────────────────────────────────
+
+class TestNivBackupRate:
+    def test_rate_paired_with_ipap_epap(self):
+        """'IPAP 22, EPAP 8, rate of 16' extracts niv_rate=16."""
+        lines = ["Ordered bipap for nursing facility IPAP 22, EPAP 8, rate of 16."]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 1
+        assert rate_events[0]["value"] == 16
+        assert rate_events[0]["source"] == "niv_backup_rate"
+
+    def test_rate_has_raw_line_id(self):
+        """niv_rate events carry raw_line_id."""
+        lines = ["IPAP 22, EPAP 8, rate of 16"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 1
+        assert len(rate_events[0]["raw_line_id"]) == 16
+
+    def test_rate_without_ipap_epap_not_extracted(self):
+        """'rate of 16' without IPAP/EPAP on same line — NOT extracted."""
+        lines = ["Patient respiratory rate of 16 breaths per minute."]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 0
+
+    def test_rate_with_only_ipap(self):
+        """'IPAP 20, rate of 12' — rate extracted (IPAP present)."""
+        lines = ["BiPAP settings IPAP 20, rate of 12"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 1
+        assert rate_events[0]["value"] == 12
+
+    def test_rate_with_only_epap(self):
+        """'EPAP 6, rate of 14' — rate extracted (EPAP present)."""
+        lines = ["EPAP 6, rate of 14"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 1
+        assert rate_events[0]["value"] == 14
+
+    def test_rate_out_of_range_high_rejected(self):
+        """'rate of 50' exceeds range gate (4-40) — rejected."""
+        lines = ["IPAP 22, EPAP 8, rate of 50"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 0
+
+    def test_rate_out_of_range_low_rejected(self):
+        """'rate of 3' below range gate (4-40) — rejected."""
+        lines = ["IPAP 22, EPAP 8, rate of 3"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 0
+
+    def test_rate_boundary_low(self):
+        """'rate of 4' at lower boundary — accepted."""
+        lines = ["IPAP 22, EPAP 8, rate of 4"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 1
+        assert rate_events[0]["value"] == 4
+
+    def test_rate_boundary_high(self):
+        """'rate of 40' at upper boundary — accepted."""
+        lines = ["IPAP 22, EPAP 8, rate of 40"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 1
+        assert rate_events[0]["value"] == 40
+
+    def test_case_insensitive_rate(self):
+        """'Rate of 16' uppercase R — extracted."""
+        lines = ["IPAP 22, EPAP 8, Rate of 16"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 1
+        assert rate_events[0]["value"] == 16
+
+    def test_heart_rate_false_positive_guard(self):
+        """'heart rate of 80' with EPAP on same line — rate should NOT be 80."""
+        lines = ["EPAP 8 patient heart rate of 80"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        # 80 is outside range (4-40), so rejected by range gate
+        assert len(rate_events) == 0
+
+    def test_full_ronald_marshall_citation(self):
+        """Regression: exact Ronald_Marshall.txt:10465 citation line."""
+        lines = [
+            "ABGs with compensated hypercapnia, pH 7.32, pCO2 of 84.4. "
+            "Warrants bilevel NIV as outpatient for chronic hypercapnic "
+            "respiratory failure. Ordered bipap for nursing facility "
+            "IPAP 22, EPAP 8, rate of 16."
+        ]
+        events = _extract_from_lines(lines, "2026-01-10")
+        params = {e["param"]: e["value"] for e in events}
+        assert params["ipap"] == 22
+        assert params["epap"] == 8
+        assert params["niv_rate"] == 16
+
+
 # ── Negative tests ─────────────────────────────────────────────────
 
 class TestNegatives:

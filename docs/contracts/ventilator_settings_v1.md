@@ -49,7 +49,7 @@ Also extracts NIV pressure settings (IPAP/EPAP) from explicit structured lines.
 
 | Field | Type | Description |
 |---|---|---|
-| `param` | string | One of: `vent_status`, `vent_mode`, `fio2`, `peep`, `tidal_volume`, `resp_rate_set`, `ventilated_flag`, `ipap`, `epap` |
+| `param` | string | One of: `vent_status`, `vent_mode`, `fio2`, `peep`, `tidal_volume`, `resp_rate_set`, `ventilated_flag`, `ipap`, `epap`, `niv_rate` |
 | `value` | number / string / bool | Extracted value (see param-specific semantics below) |
 | `day` | string | ISO date (`YYYY-MM-DD`) of the day the line belongs to |
 | `line_index` | int | Zero-based index into `raw_lines` for the day |
@@ -73,6 +73,7 @@ Also extracts NIV pressure settings (IPAP/EPAP) from explicit structured lines.
 | `remained_on_mode` | From "Remained/Remains on BiPAP/CPAP" pattern |
 | `weaned_to_mode` | From "weaned to BiPAP/CPAP" pattern |
 | `niv_pressure_setting` | From explicit "IPAP nn" / "EPAP nn" structured values |
+| `niv_backup_rate` | From "rate of nn" when paired with IPAP/EPAP on same line |
 
 ---
 
@@ -102,6 +103,7 @@ Also extracts NIV pressure settings (IPAP/EPAP) from explicit structured lines.
 | `ventilated_flag` | `true` | boolean | From explicit `Ventilated Patient?: Yes` |
 | `ipap` | float | cm H₂O | Inspiratory Positive Airway Pressure; range gate 4–40 |
 | `epap` | float | cm H₂O | Expiratory Positive Airway Pressure; range gate 2–25 |
+| `niv_rate` | float | breaths/min | NIV backup rate; only extracted when IPAP/EPAP present on same line; range gate 4–40 |
 
 ---
 
@@ -130,6 +132,7 @@ No event is emitted for out-of-range values.
 | `resp_rate_set` | 1 | 60 |
 | `ipap` | 4 | 40 |
 | `epap` | 2 | 25 |
+| `niv_rate` | 4 | 40 |
 
 ---
 
