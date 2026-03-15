@@ -94,6 +94,52 @@ RE_GCS_NARRATIVE_ONLY = re.compile(
     re.IGNORECASE,
 )
 
+# Pattern 5: "GCS: 4 (spontaneously),5 (oriented),6 (follows commands) = 15"
+RE_GCS_DESC_COMPONENTS = re.compile(
+    r"\bGCS\s*:\s*(\d)\s*\([^)]+\)\s*,\s*(\d)\s*\([^)]+\)\s*,\s*(\d)\s*\([^)]+\)\s*=\s*(\d{1,2})",
+    re.IGNORECASE,
+)
+
+# Structured 4-line flowsheet block patterns
+RE_FLOWSHEET_EYE = re.compile(r"^Eye Opening\s*:\s*(.+)", re.IGNORECASE)
+RE_FLOWSHEET_VERBAL = re.compile(r"^Best Verbal Response\s*:\s*(.+)", re.IGNORECASE)
+RE_FLOWSHEET_MOTOR = re.compile(r"^Best Motor Response\s*:\s*(.+)", re.IGNORECASE)
+RE_FLOWSHEET_TOTAL = re.compile(
+    r"^Glasgow Coma Scale Score\s*:?\s*(\d{1,2})", re.IGNORECASE,
+)
+
+# ── GCS component text→number mappings (deterministic) ──────────────
+
+_EYE_MAP: Dict[str, int] = {
+    "spontaneous": 4, "spontaneously": 4,
+    "to speech": 3, "to voice": 3,
+    "to pain": 2, "to pressure": 2,
+    "none": 1, "no response": 1,
+}
+
+_VERBAL_MAP: Dict[str, int] = {
+    "oriented": 5,
+    "confused": 4,
+    "inappropriate words": 3, "inappropriate": 3,
+    "incomprehensible sounds": 2, "incomprehensible": 2,
+    "none": 1, "no response": 1,
+}
+
+_MOTOR_MAP: Dict[str, int] = {
+    "obeys commands": 6, "obeys": 6,
+    "localizes pain": 5, "localizes": 5, "localizing": 5,
+    "withdrawal": 4, "flexion withdrawal": 4, "normal flexion": 4,
+    "abnormal flexion": 3, "flexion": 3,
+    "extension": 2,
+    "none": 1, "no response": 1,
+}
+
+
+def _lookup_component(text: str, mapping: Dict[str, int]) -> Optional[int]:
+    """Map component description text to numeric GCS sub-score.
+    Returns None if the text is not a recognized value (fail-closed)."""
+    return mapping.get(text.strip().lower())
+
 
 def _extract_gcs_from_text(
     text: str,
@@ -151,6 +197,45 @@ def _extract_gcs_from_text(
                     readings.append(reading)
                     seen_values.add(("arrival", val, dt))
 
+    # ── Scan for structured 4-line flowsheet blocks ──
+    for i in range(len(lines)):
+        stripped_blk = lines[i].strip()
+        m_eye = RE_FLOWSHEET_EYE.match(stripped_blk)
+        if not m_eye or i + 3 >= len(lines):
+            continue
+        verbal_line = lines[i + 1].strip()
+        motor_line = lines[i + 2].strip()
+        total_line = lines[i + 3].strip()
+        m_verbal = RE_FLOWSHEET_VERBAL.match(verbal_line)
+        m_motor = RE_FLOWSHEET_MOTOR.match(motor_line)
+        m_total = RE_FLOWSHEET_TOTAL.match(total_line)
+        if not (m_verbal and m_motor and m_total):
+            continue
+        eye_val = _lookup_component(m_eye.group(1), _EYE_MAP)
+        verbal_val = _lookup_component(m_verbal.group(1), _VERBAL_MAP)
+        motor_val = _lookup_component(m_motor.group(1), _MOTOR_MAP)
+        total_val = int(m_total.group(1))
+        if (eye_val is None or verbal_val is None or motor_val is None
+                or not 3 <= total_val <= 15
+                or eye_val + verbal_val + motor_val != total_val):
+            continue  # fail-closed: skip if components don't validate
+        dedup_key = (total_val, dt, total_line[:80])
+        if dedup_key in seen_values:
+            continue
+        seen_values.add(dedup_key)
+        readings.append({
+            "value": total_val,
+            "intubated": False,
+            "eye": eye_val,
+            "verbal": verbal_val,
+            "motor": motor_val,
+            "source": f"{source_type}:structured_block",
+            "dt": dt,
+            "timestamp_quality": timestamp_quality,
+            "is_arrival": False,
+            "line_preview": total_line[:120],
+        })
+
     # ── Scan all lines for GCS values ──
     for line in lines:
         stripped = line.strip()
@@ -168,6 +253,9 @@ def _extract_gcs_from_text(
         val: Optional[int] = None
         intubated: bool = False
         source_label = f"{source_type}"
+        eye_comp: Optional[int] = None
+        verbal_comp: Optional[int] = None
+        motor_comp: Optional[int] = None
 
         # Try component-parenthesized form first (most specific)
         m = RE_GCS_COMPONENT_PAREN.search(stripped)
@@ -175,6 +263,9 @@ def _extract_gcs_from_text(
             val = int(m.group(4))
             intubated = bool(m.group(5))
             source_label = f"{source_type}:component_paren"
+            eye_comp = int(m.group(1))
+            verbal_comp = int(m.group(2))
+            motor_comp = int(m.group(3))
         else:
             # Try inline components form
             m = RE_GCS_INLINE_COMPONENTS.search(stripped)
@@ -182,6 +273,9 @@ def _extract_gcs_from_text(
                 val = int(m.group(4))
                 intubated = bool(m.group(5))
                 source_label = f"{source_type}:inline_components"
+                eye_comp = int(m.group(1))
+                verbal_comp = int(m.group(2))
+                motor_comp = int(m.group(3))
             else:
                 # Try compact form
                 m = RE_GCS_COMPACT.search(stripped)
@@ -189,13 +283,26 @@ def _extract_gcs_from_text(
                     val = int(m.group(4))
                     intubated = bool(m.group(5))
                     source_label = f"{source_type}:compact"
+                    if m.group(2):  # V digit captured
+                        eye_comp = int(m.group(1))
+                        verbal_comp = int(m.group(2))
+                        motor_comp = int(m.group(3))
                 else:
-                    # Try simple form
-                    m = RE_GCS_SIMPLE.search(stripped)
+                    # Try descriptive components form
+                    m = RE_GCS_DESC_COMPONENTS.search(stripped)
                     if m:
-                        val = int(m.group(1))
-                        intubated = bool(m.group(2))
-                        source_label = f"{source_type}:simple"
+                        val = int(m.group(4))
+                        source_label = f"{source_type}:desc_components"
+                        eye_comp = int(m.group(1))
+                        verbal_comp = int(m.group(2))
+                        motor_comp = int(m.group(3))
+                    else:
+                        # Try simple form (no components)
+                        m = RE_GCS_SIMPLE.search(stripped)
+                        if m:
+                            val = int(m.group(1))
+                            intubated = bool(m.group(2))
+                            source_label = f"{source_type}:simple"
 
         if val is not None and 3 <= val <= 15:
             dedup_key = (val, dt, stripped[:80])
@@ -210,6 +317,10 @@ def _extract_gcs_from_text(
                     "is_arrival": False,
                     "line_preview": stripped[:120],
                 }
+                if eye_comp is not None and verbal_comp is not None and motor_comp is not None:
+                    reading["eye"] = eye_comp
+                    reading["verbal"] = verbal_comp
+                    reading["motor"] = motor_comp
                 readings.append(reading)
 
     return readings, arrival
@@ -354,13 +465,17 @@ def extract_gcs_for_day(
     worst_reading = min(numeric_vals, key=lambda r: (r["value"], r.get("dt") or "9999"))
 
     def _fmt(r: Dict[str, Any]) -> Dict[str, Any]:
-        return {
+        d = {
             "value": r["value"],
             "intubated": r.get("intubated", False),
             "source": r["source"],
             "dt": r["dt"],
             "timestamp_quality": r["timestamp_quality"],
         }
+        for comp in ("eye", "verbal", "motor"):
+            if comp in r:
+                d[comp] = r[comp]
+        return d
 
     return {
         "arrival_gcs": _fmt(arrival_gcs) if arrival_gcs else _DNA,
@@ -378,6 +493,7 @@ def extract_gcs_for_day(
                 "source": r["source"],
                 "dt": r["dt"],
                 "timestamp_quality": r["timestamp_quality"],
+                **{k: r[k] for k in ("eye", "verbal", "motor") if k in r},
             }
             for r in all_readings
         ],
