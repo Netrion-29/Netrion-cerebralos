@@ -7,6 +7,7 @@ patient text with full raw_line_id traceability.
 
 Parameters extracted:
   - vent_status      : "mechanical" | "niv" | None (from O2 Device / NIV headers)
+  - vent_mode        : explicit ventilator mode label ("BiPAP", "CPAP", etc.)
   - fio2             : numeric FiO2 value (canonicalized to percent, 0-100;
                        if raw value <= 1.0, auto-converted via *100)
   - peep             : numeric PEEP value (cm H2O)
@@ -30,6 +31,10 @@ Sources (structured, deterministic):
     PEEP 12 FiO2 70%
 
 Raw evidence citations:
+  Ronald_Bittner.txt:1164   — Placed on BiPAP (explicit mode)
+  Ronald_Bittner.txt:654    — extubated and placed on BiPAP (explicit mode)
+  Ronald_Bittner.txt:1443   — Recommend BiPAP (explicit mode)
+  Ronald_Bittner.txt:14998  — Remained on BiPAP (explicit mode)
   Ronald_Bittner.txt:514    — O2 Device: Ventilator
   Ronald_Bittner.txt:5455-5459 — Vent Settings block (RR 24 / Vt 460 / PEEP 14 / FiO2 60)
   Ronald_Bittner.txt:5700   — Inline FiO2 50% peep is 12
@@ -143,6 +148,33 @@ _RE_FIO2_COMMA_PEEP = re.compile(
     re.IGNORECASE,
 )
 
+# --- Explicit ventilator mode patterns ---
+# "Placed on BiPAP" / "placed back on BiPAP" / "placed on CPAP"
+_RE_PLACED_ON_MODE = re.compile(
+    r"placed\s+(?:back\s+)?on\s+(BiPAP|CPAP)\b",
+    re.IGNORECASE,
+)
+# "Recommend BiPAP" (clinical recommendation)
+_RE_RECOMMEND_MODE = re.compile(
+    r"Recommend\s+(BiPAP|CPAP)\b",
+    re.IGNORECASE,
+)
+# "Remained on BiPAP" / "remains on BiPAP"
+_RE_REMAINED_ON_MODE = re.compile(
+    r"Remain(?:ed|s)\s+on\s+(BiPAP|CPAP)\b",
+    re.IGNORECASE,
+)
+# "extubated and placed on BiPAP"
+_RE_EXTUBATED_TO_MODE = re.compile(
+    r"extubated\s+and\s+placed\s+on\s+(BiPAP|CPAP)\b",
+    re.IGNORECASE,
+)
+# "weaned to CPAP" / "weaned to BiPAP"
+_RE_WEANED_TO_MODE = re.compile(
+    r"wean(?:ed)?\s+to\s+(BiPAP|CPAP)\b",
+    re.IGNORECASE,
+)
+
 
 # ── Classification helpers ──────────────────────────────────────────
 
@@ -152,6 +184,10 @@ _NOISE_PATTERNS = [
     re.compile(r"Isbt\s+Product\s+Code", re.IGNORECASE),
     re.compile(r"respiratory\s+rate\s+is\s+less\s+than\s+\d+\s+breaths", re.IGNORECASE),
     re.compile(r"administer\s+naloxone", re.IGNORECASE),
+    # "AC" false-positive guards
+    re.compile(r"\bAC\s+and\s+HS\b", re.IGNORECASE),  # insulin dosing (before meals)
+    re.compile(r"\bAC/AP\s+medication", re.IGNORECASE),  # anticoag/antiplatelet
+    re.compile(r"\bTID\s+AC\b", re.IGNORECASE),  # insulin TID AC dosing
 ]
 
 
@@ -319,6 +355,29 @@ def _extract_from_lines(
                     source="fio2_flowsheet",
                 ))
 
+        # --- Explicit ventilator mode patterns ---
+        for mode_re, src_tag in [
+            (_RE_EXTUBATED_TO_MODE, "extubated_to_mode"),
+            (_RE_PLACED_ON_MODE, "placed_on_mode"),
+            (_RE_RECOMMEND_MODE, "recommend_mode"),
+            (_RE_REMAINED_ON_MODE, "remained_on_mode"),
+            (_RE_WEANED_TO_MODE, "weaned_to_mode"),
+        ]:
+            m = mode_re.search(line)
+            if m:
+                mode_val = m.group(1)
+                # Canonicalize to title-case
+                canon = mode_val.upper() if mode_val.upper() in (
+                    "BIPAP", "CPAP",
+                ) else mode_val
+                if canon == "BIPAP":
+                    canon = "BiPAP"
+                events.append(_make_event(
+                    "vent_mode", canon, day, line_idx, line,
+                    source=src_tag,
+                ))
+                break  # one mode event per line
+
     return events
 
 
@@ -355,6 +414,7 @@ def _empty_result() -> Dict[str, Any]:
             "mechanical_vent_days": [],
             "niv_days": [],
             "params_found": [],
+            "vent_modes_found": [],
         },
     }
 
@@ -368,6 +428,7 @@ def _build_result(events: List[Dict[str, Any]]) -> Dict[str, Any]:
     niv_days: set = set()
     all_days: set = set()
     params_found: set = set()
+    vent_modes_found: set = set()
 
     for ev in events:
         all_days.add(ev["day"])
@@ -377,6 +438,8 @@ def _build_result(events: List[Dict[str, Any]]) -> Dict[str, Any]:
                 mechanical_days.add(ev["day"])
             elif ev["value"] == "niv":
                 niv_days.add(ev["day"])
+        if ev["param"] == "vent_mode":
+            vent_modes_found.add(ev["value"])
 
     return {
         "events": events,
@@ -386,6 +449,7 @@ def _build_result(events: List[Dict[str, Any]]) -> Dict[str, Any]:
             "mechanical_vent_days": sorted(mechanical_days),
             "niv_days": sorted(niv_days),
             "params_found": sorted(params_found),
+            "vent_modes_found": sorted(vent_modes_found),
         },
     }
 
