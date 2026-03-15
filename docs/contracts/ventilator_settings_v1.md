@@ -128,6 +128,8 @@ No event is emitted for out-of-range values.
 | `peep` | 0 | 30 |
 | `tidal_volume` | 50 | 2000 |
 | `resp_rate_set` | 1 | 60 |
+| `ipap` | 4 | 40 |
+| `epap` | 2 | 25 |
 
 ---
 
