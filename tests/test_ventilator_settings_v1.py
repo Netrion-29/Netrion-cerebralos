@@ -428,6 +428,119 @@ class TestVentModeFalsePositives:
         assert len(mode_events) == 0
 
 
+# ── NIV pressure settings (IPAP / EPAP) ────────────────────────────
+
+class TestNivPressureSettings:
+    def test_ipap_standalone(self):
+        """'IPAP 22' extracts ipap=22."""
+        lines = ["Ordered bipap for nursing facility IPAP 22, EPAP 8, rate of 16."]
+        events = _extract_from_lines(lines, "2026-01-10")
+        ipap_events = [e for e in events if e["param"] == "ipap"]
+        assert len(ipap_events) == 1
+        assert ipap_events[0]["value"] == 22
+        assert ipap_events[0]["source"] == "niv_pressure_setting"
+
+    def test_epap_standalone(self):
+        """'EPAP 8' extracts epap=8."""
+        lines = ["Ordered bipap for nursing facility IPAP 22, EPAP 8, rate of 16."]
+        events = _extract_from_lines(lines, "2026-01-10")
+        epap_events = [e for e in events if e["param"] == "epap"]
+        assert len(epap_events) == 1
+        assert epap_events[0]["value"] == 8
+        assert epap_events[0]["source"] == "niv_pressure_setting"
+
+    def test_ipap_epap_pair(self):
+        """Both IPAP and EPAP extracted from same line."""
+        lines = ["bipap for nursing facility IPAP 22, EPAP 8, rate of 16."]
+        events = _extract_from_lines(lines, "2026-01-10")
+        params = {e["param"]: e["value"] for e in events if e["param"] in ("ipap", "epap")}
+        assert params["ipap"] == 22
+        assert params["epap"] == 8
+
+    def test_epap_range_takes_first(self):
+        """'EPAP 8-10' should extract epap=8 (first value in range)."""
+        lines = ["Recommend BiPAP. EPAP 8-10 for now."]
+        events = _extract_from_lines(lines, "2026-01-10")
+        epap_events = [e for e in events if e["param"] == "epap"]
+        assert len(epap_events) == 1
+        assert epap_events[0]["value"] == 8
+
+    def test_ipap_has_raw_line_id(self):
+        """ipap events carry raw_line_id."""
+        lines = ["IPAP 22"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        ipap_events = [e for e in events if e["param"] == "ipap"]
+        assert len(ipap_events) == 1
+        assert len(ipap_events[0]["raw_line_id"]) == 16
+
+    def test_epap_has_raw_line_id(self):
+        """epap events carry raw_line_id."""
+        lines = ["EPAP 8"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        epap_events = [e for e in events if e["param"] == "epap"]
+        assert len(epap_events) == 1
+        assert len(epap_events[0]["raw_line_id"]) == 16
+
+    def test_ipap_out_of_range_rejected(self):
+        """IPAP 50 exceeds range gate (4-40) — rejected."""
+        lines = ["IPAP 50"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        ipap_events = [e for e in events if e["param"] == "ipap"]
+        assert len(ipap_events) == 0
+
+    def test_epap_out_of_range_rejected(self):
+        """EPAP 30 exceeds range gate (2-25) — rejected."""
+        lines = ["EPAP 30"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        epap_events = [e for e in events if e["param"] == "epap"]
+        assert len(epap_events) == 0
+
+    def test_ipap_boundary_low(self):
+        """IPAP 4 at lower boundary — accepted."""
+        lines = ["IPAP 4"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        ipap_events = [e for e in events if e["param"] == "ipap"]
+        assert len(ipap_events) == 1
+        assert ipap_events[0]["value"] == 4
+
+    def test_ipap_below_range_rejected(self):
+        """IPAP 3 below range gate (4-40) — rejected."""
+        lines = ["IPAP 3"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        ipap_events = [e for e in events if e["param"] == "ipap"]
+        assert len(ipap_events) == 0
+
+    def test_epap_boundary_low(self):
+        """EPAP 2 at lower boundary — accepted."""
+        lines = ["EPAP 2"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        epap_events = [e for e in events if e["param"] == "epap"]
+        assert len(epap_events) == 1
+        assert epap_events[0]["value"] == 2
+
+    def test_epap_below_range_rejected(self):
+        """EPAP 1 below range gate (2-25) — rejected."""
+        lines = ["EPAP 1"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        epap_events = [e for e in events if e["param"] == "epap"]
+        assert len(epap_events) == 0
+
+    def test_case_insensitive_ipap(self):
+        """'ipap 22' lowercase should extract."""
+        lines = ["ipap 22, epap 8"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        ipap_events = [e for e in events if e["param"] == "ipap"]
+        assert len(ipap_events) == 1
+        assert ipap_events[0]["value"] == 22
+
+    def test_bipap_word_no_ipap_match(self):
+        """'BiPAP' should NOT trigger ipap extraction (word boundary)."""
+        lines = ["Placed on BiPAP"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        ipap_events = [e for e in events if e["param"] == "ipap"]
+        assert len(ipap_events) == 0
+
+
 # ── Negative tests ─────────────────────────────────────────────────
 
 class TestNegatives:
