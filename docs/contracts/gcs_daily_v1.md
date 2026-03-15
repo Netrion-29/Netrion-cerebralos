@@ -19,18 +19,37 @@ fields are included in the reading.
 
 ## Output Schema
 
+**Example (data present):**
+
 ```json
 {
-  "arrival_gcs": { "value": 15, "intubated": false, "source": "...", "dt": "...", "timestamp_quality": "full" } | "DATA NOT AVAILABLE",
+  "arrival_gcs": { "value": 15, "intubated": false, "source": "TRAUMA_HP:Primary_Survey:Disability", "dt": "2025-12-18T14:30:00", "timestamp_quality": "full" },
   "arrival_gcs_value": 15,
   "arrival_gcs_ts": "2025-12-18T14:30:00",
   "arrival_gcs_source": "TRAUMA_HP:Primary_Survey:Disability",
   "arrival_gcs_missing_in_trauma_hp": false,
   "arrival_gcs_source_rule_id": "trauma_hp_primary_survey",
-  "best_gcs":  { "value": 15, "intubated": false, "source": "...", "dt": "...", "timestamp_quality": "full", "eye": 4, "verbal": 5, "motor": 6 },
-  "worst_gcs": { "value": 8,  "intubated": true,  "source": "...", "dt": "...", "timestamp_quality": "full" },
-  "all_readings": [ ... ],
-  "warnings": [ ... ]
+  "best_gcs":  { "value": 15, "intubated": false, "source": "ED_NOTE:structured_block", "dt": "2025-12-18T16:00:00", "timestamp_quality": "full", "eye": 4, "verbal": 5, "motor": 6 },
+  "worst_gcs": { "value": 8,  "intubated": true,  "source": "ED_NOTE:compact", "dt": "2025-12-18T18:00:00", "timestamp_quality": "full" },
+  "all_readings": [],
+  "warnings": []
+}
+```
+
+**Example (data not available):**
+
+```json
+{
+  "arrival_gcs": "DATA NOT AVAILABLE",
+  "arrival_gcs_value": null,
+  "arrival_gcs_ts": null,
+  "arrival_gcs_source": null,
+  "arrival_gcs_missing_in_trauma_hp": false,
+  "arrival_gcs_source_rule_id": null,
+  "best_gcs": "DATA NOT AVAILABLE",
+  "worst_gcs": "DATA NOT AVAILABLE",
+  "all_readings": [],
+  "warnings": []
 }
 ```
 

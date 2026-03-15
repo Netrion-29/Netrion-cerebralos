@@ -281,7 +281,7 @@ def _extract_gcs_from_text(
                 m = RE_GCS_COMPACT.search(stripped)
                 if m:
                     val = int(m.group(4))
-                    intubated = bool(m.group(5))
+                    intubated = True  # compact form always has T (intubated)
                     source_label = f"{source_type}:compact"
                     if m.group(2):  # V digit captured
                         eye_comp = int(m.group(1))
@@ -317,7 +317,9 @@ def _extract_gcs_from_text(
                     "is_arrival": False,
                     "line_preview": stripped[:120],
                 }
-                if eye_comp is not None and verbal_comp is not None and motor_comp is not None:
+                if (eye_comp is not None and verbal_comp is not None
+                        and motor_comp is not None
+                        and eye_comp + verbal_comp + motor_comp == val):
                     reading["eye"] = eye_comp
                     reading["verbal"] = verbal_comp
                     reading["motor"] = motor_comp

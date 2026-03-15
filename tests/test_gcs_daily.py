@@ -389,6 +389,63 @@ class TestExtractForDay:
         assert "eye" not in result["worst_gcs"]
 
 
+# ── Regression: compact form always sets intubated ──────────────────
+
+class TestCompactIntubated:
+    def test_compact_without_trailing_t_still_intubated(self):
+        """Compact form E3VtM5 GCS 8 (no trailing T) must set intubated=True
+        because the 't' between V and M *is* the intubated marker."""
+        text = "E4V1tM5 GCS 10"
+        readings, _ = _extract_gcs_from_text(text, "2025-12-18", "ED_NOTE", None)
+        assert len(readings) == 1
+        assert readings[0]["intubated"] is True
+
+    def test_compact_with_trailing_t_also_intubated(self):
+        text = "E2VtM4 GCS 7T"
+        readings, _ = _extract_gcs_from_text(text, "2025-12-18", "ED_NOTE", None)
+        assert len(readings) == 1
+        assert readings[0]["intubated"] is True
+
+
+# ── Regression: component sum mismatch omits eye/verbal/motor ───────
+
+class TestComponentSumMismatch:
+    def test_paren_mismatch_omits_components(self):
+        """GCS (E:4 V:5 M:6) 14 — sum 4+5+6=15 != 14 → total kept, no components."""
+        text = "GCS (E:4 V:5 M:6) 14"
+        readings, _ = _extract_gcs_from_text(text, "2025-12-18", "ED_NOTE", None)
+        assert len(readings) == 1
+        assert readings[0]["value"] == 14
+        assert "eye" not in readings[0]
+        assert "verbal" not in readings[0]
+        assert "motor" not in readings[0]
+
+    def test_inline_mismatch_omits_components(self):
+        """GCS E:4 V:5 M:6 13 — sum 15 != 13 → total kept, no components."""
+        text = "GCS E:4 V:5 M:6 13"
+        readings, _ = _extract_gcs_from_text(text, "2025-12-18", "ED_NOTE", None)
+        assert len(readings) == 1
+        assert readings[0]["value"] == 13
+        assert "eye" not in readings[0]
+
+    def test_desc_mismatch_omits_components(self):
+        """GCS: 4 (spontaneously),5 (oriented),6 (follows commands) = 14 → no components."""
+        text = "GCS: 4 (spontaneously),5 (oriented),6 (follows commands) = 14"
+        readings, _ = _extract_gcs_from_text(text, "2025-12-18", "ED_NOTE", None)
+        assert len(readings) == 1
+        assert readings[0]["value"] == 14
+        assert "eye" not in readings[0]
+
+    def test_matching_sum_keeps_components(self):
+        """GCS (E:4 V:5 M:6) 15 — sum matches → components present."""
+        text = "GCS (E:4 V:5 M:6) 15"
+        readings, _ = _extract_gcs_from_text(text, "2025-12-18", "ED_NOTE", None)
+        assert len(readings) == 1
+        assert readings[0]["eye"] == 4
+        assert readings[0]["verbal"] == 5
+        assert readings[0]["motor"] == 6
+
+
 # ── Text-to-number mapping ─────────────────────────────────────────
 
 class TestComponentMappings:
