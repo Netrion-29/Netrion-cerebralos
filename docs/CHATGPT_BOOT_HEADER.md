@@ -54,8 +54,8 @@
 | Roadmap sync (through PR #217) | ✅ COMPLETE (PR #218, merged) — all merged-PR state references updated |
 | Protocol coverage mapping kickoff | ✅ COMPLETE (PR #220, merged) — first-pass coverage matrix: 60 EXTRACTED, 57 PARTIAL, 97 MISSING, 16 N/A across 20 categories/230 elements. Artifact: `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` |
 | Slice A (sex + discharge disposition) | ✅ COMPLETE (PRs #222–#225) — `demographics_v1` feature module + contract doc |
-| Slice C (structured labs) | ✅ COMPLETE (PRs #226–#228, #232) — CBC/BMP/coag/ABG/PF + cardiac/sepsis panels |
 | Slice B (blood product transfusion) | ✅ COMPLETE (PRs #229–#231) — `transfusion_blood_products_v1` foundation + hardening |
+| Slice C (structured labs) | ✅ COMPLETE (PRs #226–#228, #232) — CBC/BMP/coag/ABG/PF + cardiac/sepsis panels |
 | Ventilator settings extraction | ✅ COMPLETE (PRs #233–#237) — FiO2/PEEP/Vt/RR/vent status, mode, NIV IPAP/EPAP/rate |
 | GCS component extraction (E/V/M) | ✅ COMPLETE (PRs #238–#239) — inline + flowsheet block parsing, sum-mismatch guard, compact-intubated fix |
 | Open PRs | none |

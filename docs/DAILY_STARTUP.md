@@ -153,7 +153,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 - [Protocol Data Element Master v1](audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md) — comprehensive inventory of all data elements across 51 protocol PDFs; coverage Slices A/B/C COMPLETE (PRs #222–#232); vent settings COMPLETE (PRs #233–#237); GCS components COMPLETE (PRs #238–#239); see Roadmap §3 item 15 for next candidates
 
 > **NTDS Coverage:** 21/21 events fully mapped (PRs #118 – #124).
-> Fixture runner: 43 passed, 0 xfailed.
+> Fixture runner: 43 fixtures passed (56 tests), 0 xfailed.
 >
 > **Phase status (as of PR #147):**
 > - N1 (slug normalization): ✅ COMPLETE (PRs #127–#128)
@@ -196,8 +196,8 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - LDA engine design: ✅ COMPLETE (PR #202) — Lines/Drains/Airways device-duration engine design doc
 > - LDA engine implementation (v1+text+startstop): ✅ COMPLETE (PRs #203, #206, #207) — LDAEpisode model, build_lda_episodes() builder (structured JSON + text day-counter + insertion/removal start/stop inference), 4 gate types incl. eval_lda_overlap, TEXT_DERIVED_STARTSTOP confidence level, ENABLE_LDA_GATES=False, 118 dedicated tests
 > - Slice A (sex + discharge disposition): ✅ COMPLETE (PRs #222–#225) — `demographics_v1` feature module + contract doc
-> - Slice C (structured labs foundation + expansion): ✅ COMPLETE (PRs #226–#228, #232) — CBC/BMP/coag/ABG/PF + cardiac/sepsis panels
 > - Slice B (blood product transfusion): ✅ COMPLETE (PRs #229–#231) — `transfusion_blood_products_v1` foundation + hardening
+> - Slice C (structured labs foundation + expansion): ✅ COMPLETE (PRs #226–#228, #232) — CBC/BMP/coag/ABG/PF + cardiac/sepsis panels
 > - Ventilator settings extraction: ✅ COMPLETE (PRs #233–#237) — FiO2/PEEP/Vt/RR/vent status, mode, NIV IPAP/EPAP/rate
 > - GCS component extraction (E/V/M): ✅ COMPLETE (PRs #238–#239) — inline + flowsheet block parsing, sum-mismatch guard, compact-intubated fix
 > - Open PRs: none

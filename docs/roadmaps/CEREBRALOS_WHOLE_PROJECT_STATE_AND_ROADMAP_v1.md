@@ -144,7 +144,7 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | last verified: 3229+ passed (pytest, 2026-03-15, baseline `3d36e89`) |
+| Total tests         | last verified: ≥3229 passed (pytest, 2026-03-15, baseline `3d36e89`; lower bound, exact total may vary across environments) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 47               |
 | Fixture runner      | **56 passed, 0 xfailed** |
