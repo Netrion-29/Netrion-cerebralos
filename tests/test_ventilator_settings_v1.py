@@ -352,7 +352,7 @@ class TestVentModeExtraction:
         assert mode_events[0]["source"] == "weaned_to_mode"
 
     def test_case_insensitive_bipap(self):
-        """'bipap' lowercase should canonicalize to 'BiPAP'."""
+        """lowercase 'bipap' without explicit verb should NOT produce vent_mode."""
         lines = ["refused to wear bipap"]
         events = _extract_from_lines(lines, "2026-01-10")
         # This should NOT match — no placement verb
@@ -397,6 +397,21 @@ class TestVentModeFalsePositives:
         events = _extract_from_lines(lines, "2026-01-10")
         mode_events = [e for e in events if e["param"] == "vent_mode"]
         assert len(mode_events) == 0
+
+    def test_wean_to_cpap_regression(self):
+        """'Patient wean to CPAP overnight.' — wean (no 'ed') extracts vent_mode=CPAP."""
+        lines = ["Patient wean to CPAP overnight."]
+        events = _extract_from_lines(lines, "2026-01-10")
+        mode_events = [e for e in events if e["param"] == "vent_mode"]
+        assert len(mode_events) == 1
+        assert mode_events[0]["value"] == "CPAP"
+        assert mode_events[0]["source"] == "weaned_to_mode"
+
+    def test_lowercase_ac_and_hs_noise(self):
+        """lowercase 'ac and hs' insulin dosing is treated as noise."""
+        lines = ["0-8 Units      Subcutaneous   4x Daily ac and hs"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        assert len(events) == 0
 
     def test_refused_bipap_not_mode(self):
         """'refused to wear bipap' — no placement verb."""

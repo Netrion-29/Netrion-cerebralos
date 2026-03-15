@@ -171,12 +171,9 @@ _RE_EXTUBATED_TO_MODE = re.compile(
 )
 # "weaned to CPAP" / "weaned to BiPAP"
 _RE_WEANED_TO_MODE = re.compile(
-    r"weaned?\s+to\s+(BiPAP|CPAP)\b",
+    r"wean(?:ed)?\s+to\s+(BiPAP|CPAP)\b",
     re.IGNORECASE,
 )
-
-# Accepted canonical mode values
-_VALID_VENT_MODES = frozenset({"BiPAP", "CPAP"})
 
 
 # ── Classification helpers ──────────────────────────────────────────
@@ -188,7 +185,7 @@ _NOISE_PATTERNS = [
     re.compile(r"respiratory\s+rate\s+is\s+less\s+than\s+\d+\s+breaths", re.IGNORECASE),
     re.compile(r"administer\s+naloxone", re.IGNORECASE),
     # "AC" false-positive guards
-    re.compile(r"\bAC\s+and\s+HS\b"),           # insulin dosing (before meals)
+    re.compile(r"\bAC\s+and\s+HS\b", re.IGNORECASE),  # insulin dosing (before meals)
     re.compile(r"\bAC/AP\s+medication", re.IGNORECASE),  # anticoag/antiplatelet
     re.compile(r"\bTID\s+AC\b", re.IGNORECASE),  # insulin TID AC dosing
 ]
