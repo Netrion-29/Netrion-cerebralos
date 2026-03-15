@@ -53,6 +53,11 @@
 | LDA bracket [REMOVED] patterns | ✅ COMPLETE (PR #216, merged) — Urethral Catheter + Non-Surgical Airway ETT, 3 tests added |
 | Roadmap sync (through PR #217) | ✅ COMPLETE (PR #218, merged) — all merged-PR state references updated |
 | Protocol coverage mapping kickoff | ✅ COMPLETE (PR #220, merged) — first-pass coverage matrix: 60 EXTRACTED, 57 PARTIAL, 97 MISSING, 16 N/A across 20 categories/230 elements. Artifact: `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` |
+| Slice A (sex + discharge disposition) | ✅ COMPLETE (PRs #222–#225) — `demographics_v1` feature module + contract doc |
+| Slice C (structured labs) | ✅ COMPLETE (PRs #226–#228, #232) — CBC/BMP/coag/ABG/PF + cardiac/sepsis panels |
+| Slice B (blood product transfusion) | ✅ COMPLETE (PRs #229–#231) — `transfusion_blood_products_v1` foundation + hardening |
+| Ventilator settings extraction | ✅ COMPLETE (PRs #233–#237) — FiO2/PEEP/Vt/RR/vent status, mode, NIV IPAP/EPAP/rate |
+| GCS component extraction (E/V/M) | ✅ COMPLETE (PRs #238–#239) — inline + flowsheet block parsing, sum-mismatch guard, compact-intubated fix |
 | Open PRs | none |
 | CAUTI engine design | 📐 DESIGN COMPLETE — LDA duration gate + alternative-source exclusion design doc (`docs/audits/CAUTI_ENGINE_DESIGN_v1.md`); requires engine-change authorization for implementation (LDA SourceType, `lda_catheter_duration` gate, `excluded_sources` / `exclude_if_only_source`) |
 | LDA engine design (generalised) | ✅ IMPLEMENTED (v1+text) — PRs `tier2/lda-engine-impl-v1` (merged), `tier2/lda-text-episodes-v1`; SourceType `LDA` + `LDAEpisode` dataclass; `build_lda_episodes()` builder with text-derived flowsheet day-counter extraction; 4 gate types in engine with `ENABLE_LDA_GATES` flag (default False); optional LDA gates wired into E05/E06/E21 (`required: false`); contract updated; 75 dedicated tests; 0 NTDS outcome deltas (Roadmap §3 item 16) |
@@ -61,8 +66,8 @@
 | E06 CLABSI duration-scope tightening | ✅ COMPLETE — duration patterns require explicit central-line/PICC/CVL/CVC device mention; dropped generic patterns (hospital day, standalone >48h, unqualified placed/in-place); 7→4 duration patterns; +9 net precision tests (13 positives, 17 negatives covering generic/foley/arterial rejects); 105 total precision tests; 0 NTDS outcome deltas |
 | E06 CLABSI punctuation variant tests | ✅ COMPLETE — duration patterns accept colon/em-dash/en-dash/hyphen separators between device and duration phrase; +14 precision tests (8 positives, 6 negatives covering non-central devices and missing-device with punctuation); 119 total precision tests; 0 NTDS outcome deltas |
 | E05 CAUTI duration-scope tightening | ✅ COMPLETE — duration gate requires explicit urinary device mention (foley/indwelling/urethral/urinary catheter) + duration ≥3d/>48h; gate query_keys changed to `cauti_catheter_duration` (6 patterns); dropped generic patterns (hospital day, bare catheter day, no-device); +24 precision tests (13 positives, 10 negatives); fixture updated; 65→89 total E05 precision tests; 0 NTDS outcome deltas |
-| Protocol data element master | ✅ COMPLETE — `docs/audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md` + `.csv`: 20 categories, 230 elements across 51 protocol PDFs; coverage mapping IN PROGRESS (PR #220 merged; Roadmap §3 item 15) |
-| Next phase | **Backlog priority:** (1) Protocol Data Coverage — Slice A: Sex + Discharge Disposition extraction, (2) Slice B: Blood Product Transfusion extraction, (3) Slice C: Structured Lab Value Parsing, (4) Tier 2 PROGRESS_NOTE scoping pass, (5) Delirium shift compliance audit script — see Roadmap §3 |
+| Protocol data element master | ✅ COMPLETE — `docs/audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md` + `.csv`: 20 categories, 230 elements across 51 protocol PDFs; coverage mapping Slices A/B/C COMPLETE (PRs #222–#232); vent settings COMPLETE (PRs #233–#237); GCS components COMPLETE (PRs #238–#239) |
+| Next phase | **Backlog priority:** (1) Arrival vitals hardening (Primary Survey priority + ED fallback), (2) Tabular GCS flowsheet parsing follow-up, (3) LDA gate enablement decision track (`ENABLE_LDA_GATES` per-event), (4) CAUTI engine implementation (requires authorization) — see Roadmap §3 |
 | PR workflow | Every mapper/rule/test PR requires: raw `.txt` evidence review (≥2 patients) → pre-merge validation checklist → Copilot comments resolved → Codex post-handoff analysis + 2-patient spot-check. See Roadmap §5.1. |
 
 ## Canonical Operating Contract Pointer

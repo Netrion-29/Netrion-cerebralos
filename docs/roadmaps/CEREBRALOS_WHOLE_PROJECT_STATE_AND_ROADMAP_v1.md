@@ -2,8 +2,8 @@
 
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
-| Date        | 2026-03-12                                               |
-| Baseline    | `ce46c79` (main, after PR #220)                          |
+| Date        | 2026-03-15                                               |
+| Baseline    | `3d36e89` (main, after PR #239)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -109,6 +109,25 @@
 | #218 | `85f06c7` | docs(roadmap): sync merged state through PR #217 — add PRs #208-#217, fix stale refs |
 | #219 | `29754bd` | docs(process): persist codex operating contract and new-chat master prompt |
 | #220 | `a0866ce` | docs(protocol): add first-pass protocol data coverage mapping matrix — `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` |
+| #221 | `9dcff65` | docs(roadmap): sync post-PR220 protocol coverage kickoff status |
+| #222 | `f9aa6ec` | docs(protocol): add slice A raw-evidence plan for sex and discharge disposition extraction |
+| #223 | `185bab8` | feat(protocol): implement Slice A sex + discharge disposition extraction |
+| #224 | `91feb58` | chore(protocol): address PR223 review comments and add demographics_v1 contract doc |
+| #225 | `58c8ce2` | docs(contract): make demographics_v1 schema example JSON-valid |
+| #226 | `4460dec` | feat(protocol): slice C structured labs foundation (cbc/bmp/coag/abg + pf support) |
+| #227 | `120e800` | fix(protocol): align structured_labs FiO2 behavior and add contract enforcement |
+| #228 | `5f8ba54` | fix(protocol): resolve PR227 copilot comments on schema JSON and candidate fallback |
+| #229 | `a5cbde3` | feat(protocol): Slice B transfusion/blood product extraction foundation (pRBC, FFP, platelets, TXA, MTP) |
+| #230 | `5b04e4e` | fix(protocol): resolve PR229 copilot review comments for transfusion extraction |
+| #231 | `21d9a91` | fix(protocol): harden Slice B transfusion extraction with newer-format raw evidence |
+| #232 | `1ac5db9` | feat(protocol): expand Slice C structured lab coverage with cardiac and sepsis panels |
+| #233 | `3455a76` | feat(protocol): ventilator settings extraction foundation (FiO2/PEEP/Vt/RR/vent status) |
+| #234 | `bc2517a` | feat(protocol): add deterministic ventilator mode extraction |
+| #235 | `1784a09` | feat(protocol): add deterministic NIV IPAP/EPAP extraction |
+| #236 | `83080af` | feat(protocol): add deterministic NIV backup-rate extraction |
+| #237 | `e079dbd` | fix(protocol): tighten NIV rate FP guard and align docs/tests |
+| #238 | `e03eb95` | feat(protocol): add deterministic GCS E/V/M component extraction in gcs_daily |
+| #239 | `3a6f05f` | fix(protocol): resolve PR238 copilot findings for gcs components |
 
 ### Closed PRs
 
@@ -125,7 +144,7 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | last verified: 3229 passed (pytest, 2026-03-12, baseline `ce46c79`) |
+| Total tests         | last verified: 3229+ passed (pytest, 2026-03-15, baseline `3d36e89`) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 47               |
 | Fixture runner      | **56 passed, 0 xfailed** |
@@ -565,8 +584,16 @@ and added two block filters:
 | 12 | PMH-aware gate handling | Engine proposal (PROTECTED `cerebralos/ntds_logic/engine.py`) | Medium | Large | Requires engine modification + design doc + explicit authorization; protocol engine has reference impl |
 | 13 | **CAUTI engine design (LDA duration gate + alt-source exclusion)** | Design doc `docs/audits/CAUTI_ENGINE_DESIGN_v1.md` | **High** | Medium–Large | ✅ DESIGN COMPLETE — requires engine-change authorization for implementation. LDA SourceType + catheter duration gate + alternative-source exclusion. See design doc for phased migration plan. |
 | ~~14~~ | ~~**E06 CLABSI spec fidelity (NHSN CLABSI)**~~ | ~~`rules/ntds/logic/2026/06_clabsi.json`, `rules/mappers/epic_deaconess_mapper_v1.json`, tests~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** — 5 required gates (clabsi_dx, clabsi_central_line_gt2d, clabsi_lab_positive, clabsi_symptoms, clabsi_after_arrival) + 2 exclusions (POA, chronic line); 7 mapper keys (clabsi_negation_noise, clabsi_central_line_in_place, clabsi_blood_culture_positive, clabsi_symptoms, clabsi_onset, clabsi_chronic_line + refined clabsi_dx) with ~56 patterns total; clabsi_dx noise filter; 76 precision tests + 3 new fixtures (chronic-line-excluded, no-culture-no, noncentral-line-no); baseline refreshed: E06 stays NO=39, 0 NTDS outcome deltas |
-| 15 | **Protocol Data Coverage Mapping** | `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` | Medium | Medium | **IN PROGRESS** (PR #220 merged) — first-pass coverage matrix complete: 60 EXTRACTED, 57 PARTIAL, 97 MISSING, 16 N/A across 20 categories and 230 elements. Baseline artifact: `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md`. Next slices: (A) Sex + Discharge Disposition extraction — small, (B) Blood Product Transfusion extraction — medium, (C) Structured Lab Value Parsing — large. See coverage doc for detail. |
+| 15 | **Protocol Data Coverage Mapping** | `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` | Medium | Medium | **Slices A/B/C COMPLETE.** First-pass coverage matrix: 60 EXTRACTED, 57 PARTIAL, 97 MISSING, 16 N/A (PR #220). Slice A (sex + discharge disposition): ✅ COMPLETE (PRs #222–#225) — `demographics_v1` feature module + contract doc. Slice B (blood product transfusion): ✅ COMPLETE (PRs #229–#231) — `transfusion_blood_products_v1` foundation + hardening. Slice C (structured labs): ✅ COMPLETE (PRs #226–#228, #232) — `structured_labs_v1` foundation (CBC/BMP/coag/ABG/PF) + cardiac/sepsis expansion. Ventilator settings extraction: ✅ COMPLETE (PRs #233–#237) — FiO2/PEEP/Vt/RR/vent status, mode, NIV IPAP/EPAP/rate. GCS component extraction: ✅ COMPLETE (PRs #238–#239) — E/V/M from inline + flowsheet blocks, sum-mismatch guard. |
 | 16 | **LDA engine support (Lines, Drains, Airways)** | `cerebralos/ntds_logic/engine.py`, `cerebralos/ntds_logic/build_patientfacts_from_txt.py`, `cerebralos/ntds_logic/model.py` | **High** | Large | ✅ IMPLEMENTED (v1+text+startstop+correctness+bracket-removed) — PRs #203, #206, #207, #214, #216 (all merged). SourceType `LDA` added to model; `LDAEpisode` dataclass; `build_lda_episodes()` builder (structured JSON + text-derived flowsheet day-counter + insertion/removal start/stop inference); 4 gate types in engine incl. `eval_lda_overlap` (interval overlap, one-sided admission window — PR #214); `TEXT_DERIVED_STARTSTOP` confidence level; merge precedence: structured > startstop > day-counter (backfill episode_days — PR #214); `ENABLE_LDA_GATES` feature flag (default False); optional LDA gates wired into E05/E06/E21 rules (`required: false`); bracket `[REMOVED]` patterns for Urethral Catheter + Non-Surgical Airway ETT (PR #216); 145 dedicated tests. Next: enable flag per-event after cohort validation. |
+
+##### Post-#239 Next Candidates
+
+| # | Item | Scope | Priority | Effort | Notes |
+|---|------|-------|----------|--------|-------|
+| 17 | **Arrival vitals hardening (Primary Survey priority + ED fallback)** | `cerebralos/features/vitals_daily.py`, tests, contract doc | **High** | Medium | Add structured Primary-Survey-first extraction for arrival HR/BP/RR/SpO2/Temp, mirroring `gcs_daily` priority logic (TRAUMA_HP → ED fallback → DNA). Raw-file scan required. |
+| 18 | **Tabular GCS flowsheet parsing follow-up** | `cerebralos/features/gcs_daily.py`, tests | Medium | Small | Extend GCS extraction for tabular flowsheet layouts (time-column headers with component rows) seen in some patients. |
+| 19 | **LDA gate enablement decision track** | `rules/ntds/logic/2026/`, config | Medium | Small | Enable `ENABLE_LDA_GATES` per-event (E05/E06/E21) after full-cohort validation. No engine changes — feature flag only. |
 
 ##### LDA Analysis Intake Loop (Roadmap-First)
 
