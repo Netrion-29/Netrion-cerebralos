@@ -73,7 +73,7 @@ Also extracts NIV pressure settings (IPAP/EPAP) from explicit structured lines.
 | `remained_on_mode` | From "Remained/Remains on BiPAP/CPAP" pattern |
 | `weaned_to_mode` | From "weaned to BiPAP/CPAP" pattern |
 | `niv_pressure_setting` | From explicit "IPAP nn" / "EPAP nn" structured values |
-| `niv_backup_rate` | From "rate of nn" when paired with IPAP/EPAP on same line |
+| `niv_backup_rate` | From "rate of nn" when paired with IPAP/EPAP on same line; guarded against false positives (heart rate, respiratory rate, pulse rate, infusion rate, flow rate, drip rate, sedimentation rate) |
 
 ---
 
@@ -103,7 +103,7 @@ Also extracts NIV pressure settings (IPAP/EPAP) from explicit structured lines.
 | `ventilated_flag` | `true` | boolean | From explicit `Ventilated Patient?: Yes` |
 | `ipap` | float | cm H₂O | Inspiratory Positive Airway Pressure; range gate 4–40 |
 | `epap` | float | cm H₂O | Expiratory Positive Airway Pressure; range gate 2–25 |
-| `niv_rate` | float | breaths/min | NIV backup rate; only extracted when IPAP/EPAP present on same line; range gate 4–40 |
+| `niv_rate` | float | breaths/min | NIV backup rate; only extracted when IPAP/EPAP present on same line; guarded against non-NIV rate phrases (heart rate, respiratory rate, etc.); range gate 4–40 |
 
 ---
 

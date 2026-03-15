@@ -623,12 +623,68 @@ class TestNivBackupRate:
         assert rate_events[0]["value"] == 16
 
     def test_heart_rate_false_positive_guard(self):
-        """'heart rate of 80' with EPAP on same line — rate should NOT be 80."""
+        """'heart rate of 80' with EPAP on same line — rejected by explicit guard."""
         lines = ["EPAP 8 patient heart rate of 80"]
         events = _extract_from_lines(lines, "2026-01-10")
         rate_events = [e for e in events if e["param"] == "niv_rate"]
-        # 80 is outside range (4-40), so rejected by range gate
         assert len(rate_events) == 0
+
+    def test_heart_rate_in_range_rejected(self):
+        """'heart rate of 16' with IPAP — in-range but rejected by FP guard."""
+        lines = ["IPAP 22, EPAP 8, heart rate of 16"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 0
+
+    def test_respiratory_rate_in_range_rejected(self):
+        """'respiratory rate of 20' with EPAP — in-range but rejected by FP guard."""
+        lines = ["EPAP 6, respiratory rate of 20"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 0
+
+    def test_pulse_rate_rejected(self):
+        """'pulse rate of 18' with IPAP — rejected by FP guard."""
+        lines = ["IPAP 20, pulse rate of 18"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 0
+
+    def test_infusion_rate_rejected(self):
+        """'infusion rate of 10' with EPAP — rejected by FP guard."""
+        lines = ["EPAP 8, infusion rate of 10"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 0
+
+    def test_flow_rate_rejected(self):
+        """'flow rate of 15' with IPAP — rejected by FP guard."""
+        lines = ["IPAP 22, flow rate of 15"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 0
+
+    def test_drip_rate_rejected(self):
+        """'drip rate of 8' with EPAP — rejected by FP guard."""
+        lines = ["EPAP 6, drip rate of 8"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 0
+
+    def test_sed_rate_rejected(self):
+        """'sedimentation rate of 12' with IPAP — rejected by FP guard."""
+        lines = ["IPAP 20, sedimentation rate of 12"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 0
+
+    def test_true_positive_still_extracted_after_hardening(self):
+        """Regression: plain 'rate of 16' with IPAP/EPAP still works."""
+        lines = ["IPAP 22, EPAP 8, rate of 16"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 1
+        assert rate_events[0]["value"] == 16
 
     def test_full_ronald_marshall_citation(self):
         """Regression: exact Ronald_Marshall.txt:10465 citation line."""

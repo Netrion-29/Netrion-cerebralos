@@ -201,6 +201,11 @@ _RE_NIV_RATE = re.compile(
     r"\brate\s+of\s+(\d+)\b",
     re.IGNORECASE,
 )
+# Negative guard: reject "rate of N" when preceded by non-NIV qualifiers
+_RE_NIV_RATE_FALSE_POSITIVE = re.compile(
+    r"(?:heart|respiratory|pulse|infusion|flow|drip|metabolic|basal|filtration|sed(?:imentation)?)\s+rate\s+of\s+\d+",
+    re.IGNORECASE,
+)
 
 
 # ── Classification helpers ──────────────────────────────────────────
@@ -428,7 +433,7 @@ def _extract_from_lines(
         # --- NIV backup rate (only when IPAP or EPAP present on same line) ---
         if has_ipap or has_epap:
             m_rate = _RE_NIV_RATE.search(line)
-            if m_rate:
+            if m_rate and not _RE_NIV_RATE_FALSE_POSITIVE.search(line):
                 rate_val = float(m_rate.group(1))
                 if _in_range("niv_rate", rate_val):
                     events.append(_make_event(
