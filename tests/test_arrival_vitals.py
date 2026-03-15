@@ -12,6 +12,7 @@ Contract §4 hierarchy (v2):
 
 import pytest
 from cerebralos.features.vitals_canonical_v1 import select_arrival_vitals
+from cerebralos.features.vitals_daily import extract_arrival_vitals
 
 
 # ── helpers ──────────────────────────────────────────────────────────
@@ -471,3 +472,258 @@ class TestOutputSchema:
     def test_stub_has_all_keys(self):
         result = select_arrival_vitals([], ARRIVAL_TS)
         assert set(result.keys()) == self.REQUIRED_KEYS
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  Tests for extract_arrival_vitals (vitals_daily layer)
+# ═══════════════════════════════════════════════════════════════════
+
+# Minimal config sufficient for inline vitals parsing
+_MINIMAL_CONFIG = {
+    "inline_vitals": {
+        "trigger_pattern": r"(?i)(?:^|\b)Vitals\s*:",
+    },
+    "discharge_inline": {
+        "trigger_pattern": r"(?i)^\s*Temp:\s*[\d]+(?:\.\d+)?\s*°?\s*F.*BP:\s*\d+/\d+",
+    },
+    "flowsheet_table": {
+        "header_pattern": r"^Date and Time\tTemp\tPulse\tResp\tBP\tSpO2",
+    },
+    "ed_triage_table": {
+        "header_pattern": r"(?i)ED\s+Triage\s+Vitals\s*\[([^\]]+)\]",
+        "col_header_pattern": r"^Temp\tTemp\s+src\tPulse\tResp\tBP\tSpO2",
+    },
+    "visit_vitals_block": {
+        "header_pattern": r"(?i)^\s*Visit\s+Vitals\s*$",
+    },
+    "metric_patterns": {
+        "temp_f": {"guardrails": {"min": 85.0, "max": 115.0}},
+        "hr": {"guardrails": {"min": 20, "max": 300}},
+        "rr": {"guardrails": {"min": 4, "max": 60}},
+        "spo2": {"guardrails": {"min": 50, "max": 100}},
+        "bp": {"guardrails": {"sbp_min": 40, "sbp_max": 300, "dbp_min": 20, "dbp_max": 200}},
+    },
+    "negative_context": {"exclude_line_patterns": []},
+}
+
+DAY_ISO = "2025-12-31"
+
+
+def _item(item_type, dt, text, source_id="SRC001"):
+    """Build a minimal timeline item for testing."""
+    return {
+        "type": item_type,
+        "dt": dt,
+        "source_id": source_id,
+        "time_missing": False,
+        "payload": {"text": text},
+    }
+
+
+_INLINE_VITALS_TEXT = (
+    "Vitals: Blood pressure 152/87, pulse 65, temperature 98.8 °F (37.1 °C), "
+    "temperature source Oral, resp. rate 20, SpO2 97%."
+)
+
+_ED_VITALS_TEXT = (
+    "Vitals: Blood pressure 140/90, pulse 88, temperature 99.0 °F (37.2 °C), "
+    "temperature source Oral, resp. rate 22, SpO2 95%."
+)
+
+
+class TestArrivalVitalsPrimarySurvey:
+    """Primary Survey (TRAUMA_HP) items selected first."""
+
+    def test_trauma_hp_inline_selected(self):
+        """Inline vitals in a TRAUMA_HP item → PRIMARY_SURVEY."""
+        items = [_item("TRAUMA_HP", "2025-12-31T15:10:00", _INLINE_VITALS_TEXT)]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert result["status"] == "selected"
+        assert result["source_context"] == "PRIMARY_SURVEY"
+        assert result["item_type"] == "TRAUMA_HP"
+        assert result["vitals"]["sbp"] == 152.0
+        assert result["vitals"]["dbp"] == 87.0
+        assert result["vitals"]["hr"] == 65.0
+        assert result["vitals"]["rr"] == 20.0
+        assert result["vitals"]["spo2"] == 97.0
+        assert result["vitals"]["temp_f"] == 98.8
+
+    def test_trauma_hp_over_ed_note(self):
+        """TRAUMA_HP item beats ED_NOTE when both present."""
+        items = [
+            _item("ED_NOTE", "2025-12-31T15:05:00", _ED_VITALS_TEXT, "SRC_ED"),
+            _item("TRAUMA_HP", "2025-12-31T15:10:00", _INLINE_VITALS_TEXT, "SRC_THP"),
+        ]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert result["source_context"] == "PRIMARY_SURVEY"
+        assert result["vitals"]["sbp"] == 152.0
+
+    def test_trauma_hp_qualitative_falls_to_ed(self):
+        """TRAUMA_HP with no numeric vitals → ED fallback used."""
+        qualitative = (
+            "Primary Survey:\n"
+            "Airway: patent\nBreathing: even\n"
+            "Circulation: HD normal\nDisability: GCS 15\n"
+        )
+        items = [
+            _item("TRAUMA_HP", "2025-12-31T15:00:00", qualitative, "SRC_THP"),
+            _item("ED_NOTE", "2025-12-31T15:05:00", _ED_VITALS_TEXT, "SRC_ED"),
+        ]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert result["source_context"] == "ED_FALLBACK"
+        assert result["item_type"] == "ED_NOTE"
+        assert result["vitals"]["sbp"] == 140.0
+
+
+class TestArrivalVitalsEDFallback:
+    """ED items used when no TRAUMA_HP vitals available."""
+
+    def test_ed_note_selected(self):
+        """ED_NOTE item with vitals → ED_FALLBACK."""
+        items = [_item("ED_NOTE", "2025-12-31T15:05:00", _ED_VITALS_TEXT)]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert result["status"] == "selected"
+        assert result["source_context"] == "ED_FALLBACK"
+        assert result["vitals"]["sbp"] == 140.0
+        assert result["vitals"]["hr"] == 88.0
+
+    def test_ed_nursing_selected(self):
+        """ED_NURSING item with vitals → ED_FALLBACK."""
+        items = [_item("ED_NURSING", "2025-12-31T15:05:00", _ED_VITALS_TEXT)]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert result["source_context"] == "ED_FALLBACK"
+
+    def test_triage_selected(self):
+        """TRIAGE item with vitals → ED_FALLBACK."""
+        items = [_item("TRIAGE", "2025-12-31T15:05:00", _ED_VITALS_TEXT)]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert result["source_context"] == "ED_FALLBACK"
+
+
+class TestArrivalVitalsDataNotAvailable:
+    """DATA NOT AVAILABLE when no qualifying items yield vitals."""
+
+    def test_empty_items(self):
+        result = extract_arrival_vitals([], DAY_ISO, _MINIMAL_CONFIG)
+        assert result["status"] == "DATA NOT AVAILABLE"
+        assert result["source_context"] is None
+        assert result["readings_count"] == 0
+
+    def test_no_vitals_in_any_item(self):
+        """Items present but no numeric vitals → DNA."""
+        items = [
+            _item("TRAUMA_HP", "2025-12-31T15:00:00", "No vitals documented.", "S1"),
+            _item("ED_NOTE", "2025-12-31T15:10:00", "Patient resting comfortably.", "S2"),
+        ]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert result["status"] == "DATA NOT AVAILABLE"
+
+    def test_unrecognized_item_type_ignored(self):
+        """Items with non-primary/non-ED types are not used."""
+        items = [_item("PHYSICIAN_NOTE", "2025-12-31T15:05:00", _INLINE_VITALS_TEXT)]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert result["status"] == "DATA NOT AVAILABLE"
+
+    def test_all_null_vitals_stub(self):
+        """DNA stub has all metric keys set to None."""
+        result = extract_arrival_vitals([], DAY_ISO, _MINIMAL_CONFIG)
+        for mk in ("temp_f", "hr", "rr", "spo2", "sbp", "dbp", "map"):
+            assert result["vitals"][mk] is None
+
+
+class TestArrivalVitalsOutputSchema:
+    """Output schema completeness for extract_arrival_vitals."""
+
+    REQUIRED_KEYS = {
+        "status", "source_context", "item_type", "source_item_dt",
+        "source_item_id", "vitals", "readings_count", "line_preview",
+        "warnings",
+    }
+
+    def test_selected_has_all_keys(self):
+        items = [_item("TRAUMA_HP", "2025-12-31T15:10:00", _INLINE_VITALS_TEXT)]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert set(result.keys()) == self.REQUIRED_KEYS
+
+    def test_stub_has_all_keys(self):
+        result = extract_arrival_vitals([], DAY_ISO, _MINIMAL_CONFIG)
+        assert set(result.keys()) == self.REQUIRED_KEYS
+
+    def test_vitals_has_all_metrics(self):
+        items = [_item("TRAUMA_HP", "2025-12-31T15:10:00", _INLINE_VITALS_TEXT)]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert set(result["vitals"].keys()) == {
+            "temp_f", "hr", "rr", "spo2", "sbp", "dbp", "map",
+        }
+
+
+class TestArrivalVitalsVisitVitalsBlock:
+    """Visit Vitals block within a TRAUMA_HP item."""
+
+    def test_visit_vitals_in_trauma_hp(self):
+        """Visit Vitals block in a TRAUMA_HP item → PRIMARY_SURVEY."""
+        text = (
+            "Visit Vitals\n"
+            "BP\t128/61\n"
+            "Pulse\t72\n"
+            "Temp\t98.4 °F (36.9 °C)\n"
+            "Resp\t16\n"
+            "SpO2\t96%\n"
+        )
+        items = [_item("TRAUMA_HP", "2025-12-31T15:10:00", text)]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert result["status"] == "selected"
+        assert result["source_context"] == "PRIMARY_SURVEY"
+        assert result["vitals"]["sbp"] == 128.0
+        assert result["vitals"]["hr"] == 72.0
+
+
+class TestArrivalVitalsRealPatternRegression:
+    """Regression tests based on raw file scan patterns."""
+
+    def test_lee_woodard_pattern(self):
+        """Lee Woodard: inline vitals in Secondary Survey of Trauma H&P."""
+        text = (
+            "Vitals: Blood pressure (!) 152/87, pulse 65, "
+            "temperature 98.8 °F (37.1 °C), temperature source Oral, "
+            "resp. rate 20, height 5' 10\", weight 156 lb (70.8 kg), SpO2 97%."
+        )
+        items = [_item("TRAUMA_HP", "2025-12-11T09:08:00", text)]
+        result = extract_arrival_vitals(items, "2025-12-11", _MINIMAL_CONFIG)
+        assert result["status"] == "selected"
+        assert result["source_context"] == "PRIMARY_SURVEY"
+        assert result["vitals"]["sbp"] == 152.0
+        assert result["vitals"]["hr"] == 65.0
+        assert result["vitals"]["spo2"] == 97.0
+
+    def test_betty_roll_ed_fallback(self):
+        """Betty Roll: ED Visit Vitals as fallback (separate ED note)."""
+        trauma_text = (
+            "Primary Survey:\nAirway: patent\nBreathing: even\n"
+            "Circulation: HD normal\nDisability: GCS 15\n"
+        )
+        ed_text = (
+            "PHYSICAL EXAM\n"
+            "VITAL SIGNS: Visit Vitals\n"
+            "Vitals: Blood pressure (!) 177/70, pulse (!) 57, "
+            "temperature 98.5 °F (36.9 °C), resp. rate 18, SpO2 94%."
+        )
+        items = [
+            _item("TRAUMA_HP", "2025-12-10T14:00:00", trauma_text, "THP"),
+            _item("ED_NOTE", "2025-12-10T14:30:00", ed_text, "ED1"),
+        ]
+        result = extract_arrival_vitals(items, "2025-12-10", _MINIMAL_CONFIG)
+        assert result["source_context"] == "ED_FALLBACK"
+        assert result["vitals"]["sbp"] == 177.0
+        assert result["vitals"]["hr"] == 57.0
+
+    def test_robert_altmeyer_dna(self):
+        """Robert Altmeyer: no numeric vitals in Trauma H&P → DNA."""
+        qualitative = (
+            "Primary Survey:\nAirway: patent\nBreathing: even\n"
+            "Circulation: HD normal\nDisability: GCS 15\nExposure: no deformity\n"
+            "Secondary Survey:\nHead: normocephalic\nNeck: no JVD\n"
+        )
+        items = [_item("TRAUMA_HP", "2025-12-15T10:00:00", qualitative)]
+        result = extract_arrival_vitals(items, "2025-12-15", _MINIMAL_CONFIG)
+        assert result["status"] == "DATA NOT AVAILABLE"

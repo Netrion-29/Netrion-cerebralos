@@ -1171,3 +1171,214 @@ def extract_vitals_for_day(
     result["warnings"] = warnings
     result["vitals_qa"] = vitals_qa
     return result, warnings
+
+
+# ═════════════════════════════════════════════════════════════════════
+#  Arrival vitals: item-type-aware extraction with priority hierarchy
+# ═════════════════════════════════════════════════════════════════════
+
+# Item types that represent Primary Survey / Trauma H&P context.
+_ARRIVAL_PRIMARY_SURVEY_TYPES = frozenset({"TRAUMA_HP"})
+
+# Item types that represent ED fallback context.
+_ARRIVAL_ED_FALLBACK_TYPES = frozenset({"ED_NOTE", "ED_NURSING", "TRIAGE"})
+
+
+def _extract_readings_for_items(
+    items: List[Dict[str, Any]],
+    day_iso: str,
+    config: Dict[str, Any],
+    guardrails: Dict[str, Dict[str, Any]],
+    exclude_res: List["re.Pattern[str]"],
+) -> List[_VitalReading]:
+    """Extract vital readings from a set of items using all parsers."""
+    all_readings: List[_VitalReading] = []
+    for item in items:
+        text = (item.get("payload") or {}).get("text", "")
+        if not text:
+            continue
+        source_id = item.get("source_id")
+        item_dt = item.get("dt")
+        item_time_missing = bool(item.get("time_missing"))
+
+        all_readings.extend(
+            _parse_flowsheet_table(text, day_iso, config, source_id, guardrails)
+        )
+        all_readings.extend(
+            _parse_ed_triage_block(text, day_iso, config, source_id, guardrails)
+        )
+
+        vv = _parse_visit_vitals_block(
+            text, day_iso, item_dt, config, source_id, guardrails,
+            time_missing=item_time_missing,
+        )
+        if item_time_missing:
+            for r in vv:
+                r["time_missing"] = True
+        all_readings.extend(vv)
+
+        inl = _parse_inline_vitals(
+            text, day_iso, item_dt, config, source_id, guardrails,
+            exclude_res, time_missing=item_time_missing,
+        )
+        if item_time_missing:
+            for r in inl:
+                r["time_missing"] = True
+        all_readings.extend(inl)
+
+        tab, _ = _parse_tabular_note_vitals(
+            text, day_iso, item_dt, source_id, guardrails,
+            time_missing=item_time_missing,
+        )
+        if item_time_missing:
+            for r in tab:
+                r["time_missing"] = True
+        all_readings.extend(tab)
+
+    return all_readings
+
+
+def _build_arrival_result(
+    readings: List[_VitalReading],
+    source_context: str,
+    source_items: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Build arrival vitals result from extracted readings."""
+    by_metric: Dict[str, List[_VitalReading]] = {mk: [] for mk in METRIC_KEYS}
+    for r in readings:
+        if r["metric"] in by_metric:
+            by_metric[r["metric"]].append(r)
+
+    vitals: Dict[str, Any] = {}
+    first_preview: Optional[str] = None
+    earliest_selected: Optional[_VitalReading] = None
+    for mk in METRIC_KEYS:
+        metric_readings = by_metric[mk]
+        if metric_readings:
+            sorted_r = sorted(metric_readings, key=lambda r: r.get("dt") or "")
+            earliest_metric_reading = sorted_r[0]
+            vitals[mk] = earliest_metric_reading["value"]
+            if (
+                earliest_selected is None
+                or (earliest_metric_reading.get("dt") or "")
+                < (earliest_selected.get("dt") or "")
+            ):
+                earliest_selected = earliest_metric_reading
+                first_preview = earliest_metric_reading.get("line_preview")
+        else:
+            vitals[mk] = None
+
+    # Pick earliest contributing source item by timestamp.
+    contributing_ids = {r.get("source_id") for r in readings}
+    contributing_items = [
+        i for i in source_items if i.get("source_id") in contributing_ids
+    ]
+    if contributing_items:
+        source_item = min(
+            contributing_items,
+            key=lambda i: ((i.get("dt") or ""), (i.get("source_id") or "")),
+        )
+    elif source_items:
+        source_item = source_items[0]
+    else:
+        source_item = {}
+
+    return {
+        "status": "selected",
+        "source_context": source_context,
+        "item_type": source_item.get("type"),
+        "source_item_dt": source_item.get("dt"),
+        "source_item_id": source_item.get("source_id"),
+        "vitals": vitals,
+        "readings_count": len(readings),
+        "line_preview": first_preview,
+        "warnings": [],
+    }
+
+
+def _arrival_vitals_stub() -> Dict[str, Any]:
+    """DATA NOT AVAILABLE stub for arrival vitals."""
+    return {
+        "status": "DATA NOT AVAILABLE",
+        "source_context": None,
+        "item_type": None,
+        "source_item_dt": None,
+        "source_item_id": None,
+        "vitals": {mk: None for mk in METRIC_KEYS},
+        "readings_count": 0,
+        "line_preview": None,
+        "warnings": [],
+    }
+
+
+def extract_arrival_vitals(
+    items: List[Dict[str, Any]],
+    day_iso: str,
+    config: Dict[str, Any],
+) -> Dict[str, Any]:
+    """
+    Extract arrival vitals with deterministic priority hierarchy.
+
+    Uses the timeline item ``type`` field to partition items and apply
+    source-context priority:
+
+      1. TRAUMA_HP items (Primary Survey context) → source_context="PRIMARY_SURVEY"
+      2. ED_NOTE / ED_NURSING / TRIAGE items (ED fallback) → source_context="ED_FALLBACK"
+      3. DATA NOT AVAILABLE
+
+    Within each tier, all existing vitals parsers (flowsheet, ED triage,
+    visit-vitals, inline, tabular) are applied.  The earliest reading per
+    metric is selected.
+
+    Parameters
+    ----------
+    items   : timeline items for the arrival day
+    day_iso : 'YYYY-MM-DD'
+    config  : loaded vitals_patterns_v1 config dict
+
+    Returns
+    -------
+    dict
+        ``status``='selected' with ``vitals`` sub-dict and provenance, or
+        ``status``='DATA NOT AVAILABLE' stub.
+    """
+    # Load guardrails
+    metric_cfg = config.get("metric_patterns", {})
+    guardrails: Dict[str, Dict[str, Any]] = {}
+    for mk in ("temp_f", "hr", "rr", "spo2", "bp"):
+        mc = metric_cfg.get(mk, {})
+        guardrails[mk] = mc.get("guardrails", {})
+
+    # Compile negative-context exclusion patterns
+    neg_cfg = config.get("negative_context", {})
+    exclude_res: List[re.Pattern[str]] = []
+    for pat_str in neg_cfg.get("exclude_line_patterns", []):
+        try:
+            exclude_res.append(re.compile(pat_str))
+        except re.error:
+            continue
+
+    # Partition items by type
+    primary_items = [i for i in items if i.get("type") in _ARRIVAL_PRIMARY_SURVEY_TYPES]
+    ed_items = [i for i in items if i.get("type") in _ARRIVAL_ED_FALLBACK_TYPES]
+
+    # Tier 1: Primary Survey (TRAUMA_HP)
+    if primary_items:
+        readings = _extract_readings_for_items(
+            primary_items, day_iso, config, guardrails, exclude_res,
+        )
+        readings = _dedup_readings(readings)
+        if readings:
+            return _build_arrival_result(readings, "PRIMARY_SURVEY", primary_items)
+
+    # Tier 2: ED fallback
+    if ed_items:
+        readings = _extract_readings_for_items(
+            ed_items, day_iso, config, guardrails, exclude_res,
+        )
+        readings = _dedup_readings(readings)
+        if readings:
+            return _build_arrival_result(readings, "ED_FALLBACK", ed_items)
+
+    # Tier 3: DATA NOT AVAILABLE
+    return _arrival_vitals_stub()
