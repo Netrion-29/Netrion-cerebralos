@@ -13,6 +13,7 @@ Deterministic extraction of ventilator setting parameters from raw patient
 text with full `raw_line_id` traceability. Covers structured Vent Settings
 blocks (flowsheet), O2 Device / NIV headers, inline FiO2+PEEP narrative
 patterns, and explicit ventilator mode labels (BiPAP, CPAP).
+Also extracts NIV pressure settings (IPAP/EPAP) from explicit structured lines.
 
 ---
 
@@ -48,7 +49,7 @@ patterns, and explicit ventilator mode labels (BiPAP, CPAP).
 
 | Field | Type | Description |
 |---|---|---|
-| `param` | string | One of: `vent_status`, `vent_mode`, `fio2`, `peep`, `tidal_volume`, `resp_rate_set`, `ventilated_flag` |
+| `param` | string | One of: `vent_status`, `vent_mode`, `fio2`, `peep`, `tidal_volume`, `resp_rate_set`, `ventilated_flag`, `ipap`, `epap` |
 | `value` | number / string / bool | Extracted value (see param-specific semantics below) |
 | `day` | string | ISO date (`YYYY-MM-DD`) of the day the line belongs to |
 | `line_index` | int | Zero-based index into `raw_lines` for the day |
@@ -71,6 +72,7 @@ patterns, and explicit ventilator mode labels (BiPAP, CPAP).
 | `recommend_mode` | From "Recommend BiPAP/CPAP" pattern |
 | `remained_on_mode` | From "Remained/Remains on BiPAP/CPAP" pattern |
 | `weaned_to_mode` | From "weaned to BiPAP/CPAP" pattern |
+| `niv_pressure_setting` | From explicit "IPAP nn" / "EPAP nn" structured values |
 
 ---
 
@@ -98,6 +100,8 @@ patterns, and explicit ventilator mode labels (BiPAP, CPAP).
 | `tidal_volume` | float | mL | — |
 | `resp_rate_set` | float | breaths/min | Set respiratory rate |
 | `ventilated_flag` | `true` | boolean | From explicit `Ventilated Patient?: Yes` |
+| `ipap` | float | cm H₂O | Inspiratory Positive Airway Pressure; range gate 4–40 |
+| `epap` | float | cm H₂O | Expiratory Positive Airway Pressure; range gate 2–25 |
 
 ---
 
@@ -124,6 +128,8 @@ No event is emitted for out-of-range values.
 | `peep` | 0 | 30 |
 | `tidal_volume` | 50 | 2000 |
 | `resp_rate_set` | 1 | 60 |
+| `ipap` | 4 | 40 |
+| `epap` | 2 | 25 |
 
 ---
 
