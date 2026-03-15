@@ -12,6 +12,7 @@ Contract §4 hierarchy (v2):
 
 import pytest
 from cerebralos.features.vitals_canonical_v1 import select_arrival_vitals
+from cerebralos.features.vitals_daily import extract_arrival_vitals
 
 
 # ── helpers ──────────────────────────────────────────────────────────
@@ -476,10 +477,6 @@ class TestOutputSchema:
 # ═══════════════════════════════════════════════════════════════════
 #  Tests for extract_arrival_vitals (vitals_daily layer)
 # ═══════════════════════════════════════════════════════════════════
-
-import json
-import os
-from cerebralos.features.vitals_daily import extract_arrival_vitals
 
 # Minimal config sufficient for inline vitals parsing
 _MINIMAL_CONFIG = {

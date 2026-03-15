@@ -1251,22 +1251,37 @@ def _build_arrival_result(
 
     vitals: Dict[str, Any] = {}
     first_preview: Optional[str] = None
+    earliest_selected: Optional[_VitalReading] = None
     for mk in METRIC_KEYS:
         metric_readings = by_metric[mk]
         if metric_readings:
             sorted_r = sorted(metric_readings, key=lambda r: r.get("dt") or "")
-            vitals[mk] = sorted_r[0]["value"]
-            if first_preview is None:
-                first_preview = sorted_r[0].get("line_preview")
+            earliest_metric_reading = sorted_r[0]
+            vitals[mk] = earliest_metric_reading["value"]
+            if (
+                earliest_selected is None
+                or (earliest_metric_reading.get("dt") or "")
+                < (earliest_selected.get("dt") or "")
+            ):
+                earliest_selected = earliest_metric_reading
+                first_preview = earliest_metric_reading.get("line_preview")
         else:
             vitals[mk] = None
 
-    # Pick earliest item that contributed readings
+    # Pick earliest contributing source item by timestamp.
     contributing_ids = {r.get("source_id") for r in readings}
-    source_item = next(
-        (i for i in source_items if i.get("source_id") in contributing_ids),
-        source_items[0],
-    )
+    contributing_items = [
+        i for i in source_items if i.get("source_id") in contributing_ids
+    ]
+    if contributing_items:
+        source_item = min(
+            contributing_items,
+            key=lambda i: ((i.get("dt") or ""), (i.get("source_id") or "")),
+        )
+    elif source_items:
+        source_item = source_items[0]
+    else:
+        source_item = {}
 
     return {
         "status": "selected",

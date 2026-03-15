@@ -6,7 +6,7 @@
 | Phase   | Tier 2 Hardening       |
 | Owner   | CerebralOS Phase 1.1  |
 | Module  | `cerebralos/features/vitals_daily.py` |
-| Output  | `features.vitals` in `patient_features_v1.json` (per-day) |
+| Output  | `days.<YYYY-MM-DD>.vitals` in `patient_features_v1.json` |
 | Date    | 2026-03-15             |
 
 ---
