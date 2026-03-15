@@ -203,7 +203,7 @@ _RE_NIV_RATE = re.compile(
 )
 # Negative guard: reject "rate of N" when preceded by non-NIV qualifiers
 _RE_NIV_RATE_FALSE_POSITIVE = re.compile(
-    r"(?:heart|respiratory|pulse|infusion|flow|drip|metabolic|basal|filtration|sed(?:imentation)?)\s+rate\s+of\s+\d+",
+    r"\b(?:heart|respiratory|pulse|infusion|flow|drip|metabolic|basal|filtration|sed(?:imentation)?)\b\s+\brate\b\s+of\s+\d+\b",
     re.IGNORECASE,
 )
 

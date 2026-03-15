@@ -678,6 +678,27 @@ class TestNivBackupRate:
         rate_events = [e for e in events if e["param"] == "niv_rate"]
         assert len(rate_events) == 0
 
+    def test_metabolic_rate_rejected(self):
+        """'metabolic rate of 12' with IPAP — rejected by FP guard."""
+        lines = ["IPAP 20, metabolic rate of 12"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 0
+
+    def test_basal_rate_rejected(self):
+        """'basal rate of 10' with EPAP — rejected by FP guard."""
+        lines = ["EPAP 6, basal rate of 10"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 0
+
+    def test_filtration_rate_rejected(self):
+        """'filtration rate of 18' with IPAP — rejected by FP guard."""
+        lines = ["IPAP 22, filtration rate of 18"]
+        events = _extract_from_lines(lines, "2026-01-10")
+        rate_events = [e for e in events if e["param"] == "niv_rate"]
+        assert len(rate_events) == 0
+
     def test_true_positive_still_extracted_after_hardening(self):
         """Regression: plain 'rate of 16' with IPAP/EPAP still works."""
         lines = ["IPAP 22, EPAP 8, rate of 16"]
