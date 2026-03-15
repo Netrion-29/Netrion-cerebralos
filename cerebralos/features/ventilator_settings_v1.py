@@ -16,6 +16,7 @@ Parameters extracted:
   - ventilated_flag  : boolean from "Ventilated Patient?: Yes"
   - ipap             : numeric IPAP value (cm H2O) from NIV settings
   - epap             : numeric EPAP value (cm H2O) from NIV settings
+  - niv_rate          : numeric NIV backup rate (breaths/min) from IPAP/EPAP context
 
 Sources (structured, deterministic):
   Vent Settings block (flowsheet):
@@ -48,7 +49,7 @@ Raw evidence citations:
   Jamie_Hunter.txt:21449    — Non-Invasive Mechanical Ventilation header
   Jamie_Hunter.txt:7989     — Daily Vent Weaning Worksheet
   Ronald_Bittner.txt:1443   — EPAP 8-10 for now (standalone EPAP)
-  Ronald_Marshall.txt:10465 — IPAP 22, EPAP 8, rate of 16 (paired NIV settings)
+  Ronald_Marshall.txt:10465 — IPAP 22, EPAP 8, rate of 16 (paired NIV settings + backup rate)
 
 Design:
   - Deterministic, fail-closed.
@@ -88,6 +89,7 @@ _RANGE_GATES = {
     "resp_rate_set": (1, 60),    # breaths/min
     "ipap": (4, 40),             # cm H2O
     "epap": (2, 25),             # cm H2O
+    "niv_rate": (4, 40),          # breaths/min
 }
 
 
@@ -190,6 +192,13 @@ _RE_IPAP = re.compile(
 # "EPAP 8" — standalone or in pair; also handles range "EPAP 8-10" (takes first)
 _RE_EPAP = re.compile(
     r"\bEPAP\s+(\d+)\b",
+    re.IGNORECASE,
+)
+
+# --- NIV backup rate (only valid when paired with IPAP/EPAP on same line) ---
+# "rate of 16" — backup rate for bilevel NIV
+_RE_NIV_RATE = re.compile(
+    r"\brate\s+of\s+(\d+)\b",
     re.IGNORECASE,
 )
 
@@ -397,23 +406,35 @@ def _extract_from_lines(
                 break  # one mode event per line
 
         # --- NIV pressure settings (IPAP / EPAP) ---
-        m = _RE_IPAP.search(line)
-        if m:
-            val = float(m.group(1))
+        has_ipap = _RE_IPAP.search(line)
+        has_epap = _RE_EPAP.search(line)
+
+        if has_ipap:
+            val = float(has_ipap.group(1))
             if _in_range("ipap", val):
                 events.append(_make_event(
                     "ipap", val, day, line_idx, line,
                     source="niv_pressure_setting",
                 ))
 
-        m = _RE_EPAP.search(line)
-        if m:
-            val = float(m.group(1))
+        if has_epap:
+            val = float(has_epap.group(1))
             if _in_range("epap", val):
                 events.append(_make_event(
                     "epap", val, day, line_idx, line,
                     source="niv_pressure_setting",
                 ))
+
+        # --- NIV backup rate (only when IPAP or EPAP present on same line) ---
+        if has_ipap or has_epap:
+            m_rate = _RE_NIV_RATE.search(line)
+            if m_rate:
+                rate_val = float(m_rate.group(1))
+                if _in_range("niv_rate", rate_val):
+                    events.append(_make_event(
+                        "niv_rate", rate_val, day, line_idx, line,
+                        source="niv_backup_rate",
+                    ))
 
     return events
 
