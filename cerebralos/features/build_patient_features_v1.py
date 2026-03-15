@@ -318,6 +318,11 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         _candidate = arrival_ts_str[:10]
         if re.match(r"^\d{4}-\d{2}-\d{2}$", _candidate):
             arrival_day_iso = _candidate
+    next_day_iso = None
+    if arrival_day_iso:
+        next_day_iso = (
+            date.fromisoformat(arrival_day_iso) + timedelta(days=1)
+        ).isoformat()
 
     # Gather candidate records: arrival day + next calendar day.
     # Cross-midnight transfers (late-evening arrival, note documented
@@ -328,12 +333,10 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         arrival_day_records = list(
             vitals_canonical_days.get(arrival_day_iso, {}).get("records", [])
         )
-        next_day_iso = (
-            date.fromisoformat(arrival_day_iso) + timedelta(days=1)
-        ).isoformat()
-        arrival_day_records += (
-            vitals_canonical_days.get(next_day_iso, {}).get("records", [])
-        )
+        if next_day_iso:
+            arrival_day_records += (
+                vitals_canonical_days.get(next_day_iso, {}).get("records", [])
+            )
 
     arrival_vitals = select_arrival_vitals(arrival_day_records, arrival_ts_str)
 
@@ -344,6 +347,19 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
     arrival_vitals_hardened = extract_arrival_vitals(
         arrival_day_items, arrival_day_iso or "", vitals_config,
     )
+    # Cross-midnight fallback: if arrival-day items produce DNA, retry on the
+    # next calendar day items using next_day_iso for parser date alignment.
+    if (
+        arrival_vitals_hardened.get("status") != "selected"
+        and next_day_iso
+    ):
+        next_day_items = list(days_map.get(next_day_iso, {}).get("items") or [])
+        if next_day_items:
+            next_day_hardened = extract_arrival_vitals(
+                next_day_items, next_day_iso, vitals_config,
+            )
+            if next_day_hardened.get("status") == "selected":
+                arrival_vitals_hardened = next_day_hardened
 
     # ── evidence gap-day detection ───────────────────────────────
     evidence_gaps: List[Dict[str, Any]] = []

@@ -800,3 +800,47 @@ class TestRuntimeWiring:
         vc = features.get("vitals_canonical_v1", {})
         assert "arrival_vitals_hardened" in vc
         assert vc["arrival_vitals_hardened"]["status"] == "DATA NOT AVAILABLE"
+
+    def test_arrival_vitals_hardened_cross_midnight_next_day_only(self):
+        """
+        Late-night arrival with vitals only on next calendar day should still
+        populate arrival_vitals_hardened.
+        """
+        from cerebralos.features.build_patient_features_v1 import build_patient_features
+
+        days_data = {
+            "meta": {
+                "arrival_datetime": "2025-12-31 23:50:00",
+                "patient_id": "TEST_CROSS_MIDNIGHT",
+            },
+            "days": {
+                "2026-01-01": {
+                    "items": [
+                        {
+                            "type": "TRAUMA_HP",
+                            "dt": "2026-01-01T00:05:00",
+                            "source_id": "SRC_TEST_CROSS",
+                            "time_missing": False,
+                            "payload": {
+                                "text": (
+                                    "Vitals: Blood pressure 140/85, pulse 72, "
+                                    "temperature 98.7 °F (37.1 °C), "
+                                    "resp. rate 18, SpO2 96%."
+                                ),
+                            },
+                        }
+                    ],
+                },
+            },
+        }
+        result = build_patient_features(days_data)
+        features = result.get("features", {})
+        vc = features.get("vitals_canonical_v1", {})
+
+        assert "arrival_vitals_hardened" in vc, (
+            "arrival_vitals_hardened missing for cross-midnight scenario"
+        )
+        hardened = vc["arrival_vitals_hardened"]
+        assert hardened["status"] == "selected"
+        assert hardened["source_context"] == "PRIMARY_SURVEY"
+        assert hardened["vitals"]["sbp"] == 140.0
