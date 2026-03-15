@@ -393,7 +393,7 @@ class TestExtractForDay:
 
 class TestCompactIntubated:
     def test_compact_without_trailing_t_still_intubated(self):
-        """Compact form E3VtM5 GCS 8 (no trailing T) must set intubated=True
+        """Compact form E4V1tM5 GCS 10 (no trailing T) must set intubated=True
         because the 't' between V and M *is* the intubated marker."""
         text = "E4V1tM5 GCS 10"
         readings, _ = _extract_gcs_from_text(text, "2025-12-18", "ED_NOTE", None)
@@ -427,6 +427,8 @@ class TestComponentSumMismatch:
         assert len(readings) == 1
         assert readings[0]["value"] == 13
         assert "eye" not in readings[0]
+        assert "verbal" not in readings[0]
+        assert "motor" not in readings[0]
 
     def test_desc_mismatch_omits_components(self):
         """GCS: 4 (spontaneously),5 (oriented),6 (follows commands) = 14 → no components."""
@@ -435,6 +437,8 @@ class TestComponentSumMismatch:
         assert len(readings) == 1
         assert readings[0]["value"] == 14
         assert "eye" not in readings[0]
+        assert "verbal" not in readings[0]
+        assert "motor" not in readings[0]
 
     def test_matching_sum_keeps_components(self):
         """GCS (E:4 V:5 M:6) 15 — sum matches → components present."""

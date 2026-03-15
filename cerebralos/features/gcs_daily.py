@@ -281,7 +281,7 @@ def _extract_gcs_from_text(
                 m = RE_GCS_COMPACT.search(stripped)
                 if m:
                     val = int(m.group(4))
-                    intubated = True  # compact form always has T (intubated)
+                    intubated = True  # compact form has internal 't' (Vt) marking intubation; trailing T is optional
                     source_label = f"{source_type}:compact"
                     if m.group(2):  # V digit captured
                         eye_comp = int(m.group(1))

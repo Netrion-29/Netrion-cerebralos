@@ -31,7 +31,11 @@ fields are included in the reading.
   "arrival_gcs_source_rule_id": "trauma_hp_primary_survey",
   "best_gcs":  { "value": 15, "intubated": false, "source": "ED_NOTE:structured_block", "dt": "2025-12-18T16:00:00", "timestamp_quality": "full", "eye": 4, "verbal": 5, "motor": 6 },
   "worst_gcs": { "value": 8,  "intubated": true,  "source": "ED_NOTE:compact", "dt": "2025-12-18T18:00:00", "timestamp_quality": "full" },
-  "all_readings": [],
+  "all_readings": [
+    { "value": 15, "intubated": false, "source": "TRAUMA_HP:Primary_Survey:Disability", "dt": "2025-12-18T14:30:00", "timestamp_quality": "full" },
+    { "value": 15, "intubated": false, "source": "ED_NOTE:structured_block", "dt": "2025-12-18T16:00:00", "timestamp_quality": "full", "eye": 4, "verbal": 5, "motor": 6 },
+    { "value": 8,  "intubated": true,  "source": "ED_NOTE:compact", "dt": "2025-12-18T18:00:00", "timestamp_quality": "full" }
+  ],
   "warnings": []
 }
 ```
@@ -60,7 +64,7 @@ fields are included in the reading.
 | Field | Type | Presence | Description |
 |---|---|---|---|
 | `value` | int (3–15) | always | GCS total score |
-| `intubated` | bool | always | True if T suffix present |
+| `intubated` | bool | always | True when parsed source explicitly indicates intubation (e.g., suffix `T` or compact internal `Vt`) |
 | `source` | string | always | Origin tag (see Source Tags below) |
 | `dt` | string \| null | always | ISO datetime or date string |
 | `timestamp_quality` | string | always | `"full"`, `"date_only"`, or `"missing"` |
