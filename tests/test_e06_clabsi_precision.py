@@ -13,7 +13,7 @@ Verifies that mapper patterns correctly detect:
   7. clabsi_onset — timing/onset language
 
 Also verifies E06 rule JSON wiring against the NTDS spec:
-  - 5 required gates (dx, central line >2d, blood culture, symptoms, timing)
+  - 6 required gates (dx, central line >2d, central line duration (LDA), blood culture, symptoms, timing)
   - 2 exclusions (POA, chronic line)
 """
 
