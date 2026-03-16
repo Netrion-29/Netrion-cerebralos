@@ -387,10 +387,10 @@ class TestE06ClabsiLDAGateWiring:
         gate_ids = {g["gate_id"] for g in self.rule["gates"]}
         assert "clabsi_central_line_duration_lda" in gate_ids
 
-    def test_lda_gate_not_required(self):
+    def test_lda_gate_required(self):
         for g in self.rule["gates"]:
             if g["gate_id"] == "clabsi_central_line_duration_lda":
-                assert g.get("required") is False
+                assert g.get("required") is True
 
 
 class TestE21VapLDAGateWiring:

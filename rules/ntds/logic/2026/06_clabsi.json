@@ -58,7 +58,7 @@
       "gate_type": "lda_duration",
       "gate_id": "clabsi_central_line_duration_lda",
       "gate_name": "LDA: Central line episode ≥2 calendar days (structured/text-derived)",
-      "required": false,
+      "required": true,
       "device_type": "CENTRAL_LINE",
       "days_gte": 2,
       "min_confidence": "TEXT_DERIVED",

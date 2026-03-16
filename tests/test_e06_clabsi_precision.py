@@ -63,10 +63,10 @@ class TestE06RuleWiring:
     def test_version_2(self):
         assert self.rule["meta"]["version"] == "2.0.0"
 
-    def test_has_five_required_gates(self):
+    def test_has_six_required_gates(self):
         gates = self.rule["gates"]
         required = [g for g in gates if g.get("required", True)]
-        assert len(required) == 5
+        assert len(required) == 6
 
     def test_gate_ids(self):
         ids = {g["gate_id"] for g in self.rule["gates"]}
