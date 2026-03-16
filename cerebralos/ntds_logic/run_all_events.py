@@ -74,62 +74,66 @@ def run_all(year: int, patient_path: Path, arrival: str | None = None) -> List[D
     out_dir.mkdir(parents=True, exist_ok=True)
 
     summary_rows: List[Dict[str, Any]] = []
+    original_lda_flag = _engine_mod.ENABLE_LDA_GATES
 
-    for eid in ALL_EVENTS:
-        # ── Per-event LDA gate toggle (E05 + E06 today) ──────────
-        _engine_mod.ENABLE_LDA_GATES = eid in _LDA_ENABLED_EVENTS
+    try:
+        for eid in ALL_EVENTS:
+            # ── Per-event LDA gate toggle (E05 + E06 + E21 today) ──────
+            _engine_mod.ENABLE_LDA_GATES = eid in _LDA_ENABLED_EVENTS
 
-        # Validate rules file exists before loading (mirrors engine.py CLI guard)
-        rules_dir = REPO_ROOT / "rules" / "ntds" / "logic" / str(year)
-        pattern = f"{eid:02d}_*.json"
-        matches = list(rules_dir.glob(pattern)) if rules_dir.exists() else []
-        if not matches:
-            row = {
-                "event_id": eid,
-                "canonical_name": f"(unknown – no rules file for event {eid})",
-                "outcome": "SKIPPED",
-                "reason": f"No rules file matching {pattern} in {rules_dir}",
-            }
-            summary_rows.append(row)
-            print(f"  Event {eid:02d}: SKIPPED (no rules file)")
-            continue
+            # Validate rules file exists before loading (mirrors engine.py CLI guard)
+            rules_dir = REPO_ROOT / "rules" / "ntds" / "logic" / str(year)
+            pattern = f"{eid:02d}_*.json"
+            matches = list(rules_dir.glob(pattern)) if rules_dir.exists() else []
+            if not matches:
+                row = {
+                    "event_id": eid,
+                    "canonical_name": f"(unknown – no rules file for event {eid})",
+                    "outcome": "SKIPPED",
+                    "reason": f"No rules file matching {pattern} in {rules_dir}",
+                }
+                summary_rows.append(row)
+                print(f"  Event {eid:02d}: SKIPPED (no rules file)")
+                continue
 
-        try:
-            rs = load_ruleset(year, eid)
-            event_rules = rs.event
-            result = evaluate_event(event_rules, rs.contract, patient)
+            try:
+                rs = load_ruleset(year, eid)
+                event_rules = rs.event
+                result = evaluate_event(event_rules, rs.contract, patient)
 
-            out_path = out_dir / f"ntds_event_{eid:02d}_{year}_v1.json"
-            write_output(result, out_path, patient=patient, event_rules=event_rules)
+                out_path = out_dir / f"ntds_event_{eid:02d}_{year}_v1.json"
+                write_output(result, out_path, patient=patient, event_rules=event_rules)
 
-            row = {
-                "event_id": result.event_id,
-                "canonical_name": result.canonical_name,
-                "outcome": result.outcome.value,
-            }
-            if result.hard_stop:
-                row["hard_stop_reason"] = result.hard_stop.reason
-            summary_rows.append(row)
-            print(f"  Event {eid:02d} {result.canonical_name}: {result.outcome.value}")
+                row = {
+                    "event_id": result.event_id,
+                    "canonical_name": result.canonical_name,
+                    "outcome": result.outcome.value,
+                }
+                if result.hard_stop:
+                    row["hard_stop_reason"] = result.hard_stop.reason
+                summary_rows.append(row)
+                print(f"  Event {eid:02d} {result.canonical_name}: {result.outcome.value}")
 
-        except SystemExit as exc:
-            row = {
-                "event_id": eid,
-                "canonical_name": f"(load error for event {eid})",
-                "outcome": "ERROR",
-                "reason": str(exc),
-            }
-            summary_rows.append(row)
-            print(f"  Event {eid:02d}: ERROR — {exc}")
-        except Exception as exc:
-            row = {
-                "event_id": eid,
-                "canonical_name": f"(runtime error for event {eid})",
-                "outcome": "ERROR",
-                "reason": str(exc),
-            }
-            summary_rows.append(row)
-            print(f"  Event {eid:02d}: ERROR — {exc}")
+            except SystemExit as exc:
+                row = {
+                    "event_id": eid,
+                    "canonical_name": f"(load error for event {eid})",
+                    "outcome": "ERROR",
+                    "reason": str(exc),
+                }
+                summary_rows.append(row)
+                print(f"  Event {eid:02d}: ERROR — {exc}")
+            except Exception as exc:
+                row = {
+                    "event_id": eid,
+                    "canonical_name": f"(runtime error for event {eid})",
+                    "outcome": "ERROR",
+                    "reason": str(exc),
+                }
+                summary_rows.append(row)
+                print(f"  Event {eid:02d}: ERROR — {exc}")
+    finally:
+        _engine_mod.ENABLE_LDA_GATES = original_lda_flag
 
     # Write rollup summary
     summary_path = out_dir / f"ntds_summary_{year}_v1.json"
