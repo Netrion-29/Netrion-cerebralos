@@ -364,10 +364,10 @@ class TestE05CautiLDAGateWiring:
         gate_ids = {g["gate_id"] for g in self.rule["gates"]}
         assert "cauti_catheter_duration_lda" in gate_ids
 
-    def test_lda_gate_not_required(self):
+    def test_lda_gate_required(self):
         for g in self.rule["gates"]:
             if g["gate_id"] == "cauti_catheter_duration_lda":
-                assert g.get("required") is False
+                assert g.get("required") is True
 
     def test_lda_gate_type(self):
         for g in self.rule["gates"]:
@@ -476,8 +476,8 @@ class TestFlagOffBackwardCompat:
     def teardown_method(self):
         engine.ENABLE_LDA_GATES = self._orig
 
-    def test_e05_lda_gate_does_not_block(self):
-        """Evaluate E05 with LDA gate — should not cause unknown gate_type error."""
+    def test_e05_lda_gate_does_not_block_when_flag_off(self):
+        """Evaluate E05 with LDA gate — flag off, gate fails but is required."""
         with open(RULE_DIR / "05_cauti.json") as f:
             rule = json.load(f)
 
@@ -487,9 +487,9 @@ class TestFlagOffBackwardCompat:
                 lda_gate = g
                 break
         assert lda_gate is not None
-        assert lda_gate.get("required") is False
+        assert lda_gate.get("required") is True
 
-        # Evaluate the gate directly
+        # Evaluate the gate directly — flag off so gate returns False
         patient = _make_patient()
         result = engine.eval_lda_duration(lda_gate, patient, _contract())
         assert not result.passed  # Expected: flag off → False

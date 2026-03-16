@@ -297,6 +297,21 @@ def build_patientfacts(
         )
         evidence_list.append(ev)
 
+    # ── Populate LDA episodes from raw text (day-counters + start/stop) ──
+    lda_episodes = build_lda_episodes(patient_id=patient_id, raw_lines=lines)
+    if lda_episodes:
+        device_day_counts: Dict[str, int] = {}
+        for ep in lda_episodes:
+            dt = ep.get("device_type", "")
+            days = ep.get("episode_days")
+            if dt and days is not None:
+                if dt not in device_day_counts or days > device_day_counts[dt]:
+                    device_day_counts[dt] = int(days)
+        facts["lda_episodes_v1"] = {
+            "episodes": lda_episodes,
+            "device_day_counts": device_day_counts,
+        }
+
     return PatientFacts(
         patient_id=patient_id,
         facts=facts,

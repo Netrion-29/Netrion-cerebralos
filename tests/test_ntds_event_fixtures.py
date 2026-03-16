@@ -28,6 +28,7 @@ import pytest
 
 from cerebralos.ntds_logic.build_patientfacts_from_txt import build_patientfacts
 from cerebralos.ntds_logic.engine import evaluate_event, load_mapper
+from cerebralos.ntds_logic import engine as _engine_mod
 from cerebralos.ntds_logic.rules_loader import load_ruleset
 
 
@@ -104,6 +105,15 @@ def _needs_xfail(fixture_path: Path) -> str | None:
 def query_patterns() -> dict:
     mapper = load_mapper()
     return mapper.get("query_patterns", {})
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _enable_lda_gates():
+    """Mirror run_all_events.py runtime setting: LDA gates active."""
+    orig = _engine_mod.ENABLE_LDA_GATES
+    _engine_mod.ENABLE_LDA_GATES = True
+    yield
+    _engine_mod.ENABLE_LDA_GATES = orig
 
 
 @pytest.mark.parametrize(

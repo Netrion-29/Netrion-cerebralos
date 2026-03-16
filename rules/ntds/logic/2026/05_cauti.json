@@ -61,7 +61,7 @@
       "gate_type": "lda_duration",
       "gate_id": "cauti_catheter_duration_lda",
       "gate_name": "LDA: Urinary catheter episode ≥2 calendar days (structured/text-derived)",
-      "required": false,
+      "required": true,
       "device_type": "URINARY_CATHETER",
       "days_gte": 2,
       "min_confidence": "TEXT_DERIVED",
