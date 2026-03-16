@@ -413,6 +413,14 @@ _LDA_STARTSTOP_PATTERNS: List[tuple] = [
     (re.compile(r"\bsurgical\s+drain\b.*?\b(?:removed|pulled|discontinued)\b", re.IGNORECASE), "DRAIN_SURGICAL", "remove"),
 ]
 
+# Negation guard for vent-status insert phrases.
+# Avoid false inserts from explicit non-presence statements:
+# "not on the ventilator", "no longer on the vent", "off the vent".
+_RE_MV_STATUS_NEGATION = re.compile(
+    r"\b(?:not\s+on|no\s+longer\s+on|off)\s+(?:the\s+)?(?:mechanical\s+)?vent(?:ilat(?:or|ion))?\b",
+    re.IGNORECASE,
+)
+
 
 def _extract_lda_startstop_episodes(
     lines: List[str],
@@ -443,6 +451,13 @@ def _extract_lda_startstop_episodes(
         ts = timestamps[idx] if timestamps and idx < len(timestamps) else None
         for pattern, device_type, action in _LDA_STARTSTOP_PATTERNS:
             if pattern.search(line):
+                # Fail-closed: explicit vent negation must not create MV insert episodes.
+                if (
+                    device_type == "MECHANICAL_VENTILATOR"
+                    and action == "insert"
+                    and _RE_MV_STATUS_NEGATION.search(line)
+                ):
+                    continue
                 hits.append((device_type, action, ts, idx))
 
     if not hits:

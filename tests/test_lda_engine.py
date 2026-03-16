@@ -1200,7 +1200,7 @@ class TestStartStopExtraction:
             timestamps=["2026-01-15T10:00:00"],
         )
         mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
-        assert len(mv) >= 1
+        assert len(mv) == 1
 
     def test_ventilated_via_tracheostomy(self):
         """'ventilated via tracheostomy' → MECHANICAL_VENTILATOR insert.
@@ -1213,6 +1213,33 @@ class TestStartStopExtraction:
         )
         mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
         assert len(mv) == 1
+
+    def test_not_on_ventilator_negated(self):
+        """Negated vent-status phrase must not create MECHANICAL_VENTILATOR."""
+        eps = _extract_lda_startstop_episodes(
+            ["Patient is not on the ventilator."],
+            timestamps=["2026-01-15T12:30:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 0
+
+    def test_no_longer_on_vent_negated(self):
+        """'No longer on the vent' must not create MECHANICAL_VENTILATOR."""
+        eps = _extract_lda_startstop_episodes(
+            ["Patient is no longer on the vent and weaning well."],
+            timestamps=["2026-01-15T13:00:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 0
+
+    def test_off_the_vent_negated(self):
+        """'Off the vent' must not create MECHANICAL_VENTILATOR."""
+        eps = _extract_lda_startstop_episodes(
+            ["Patient now off the vent after extubation."],
+            timestamps=["2026-01-15T13:30:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 0
 
     def test_on_vent_with_stop_creates_episode_days(self):
         """'on the vent' + 'vent discontinued' → episode with computed days."""
