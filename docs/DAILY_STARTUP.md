@@ -148,9 +148,9 @@ Verify the push succeeded and note the branch name for tomorrow.
 
 - **[Whole-Project State and Roadmap v1](roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md)** ← primary context-recovery doc
 - [Trauma Build-Forward Plan v1](roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md) (historical)
-- [LDA Engine Design v1](audits/LDA_ENGINE_DESIGN_v1.md) — ✅ IMPLEMENTED (v1+text+startstop) Lines/Drains/Airways device-duration engine design; text-derived flowsheet day-counter extraction; insertion/removal start/stop inference (`TEXT_DERIVED_STARTSTOP`); `eval_lda_overlap` interval overlap gate; `ENABLE_LDA_GATES` feature flag (default False); gates wired into E05/E06/E21 (`required: false`); 118 dedicated tests (PRs #203, #206, #207)
+- [LDA Engine Design v1](audits/LDA_ENGINE_DESIGN_v1.md) — ✅ IMPLEMENTED (v1+text+startstop) Lines/Drains/Airways device-duration engine design; text-derived flowsheet day-counter extraction; insertion/removal start/stop inference (`TEXT_DERIVED_STARTSTOP`); `eval_lda_overlap` interval overlap gate; `ENABLE_LDA_GATES` feature flag (default False); per-event LDA gates enabled for E05/E06/E21 via runner toggle + rule `required: true` (PRs #244–#246); 145+ dedicated tests (PRs #203, #206, #207, #244, #245, #246)
 - [CAUTI Engine Design v1](audits/CAUTI_ENGINE_DESIGN_v1.md) — CAUTI-specific LDA duration gate + alternative-source exclusion design (predecessor; CAUTI clinical requirements still authoritative; engine approval needed)
-- [Protocol Data Element Master v1](audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md) — comprehensive inventory of all data elements across 51 protocol PDFs; coverage Slices A/B/C COMPLETE (PRs #222–#232); vent settings COMPLETE (PRs #233–#237); GCS components COMPLETE (PRs #238–#239); see Roadmap §3 item 15 for next candidates
+- [Protocol Data Element Master v1](audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md) — comprehensive inventory of all data elements across 51 protocol PDFs; coverage Slices A/B/C COMPLETE (PRs #222–#232); vent settings COMPLETE (PRs #233–#237); GCS components COMPLETE (PRs #238–#239); tabular GCS flowsheet COMPLETE (PR #243); see Roadmap §3 item 15 for next candidates
 
 > **NTDS Coverage:** 21/21 events fully mapped (PRs #118 – #124).
 > Fixture runner: 43 fixtures passed (56 tests), 0 xfailed.
@@ -200,11 +200,13 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - Slice C (structured labs foundation + expansion): ✅ COMPLETE (PRs #226–#228, #232) — CBC/BMP/coag/ABG/PF + cardiac/sepsis panels
 > - Ventilator settings extraction: ✅ COMPLETE (PRs #233–#237) — FiO2/PEEP/Vt/RR/vent status, mode, NIV IPAP/EPAP/rate
 > - GCS component extraction (E/V/M): ✅ COMPLETE (PRs #238–#239) — inline + flowsheet block parsing, sum-mismatch guard, compact-intubated fix
+> - Tabular GCS flowsheet extraction: ✅ COMPLETE (PR #243) — deterministic tabular GCS flowsheet parsing
+> - LDA per-event gate enablement: ✅ COMPLETE (PRs #244–#246) — E05 CAUTI, E06 CLABSI, E21 VAP LDA gates set `required: true`; per-event toggle in runner; protected engine.py not modified
 > - Open PRs: none
 > - .gitignore cleanup: ✅ COMPLETE — `_tmp_*`, `rules/deaconess/*.pdf`, `docs/handoffs/`, audit log added to `.gitignore`
 
 > - E05 CAUTI duration-scope tightening: ✅ COMPLETE — duration gate requires explicit urinary device (foley/indwelling/urethral/urinary catheter) + duration ≥3d/>48h; `cauti_catheter_duration` (6 patterns); 65→89 E05 precision tests; 0 NTDS outcome deltas
-> - **Backlog priority:** (1) Arrival vitals hardening (Primary Survey priority + ED fallback), (2) Tabular GCS flowsheet parsing follow-up, (3) LDA gate enablement decision track (`ENABLE_LDA_GATES` per-event), (4) CAUTI engine implementation (requires authorization) — see Roadmap doc §3
+> - **Backlog priority:** (1) Arrival vitals hardening (Primary Survey priority + ED fallback), (2) Tabular GCS flowsheet parsing follow-up, (3) CAUTI engine implementation (requires authorization) — see Roadmap §3
 > - Handoff reminder: Every Claude handoff must include Codex post-handoff analysis (spec alignment, validation results, gaps/risks, next actions) plus a raw-data cross-check: compare raw NTDS/protocol sources vs current extraction and spot-check two patient raw `.txt` files (one questionable, one baseline) for capture accuracy.
 > - **Standard PR workflow:** (1) Raw-data evidence first — scan ≥2 patient `.txt` files, record exact phrases before mapper/rule edits; (2) Pre-merge checklist: targeted pytest → full pytest → `audit_cohort_counts.py --check` → `check_ntds_hashes.py` → `check_ntds_distribution.py` → `git diff --check`; (3) Address all Copilot review comments before handoff; (4) Post-handoff analysis by Codex (spec alignment, validation, gaps/risks, next actions, 2-patient raw-data spot-check); (5) Post-merge: `git switch main && git pull --ff-only`, re-run hash + distribution checks.
 >
