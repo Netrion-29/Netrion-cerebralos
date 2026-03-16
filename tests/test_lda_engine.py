@@ -403,10 +403,10 @@ class TestE21VapLDAGateWiring:
         gate_ids = {g["gate_id"] for g in self.rule["gates"]}
         assert "vent_duration_lda" in gate_ids
 
-    def test_lda_gate_not_required(self):
+    def test_lda_gate_required(self):
         for g in self.rule["gates"]:
             if g["gate_id"] == "vent_duration_lda":
-                assert g.get("required") is False
+                assert g.get("required") is True
                 assert g["device_type"] == "MECHANICAL_VENTILATOR"
                 assert g["days_gte"] == 2
 

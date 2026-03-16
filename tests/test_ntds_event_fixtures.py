@@ -108,7 +108,7 @@ def query_patterns() -> dict:
 
 
 # Events whose LDA gates are enabled at runtime (must mirror run_all_events.py).
-_LDA_ENABLED_EVENTS: frozenset[int] = frozenset({5, 6})
+_LDA_ENABLED_EVENTS: frozenset[int] = frozenset({5, 6, 21})
 
 
 @pytest.mark.parametrize(
@@ -118,23 +118,29 @@ def test_ntds_event_fixture_outcomes(
     fixture_path: Path, query_patterns: dict
 ) -> None:
     """Each fixture should evaluate to the outcome encoded in its filename."""
-    reason = _needs_xfail(fixture_path)
-    if reason:
-        pytest.xfail(reason)
+    original_lda_flag = _engine_mod.ENABLE_LDA_GATES
+    try:
+        reason = _needs_xfail(fixture_path)
+        if reason:
+            pytest.xfail(reason)
 
-    event_id, expected_outcome = _parse_fixture(fixture_path)
+        event_id, expected_outcome = _parse_fixture(fixture_path)
 
-    # Per-event LDA gate toggle (mirrors run_all_events.py)
-    _engine_mod.ENABLE_LDA_GATES = event_id in _LDA_ENABLED_EVENTS
+        # Per-event LDA gate toggle (mirrors run_all_events.py)
+        _engine_mod.ENABLE_LDA_GATES = event_id in _LDA_ENABLED_EVENTS
 
-    ruleset = load_ruleset(2026, event_id)
-    arrival_time = _extract_arrival_time(fixture_path)
-    patient = build_patientfacts(fixture_path, query_patterns, arrival_time=arrival_time)
+        ruleset = load_ruleset(2026, event_id)
+        arrival_time = _extract_arrival_time(fixture_path)
+        patient = build_patientfacts(
+            fixture_path, query_patterns, arrival_time=arrival_time
+        )
 
-    result = evaluate_event(ruleset.event, ruleset.contract, patient)
-    actual = result.outcome.value
+        result = evaluate_event(ruleset.event, ruleset.contract, patient)
+        actual = result.outcome.value
 
-    assert actual == expected_outcome, (
-        f"{fixture_path.name}: expected={expected_outcome}, actual={actual}, "
-        f"hard_stop={getattr(result.hard_stop, 'reason', None)}"
-    )
+        assert actual == expected_outcome, (
+            f"{fixture_path.name}: expected={expected_outcome}, actual={actual}, "
+            f"hard_stop={getattr(result.hard_stop, 'reason', None)}"
+        )
+    finally:
+        _engine_mod.ENABLE_LDA_GATES = original_lda_flag
