@@ -13,7 +13,7 @@ Verifies that mapper patterns correctly detect:
   7. clabsi_onset — timing/onset language
 
 Also verifies E06 rule JSON wiring against the NTDS spec:
-  - 5 required gates (dx, central line >2d, blood culture, symptoms, timing)
+  - 6 required gates (dx, central line >2d, central line duration (LDA), blood culture, symptoms, timing)
   - 2 exclusions (POA, chronic line)
 """
 
@@ -63,10 +63,10 @@ class TestE06RuleWiring:
     def test_version_2(self):
         assert self.rule["meta"]["version"] == "2.0.0"
 
-    def test_has_five_required_gates(self):
+    def test_has_six_required_gates(self):
         gates = self.rule["gates"]
         required = [g for g in gates if g.get("required", True)]
-        assert len(required) == 5
+        assert len(required) == 6
 
     def test_gate_ids(self):
         ids = {g["gate_id"] for g in self.rule["gates"]}

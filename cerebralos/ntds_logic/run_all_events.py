@@ -30,8 +30,8 @@ from cerebralos.ntds_logic.engine import evaluate_event, write_output, load_mapp
 from cerebralos.ntds_logic import engine as _engine_mod
 
 # Events whose LDA device-duration gates are enabled (roadmap #19).
-# Only E05 CAUTI is active; E06/E21 remain gated off.
-_LDA_ENABLED_EVENTS: frozenset[int] = frozenset({5})
+# E05 CAUTI + E06 CLABSI are active; E21 remains gated off.
+_LDA_ENABLED_EVENTS: frozenset[int] = frozenset({5, 6})
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ALL_EVENTS = list(range(1, 22))  # 1..21
@@ -76,7 +76,7 @@ def run_all(year: int, patient_path: Path, arrival: str | None = None) -> List[D
     summary_rows: List[Dict[str, Any]] = []
 
     for eid in ALL_EVENTS:
-        # ── Per-event LDA gate toggle (only E05 today) ──────────
+        # ── Per-event LDA gate toggle (E05 + E06 today) ──────────
         _engine_mod.ENABLE_LDA_GATES = eid in _LDA_ENABLED_EVENTS
 
         # Validate rules file exists before loading (mirrors engine.py CLI guard)

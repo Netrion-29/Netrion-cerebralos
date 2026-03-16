@@ -108,7 +108,7 @@ def query_patterns() -> dict:
 
 
 # Events whose LDA gates are enabled at runtime (must mirror run_all_events.py).
-_LDA_ENABLED_EVENTS: frozenset[int] = frozenset({5})
+_LDA_ENABLED_EVENTS: frozenset[int] = frozenset({5, 6})
 
 
 @pytest.mark.parametrize(
