@@ -157,3 +157,16 @@ Values outside these ranges are silently rejected (fail-closed).
 - No clinical inference.
 - Config patterns live in `rules/features/vitals_patterns_v1.json`.
 - MAP is always computed: `round(dbp + (sbp - dbp) / 3, 1)`.
+
+---
+
+## 7. Runtime Wiring
+
+`extract_arrival_vitals` is called during `build_patient_features` on
+the arrival-day items from `days_map`.  The result is stored at:
+
+    features.vitals_canonical_v1.arrival_vitals_hardened
+
+alongside the existing `arrival_vitals` (from `select_arrival_vitals`).
+Both keys coexist; downstream consumers should prefer
+`arrival_vitals_hardened` for item-type-aware provenance.

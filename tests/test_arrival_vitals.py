@@ -727,3 +727,120 @@ class TestArrivalVitalsRealPatternRegression:
         items = [_item("TRAUMA_HP", "2025-12-15T10:00:00", qualitative)]
         result = extract_arrival_vitals(items, "2025-12-15", _MINIMAL_CONFIG)
         assert result["status"] == "DATA NOT AVAILABLE"
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  Runtime wiring integration tests
+# ═══════════════════════════════════════════════════════════════════
+
+class TestRuntimeWiring:
+    """Verify extract_arrival_vitals is wired into build_patient_features."""
+
+    def test_import_in_build_pipeline(self):
+        """extract_arrival_vitals must be importable alongside extract_vitals_for_day."""
+        from cerebralos.features.build_patient_features_v1 import build_patient_features  # noqa: F401
+        from cerebralos.features.vitals_daily import (
+            extract_vitals_for_day,  # noqa: F401
+            extract_arrival_vitals,  # noqa: F401
+        )
+
+    def test_arrival_vitals_hardened_in_output(self):
+        """build_patient_features output must include arrival_vitals_hardened."""
+        from cerebralos.features.build_patient_features_v1 import build_patient_features
+
+        # Minimal days_data with one arrival-day item containing vitals
+        days_data = {
+            "meta": {
+                "arrival_datetime": "2025-12-31 15:00:00",
+                "patient_id": "TEST_WIRING",
+            },
+            "days": {
+                "2025-12-31": {
+                    "items": [
+                        {
+                            "type": "TRAUMA_HP",
+                            "dt": "2025-12-31T15:10:00",
+                            "source_id": "SRC_TEST",
+                            "time_missing": False,
+                            "payload": {
+                                "text": (
+                                    "Vitals: Blood pressure 152/87, pulse 65, "
+                                    "temperature 98.8 °F (37.1 °C), "
+                                    "resp. rate 20, SpO2 97%."
+                                ),
+                            },
+                        }
+                    ],
+                },
+            },
+        }
+        result = build_patient_features(days_data)
+        features = result.get("features", {})
+        vc = features.get("vitals_canonical_v1", {})
+
+        # The hardened key must exist
+        assert "arrival_vitals_hardened" in vc, (
+            "arrival_vitals_hardened missing from vitals_canonical_v1"
+        )
+        hardened = vc["arrival_vitals_hardened"]
+        assert hardened["status"] == "selected"
+        assert hardened["source_context"] == "PRIMARY_SURVEY"
+        assert hardened["vitals"]["sbp"] == 152.0
+
+    def test_arrival_vitals_hardened_dna_on_empty(self):
+        """With no items, arrival_vitals_hardened falls to DATA NOT AVAILABLE."""
+        from cerebralos.features.build_patient_features_v1 import build_patient_features
+
+        days_data = {
+            "meta": {"patient_id": "TEST_DNA"},
+            "days": {},
+        }
+        result = build_patient_features(days_data)
+        features = result.get("features", {})
+        vc = features.get("vitals_canonical_v1", {})
+        assert "arrival_vitals_hardened" in vc
+        assert vc["arrival_vitals_hardened"]["status"] == "DATA NOT AVAILABLE"
+
+    def test_arrival_vitals_hardened_cross_midnight_next_day_only(self):
+        """
+        Late-night arrival with vitals only on next calendar day should still
+        populate arrival_vitals_hardened.
+        """
+        from cerebralos.features.build_patient_features_v1 import build_patient_features
+
+        days_data = {
+            "meta": {
+                "arrival_datetime": "2025-12-31 23:50:00",
+                "patient_id": "TEST_CROSS_MIDNIGHT",
+            },
+            "days": {
+                "2026-01-01": {
+                    "items": [
+                        {
+                            "type": "TRAUMA_HP",
+                            "dt": "2026-01-01T00:05:00",
+                            "source_id": "SRC_TEST_CROSS",
+                            "time_missing": False,
+                            "payload": {
+                                "text": (
+                                    "Vitals: Blood pressure 140/85, pulse 72, "
+                                    "temperature 98.7 °F (37.1 °C), "
+                                    "resp. rate 18, SpO2 96%."
+                                ),
+                            },
+                        }
+                    ],
+                },
+            },
+        }
+        result = build_patient_features(days_data)
+        features = result.get("features", {})
+        vc = features.get("vitals_canonical_v1", {})
+
+        assert "arrival_vitals_hardened" in vc, (
+            "arrival_vitals_hardened missing for cross-midnight scenario"
+        )
+        hardened = vc["arrival_vitals_hardened"]
+        assert hardened["status"] == "selected"
+        assert hardened["source_context"] == "PRIMARY_SURVEY"
+        assert hardened["vitals"]["sbp"] == 140.0
