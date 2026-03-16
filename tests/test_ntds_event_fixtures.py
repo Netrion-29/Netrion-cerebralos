@@ -28,6 +28,7 @@ import pytest
 
 from cerebralos.ntds_logic.build_patientfacts_from_txt import build_patientfacts
 from cerebralos.ntds_logic.engine import evaluate_event, load_mapper
+from cerebralos.ntds_logic import engine as _engine_mod
 from cerebralos.ntds_logic.rules_loader import load_ruleset
 
 
@@ -106,6 +107,10 @@ def query_patterns() -> dict:
     return mapper.get("query_patterns", {})
 
 
+# Events whose LDA gates are enabled at runtime (must mirror run_all_events.py).
+_LDA_ENABLED_EVENTS: frozenset[int] = frozenset({5})
+
+
 @pytest.mark.parametrize(
     "fixture_path", _collect_fixtures(), ids=lambda p: p.name
 )
@@ -118,6 +123,10 @@ def test_ntds_event_fixture_outcomes(
         pytest.xfail(reason)
 
     event_id, expected_outcome = _parse_fixture(fixture_path)
+
+    # Per-event LDA gate toggle (mirrors run_all_events.py)
+    _engine_mod.ENABLE_LDA_GATES = event_id in _LDA_ENABLED_EVENTS
+
     ruleset = load_ruleset(2026, event_id)
     arrival_time = _extract_arrival_time(fixture_path)
     patient = build_patientfacts(fixture_path, query_patterns, arrival_time=arrival_time)

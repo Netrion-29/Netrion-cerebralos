@@ -1,8 +1,7 @@
 {
   "E01": {
-    "NO": 35,
-    "UNABLE_TO_DETERMINE": 3,
-    "YES": 1
+    "EXCLUDED": 1,
+    "NO": 38
   },
   "E02": {
     "EXCLUDED": 1,

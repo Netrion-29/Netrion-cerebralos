@@ -258,10 +258,12 @@ def build_patientfacts(
     lines = content.splitlines()
     current_source = SourceType.UNKNOWN
     current_timestamp: Optional[str] = None
+    raw_timestamps: List[Optional[str]] = [None] * len(lines)
 
     for line_num, line in enumerate(lines, start=1):
         stripped = line.strip()
         if not stripped:
+            raw_timestamps[line_num - 1] = current_timestamp
             continue
 
         # Check for section header - section headers define the source type for
@@ -275,6 +277,7 @@ def build_patientfacts(
             ts = _extract_timestamp(stripped)
             if ts:
                 current_timestamp = ts
+            raw_timestamps[line_num - 1] = current_timestamp
             continue
 
         # Check for timestamp in line - updates current_timestamp for this and
@@ -282,6 +285,8 @@ def build_patientfacts(
         ts = _extract_timestamp(stripped)
         if ts:
             current_timestamp = ts
+
+        raw_timestamps[line_num - 1] = current_timestamp
 
         # Create evidence for this line
         pointer = EvidencePointer(ref={
@@ -296,6 +301,23 @@ def build_patientfacts(
             pointer=pointer,
         )
         evidence_list.append(ev)
+
+    # ── Populate LDA episodes from raw text (day-counters + start/stop) ──
+    lda_episodes = build_lda_episodes(
+        patient_id=patient_id, raw_lines=lines, raw_timestamps=raw_timestamps,
+    )
+    if lda_episodes:
+        device_day_counts: Dict[str, int] = {}
+        for ep in lda_episodes:
+            device_type = ep.get("device_type", "")
+            days = ep.get("episode_days")
+            if device_type and days is not None:
+                if device_type not in device_day_counts or days > device_day_counts[device_type]:
+                    device_day_counts[device_type] = int(days)
+        facts["lda_episodes_v1"] = {
+            "episodes": lda_episodes,
+            "device_day_counts": device_day_counts,
+        }
 
     return PatientFacts(
         patient_id=patient_id,
