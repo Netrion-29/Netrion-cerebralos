@@ -100,6 +100,182 @@ RE_GCS_DESC_COMPONENTS = re.compile(
     re.IGNORECASE,
 )
 
+# ── Tabular flowsheet header detection ───────────────────────────────
+# Header row is tab-delimited and contains these column names (among others).
+# Column positions vary by patient/facility.
+_TABULAR_REQUIRED_COLS = {
+    "eye_opening": re.compile(r"^Eye Opening$", re.IGNORECASE),
+    "best_verbal": re.compile(r"^Best Verbal Response$", re.IGNORECASE),
+    "best_motor": re.compile(r"^Best Motor Response$", re.IGNORECASE),
+    "gcs_total": re.compile(r"^Glasgow Coma Scale Score", re.IGNORECASE),
+}
+
+# Data-row date prefix: MM/DD/YY HHMM
+RE_TABULAR_DATE_PREFIX = re.compile(r"^(\d{1,2}/\d{1,2}/\d{2,4})\s+(\d{4})\b")
+
+# Nurse marker suffix: trailing " A", " B", etc.
+RE_NURSE_MARKER = re.compile(r"\s+[A-Z]$")
+
+
+def _strip_nurse_marker(val: str) -> str:
+    """Strip trailing single-letter nurse marker from a flowsheet value."""
+    return RE_NURSE_MARKER.sub("", val.strip())
+
+
+def _parse_tabular_flowsheet(
+    lines: List[str],
+    dt_context: Optional[str],
+    source_type: str,
+    seen_values: set,
+) -> List[Dict[str, Any]]:
+    """Parse tab-delimited GCS flowsheet tables.
+
+    Detects a header row with Date/Time + Eye Opening + Best Verbal Response +
+    Best Motor Response + Glasgow Coma Scale Score columns, then extracts
+    data rows underneath.
+
+    Returns list of validated GCS readings with source tag
+    ``<type>:tabular_flowsheet``.
+    """
+    readings: List[Dict[str, Any]] = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+
+        if "\t" not in line:
+            i += 1
+            continue
+
+        cols = line.split("\t")
+        # Detect header row: must have all required GCS columns
+        col_indices: Dict[str, int] = {}
+        for col_key, col_re in _TABULAR_REQUIRED_COLS.items():
+            for ci, col_text in enumerate(cols):
+                if col_re.match(col_text.strip()):
+                    col_indices[col_key] = ci
+                    break
+
+        if len(col_indices) != len(_TABULAR_REQUIRED_COLS):
+            i += 1
+            continue
+
+        # Detect Date/Time column dynamically (may not be column 0)
+        dt_col_idx = 0  # default
+        for ci, col_text in enumerate(cols):
+            if col_text.strip().lower().startswith("date/time"):
+                dt_col_idx = ci
+                break
+
+        # Found header — now parse data rows until section ends
+        i += 1
+        while i < len(lines):
+            data_line = lines[i].strip()
+            if not data_line:
+                break  # blank line ends section
+            if data_line.startswith("User Key") or data_line.startswith("Taken by"):
+                break  # nurse attribution block
+            if data_line == "Flowsheet History":
+                break  # next flowsheet section
+
+            data_cols = lines[i].split("\t")
+            i += 1
+
+            # Must have enough columns
+            max_needed = max(col_indices.values())
+            if len(data_cols) <= max_needed:
+                continue
+
+            # Must start with a date/time (dynamically resolved column)
+            dt_cell = data_cols[dt_col_idx].strip() if dt_col_idx < len(data_cols) else ""
+            m_dt = RE_TABULAR_DATE_PREFIX.match(dt_cell)
+            if not m_dt:
+                continue
+
+            # Parse datetime from MM/DD/YY HHMM
+            row_dt = _parse_tabular_dt(m_dt.group(1), m_dt.group(2))
+
+            # Extract GCS component values
+            raw_eye = _strip_nurse_marker(data_cols[col_indices["eye_opening"]])
+            raw_verbal = _strip_nurse_marker(data_cols[col_indices["best_verbal"]])
+            raw_motor = _strip_nurse_marker(data_cols[col_indices["best_motor"]])
+            raw_total = _strip_nurse_marker(data_cols[col_indices["gcs_total"]])
+
+            # Skip rows with missing values (em-dash or dash = fail-closed)
+            if any(v in ("—", "–", "-", "") for v in (raw_eye, raw_verbal, raw_motor, raw_total)):
+                continue
+
+            # Map component text to numeric values
+            eye_val = _lookup_component(raw_eye, _EYE_MAP)
+            verbal_val = _lookup_component(raw_verbal, _VERBAL_MAP)
+            motor_val = _lookup_component(raw_motor, _MOTOR_MAP)
+
+            # Fail-closed: unknown component text → skip row
+            if eye_val is None or verbal_val is None or motor_val is None:
+                continue
+
+            # Parse total
+            try:
+                total_val = int(raw_total)
+            except ValueError:
+                continue  # fail-closed: non-numeric total
+
+            # Validate range
+            if not 3 <= total_val <= 15:
+                continue
+
+            # Validate sum
+            if eye_val + verbal_val + motor_val != total_val:
+                continue  # fail-closed: sum mismatch
+
+            if row_dt:
+                timestamp_quality = "full"
+            elif dt_context and "T" in str(dt_context):
+                timestamp_quality = "full"
+            elif dt_context:
+                timestamp_quality = "date_only"
+            else:
+                timestamp_quality = "missing"
+
+            dedup_key = (total_val, row_dt or dt_context, f"tabular:{raw_eye}:{raw_verbal}:{raw_motor}")
+            if dedup_key in seen_values:
+                continue
+            seen_values.add(dedup_key)
+
+            readings.append({
+                "value": total_val,
+                "intubated": False,
+                "eye": eye_val,
+                "verbal": verbal_val,
+                "motor": motor_val,
+                "source": f"{source_type}:tabular_flowsheet",
+                "dt": row_dt or dt_context,
+                "timestamp_quality": timestamp_quality,
+                "is_arrival": False,
+                "line_preview": data_line[:120],
+            })
+
+    return readings
+
+
+def _parse_tabular_dt(date_str: str, time_str: str) -> Optional[str]:
+    """Parse MM/DD/YY HHMM into ISO datetime string."""
+    try:
+        parts = date_str.split("/")
+        if len(parts) != 3:
+            return None
+        mm, dd, yy = parts
+        if len(yy) == 2:
+            year = 2000 + int(yy)
+        else:
+            year = int(yy)
+        hh = int(time_str[:2])
+        mi = int(time_str[2:4])
+        dt_obj = _dt(year, int(mm), int(dd), hh, mi)
+        return dt_obj.strftime("%Y-%m-%dT%H:%M:%S")
+    except (ValueError, IndexError):
+        return None
+
+
 # Structured 4-line flowsheet block patterns
 RE_FLOWSHEET_EYE = re.compile(r"^Eye Opening\s*:\s*(.+)", re.IGNORECASE)
 RE_FLOWSHEET_VERBAL = re.compile(r"^Best Verbal Response\s*:\s*(.+)", re.IGNORECASE)
@@ -196,6 +372,10 @@ def _extract_gcs_from_text(
                     arrival = reading
                     readings.append(reading)
                     seen_values.add(("arrival", val, dt))
+
+    # ── Scan for tab-delimited tabular GCS flowsheet ──
+    tabular_readings = _parse_tabular_flowsheet(lines, dt, source_type, seen_values)
+    readings.extend(tabular_readings)
 
     # ── Scan for structured 4-line flowsheet blocks ──
     for i in range(len(lines)):

@@ -92,6 +92,7 @@ fields are included in the reading.
 | `<type>:desc_components` | Descriptive form (`GCS: 4 (spontaneously),5 (oriented),6 (follows commands) = 15`) |
 | `<type>:compact` | Compact form (`E4V5M6 GCS 15`) |
 | `<type>:structured_block` | 4-line flowsheet block |
+| `<type>:tabular_flowsheet` | Tab-delimited flowsheet table (see below) |
 
 ---
 
@@ -145,6 +146,37 @@ Validation (all must pass or block is skipped):
 2. All component texts map to known values
 3. Sum of mapped values equals stated total
 4. Total is in range 3–15
+
+---
+
+## Tab-Delimited Flowsheet Table Format
+
+Recognized when a header row contains tab-separated columns including:
+`Eye Opening`, `Best Verbal Response`, `Best Motor Response`, and
+`Glasgow Coma Scale Score` (with optional `Total` suffix).
+
+Column positions are detected dynamically (some patients have extra
+columns such as `LUE` before `Eye Opening`).
+
+Data rows are tab-separated and start with `MM/DD/YY HHMM`.  Values
+carry a trailing single-letter nurse marker (e.g., `Spontaneous A`)
+that is stripped before lookup.
+
+Validation (all must pass or row is skipped):
+1. All four GCS columns present in the header
+2. Data row has enough tab-separated fields
+3. None of the four GCS fields is `—` / `–` / `-` / empty
+4. All component texts map to known values
+5. Sum of mapped values equals stated total
+6. Total is in range 3–15
+
+**Note:** Tabular flowsheet data is ingested via the `Flowsheet History`
+scanner in `cerebralos/ingest/parse_patient_txt.py`.  When a Flowsheet
+History section contains all four GCS column signatures (Eye Opening,
+Best Verbal Response, Best Motor Response, Glasgow Coma Scale Score),
+the block is emitted as a `NURSING_NOTE` evidence item.  The
+`gcs_daily` feature module then applies `_parse_tabular_flowsheet()` to
+extract validated readings from the text.
 
 ---
 

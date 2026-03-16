@@ -272,5 +272,128 @@ class TestResolveFlowsheetYear(unittest.TestCase):
         )
 
 
+class TestGCSFlowsheetDetection(unittest.TestCase):
+    """Test GCS_FLOWSHEET evidence item emission via NURSING_NOTE."""
+
+    def _run_supp(self, raw_text: str, arrival_dt_str=None):
+        lines = _make_lines(raw_text)
+        return _parse_supplemental_dos(
+            lines, last_dos_idx=-1, arrival_dt_str=arrival_dt_str,
+        )
+
+    def test_gcs_flowsheet_standard_header(self):
+        """Flowsheet History with Eye Opening + Verbal + Motor + Score emits NURSING_NOTE."""
+        raw = """\
+        Flowsheet History
+         Personalize
+        1/1/2026 0000 CST - 1/5/2026 2359 CST
+
+        Date/Time\tEye Opening\tBest Verbal Response\tBest Motor Response\tGlasgow Coma Scale Score Total
+        01/05/26 1607\tSpontaneous A\tOriented A\tObeys commands A\t15 A
+        01/04/26 0411\tTo speech D\tConfused D\tObeys commands D\t13 D
+
+        User Key
+        """
+        items = self._run_supp(raw)
+        nn_items = [it for it in items if it.kind == "NURSING_NOTE"]
+        self.assertEqual(len(nn_items), 1)
+        self.assertIn("Eye Opening", nn_items[0].text)
+        self.assertIn("01/05/26 1607", nn_items[0].text)
+        self.assertIn("Spontaneous", nn_items[0].text)
+
+    def test_gcs_flowsheet_score_total_variant(self):
+        """'Glasgow Coma Scale Score' (without 'Total') also triggers detection."""
+        raw = """\
+        Flowsheet History
+         Personalize
+        12/6/2025 0000 CST - 1/5/2026 1455 CST
+
+        Date/Time\tLUE\tEye Opening\tBest Verbal Response\tBest Motor Response\tGlasgow Coma Scale Score\tRUE
+        01/05/26 0728\tGrasps A\tSpontaneous A\tOriented A\tObeys commands A\t15 A\tGrasps A
+
+        User Key
+        """
+        items = self._run_supp(raw)
+        nn_items = [it for it in items if it.kind == "NURSING_NOTE"]
+        self.assertEqual(len(nn_items), 1)
+        self.assertIn("Glasgow Coma Scale Score", nn_items[0].text)
+
+    def test_non_gcs_flowsheet_not_captured(self):
+        """Flowsheet History without GCS columns is NOT captured as GCS."""
+        raw = """\
+        Flowsheet History
+         Personalize
+        1/1/2026 0000 CST - 1/5/2026 2359 CST
+
+        Date/Time\tHeart Rate\tBlood Pressure\tRespiratory Rate\tSpO2
+        01/05/26 1607\t82\t120/80\t16\t98%
+
+        User Key
+        """
+        items = self._run_supp(raw)
+        # No NURSING_NOTE for non-GCS flowsheet (and not SBIRT either)
+        nn_items = [it for it in items if it.kind == "NURSING_NOTE"]
+        self.assertEqual(len(nn_items), 0)
+
+    def test_gcs_flowsheet_timestamp_parsed(self):
+        """GCS flowsheet datetime is extracted from the first data row."""
+        raw = """\
+        Flowsheet History
+         Personalize
+        1/1/2026 0000 CST - 1/5/2026 2359 CST
+
+        Date/Time\tEye Opening\tBest Verbal Response\tBest Motor Response\tGlasgow Coma Scale Score Total
+        01/05/26 1607\tSpontaneous A\tOriented A\tObeys commands A\t15 A
+        01/04/26 0411\tTo speech D\tConfused D\tObeys commands D\t13 D
+        """
+        items = self._run_supp(raw)
+        nn_items = [it for it in items if it.kind == "NURSING_NOTE"]
+        self.assertEqual(len(nn_items), 1)
+        self.assertEqual(nn_items[0].datetime, "2026-01-05 16:07:00")
+
+    def test_gcs_flowsheet_no_collision_with_sbirt(self):
+        """SBIRT and GCS flowsheet sections in same file do not collide."""
+        raw = """\
+        Flowsheet History
+         Personalize
+
+        Date/Time\tDoes the patient have an injury\tAudit-C Score
+        01/05/26 1200\tYes\t3
+
+        User Key
+
+        Flowsheet History
+         Personalize
+        1/1/2026 0000 CST - 1/5/2026 2359 CST
+
+        Date/Time\tEye Opening\tBest Verbal Response\tBest Motor Response\tGlasgow Coma Scale Score
+        01/05/26 1607\tSpontaneous A\tOriented A\tObeys commands A\t15 A
+        """
+        items = self._run_supp(raw)
+        nn_items = [it for it in items if it.kind == "NURSING_NOTE"]
+        # Should have 2: one SBIRT, one GCS
+        self.assertEqual(len(nn_items), 2)
+        texts = [it.text for it in nn_items]
+        has_sbirt = any("Audit-C Score" in t for t in texts)
+        has_gcs = any("Eye Opening" in t for t in texts)
+        self.assertTrue(has_sbirt, "SBIRT block should be captured")
+        self.assertTrue(has_gcs, "GCS block should be captured")
+
+    def test_gcs_flowsheet_line_tracking(self):
+        """GCS NURSING_NOTE items have valid line_start and line_end."""
+        raw = """\
+        Flowsheet History
+         Personalize
+
+        Date/Time\tEye Opening\tBest Verbal Response\tBest Motor Response\tGlasgow Coma Scale Score
+        01/05/26 1607\tSpontaneous A\tOriented A\tObeys commands A\t15 A
+        """
+        items = self._run_supp(raw)
+        nn_items = [it for it in items if it.kind == "NURSING_NOTE"]
+        self.assertEqual(len(nn_items), 1)
+        self.assertGreater(nn_items[0].line_start, 0)
+        self.assertGreaterEqual(nn_items[0].line_end, nn_items[0].line_start)
+
+
 if __name__ == "__main__":
     unittest.main()

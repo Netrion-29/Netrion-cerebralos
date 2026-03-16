@@ -1359,6 +1359,87 @@ def _parse_supplemental_dos(lines, last_dos_idx, arrival_dt_str, start_idx=0):
         for j in range(i, block_end):
             claimed.add(j)
 
+    # ── GCS_FLOWSHEET: Flowsheet History with GCS neuro columns ──
+    # "Flowsheet History" sections that contain GCS assessment columns
+    # (Eye Opening, Best Verbal Response, Best Motor Response, Glasgow
+    # Coma Scale Score).  Emitted as NURSING_NOTE so the feature-layer
+    # gcs_daily tabular parser can extract readings.
+    _GCS_COL_SIGNATURES = (
+        "Eye Opening",
+        "Best Verbal Response",
+        "Best Motor Response",
+        "Glasgow Coma Scale Score",
+    )
+    for i in range(scan_start, n):
+        if i in claimed:
+            continue
+        stripped = lines[i].strip()
+        if stripped != "Flowsheet History":
+            continue
+
+        # Find a tab-delimited header row containing ALL GCS columns
+        hdr_idx: Optional[int] = None
+        for j in range(i + 1, min(n, i + 15)):
+            if j in claimed:
+                continue
+            jl = lines[j]
+            if "\t" not in jl:
+                continue
+            if all(sig in jl for sig in _GCS_COL_SIGNATURES):
+                hdr_idx = j
+                break
+
+        if hdr_idx is None:
+            continue  # not a GCS-containing flowsheet section
+
+        # Collect data rows immediately after the header until blank
+        # or non-data line (e.g. "User Key", "Taken by").
+        block_start = hdr_idx
+        block_end = hdr_idx + 1
+        gcs_dt: Optional[str] = None
+        for j in range(hdr_idx + 1, min(n, hdr_idx + 200)):
+            jl = lines[j].strip()
+            if not jl:
+                block_end = j
+                break
+            if jl.startswith("User Key") or jl.startswith("Taken by"):
+                block_end = j
+                break
+            if jl == "Flowsheet History":
+                block_end = j
+                break
+            # Data rows start with MM/DD/YY
+            if re.match(r"\d{1,2}/\d{1,2}/\d{2,4}", jl):
+                block_end = j + 1
+                if gcs_dt is None:
+                    parts = jl.split("\t")[0].strip().split()
+                    if len(parts) >= 2:
+                        gcs_dt = _parse_dt_slash_hhmm(parts[0], parts[1][:4])
+                        if gcs_dt:
+                            _ts_count("MM/DD/YY HHMM (GCS flowsheet)")
+                continue
+            # Stop at non-data lines
+            block_end = j
+            break
+
+        block_text = "\n".join(lines[block_start:block_end]).strip()
+
+        warns: List[str] = []
+        if gcs_dt is None:
+            _ts_fail()
+            warns.append("ts_missing")
+
+        items.append(
+            EvidenceItem(
+                idx=idx, kind="NURSING_NOTE", datetime=gcs_dt,
+                line_start=block_start + 1, line_end=block_end,
+                text=block_text, warnings=tuple(warns), header_dt=gcs_dt,
+            )
+        )
+        idx += 1
+        for j in range(i, block_end):
+            claimed.add(j)
+
     # ── NURSING_ORDER: Spine Clearance order detail pages ─────
     # In DoS-format files, Epic "Spine Clearance" order detail pages
     # appear in the supplemental region.  The inline summary line

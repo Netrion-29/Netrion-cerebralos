@@ -477,3 +477,332 @@ class TestComponentMappings:
         assert _lookup_component("Abnormal flexion", _MOTOR_MAP) == 3
         assert _lookup_component("Extension", _MOTOR_MAP) == 2
         assert _lookup_component("None", _MOTOR_MAP) == 1
+
+
+# ── Tabular GCS flowsheet extraction ───────────────────────────────
+
+def _tabular_block(header_cols, data_rows):
+    """Build a text block simulating a tab-delimited GCS flowsheet."""
+    lines = ["\t".join(header_cols)]
+    for row in data_rows:
+        lines.append("\t".join(row))
+    return "\n".join(lines)
+
+
+# Standard header columns (matches James Eaton / Johnny Stokes pattern)
+_STD_HDR = [
+    "Date/Time", "Eye Opening", "Best Verbal Response",
+    "Best Motor Response", "Glasgow Coma Scale Score",
+    "Delirium Scale Used", "SAS Score",
+]
+
+# Header with LUE before Eye (matches Arnetta Henry pattern)
+_LUE_HDR = [
+    "Date/Time", "LUE", "Eye Opening", "Best Verbal Response",
+    "Best Motor Response", "Glasgow Coma Scale Score",
+    "RUE", "LLE", "RLE",
+]
+
+
+class TestTabularFlowsheet:
+    def test_basic_tabular_row(self):
+        """Single valid tabular row → extracted with components."""
+        text = _tabular_block(_STD_HDR, [
+            ["01/05/26 0716", "Spontaneous A", "Oriented A",
+             "Obeys commands A", "15 A", "bCAM A", "Calm A"],
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2026-01-05", "NURSING_NOTE", None)
+        assert len(readings) == 1
+        r = readings[0]
+        assert r["value"] == 15
+        assert r["eye"] == 4
+        assert r["verbal"] == 5
+        assert r["motor"] == 6
+        assert r["source"] == "NURSING_NOTE:tabular_flowsheet"
+        assert r["dt"] == "2026-01-05T07:16:00"
+        assert r["timestamp_quality"] == "full"
+
+    def test_multiple_tabular_rows(self):
+        """Multiple valid rows → multiple readings."""
+        text = _tabular_block(_STD_HDR, [
+            ["01/05/26 1607", "Spontaneous A", "Oriented A",
+             "Obeys commands A", "15 A", "—", "—"],
+            ["01/04/26 0411", "To speech D", "Confused D",
+             "Obeys commands D", "13 D", "—", "—"],
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2026-01-05", "NURSING_NOTE", None)
+        assert len(readings) == 2
+        vals = sorted([r["value"] for r in readings])
+        assert vals == [13, 15]
+
+    def test_tabular_low_gcs(self):
+        """Non-15 GCS (To speech=3, Confused=4, Obeys commands=6 → 13)."""
+        text = _tabular_block(_STD_HDR, [
+            ["01/04/26 0411", "To speech D", "Confused D",
+             "Obeys commands D", "13 D", "—", "—"],
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2026-01-04", "NURSING_NOTE", None)
+        assert len(readings) == 1
+        r = readings[0]
+        assert r["value"] == 13
+        assert r["eye"] == 3
+        assert r["verbal"] == 4
+        assert r["motor"] == 6
+
+    def test_tabular_lue_header_variant(self):
+        """Header with LUE column before Eye Opening (Arnetta Henry pattern)."""
+        text = _tabular_block(_LUE_HDR, [
+            ["01/05/26 0728", "Grasps A", "Spontaneous A", "Oriented A",
+             "Obeys commands A", "15 A", "Grasps A", "Against A", "Against A"],
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2026-01-05", "NURSING_NOTE", None)
+        assert len(readings) == 1
+        assert readings[0]["value"] == 15
+        assert readings[0]["eye"] == 4
+
+    def test_tabular_missing_values_skipped(self):
+        """Rows with — for GCS columns → skipped (fail-closed)."""
+        text = _tabular_block(_STD_HDR, [
+            ["01/05/26 1422", "—", "—", "—", "—", "—", "Calm A"],
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2026-01-05", "NURSING_NOTE", None)
+        assert len(readings) == 0
+
+    def test_tabular_partial_missing_skipped(self):
+        """Some components present, some —  → skipped (fail-closed)."""
+        text = _tabular_block(_STD_HDR, [
+            ["01/03/26 1938", "Spontaneous D", "Oriented D",
+             "—", "15 D", "—", "—"],
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2026-01-03", "NURSING_NOTE", None)
+        assert len(readings) == 0
+
+    def test_tabular_sum_mismatch_skipped(self):
+        """Components sum ≠ total → skipped (fail-closed)."""
+        text = _tabular_block(_STD_HDR, [
+            ["01/05/26 0700", "Spontaneous A", "Oriented A",
+             "Obeys commands A", "12 A", "—", "—"],  # 4+5+6=15 ≠ 12
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2026-01-05", "NURSING_NOTE", None)
+        assert len(readings) == 0
+
+    def test_tabular_unknown_descriptor_skipped(self):
+        """Unknown component text → skipped (fail-closed)."""
+        text = _tabular_block(_STD_HDR, [
+            ["01/05/26 0700", "Wide open A", "Oriented A",
+             "Obeys commands A", "15 A", "—", "—"],
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2026-01-05", "NURSING_NOTE", None)
+        assert len(readings) == 0
+
+    def test_tabular_out_of_range_skipped(self):
+        """Total outside 3-15 → skipped."""
+        text = _tabular_block(_STD_HDR, [
+            ["01/05/26 0700", "Spontaneous A", "Oriented A",
+             "Obeys commands A", "16 A", "—", "—"],
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2026-01-05", "NURSING_NOTE", None)
+        assert len(readings) == 0
+
+    def test_tabular_non_numeric_total_skipped(self):
+        """Non-numeric total → skipped (fail-closed)."""
+        text = _tabular_block(_STD_HDR, [
+            ["01/05/26 0700", "Spontaneous A", "Oriented A",
+             "Obeys commands A", "N/A A", "—", "—"],
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2026-01-05", "NURSING_NOTE", None)
+        assert len(readings) == 0
+
+    def test_tabular_with_total_suffix(self):
+        """Header with 'Glasgow Coma Scale Score Total' (Johnny Stokes variant)."""
+        hdr = [
+            "Date/Time", "Eye Opening", "Best Verbal Response",
+            "Best Motor Response", "Glasgow Coma Scale Score Total",
+            "Delirium Scale Used",
+        ]
+        text = _tabular_block(hdr, [
+            ["01/05/26 1607", "Spontaneous A", "Oriented A",
+             "Obeys commands A", "15 A", "bCAM A"],
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2026-01-05", "NURSING_NOTE", None)
+        assert len(readings) == 1
+        assert readings[0]["value"] == 15
+
+    def test_tabular_datetime_parsed(self):
+        """Tabular row datetime is parsed to ISO format."""
+        text = _tabular_block(_STD_HDR, [
+            ["01/04/26 1517", "Spontaneous C", "Oriented C",
+             "Obeys commands C", "15 C", "—", "—"],
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2026-01-04", "NURSING_NOTE", None)
+        assert len(readings) == 1
+        assert readings[0]["dt"] == "2026-01-04T15:17:00"
+
+    def test_tabular_dedup(self):
+        """Duplicate tabular rows → deduplicated."""
+        text = _tabular_block(_STD_HDR, [
+            ["01/05/26 0716", "Spontaneous A", "Oriented A",
+             "Obeys commands A", "15 A", "—", "—"],
+            ["01/05/26 0716", "Spontaneous B", "Oriented B",
+             "Obeys commands B", "15 B", "—", "—"],
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2026-01-05", "NURSING_NOTE", None)
+        assert len(readings) == 1
+
+    def test_tabular_not_arrival(self):
+        """Tabular readings never set is_arrival."""
+        text = _tabular_block(_STD_HDR, [
+            ["01/05/26 0716", "Spontaneous A", "Oriented A",
+             "Obeys commands A", "15 A", "—", "—"],
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2026-01-05", "NURSING_NOTE", None)
+        assert readings[0]["is_arrival"] is False
+
+    def test_tabular_intubated_false(self):
+        """Tabular flowsheet rows set intubated=False."""
+        text = _tabular_block(_STD_HDR, [
+            ["01/05/26 0716", "Spontaneous A", "Oriented A",
+             "Obeys commands A", "15 A", "—", "—"],
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2026-01-05", "NURSING_NOTE", None)
+        assert readings[0]["intubated"] is False
+
+
+class TestTabularInBestWorst:
+    """Tabular readings integrate properly with best/worst/all_readings."""
+
+    def test_tabular_in_all_readings(self):
+        text = _tabular_block(_STD_HDR, [
+            ["01/05/26 0700", "Spontaneous A", "Oriented A",
+             "Obeys commands A", "15 A", "—", "—"],
+        ])
+        items = [_timeline_item(text)]
+        result, _ = extract_gcs_for_day(items, "2026-01-05")
+        assert len(result["all_readings"]) == 1
+        r = result["all_readings"][0]
+        assert r["eye"] == 4
+        assert r["verbal"] == 5
+        assert r["motor"] == 6
+        assert r["source"] == "ED_NOTE:tabular_flowsheet"
+
+    def test_tabular_best_worst(self):
+        text_tabular = _tabular_block(_STD_HDR, [
+            ["01/05/26 0700", "To speech D", "Confused D",
+             "Obeys commands D", "13 D", "—", "—"],
+        ])
+        items = [
+            _timeline_item("GCS: 15"),
+            _timeline_item(text_tabular),
+        ]
+        result, _ = extract_gcs_for_day(items, "2026-01-05")
+        assert result["best_gcs"]["value"] == 15
+        assert result["worst_gcs"]["value"] == 13
+        assert result["worst_gcs"]["eye"] == 3
+        assert result["worst_gcs"]["verbal"] == 4
+        assert result["worst_gcs"]["motor"] == 6
+
+    def test_tabular_mixed_with_structured_block(self):
+        """Tabular + structured 4-line block → both contribute readings."""
+        struct_block = "\n".join([
+            "Eye Opening: Spontaneous",
+            "Best Verbal Response: Oriented",
+            "Best Motor Response: Obeys commands",
+            "Glasgow Coma Scale Score: 15",
+        ])
+        tab_block = _tabular_block(_STD_HDR, [
+            ["01/05/26 1200", "To speech D", "Confused D",
+             "Obeys commands D", "13 D", "—", "—"],
+        ])
+        combined = struct_block + "\n" + tab_block
+        items = [_timeline_item(combined)]
+        result, _ = extract_gcs_for_day(items, "2026-01-05")
+        assert len(result["all_readings"]) == 2
+        vals = sorted([r["value"] for r in result["all_readings"]])
+        assert vals == [13, 15]
+
+
+# ── Regression: compact/intubated unaffected by tabular ─────────────
+
+class TestTabularDoesNotAffectExisting:
+    """Adding tabular parsing must not change existing extraction behavior."""
+
+    def test_compact_still_works(self):
+        text = "E4V1tM5 GCS 10"
+        readings, _ = _extract_gcs_from_text(text, "2025-12-18", "ED_NOTE", None)
+        assert len(readings) == 1
+        assert readings[0]["intubated"] is True
+        assert readings[0]["value"] == 10
+
+    def test_structured_block_still_works(self):
+        text = "\n".join([
+            "Eye Opening: Spontaneous",
+            "Best Verbal Response: Oriented",
+            "Best Motor Response: Obeys commands",
+            "Glasgow Coma Scale Score: 15",
+        ])
+        readings, _ = _extract_gcs_from_text(text, "2025-12-18", "ED_NOTE", None)
+        assert len(readings) == 1
+        assert readings[0]["source"] == "ED_NOTE:structured_block"
+
+    def test_simple_total_still_works(self):
+        readings, _ = _extract_gcs_from_text("GCS: 15", "2025-12-18", "ED_NOTE", None)
+        assert len(readings) == 1
+        assert readings[0]["source"] == "ED_NOTE:simple"
+
+    def test_arrival_primary_survey_unaffected(self):
+        text = "\n".join([
+            "Primary Survey:",
+            "  Disability: GCS 15",
+            "Secondary Survey:",
+        ])
+        readings, arrival = _extract_gcs_from_text(text, "2025-12-18", "TRAUMA_HP", None)
+        assert arrival is not None
+        assert arrival["value"] == 15
+
+
+class TestTabularFlowsheetIngestIntegration:
+    """Integration: NURSING_NOTE with tabular GCS reaches extract_gcs_for_day."""
+
+    def test_nursing_note_tabular_gcs_extracted(self):
+        """A NURSING_NOTE item containing a tab-delimited GCS table
+        produces tabular_flowsheet readings via extract_gcs_for_day."""
+        tabular_text = "\n".join([
+            "Date/Time\tEye Opening\tBest Verbal Response\tBest Motor Response\tGlasgow Coma Scale Score Total",
+            "01/05/26 1607\tSpontaneous A\tOriented A\tObeys commands A\t15 A",
+            "01/04/26 0411\tTo speech D\tConfused D\tObeys commands D\t13 D",
+        ])
+        item = _timeline_item(tabular_text, dt="2026-01-05T16:07:00",
+                              item_type="NURSING_NOTE")
+        result, warnings = extract_gcs_for_day([item], "2026-01-05")
+        assert len(result["all_readings"]) >= 1
+        sources = [r["source"] for r in result["all_readings"]]
+        assert any("tabular_flowsheet" in s for s in sources)
+
+    def test_nursing_note_tabular_gcs_has_components(self):
+        """Tabular GCS readings from NURSING_NOTE include eye/verbal/motor."""
+        tabular_text = "\n".join([
+            "Date/Time\tEye Opening\tBest Verbal Response\tBest Motor Response\tGlasgow Coma Scale Score",
+            "01/05/26 1607\tSpontaneous A\tOriented A\tObeys commands A\t15 A",
+        ])
+        item = _timeline_item(tabular_text, dt="2026-01-05T16:07:00",
+                              item_type="NURSING_NOTE")
+        result, _ = extract_gcs_for_day([item], "2026-01-05")
+        readings = result["all_readings"]
+        assert len(readings) == 1
+        assert readings[0]["eye"] == 4
+        assert readings[0]["verbal"] == 5
+        assert readings[0]["motor"] == 6
+        assert readings[0]["value"] == 15
+
+    def test_nursing_note_tabular_extra_columns_handled(self):
+        """Tabular with extra columns (LUE, RUE, etc.) still parses GCS."""
+        tabular_text = "\n".join([
+            "Date/Time\tLUE\tEye Opening\tBest Verbal Response\tBest Motor Response\tGlasgow Coma Scale Score\tRUE",
+            "01/05/26 0728\tGrasps A\tSpontaneous A\tOriented A\tObeys commands A\t15 A\tGrasps A",
+        ])
+        item = _timeline_item(tabular_text, dt="2026-01-05T07:28:00",
+                              item_type="NURSING_NOTE")
+        result, _ = extract_gcs_for_day([item], "2026-01-05")
+        readings = result["all_readings"]
+        assert len(readings) >= 1
+        assert readings[0]["value"] == 15
