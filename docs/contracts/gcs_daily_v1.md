@@ -170,10 +170,13 @@ Validation (all must pass or row is skipped):
 5. Sum of mapped values equals stated total
 6. Total is in range 3–15
 
-**Note:** Tabular flowsheet data currently requires a follow-up
-ingestion PR to emit these text blocks as timeline items.  The
-parser is ready and tested but will not fire until the ingestion
-layer feeds the data.
+**Note:** Tabular flowsheet data is ingested via the `Flowsheet History`
+scanner in `cerebralos/ingest/parse_patient_txt.py`.  When a Flowsheet
+History section contains all four GCS column signatures (Eye Opening,
+Best Verbal Response, Best Motor Response, Glasgow Coma Scale Score),
+the block is emitted as a `NURSING_NOTE` evidence item.  The
+`gcs_daily` feature module then applies `_parse_tabular_flowsheet()` to
+extract validated readings from the text.
 
 ---
 

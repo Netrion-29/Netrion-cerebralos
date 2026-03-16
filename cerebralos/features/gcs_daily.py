@@ -159,6 +159,13 @@ def _parse_tabular_flowsheet(
             i += 1
             continue
 
+        # Detect Date/Time column dynamically (may not be column 0)
+        dt_col_idx = 0  # default
+        for ci, col_text in enumerate(cols):
+            if col_text.strip().lower().startswith("date/time"):
+                dt_col_idx = ci
+                break
+
         # Found header — now parse data rows until section ends
         i += 1
         while i < len(lines):
@@ -178,8 +185,8 @@ def _parse_tabular_flowsheet(
             if len(data_cols) <= max_needed:
                 continue
 
-            # Must start with a date/time
-            dt_cell = data_cols[0].strip()
+            # Must start with a date/time (dynamically resolved column)
+            dt_cell = data_cols[dt_col_idx].strip() if dt_col_idx < len(data_cols) else ""
             m_dt = RE_TABULAR_DATE_PREFIX.match(dt_cell)
             if not m_dt:
                 continue
@@ -220,7 +227,14 @@ def _parse_tabular_flowsheet(
             if eye_val + verbal_val + motor_val != total_val:
                 continue  # fail-closed: sum mismatch
 
-            timestamp_quality = "full" if row_dt else ("date_only" if dt_context else "missing")
+            if row_dt:
+                timestamp_quality = "full"
+            elif dt_context and "T" in str(dt_context):
+                timestamp_quality = "full"
+            elif dt_context:
+                timestamp_quality = "date_only"
+            else:
+                timestamp_quality = "missing"
 
             dedup_key = (total_val, row_dt or dt_context, f"tabular:{raw_eye}:{raw_verbal}:{raw_motor}")
             if dedup_key in seen_values:
@@ -235,7 +249,7 @@ def _parse_tabular_flowsheet(
                 "motor": motor_val,
                 "source": f"{source_type}:tabular_flowsheet",
                 "dt": row_dt or dt_context,
-                "timestamp_quality": "full" if row_dt else timestamp_quality,
+                "timestamp_quality": timestamp_quality,
                 "is_arrival": False,
                 "line_preview": data_line[:120],
             })
