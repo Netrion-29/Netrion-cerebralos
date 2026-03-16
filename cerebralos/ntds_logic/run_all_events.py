@@ -27,13 +27,11 @@ from cerebralos.ntds_logic.rules_loader import load_ruleset, load_mapper, _event
 from cerebralos.ntds_logic.build_patientfacts_from_txt import build_patientfacts
 from cerebralos.ntds_logic.engine import evaluate_event, write_output, load_mapper as engine_load_mapper
 
-# ── Activate LDA device-duration gates at runtime (roadmap #19) ────
-# The engine's ENABLE_LDA_GATES default is False.  Setting it here
-# (the NTDS runner, not the engine) activates LDA gate evaluation for
-# all events.  Per-event control is via required=true/false in each
-# event rule JSON (only E05 is required=true as of this change).
 from cerebralos.ntds_logic import engine as _engine_mod
-_engine_mod.ENABLE_LDA_GATES = True
+
+# Events whose LDA device-duration gates are enabled (roadmap #19).
+# Only E05 CAUTI is active; E06/E21 remain gated off.
+_LDA_ENABLED_EVENTS: frozenset[int] = frozenset({5})
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ALL_EVENTS = list(range(1, 22))  # 1..21
@@ -78,6 +76,9 @@ def run_all(year: int, patient_path: Path, arrival: str | None = None) -> List[D
     summary_rows: List[Dict[str, Any]] = []
 
     for eid in ALL_EVENTS:
+        # ── Per-event LDA gate toggle (only E05 today) ──────────
+        _engine_mod.ENABLE_LDA_GATES = eid in _LDA_ENABLED_EVENTS
+
         # Validate rules file exists before loading (mirrors engine.py CLI guard)
         rules_dir = REPO_ROOT / "rules" / "ntds" / "logic" / str(year)
         pattern = f"{eid:02d}_*.json"
