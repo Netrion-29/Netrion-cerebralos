@@ -363,6 +363,18 @@ _LDA_STARTSTOP_PATTERNS: List[tuple] = [
     (re.compile(r"\bintubat(?:ed|ion)\b", re.IGNORECASE), "ENDOTRACHEAL_TUBE", "insert"),
     (re.compile(r"\bmechanical\s+ventilation\s+(?:initiated|started|begun)\b", re.IGNORECASE), "MECHANICAL_VENTILATOR", "insert"),
     (re.compile(r"\bplaced\s+on\s+(?:mechanical\s+)?vent(?:ilat(?:or|ion))?\b", re.IGNORECASE), "MECHANICAL_VENTILATOR", "insert"),
+    # ── MECHANICAL_VENTILATOR status (active vent presence) ──
+    # Raw evidence: "sedated and on mechanical ventilation" (Ronald_Bittner:2153),
+    # "Sedated on mechanical ventilation" (Ronald_Bittner:12024),
+    # "on the ventilator" (Ronald_Bittner:2590),
+    # "remains on the vent" (Ronald_Bittner:3027),
+    # "on ventilator via tracheostomy" (Ronald_Bittner:669, 803, 1006)
+    # Fail-closed: requires "on [the] [mechanical] vent*"; intervening
+    # qualifiers (non-invasive, BiPAP, CPAP) break the pattern match.
+    (re.compile(r"\bon\s+(?:the\s+)?(?:mechanical\s+)?vent(?:ilat(?:or|ion))?\b", re.IGNORECASE), "MECHANICAL_VENTILATOR", "insert"),
+    # ── MECHANICAL_VENTILATOR via tracheostomy ──
+    # Raw evidence: "being ventilated via tracheostomy" (Ronald_Bittner:656)
+    (re.compile(r"\bventilat(?:ed|or|ion)\s+via\s+trach(?:eostomy)?\b", re.IGNORECASE), "MECHANICAL_VENTILATOR", "insert"),
     # ── MECHANICAL_VENTILATOR / ENDOTRACHEAL_TUBE removal ──
     (re.compile(r"\bextubat(?:ed|ion)\b", re.IGNORECASE), "ENDOTRACHEAL_TUBE", "remove"),
     (re.compile(r"\bvent(?:ilat(?:or|ion))?\s+(?:discontinued|weaned\s+off|removed)\b", re.IGNORECASE), "MECHANICAL_VENTILATOR", "remove"),
