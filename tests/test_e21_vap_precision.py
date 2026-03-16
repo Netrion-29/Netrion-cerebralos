@@ -229,6 +229,16 @@ class TestVapRuleStructure:
         assert len(pats["vap_negation_noise"]) >= 5, \
             "vap_negation_noise should have at least 5 patterns"
 
+    def test_lda_gate_required(self):
+        """LDA vent_duration_lda gate must be required=true (roadmap #19)."""
+        rule_path = REPO_ROOT / "rules" / "ntds" / "logic" / "2026" / "21_vap.json"
+        with open(rule_path) as f:
+            rule = json.load(f)
+        lda = next(g for g in rule["gates"] if g["gate_id"] == "vent_duration_lda")
+        assert lda.get("required") is True
+        assert lda["device_type"] == "MECHANICAL_VENTILATOR"
+        assert lda["days_gte"] == 2
+
     def test_min_count_two(self):
         """VAP requires min_count 2 — two independent pieces of evidence."""
         rule_path = REPO_ROOT / "rules" / "ntds" / "logic" / "2026" / "21_vap.json"

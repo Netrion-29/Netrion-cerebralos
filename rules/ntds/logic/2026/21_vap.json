@@ -22,7 +22,7 @@
       "gate_type": "lda_duration",
       "gate_id": "vent_duration_lda",
       "gate_name": "LDA: Mechanical ventilator episode >2 calendar days",
-      "required": false,
+      "required": true,
       "device_type": "MECHANICAL_VENTILATOR",
       "days_gte": 2,
       "min_confidence": "TEXT_DERIVED",
