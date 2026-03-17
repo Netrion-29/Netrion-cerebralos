@@ -204,6 +204,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - LDA per-event gate enablement: ✅ COMPLETE (PRs #244–#246) — E05 CAUTI, E06 CLABSI, E21 VAP LDA gates set `required: true`; per-event toggle in runner; protected engine.py not modified
 > - Vent start/stop recall for E21 VAP: ✅ COMPLETE (PR #248) — citation-backed ventilator start/stop patterns (intubation/extubation, placed-on/removed-from ventilator), negated-phrase guards, NIV exclusion; 37 new LDA tests; 0 NTDS outcome deltas; protected engine.py not modified
 > - Multi-episode vent start/stop (E21 recall hardening): ✅ COMPLETE (PR #250) — sequential insert→remove pairing for MECHANICAL_VENTILATOR and ENDOTRACHEAL_TUBE; multiple non-overlapping episodes per device; merge logic updated to list-per-device with tier-based replacement + episode_days backfill; 10 new regression tests; 0 NTDS outcome deltas; protected engine.py not modified
+> - NTDS engine hash baseline sync: ✅ COMPLETE (PR #252) — NTDS engine MD5 baseline in `_regression_phase1_v2.py` (`BASELINE_HASHES["ntds_engine"]`) updated to match current `cerebralos/ntds_logic/engine.py`; `gate_pr.sh` now reports `Ntds Engine match=True`; zero behavior change
 > - Open PRs: none
 > - .gitignore cleanup: ✅ COMPLETE — `_tmp_*`, `rules/deaconess/*.pdf`, `docs/handoffs/`, audit log added to `.gitignore`
 
