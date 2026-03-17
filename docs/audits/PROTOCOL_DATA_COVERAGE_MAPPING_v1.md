@@ -2,8 +2,9 @@
 
 | Field       | Value |
 |-------------|-------|
-| Source       | First-pass analysis of CerebralOS extraction pipeline vs. Protocol Data Element Master v1 |
-| Generated   | 2026-03-12 |
+| Source       | Analysis of CerebralOS extraction pipeline vs. Protocol Data Element Master v1 |
+| Generated   | 2026-03-16 (refreshed; original 2026-03-12) |
+| Baseline     | `16d2bfa` (main, after PR #260) |
 | Roadmap item | #15 — Protocol Data Coverage Mapping |
 | Baseline doc | `docs/audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md` (20 categories, 230 elements, 51 protocols) |
 | Coverage CSV | `docs/audits/PROTOCOL_DATA_ELEMENT_MASTER_v1_with_coverage.csv` |
@@ -47,17 +48,28 @@ Coverage was assessed by:
 
 ## Summary
 
-| Status | Count | Pct |
-|--------|------:|----:|
-| EXTRACTED | 60 | 26.1% |
-| PARTIAL | 57 | 24.8% |
-| MISSING | 97 | 42.2% |
-| N/A | 16 | 7.0% |
-| **Total** | **230** | 100% |
+| Status | Count | Pct | Δ from v1 (2026-03-12) |
+|--------|------:|----:|:----------------------:|
+| EXTRACTED | 79 | 34.3% | +19 |
+| PARTIAL | 48 | 20.9% | −9 |
+| MISSING | 87 | 37.8% | −10 |
+| N/A | 16 | 7.0% | 0 |
+| **Total** | **230** | 100% | — |
 
 **Actionable elements** (excluding N/A): 214
-**Actionable coverage** (EXTRACTED + PARTIAL): 117 / 214 = **54.7%**
-**Fully extracted**: 60 / 214 = **28.0%**
+**Actionable coverage** (EXTRACTED + PARTIAL): 127 / 214 = **59.3%** (was 54.7%)
+**Fully extracted**: 79 / 214 = **36.9%** (was 28.0%)
+
+### Change Log (v1 → v2 refresh)
+
+| Category | Change | PRs | Elements moved |
+|----------|--------|-----|----------------|
+| Resuscitation | 6 MISSING → EXTRACTED | #229–#231 | MTP, pRBC, FFP, Platelets, TXA, Cryo |
+| Laboratory | 7 PARTIAL → EXTRACTED | #226–#228, #232 | CBC, BMP, Coag, ABG, Lactate, Creatinine, Troponin |
+| Vital Signs | 2 PARTIAL → EXTRACTED | #238–#239, #243, #254 | GCS (E/V/M components), Shock Index |
+| Airway | 2 MISSING → EXTRACTED | #233–#237, #226–#228 | Vent mode/settings, PaO2/FiO2 ratio |
+| Demographics | 1 MISSING → EXTRACTED | #222–#225 | Sex |
+| Disposition | 1 MISSING → EXTRACTED | #222–#225 | Discharge disposition |
 
 ---
 
@@ -65,16 +77,16 @@ Coverage was assessed by:
 
 | # | Category | EXTRACTED | PARTIAL | MISSING | N/A | Total | Coverage |
 |---|----------|----------:|--------:|--------:|----:|------:|---------:|
-| 1 | Demographics / Patient Identification | 4 | 1 | 2 | 1 | 8 | 71% |
+| 1 | Demographics / Patient Identification | 5 | 1 | 1 | 1 | 8 | 86% |
 | 2 | Prehospital / EMS | 1 | 0 | 6 | 1 | 8 | 14% |
 | 3 | Injury Mechanism / Classification | 2 | 0 | 8 | 2 | 12 | 20% |
 | 4 | Emergency Department Assessment | 3 | 1 | 5 | 0 | 9 | 44% |
-| 5 | Vital Signs / Hemodynamic Monitoring | 5 | 3 | 2 | 0 | 10 | 80% |
+| 5 | Vital Signs / Hemodynamic Monitoring | 7 | 1 | 2 | 0 | 10 | 80% |
 | 6 | Neurologic Assessment | 1 | 7 | 1 | 0 | 9 | 89% |
-| 7 | Laboratory / Diagnostics | 4 | 7 | 5 | 0 | 16 | 69% |
+| 7 | Laboratory / Diagnostics | 11 | 0 | 5 | 0 | 16 | 69% |
 | 8 | Imaging / Radiology | 1 | 8 | 3 | 0 | 12 | 75% |
-| 9 | Airway / Respiratory | 0 | 3 | 6 | 0 | 9 | 33% |
-| 10 | Resuscitation / Blood Products | 0 | 0 | 12 | 0 | 12 | 0% |
+| 9 | Airway / Respiratory | 2 | 3 | 4 | 0 | 9 | 56% |
+| 10 | Resuscitation / Blood Products | 6 | 0 | 6 | 0 | 12 | 50% |
 | 11 | Operative / Procedural | 2 | 5 | 5 | 0 | 12 | 58% |
 | 12 | Pharmacologic Interventions | 2 | 2 | 5 | 0 | 9 | 44% |
 | 13 | Device / Line Management | 0 | 6 | 6 | 0 | 12 | 50% |
@@ -84,7 +96,7 @@ Coverage was assessed by:
 | 17a | Special Populations — Geriatric | 0 | 2 | 5 | 0 | 7 | 29% |
 | 17b | Special Populations — Pediatric | 0 | 0 | 7 | 0 | 7 | 0% |
 | 17c | Special Populations — Obstetric | 0 | 0 | 6 | 0 | 6 | 0% |
-| 18 | Disposition / Discharge Planning | 1 | 4 | 4 | 2 | 11 | 56% |
+| 18 | Disposition / Discharge Planning | 2 | 4 | 3 | 2 | 11 | 67% |
 | 19 | Complications / NTDS Events | 20 | 1 | 0 | 0 | 21 | 100% |
 | 20 | Operational / Call Panel | 1 | 0 | 0 | 10 | 11 | 100% |
 
@@ -93,7 +105,7 @@ Coverage was assessed by:
 
 ---
 
-## Detailed Evidence: EXTRACTED Elements (60)
+## Detailed Evidence: EXTRACTED Elements (79)
 
 | Category | Element | Repo Evidence |
 |----------|---------|---------------|
@@ -101,6 +113,7 @@ Coverage was assessed by:
 | Demographics | Date of birth / Age | `cerebralos/features/age_extraction_v1.py` |
 | Demographics | Admission date/time | ARRIVAL_TIME header parsing; `cerebralos/features/adt_transfer_timeline_v1.py` |
 | Demographics | Trauma activation category | `cerebralos/features/category_activation_v1.py`; `rules/features/category_activation_v1.json` |
+| Demographics | Sex | `cerebralos/features/build_patient_features_v1.py` → `demographics_v1.sex`; primary from evidence header SEX, fallback `_extract_sex_hpi_fallback()` in `parse_patient_txt.py` (PRs #222–#225) |
 | Prehospital | Mechanism of injury narrative | `cerebralos/features/mechanism_region_v1.py` |
 | Injury Mech. | Blunt vs. penetrating classification | `cerebralos/features/mechanism_region_v1.py` — classifies blunt/penetrating |
 | Injury Mech. | Body region(s) involved | `cerebralos/features/mechanism_region_v1.py` — extracts body regions |
@@ -112,16 +125,33 @@ Coverage was assessed by:
 | Vital Signs | Respiratory rate | `cerebralos/features/vitals_canonical_v1.py` |
 | Vital Signs | SpO2 (pulse oximetry) | `cerebralos/features/vitals_canonical_v1.py` |
 | Vital Signs | Temperature (core) | `cerebralos/features/vitals_canonical_v1.py` |
+| Vital Signs | GCS (total + components E/V/M) | `cerebralos/features/gcs_daily.py` — structured E/V/M component extraction from inline + flowsheet + tabular sources; sum-mismatch guard; compact-intubated fix (PRs #238–#239, #243) |
+| Vital Signs | Shock index (HR/SBP) | `cerebralos/features/shock_trigger_v1.py` — deterministic SI = HR/SBP; classification: normal/elevated/critical; fail-closed null (PR #254) |
 | Neurologic | Spinal clearance status | `cerebralos/features/spine_clearance_v1.py` |
 | Laboratory | Base deficit (serial) | `cerebralos/features/base_deficit_monitoring_v1.py` |
 | Laboratory | Blood culture results | `clabsi_blood_culture_positive` mapper key in `rules/mappers/epic_deaconess_mapper_v1.json` |
 | Laboratory | Urine culture results | `cauti_culture_positive` mapper key |
 | Laboratory | Urine drug screen / BAL | `cerebralos/features/etoh_uds_v1.py` |
+| Laboratory | CBC (H/H, WBC, platelets) | `cerebralos/features/structured_labs_v1.py` — cbc panel with Hgb/Hct/WBC/Plt; per-day series with delta tracking (PRs #226–#228) |
+| Laboratory | BMP (Na, K, Cl, CO2, BUN, Cr, glucose) | `cerebralos/features/structured_labs_v1.py` — bmp panel with 7 components; per-day series (PRs #226–#228) |
+| Laboratory | Coagulation panel (PT/INR, PTT, fibrinogen) | `cerebralos/features/structured_labs_v1.py` — coag panel; 4 components (PRs #226–#228) |
+| Laboratory | ABG (pH, pCO2, pO2, base deficit, lactate) | `cerebralos/features/structured_labs_v1.py` — abg panel; 5 components (PRs #226–#228) |
+| Laboratory | Lactate (serial) | `cerebralos/features/structured_labs_v1.py` — abg.Lactate component with serial tracking (PRs #226–#228) |
+| Laboratory | Serum creatinine (baseline + serial) | `cerebralos/features/structured_labs_v1.py` — bmp.Cr component with serial tracking (PRs #226–#228) |
+| Laboratory | Troponin | `cerebralos/features/structured_labs_v1.py` — cardiac.Troponin_T panel component (PR #232) |
 | Imaging | FAST/eFAST | `cerebralos/features/fast_exam_v1.py` |
+| Airway | Ventilator mode / settings | `cerebralos/features/ventilator_settings_v1.py` — vent_mode, FiO2, PEEP, Vt, RR from flowsheet rows; ventilated_flag; NIV (IPAP/EPAP) support (PRs #233–#237) |
+| Airway | PaO2/FiO2 ratio | `cerebralos/features/structured_labs_v1.py` — PF ratio computed from ABG pO2 + flowsheet FiO2; per-day series (PRs #226–#228) |
 | Operative | Surgical complications | `deep_ssi_dx` + `organ_space_ssi_dx` + `superficial_ssi_dx` mapper keys |
 | Operative | Unplanned return to OR | `or_return_unplanned` + `or_initial_procedure` + `or_same_site` mapper keys; `rules/ntds/logic/2026/20_or_return.json` |
 | Pharmacologic | GI prophylaxis agent (PPI/H2 blocker) | `cerebralos/features/gi_prophylaxis_v1.py` |
 | Pharmacologic | VTE chemoprophylaxis (LMWH/UFH, timing) | `cerebralos/features/dvt_prophylaxis_v1.py`; `dvt_treatment_anticoag` mapper key |
+| Resuscitation | MTP activation (yes/no, time) | `cerebralos/features/transfusion_blood_products_v1.py` — MTP pattern detection with timestamp (PRs #229–#231) |
+| Resuscitation | pRBC units transfused | `cerebralos/features/transfusion_blood_products_v1.py` — MAR section blood product row parsing; unit count (PRs #229–#231) |
+| Resuscitation | FFP units transfused | `cerebralos/features/transfusion_blood_products_v1.py` — MAR section FFP row parsing; unit count (PRs #229–#231) |
+| Resuscitation | Platelet units transfused | `cerebralos/features/transfusion_blood_products_v1.py` — MAR section platelet row parsing; unit count (PRs #229–#231) |
+| Resuscitation | TXA administration | `cerebralos/features/transfusion_blood_products_v1.py` — tranexamic acid detection from MAR/note text (PRs #229–#231) |
+| Resuscitation | Cryoprecipitate | `cerebralos/features/transfusion_blood_products_v1.py` — cryoprecipitate detection from MAR section (PRs #229–#231) |
 | Infection | CAUTI diagnosis (CDC criteria) | E05 multi-gate rule: `rules/ntds/logic/2026/05_cauti.json` |
 | Infection | CLABSI diagnosis (NHSN criteria) | E06 multi-gate rule: `rules/ntds/logic/2026/06_clabsi.json` |
 | Infection | SSI — superficial | E17 rule: `rules/ntds/logic/2026/17_superficial_ssi.json` |
@@ -136,6 +166,7 @@ Coverage was assessed by:
 | Screening | Blood alcohol level (BAL) | `cerebralos/features/etoh_uds_v1.py` |
 | Screening | Urine drug screen result | `cerebralos/features/etoh_uds_v1.py` |
 | Disposition | ICU admission (planned vs. unplanned) | `unplanned_icu` mapper key; E18 rule: `rules/ntds/logic/2026/18_unplanned_icu_admission.json` |
+| Disposition | Discharge disposition | `cerebralos/features/build_patient_features_v1.py` → `demographics_v1.discharge_disposition`; primary from `patient_movement_v1.summary.discharge_disposition_final`, fallback keyword extraction (PRs #222–#225) |
 | NTDS E01 | Acute Kidney Injury (KDIGO Stage 3) | `rules/ntds/logic/2026/01_aki.json` — 3+ gate logic |
 | NTDS E03 | Alcohol Withdrawal | `rules/ntds/logic/2026/03_alcohol_withdrawal_syndrome.json` |
 | NTDS E04 | Cardiac Arrest | `rules/ntds/logic/2026/04_cardiac_arrest_with_cpr.json` — dual gate |
@@ -160,15 +191,13 @@ Coverage was assessed by:
 
 ---
 
-## Detailed Evidence: PARTIAL Elements (57)
+## Detailed Evidence: PARTIAL Elements (48)
 
 | Category | Element | What Exists | What's Missing |
 |----------|---------|-------------|----------------|
 | Demographics | Transferring facility | `adt_transfer_timeline_v1.py` captures transfers | Facility name not structured |
 | ED Assessment | ED disposition time | `adt_transfer_timeline_v1.py` captures transfers | No explicit ED dispo timestamp |
-| Vital Signs | GCS (total + components E/V/M) | `neuro_trigger_v1.py` detects GCS trigger patterns | No structured E/V/M component parsing |
 | Vital Signs | Serial vital sign monitoring | `vitals_canonical_v1.py` captures values | Serial compliance not assessed |
-| Vital Signs | Shock index (HR/SBP) | `hemodynamic_instability_pattern_v1.py` + `shock_trigger_v1.py` | Ratio value not computed |
 | Neurologic | GCS post-resuscitation | `neuro_trigger_v1.py` captures GCS mentions | Post-resuscitation timing not determined |
 | Neurologic | Pupil reactivity (bilateral) | `neuro_trigger_v1.py` captures pupil mentions | Bilateral/reactive status not structured |
 | Neurologic | Motor exam (lateralizing signs) | `neuro_trigger_v1.py` captures motor findings | Lateralizing signs not classified |
@@ -176,13 +205,6 @@ Coverage was assessed by:
 | Neurologic | NEXUS / Canadian C-Spine criteria | `spine_clearance_v1.py` may capture mentions | Criteria not scored |
 | Neurologic | Delirium screening (CAM-ICU / bCAM) | `delirium_dx` mapper key for diagnosis | CAM-ICU/bCAM instrument scores not structured |
 | Neurologic | Mental status changes | `neuro_trigger_v1.py` captures AMS patterns | Not classified by type |
-| Laboratory | CBC (H/H, WBC, platelets) | LAB section parsed | Individual lab values not structured |
-| Laboratory | BMP (Na, K, Cl, CO2, BUN, Cr, glucose) | `aki_stage3_lab` patterns match creatinine | Full BMP not structured |
-| Laboratory | Coagulation panel (PT/INR, PTT, fibrinogen) | `cerebralos/features/inr_normalization_v1.py` | Full coag panel not structured |
-| Laboratory | ABG (pH, pCO2, pO2, base deficit, lactate) | `base_deficit_monitoring_v1.py` captures BD patterns | Full ABG not structured |
-| Laboratory | Lactate (serial) | `base_deficit_monitoring_v1.py` captures some lactate | Not fully structured |
-| Laboratory | Serum creatinine (baseline + serial) | `aki_stage3_lab` patterns match creatinine mentions | Values not parsed |
-| Laboratory | Troponin | `mi_dx` mapper patterns may match troponin mentions | Values not parsed |
 | Imaging | CT head | `radiology_findings_v1.py` captures imaging mentions | Not CT-head-specific |
 | Imaging | CT cervical spine | `radiology_findings_v1.py` + `spine_clearance_v1.py` | Not specifically classified |
 | Imaging | CT chest/abdomen/pelvis | `radiology_findings_v1.py` captures imaging mentions | Not body-region-specific |
@@ -224,89 +246,59 @@ Coverage was assessed by:
 
 ---
 
-## Top 10 High-Confidence Gaps
+## Top 10 High-Confidence Gaps (updated 2026-03-16)
 
 These are MISSING elements where (a) the data is likely present in the raw
 Epic `.txt` export, (b) extraction would directly support protocol compliance
 or NTDS event adjudication, and (c) the implementation path is clear.
 
-| Rank | Element | Category | Why It Matters | Likely Implementation |
-|------|---------|----------|----------------|----------------------|
-| 1 | **MTP activation (yes/no, time)** | Resuscitation | Critical for transfusion protocol compliance; MTP text likely present in operative/ED notes | New mapper key + feature module; pattern: `massive transfusion protocol` / `MTP activated` |
-| 2 | **pRBC / FFP / Platelet units transfused** | Resuscitation | 1:1:1 ratio monitoring for blood transfusion protocol compliance | MAR section parsing for blood product administration |
-| 3 | **Ventilator mode / settings** | Airway | Required for ARDS Berlin criteria (NTDS E02) and TBI PaCO2 targeting | Flowsheet row parsing for vent mode/FiO2/PEEP |
-| 4 | **PaO2/FiO2 ratio** | Airway | Core Berlin criteria component for E02 ARDS; currently partial | LAB section ABG value parsing + computation |
-| 5 | **Chest tube placement (date/time/output)** | Airway | LDA CHEST_TUBE type already defined in `lda_events_v1.py`; text extraction needed | Wire existing LDA category to flowsheet row parsing |
-| 6 | **Sex** | Demographics | Universal demographic; affects dosing protocols and obstetric screening gates | Header line parsing or demographic section extraction |
-| 7 | **ICP (intracranial pressure)** | Vital Signs | TBI Management protocol requires ICP monitoring; text likely present | Flowsheet row or note section pattern matching |
-| 8 | **Discharge disposition** | Disposition | Registry requirement; discharge section often documents destination | DISCHARGE section structured parsing |
-| 9 | **Mental health screening** | Screening | Required by protocol for all trauma patients; likely documented | Pattern matching in nursing assessment / social work notes |
-| 10 | **Antibiotic administration (type, time)** | Pharmacologic | Open fracture protocol requires antibiotics within 1 hour | MAR section antibiotic pattern matching |
+Six of the original ten gaps have been closed since the initial audit.
+
+| Rank | Element | Category | Status | Closed By |
+|------|---------|----------|--------|-----------|
+| 1 | ~~MTP activation (yes/no, time)~~ | Resuscitation | ✅ EXTRACTED | `transfusion_blood_products_v1.py` (PRs #229–#231) |
+| 2 | ~~pRBC / FFP / Platelet units transfused~~ | Resuscitation | ✅ EXTRACTED | `transfusion_blood_products_v1.py` (PRs #229–#231) |
+| 3 | ~~Ventilator mode / settings~~ | Airway | ✅ EXTRACTED | `ventilator_settings_v1.py` (PRs #233–#237) |
+| 4 | ~~PaO2/FiO2 ratio~~ | Airway | ✅ EXTRACTED | `structured_labs_v1.py` PF computation (PRs #226–#228) |
+| 5 | **Chest tube placement (date/time/output)** | Airway | MISSING | LDA CHEST_TUBE defined; text extraction needed |
+| 6 | ~~Sex~~ | Demographics | ✅ EXTRACTED | `demographics_v1.sex` (PRs #222–#225) |
+| 7 | **ICP (intracranial pressure)** | Vital Signs | MISSING | Flowsheet row or note section pattern matching |
+| 8 | ~~Discharge disposition~~ | Disposition | ✅ EXTRACTED | `demographics_v1.discharge_disposition` (PRs #222–#225) |
+| 9 | **Mental health screening** | Screening | MISSING | Pattern matching in nursing assessment / social work notes |
+| 10 | **Antibiotic administration (type, time)** | Pharmacologic | MISSING | MAR section antibiotic pattern matching |
 
 ---
 
-## Next PR Slices
+## Completed PR Slices
 
-### Slice A — Small: Sex + Discharge Disposition Extraction
+### Slice A — ✅ COMPLETE: Sex + Discharge Disposition Extraction (PRs #222–#225)
 
-**Scope:** 2 elements, single-goal PR.
+| Element | Source | Status |
+|---------|--------|--------|
+| Sex | Header SEX field + HPI fallback (`_extract_sex_hpi_fallback()`) | ✅ Merged |
+| Discharge disposition | `patient_movement_v1.summary.discharge_disposition_final` | ✅ Merged |
 
-| Element | Source | Pattern |
-|---------|--------|---------|
-| Sex | Header line or demographic section in raw `.txt` | `Sex:` / `Gender:` field extraction |
-| Discharge disposition | DISCHARGE section text | `Discharged to:` / `Disposition:` pattern matching |
+### Slice B — ✅ COMPLETE: Blood Product Transfusion Extraction (PRs #229–#231)
 
-**Files touched:**
-- `cerebralos/features/` — new or modified feature module(s)
-- `tests/` — new test file(s) for each element
-- Baseline update if output changes
+| Element | Source | Status |
+|---------|--------|--------|
+| MTP activation | Operative / ED note pattern detection | ✅ Merged |
+| pRBC units transfused | MAR section blood product row parsing | ✅ Merged |
+| FFP units transfused | MAR section FFP row parsing | ✅ Merged |
+| Platelet units transfused | MAR section platelet row parsing | ✅ Merged |
+| TXA administration | MAR / note `tranexamic acid` / `TXA` pattern | ✅ Merged |
+| Cryoprecipitate | MAR section cryoprecipitate row parsing | ✅ Merged |
 
-**Estimated effort:** Small (2–4 hours). Both are single-pattern header/section
-extractions with minimal logic.
+### Slice C — ✅ COMPLETE: Structured Lab Value Parsing (PRs #226–#228, #232)
 
-### Slice B — Medium: Blood Product Transfusion Extraction
-
-**Scope:** 4–5 elements from Resuscitation / Blood Products category.
-
-| Element | Source | Pattern |
-|---------|--------|---------|
-| MTP activation | Operative / ED notes | `massive transfusion protocol`, `MTP activated` |
-| pRBC units transfused | MAR section | Blood product administration rows |
-| FFP units transfused | MAR section | Blood product administration rows |
-| Platelet units transfused | MAR section | Blood product administration rows |
-| TXA administration | MAR section | `tranexamic acid` / `TXA` rows |
-
-**Files touched:**
-- `cerebralos/features/` — new `blood_products_v1.py` feature module
-- `rules/mappers/epic_deaconess_mapper_v1.json` — new mapper keys if needed
-- `tests/` — test files with real MAR section extracts
-
-**Estimated effort:** Medium (1–2 days). Requires MAR section parsing for
-blood product rows, unit counting, and ratio computation.
-
-### Slice C — Large: Structured Lab Value Parsing
-
-**Scope:** 8–10 elements across Laboratory / Diagnostics.
-
-| Element | Source | Pattern |
-|---------|--------|---------|
-| CBC components (H/H, WBC, platelets) | LAB section flowsheet | Structured lab value rows |
-| BMP components (Na, K, Cr, glucose) | LAB section flowsheet | Structured lab value rows |
-| Full coag panel (PT/INR, PTT, fibrinogen) | LAB section flowsheet | Structured lab value rows |
-| ABG components (pH, pCO2, pO2, BD, lactate) | LAB section flowsheet | Structured lab value rows |
-| PaO2/FiO2 ratio computation | LAB + flowsheet | Derived computation |
-| Troponin value parsing | LAB section | Troponin rows |
-| Procalcitonin value parsing | LAB section | Procalcitonin rows |
-
-**Files touched:**
-- `cerebralos/features/labs_extract.py`, `labs_daily.py`, `labs_panel_daily.py`
-  — extend existing lab extraction infrastructure
-- `rules/features/labs_thresholds_v1.json` — add threshold configs
-- `tests/` — extensive test coverage for lab value parsing
-
-**Estimated effort:** Large (3–5 days). Requires robust numeric value parsing
-from LAB section flowsheet rows, handling of units, reference ranges, and serial
-trending. Foundation work that would unlock multiple downstream protocol elements.
+| Element | Source | Status |
+|---------|--------|--------|
+| CBC components (H/H, WBC, platelets) | LAB section flowsheet parsing | ✅ Merged |
+| BMP components (Na, K, Cr, glucose, etc.) | LAB section flowsheet parsing | ✅ Merged |
+| Full coag panel (PT/INR, PTT, fibrinogen) | LAB section flowsheet parsing | ✅ Merged |
+| ABG components (pH, pCO2, pO2, BD, lactate) | LAB section flowsheet parsing | ✅ Merged |
+| PaO2/FiO2 ratio computation | ABG pO2 + flowsheet FiO2 | ✅ Merged |
+| Troponin value parsing | LAB section cardiac panel | ✅ Merged |
 
 ---
 
@@ -318,33 +310,36 @@ Category                                     Coverage  Bar
 19 · Complications / NTDS Events               100%   ████████████████████
 20 · Operational / Call Panel (excl N/A)        100%   ████████████████████
  6 · Neurologic Assessment                      89%   █████████████████▊
+ 1 · Demographics / Patient Identification      86%   █████████████████▏
 14 · Infection Prevention / HAI Monitoring      82%   ████████████████▍
  5 · Vital Signs / Hemodynamic Monitoring       80%   ████████████████
  8 · Imaging / Radiology                        75%   ███████████████
- 1 · Demographics / Patient Identification      71%   ██████████████▎
  7 · Laboratory / Diagnostics                   69%   █████████████▊
+18 · Disposition / Discharge Planning           67%   █████████████▍
 16 · Screening / Behavioral Health              64%   ████████████▊
 11 · Operative / Procedural                     58%   ███████████▌
 15 · Prophylaxis (DVT / GI / Hypothermia)       57%   ███████████▍
-18 · Disposition / Discharge Planning           56%   ███████████
+ 9 · Airway / Respiratory                       56%   ███████████
+10 · Resuscitation / Blood Products             50%   ██████████
 13 · Device / Line Management                   50%   ██████████
  4 · Emergency Department Assessment            44%   ████████▊
 12 · Pharmacologic Interventions                44%   ████████▊
- 9 · Airway / Respiratory                       33%   ██████▋
 17a· Special Populations — Geriatric            29%   █████▊
  3 · Injury Mechanism / Classification          20%   ████
  2 · Prehospital / EMS                          14%   ██▊
-10 · Resuscitation / Blood Products              0%   ▏
 17b· Special Populations — Pediatric             0%   ▏
 17c· Special Populations — Obstetric             0%   ▏
 ```
 
-> **Strongest areas:** NTDS event adjudication (21/21 events), vital signs,
-> infection prevention, and neurologic assessment.
+> **Strongest areas:** NTDS event adjudication (21/21 events), demographics
+> (6/7 actionable), neurologic assessment, and infection prevention.
 >
-> **Weakest areas:** Resuscitation / blood products (0 of 12), special
-> populations (0 of 20 across 17a geriatric / 17b pediatric / 17c obstetric),
-> and prehospital (1 of 7 actionable).
+> **Most improved:** Resuscitation (0% → 50%), Airway (33% → 56%),
+> Demographics (71% → 86%), Disposition (56% → 67%).
+>
+> **Weakest areas:** Special populations (0 of 20 across 17b pediatric /
+> 17c obstetric), prehospital (1 of 7 actionable), and injury mechanism
+> classification (2 of 10 actionable).
 
 ---
 
