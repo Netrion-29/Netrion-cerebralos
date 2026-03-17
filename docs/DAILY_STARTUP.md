@@ -148,7 +148,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 
 - **[Whole-Project State and Roadmap v1](roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md)** ← primary context-recovery doc
 - [Trauma Build-Forward Plan v1](roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md) (historical)
-- [LDA Engine Design v1](audits/LDA_ENGINE_DESIGN_v1.md) — ✅ IMPLEMENTED (v1+text+startstop+per-event) Lines/Drains/Airways device-duration engine design; text-derived flowsheet day-counter extraction; insertion/removal start/stop inference (`TEXT_DERIVED_STARTSTOP`); `eval_lda_overlap` interval overlap gate; `ENABLE_LDA_GATES` feature flag (default False); per-event LDA gates enabled for E05/E06/E21 via runner toggle + rule `required: true` (PRs #244–#246); 145+ dedicated tests (PRs #203, #206, #207, #244, #245, #246)
+- [LDA Engine Design v1](audits/LDA_ENGINE_DESIGN_v1.md) — ✅ IMPLEMENTED (v1+text+startstop+per-event+vent-recall) Lines/Drains/Airways device-duration engine design; text-derived flowsheet day-counter extraction; insertion/removal start/stop inference (`TEXT_DERIVED_STARTSTOP`); `eval_lda_overlap` interval overlap gate; `ENABLE_LDA_GATES` feature flag (default False). See **[Whole-Project State and Roadmap v1](roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md)** LDA implementation ledger for the authoritative PR list and current status.
 - [CAUTI Engine Design v1](audits/CAUTI_ENGINE_DESIGN_v1.md) — CAUTI-specific LDA duration gate + alternative-source exclusion design (predecessor; CAUTI clinical requirements still authoritative; engine approval needed)
 - [Protocol Data Element Master v1](audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md) — comprehensive inventory of all data elements across 51 protocol PDFs; coverage Slices A/B/C COMPLETE (PRs #222–#232); vent settings COMPLETE (PRs #233–#237); GCS components COMPLETE (PRs #238–#239); tabular GCS flowsheet COMPLETE (PR #243); see Roadmap §3 item 15 for next candidates
 
@@ -202,6 +202,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - GCS component extraction (E/V/M): ✅ COMPLETE (PRs #238–#239) — inline + flowsheet block parsing, sum-mismatch guard, compact-intubated fix
 > - Tabular GCS flowsheet extraction: ✅ COMPLETE (PR #243) — deterministic tabular GCS flowsheet parsing
 > - LDA per-event gate enablement: ✅ COMPLETE (PRs #244–#246) — E05 CAUTI, E06 CLABSI, E21 VAP LDA gates set `required: true`; per-event toggle in runner; protected engine.py not modified
+> - Vent start/stop recall for E21 VAP: ✅ COMPLETE (PR #248) — citation-backed ventilator start/stop patterns (intubation/extubation, placed-on/removed-from ventilator), negated-phrase guards, NIV exclusion; 37 new LDA tests; 0 NTDS outcome deltas; protected engine.py not modified
 > - Open PRs: none
 > - .gitignore cleanup: ✅ COMPLETE — `_tmp_*`, `rules/deaconess/*.pdf`, `docs/handoffs/`, audit log added to `.gitignore`
 
