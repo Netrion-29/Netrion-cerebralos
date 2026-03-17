@@ -471,7 +471,9 @@
 			"\\brule\\s+out\\b.*\\bsep(sis|tic)\\b",
 			"\\br/o\\b.*\\bsep(sis|tic)\\b",
 			"\\bno\\s+(evidence|signs?)\\s+of\\b.*\\bsep(sis|tic)\\b",
-			"\\bas\\s+a\\s+reminder\\b.*\\bsepsis\\b"
+			"\\bas\\s+a\\s+reminder\\b.*\\bsepsis\\b",
+			"\\bSEVERE\\s+SEPSIS\\s*:",
+			"\\bSEPTIC\\s+SHOCK\\s*:"
 		],
 		"aki_dx": [
 			"\\bacute\\s+kidney\\s+injury\\b",
@@ -640,7 +642,10 @@
 			"\\bno\\s+acute\\s+airspace\\s+disease\\b",
 			"\\bnegative\\s+for\\b[^.]{0,40}\\b(consolidation|infiltrate|pneumonia)\\b",
 			"\\baspiration\\s+pneumonia\\b",
-			"\\baspiration\\s+pneumonitis\\b"
+			"\\baspiration\\s+pneumonitis\\b",
+			"\\bpulmonary\\s+edema\\b",
+			"\\bfluid\\s+overload\\b",
+			"\\bvolume\\s+overload\\b"
 		],
 		"clabsi_dx": [
 			"\\bcentral\\s+line[- ]associated\\s+bloodstream\\s+infection\\b",
