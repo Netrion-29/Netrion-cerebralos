@@ -1373,6 +1373,234 @@ class TestStartStopExtraction:
 
 
 # ═══════════════════════════════════════════════════════════════════
+# 13b. Multi-episode start/stop extraction (MECHANICAL_VENTILATOR)
+# ═══════════════════════════════════════════════════════════════════
+
+class TestMultiEpisodeVentStartStop:
+    """Regression tests for multi-episode MECHANICAL_VENTILATOR extraction.
+
+    MECHANICAL_VENTILATOR and ENDOTRACHEAL_TUBE now pair sequential
+    insert→remove events to produce multiple non-overlapping episodes.
+    """
+
+    def test_two_distinct_vent_episodes(self):
+        """Two insert→remove cycles → two separate episodes."""
+        eps = _extract_lda_startstop_episodes(
+            [
+                "Patient placed on mechanical ventilation.",     # insert #1
+                "Ventilator discontinued after wean trial.",      # remove #1
+                "Re-intubated for respiratory failure.",          # insert #2 (ETT)
+                "Patient placed on ventilator.",                  # insert #2 (MV)
+                "Ventilator weaned off successfully.",            # remove #2
+            ],
+            timestamps=[
+                "2026-01-10T08:00:00",
+                "2026-01-13T14:00:00",
+                "2026-01-15T22:00:00",
+                "2026-01-15T22:00:00",
+                "2026-01-20T10:00:00",
+            ],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 2
+        # Episode 1
+        assert mv[0]["start_ts"] == "2026-01-10T08:00:00"
+        assert mv[0]["stop_ts"] == "2026-01-13T14:00:00"
+        assert mv[0]["episode_days"] == 3
+        # Episode 2
+        assert mv[1]["start_ts"] == "2026-01-15T22:00:00"
+        assert mv[1]["stop_ts"] == "2026-01-20T10:00:00"
+        assert mv[1]["episode_days"] == 5
+
+    def test_insert_without_remove(self):
+        """Single insert with no remove → open episode (stop_ts=None)."""
+        eps = _extract_lda_startstop_episodes(
+            ["Patient placed on mechanical ventilation."],
+            timestamps=["2026-01-10T08:00:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 1
+        assert mv[0]["start_ts"] == "2026-01-10T08:00:00"
+        assert mv[0]["stop_ts"] is None
+        assert mv[0]["episode_days"] is None
+
+    def test_remove_before_insert(self):
+        """Remove with no preceding insert → orphan stop-only episode."""
+        eps = _extract_lda_startstop_episodes(
+            [
+                "Ventilator discontinued.",               # orphan remove
+                "Patient placed on ventilator.",           # insert → open episode
+            ],
+            timestamps=[
+                "2026-01-10T08:00:00",
+                "2026-01-15T08:00:00",
+            ],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 2
+        # Orphan remove → stop-only
+        assert mv[0]["start_ts"] is None
+        assert mv[0]["stop_ts"] == "2026-01-10T08:00:00"
+        # Open insert
+        assert mv[1]["start_ts"] == "2026-01-15T08:00:00"
+        assert mv[1]["stop_ts"] is None
+
+    def test_repeated_inserts_then_remove(self):
+        """Multiple inserts before a remove → one episode (earliest start)."""
+        eps = _extract_lda_startstop_episodes(
+            [
+                "Patient placed on ventilator.",
+                "Patient remains on the vent.",
+                "Ventilator removed.",
+            ],
+            timestamps=[
+                "2026-01-10T08:00:00",
+                "2026-01-12T09:00:00",
+                "2026-01-15T14:00:00",
+            ],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 1
+        assert mv[0]["start_ts"] == "2026-01-10T08:00:00"
+        assert mv[0]["stop_ts"] == "2026-01-15T14:00:00"
+        assert mv[0]["episode_days"] == 5
+
+    def test_episode_days_per_episode(self):
+        """Each episode computes its own episode_days independently."""
+        eps = _extract_lda_startstop_episodes(
+            [
+                "Placed on ventilator.",                  # ep1 start
+                "Ventilator discontinued.",               # ep1 stop
+                "Placed on ventilator.",                  # ep2 start
+                "Ventilator weaned off.",                 # ep2 stop
+            ],
+            timestamps=[
+                "2026-01-05T06:00:00",
+                "2026-01-07T18:00:00",
+                "2026-01-10T08:00:00",
+                "2026-01-14T16:00:00",
+            ],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 2
+        assert mv[0]["episode_days"] == 2
+        assert mv[1]["episode_days"] == 4
+
+    def test_raw_line_ids_per_episode(self):
+        """Each episode tracks only its own raw_line_ids."""
+        eps = _extract_lda_startstop_episodes(
+            [
+                "Header line",                            # L1
+                "Placed on ventilator.",                  # L2 → ep1
+                "Ventilator discontinued.",               # L3 → ep1
+                "Other clinical notes.",                  # L4
+                "Placed on ventilator again.",             # L5 → ep2
+                "Ventilator removed.",                    # L6 → ep2
+            ],
+            timestamps=[
+                "2026-01-05T06:00:00",
+                "2026-01-05T06:00:00",
+                "2026-01-07T18:00:00",
+                "2026-01-08T08:00:00",
+                "2026-01-10T08:00:00",
+                "2026-01-14T16:00:00",
+            ],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 2
+        assert set(mv[0]["raw_line_ids"]) == {"L2", "L3"}
+        assert set(mv[1]["raw_line_ids"]) == {"L5", "L6"}
+
+    def test_negation_still_excluded_in_multi_episode(self):
+        """Negated phrases must not start episodes even in multi-episode mode."""
+        eps = _extract_lda_startstop_episodes(
+            [
+                "Placed on ventilator.",
+                "Patient is not on the ventilator.",      # negated → skip
+                "Ventilator discontinued.",
+            ],
+            timestamps=[
+                "2026-01-10T08:00:00",
+                "2026-01-12T08:00:00",
+                "2026-01-15T14:00:00",
+            ],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 1
+        assert mv[0]["episode_days"] == 5
+
+    def test_foley_still_single_episode(self):
+        """Non-multi-episode devices still use one-episode-per-device."""
+        eps = _extract_lda_startstop_episodes(
+            [
+                "Foley catheter placed.",
+                "Foley removed.",
+                "Foley catheter placed again.",
+                "Foley discontinued.",
+            ],
+            timestamps=[
+                "2026-01-05T08:00:00",
+                "2026-01-07T10:00:00",
+                "2026-01-10T08:00:00",
+                "2026-01-12T14:00:00",
+            ],
+        )
+        uc = [e for e in eps if e["device_type"] == "URINARY_CATHETER"]
+        # Single episode: earliest insert, latest remove
+        assert len(uc) == 1
+        assert uc[0]["start_ts"] == "2026-01-05T08:00:00"
+        assert uc[0]["stop_ts"] == "2026-01-12T14:00:00"
+        assert uc[0]["episode_days"] == 7
+
+    def test_ett_multi_episode(self):
+        """ENDOTRACHEAL_TUBE also supports multi-episode."""
+        eps = _extract_lda_startstop_episodes(
+            [
+                "Patient intubated in ED.",
+                "Patient extubated on day 3.",
+                "Re-intubated for desaturation.",
+                "Extubation day 7.",
+            ],
+            timestamps=[
+                "2026-01-01T08:00:00",
+                "2026-01-03T14:00:00",
+                "2026-01-05T22:00:00",
+                "2026-01-07T10:00:00",
+            ],
+        )
+        ett = [e for e in eps if e["device_type"] == "ENDOTRACHEAL_TUBE"]
+        assert len(ett) == 2
+        assert ett[0]["episode_days"] == 2
+        assert ett[1]["episode_days"] == 2
+
+    def test_multi_episode_merge_precedence(self):
+        """Startstop multi-episodes replace lower-tier text-derived in merge."""
+        lines = [
+            "Placed on ventilator.",
+            "Vent day: 3",
+            "Ventilator discontinued.",
+            "Placed on ventilator.",
+            "Ventilator removed.",
+        ]
+        timestamps = [
+            "2026-01-05T06:00:00",
+            "2026-01-07T08:00:00",
+            "2026-01-08T18:00:00",
+            "2026-01-12T08:00:00",
+            "2026-01-15T16:00:00",
+        ]
+        result = build_lda_episodes(
+            raw_lines=lines,
+            raw_timestamps=timestamps,
+        )
+        mv = [e for e in result if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        # Startstop tier beats text-derived day-counter; 2 episodes preserved.
+        assert len(mv) == 2
+        assert mv[0]["source_confidence"] == "TEXT_DERIVED_STARTSTOP"
+        assert mv[1]["source_confidence"] == "TEXT_DERIVED_STARTSTOP"
+
+
+# ═══════════════════════════════════════════════════════════════════
 # 14. eval_lda_overlap tests
 # ═══════════════════════════════════════════════════════════════════
 

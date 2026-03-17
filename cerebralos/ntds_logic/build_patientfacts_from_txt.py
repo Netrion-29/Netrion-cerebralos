@@ -435,13 +435,14 @@ def _extract_lda_startstop_episodes(
             but the episode will lack that boundary.
 
     Returns:
-        One episode dict per device type containing ``start_ts``,
+        One or more episode dicts per device type containing ``start_ts``,
         ``stop_ts``, and ``episode_days`` (computed when both timestamps
         are available).  Source confidence is ``TEXT_DERIVED_STARTSTOP``.
 
-    Current simplification: one episode per device type (earliest insert,
-    latest remove).  Multiple non-overlapping episodes per device are a
-    future enhancement.
+    Multi-episode devices (MECHANICAL_VENTILATOR, ENDOTRACHEAL_TUBE)
+    pair sequential insert→remove events to produce non-overlapping
+    episodes.  Other device types use a single episode (earliest insert,
+    latest remove).
     """
     from cerebralos.ntds_logic.model import LDA_DEVICE_TYPES
 
@@ -469,50 +470,104 @@ def _extract_lda_startstop_episodes(
     for device_type, action, ts, idx in hits:
         by_device[device_type].append((action, ts, idx))
 
+    # Device types that support multiple non-overlapping episodes.
+    # Other device types keep existing one-episode-per-device behaviour.
+    _MULTI_EPISODE_DEVICES = frozenset({"MECHANICAL_VENTILATOR", "ENDOTRACHEAL_TUBE"})
+
+    def _compute_episode_days(start: Optional[str], stop: Optional[str]) -> Optional[int]:
+        """Calendar-day difference (date-to-date), not timed-delta floor."""
+        if not start or not stop:
+            return None
+        try:
+            from datetime import datetime as _dt
+            s = _dt.fromisoformat(start)
+            e = _dt.fromisoformat(stop)
+            return max(0, (e.date() - s.date()).days)
+        except Exception:
+            return None
+
+    def _make_episode(
+        device_type: str,
+        start_ts: Optional[str],
+        stop_ts: Optional[str],
+        line_ids: set,
+    ) -> Dict[str, Any]:
+        return {
+            "device_type": device_type,
+            "start_ts": start_ts,
+            "stop_ts": stop_ts,
+            "episode_days": _compute_episode_days(start_ts, stop_ts),
+            "source_confidence": "TEXT_DERIVED_STARTSTOP",
+            "location": None,
+            "inserted_by": None,
+            "notes": None,
+            "raw_line_ids": [f"L{n}" for n in sorted(line_ids)],
+        }
+
     episodes: List[Dict[str, Any]] = []
     for device_type, actions in sorted(by_device.items()):
         if device_type not in LDA_DEVICE_TYPES:
             continue
 
-        inserts = [(ts, idx) for act, ts, idx in actions if act == "insert"]
-        removes = [(ts, idx) for act, ts, idx in actions if act == "remove"]
+        if device_type in _MULTI_EPISODE_DEVICES:
+            # ── Multi-episode: pair sequential insert→remove events ──
+            # Sort by line index for deterministic ordering.
+            sorted_actions = sorted(actions, key=lambda t: t[2])
 
-        # Pick earliest insert timestamp, latest remove timestamp.
-        start_ts: Optional[str] = None
-        stop_ts: Optional[str] = None
-        if inserts:
-            ts_vals = [t for t, _ in inserts if t]
-            start_ts = min(ts_vals) if ts_vals else None
-        if removes:
-            ts_vals = [t for t, _ in removes if t]
-            stop_ts = max(ts_vals) if ts_vals else None
+            current_start_ts: Optional[str] = None
+            current_line_ids: set = set()
+            in_episode = False
 
-        # Compute episode_days when both timestamps present.
-        # Use calendar-day difference (date-to-date), not timed-delta floor,
-        # so 2026-01-15 09:00 -> 2026-01-18 08:00 is 3 days.
-        episode_days: Optional[int] = None
-        if start_ts and stop_ts:
-            try:
-                from datetime import datetime as _dt
-                s = _dt.fromisoformat(start_ts)
-                e = _dt.fromisoformat(stop_ts)
-                episode_days = max(0, (e.date() - s.date()).days)
-            except Exception:
-                pass
+            for act, ts, idx in sorted_actions:
+                if act == "insert":
+                    if not in_episode:
+                        # Start a new episode.
+                        current_start_ts = ts
+                        current_line_ids = {idx + 1}
+                        in_episode = True
+                    else:
+                        # Already in episode — absorb insert (keep earliest ts).
+                        current_line_ids.add(idx + 1)
+                        if ts and (current_start_ts is None or ts < current_start_ts):
+                            current_start_ts = ts
+                elif act == "remove":
+                    if in_episode:
+                        # Close the episode.
+                        current_line_ids.add(idx + 1)
+                        episodes.append(_make_episode(
+                            device_type, current_start_ts, ts, current_line_ids,
+                        ))
+                        in_episode = False
+                        current_start_ts = None
+                        current_line_ids = set()
+                    else:
+                        # Orphan remove (no preceding insert) — emit as
+                        # stop-only episode (fail-closed: do not discard).
+                        episodes.append(_make_episode(
+                            device_type, None, ts, {idx + 1},
+                        ))
 
-        all_line_ids = sorted({idx + 1 for _, _, idx in actions})
+            # If still in episode at end (insert without remove), emit it.
+            if in_episode and current_line_ids:
+                episodes.append(_make_episode(
+                    device_type, current_start_ts, None, current_line_ids,
+                ))
+        else:
+            # ── Single-episode: earliest insert, latest remove ──
+            inserts = [(ts, idx) for act, ts, idx in actions if act == "insert"]
+            removes = [(ts, idx) for act, ts, idx in actions if act == "remove"]
 
-        episodes.append({
-            "device_type": device_type,
-            "start_ts": start_ts,
-            "stop_ts": stop_ts,
-            "episode_days": episode_days,
-            "source_confidence": "TEXT_DERIVED_STARTSTOP",
-            "location": None,
-            "inserted_by": None,
-            "notes": None,
-            "raw_line_ids": [f"L{n}" for n in all_line_ids],
-        })
+            start_ts: Optional[str] = None
+            stop_ts: Optional[str] = None
+            if inserts:
+                ts_vals = [t for t, _ in inserts if t]
+                start_ts = min(ts_vals) if ts_vals else None
+            if removes:
+                ts_vals = [t for t, _ in removes if t]
+                stop_ts = max(ts_vals) if ts_vals else None
+
+            all_line_ids = {idx + 1 for _, _, idx in actions}
+            episodes.append(_make_episode(device_type, start_ts, stop_ts, all_line_ids))
 
     return episodes
 
@@ -661,7 +716,15 @@ def build_lda_episodes(
     # ── 4. Merge: highest-fidelity wins per device_type ──────────────────
     # Priority: STRUCTURED > TEXT_DERIVED_STARTSTOP > TEXT_DERIVED
     # Within the same tier, keep the one with higher episode_days.
-    best: Dict[str, Dict[str, Any]] = {}
+    #
+    # Multi-episode device types (MECHANICAL_VENTILATOR, ENDOTRACHEAL_TUBE)
+    # can produce multiple episodes from startstop extraction.  For these
+    # the merge replaces the entire list when a higher tier appears.
+    _MULTI_EP_DEVICES = frozenset({"MECHANICAL_VENTILATOR", "ENDOTRACHEAL_TUBE"})
+
+    # best stores List[Dict] per device_type.
+    best: Dict[str, List[Dict[str, Any]]] = {}
+    best_tier: Dict[str, int] = {}
 
     _TIER_ORDER = {c: i for i, c in enumerate(LDA_CONFIDENCE_LEVELS)}
 
@@ -671,10 +734,8 @@ def build_lda_episodes(
         e_tier = _TIER_ORDER.get(str(existing.get("source_confidence", "")), -1)
         c_tier = _TIER_ORDER.get(str(candidate.get("source_confidence", "")), -1)
         if c_tier > e_tier:
-            # Higher tier wins.  If it lacks episode_days, backfill from
-            # the lower-tier episode when both share the same device_type.
             if candidate.get("episode_days") is None and existing.get("episode_days") is not None:
-                candidate = dict(candidate)  # avoid mutating the original
+                candidate = dict(candidate)
                 candidate["episode_days"] = existing["episode_days"]
             return candidate
         if c_tier == e_tier:
@@ -683,19 +744,41 @@ def build_lda_episodes(
             return candidate if c_days > e_days else existing
         return existing
 
-    for ep in text_derived:
-        dt = ep["device_type"]
-        best[dt] = _pick(best.get(dt), ep)
+    def _ingest(episodes_list: List[Dict[str, Any]]) -> None:
+        for ep in episodes_list:
+            dt = ep["device_type"]
+            ep_tier = _TIER_ORDER.get(str(ep.get("source_confidence", "")), -1)
+            cur_tier = best_tier.get(dt, -1)
 
-    for ep in startstop_derived:
-        dt = ep["device_type"]
-        best[dt] = _pick(best.get(dt), ep)
+            if dt in _MULTI_EP_DEVICES:
+                if ep_tier > cur_tier:
+                    # Higher tier replaces.  Backfill episode_days from
+                    # the best lower-tier episode when the new one lacks it.
+                    if ep.get("episode_days") is None and dt in best:
+                        old_days = max(
+                            (e.get("episode_days") or 0 for e in best[dt]),
+                            default=0,
+                        )
+                        if old_days:
+                            ep = dict(ep)
+                            ep["episode_days"] = old_days
+                    best[dt] = [ep]
+                    best_tier[dt] = ep_tier
+                elif ep_tier == cur_tier:
+                    best.setdefault(dt, []).append(ep)
+                # Lower tier → skip
+            else:
+                cur = best.get(dt, [None])[0]
+                winner = _pick(cur, ep)
+                best[dt] = [winner]
+                best_tier[dt] = _TIER_ORDER.get(str(winner.get("source_confidence", "")), -1)
 
-    for ep in structured:
-        dt = ep["device_type"]
-        best[dt] = _pick(best.get(dt), ep)
+    _ingest(text_derived)
+    _ingest(startstop_derived)
+    _ingest(structured)
 
-    # Preserve stable insertion order from merge precedence:
-    # TEXT_DERIVED -> TEXT_DERIVED_STARTSTOP -> STRUCTURED.
-    # This keeps structured-only outputs aligned with source record order.
-    return list(best.values())
+    # Flatten lists; preserve stable insertion order from merge precedence.
+    result: List[Dict[str, Any]] = []
+    for episodes_for_device in best.values():
+        result.extend(episodes_for_device)
+    return result
