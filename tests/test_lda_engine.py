@@ -1138,6 +1138,182 @@ class TestStartStopExtraction:
         assert ett[0]["start_ts"] == "2026-01-15T08:00:00"
         assert ett[0]["stop_ts"] == "2026-01-22T10:00:00"
 
+    # ── Vent status patterns (on ventilator / on mechanical ventilation) ──
+
+    def test_on_mechanical_ventilation(self):
+        """'on mechanical ventilation' → MECHANICAL_VENTILATOR insert.
+
+        Raw evidence: Ronald_Bittner:2153 — 'sedated and on mechanical ventilation'
+        """
+        eps = _extract_lda_startstop_episodes(
+            ["The patient was sedated and on mechanical ventilation."],
+            timestamps=["2026-01-08T14:00:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 1
+        assert mv[0]["start_ts"] == "2026-01-08T14:00:00"
+
+    def test_sedated_on_mechanical_ventilation(self):
+        """'Sedated on mechanical ventilation' → MECHANICAL_VENTILATOR.
+
+        Raw evidence: Ronald_Bittner:12024
+        """
+        eps = _extract_lda_startstop_episodes(
+            ["Sedated on mechanical ventilation"],
+            timestamps=["2026-01-15T06:00:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 1
+        assert mv[0]["start_ts"] == "2026-01-15T06:00:00"
+
+    def test_on_the_ventilator(self):
+        """'on the ventilator' → MECHANICAL_VENTILATOR insert.
+
+        Raw evidence: Ronald_Bittner:2590 — 'on propofol and fentanyl drips on the ventilator'
+        """
+        eps = _extract_lda_startstop_episodes(
+            ["Already on propofol and fentanyl drips on the ventilator."],
+            timestamps=["2026-01-10T08:00:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 1
+
+    def test_remains_on_the_vent(self):
+        """'remains on the vent' → MECHANICAL_VENTILATOR insert.
+
+        Raw evidence: Ronald_Bittner:3027 — 'Pt remains on the vent'
+        """
+        eps = _extract_lda_startstop_episodes(
+            ["Pt remains on the vent. Select Specialty Hospital will start pre-cert."],
+            timestamps=["2026-01-20T09:00:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 1
+
+    def test_on_ventilator_via_tracheostomy(self):
+        """'on ventilator via tracheostomy' → MECHANICAL_VENTILATOR insert.
+
+        Raw evidence: Ronald_Bittner:669 — 'Patient is on ventilator via tracheostomy'
+        """
+        eps = _extract_lda_startstop_episodes(
+            ["Patient is on ventilator via tracheostomy."],
+            timestamps=["2026-01-15T10:00:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 1
+
+    def test_ventilated_via_tracheostomy(self):
+        """'ventilated via tracheostomy' → MECHANICAL_VENTILATOR insert.
+
+        Raw evidence: Ronald_Bittner:656 — 'currently patient is being ventilated via tracheostomy'
+        """
+        eps = _extract_lda_startstop_episodes(
+            ["Currently patient is being ventilated via tracheostomy."],
+            timestamps=["2026-01-15T12:00:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 1
+
+    def test_not_on_ventilator_negated(self):
+        """Negated vent-status phrase must not create MECHANICAL_VENTILATOR."""
+        eps = _extract_lda_startstop_episodes(
+            ["Patient is not on the ventilator."],
+            timestamps=["2026-01-15T12:30:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 0
+
+    def test_no_longer_on_vent_negated(self):
+        """'No longer on the vent' must not create MECHANICAL_VENTILATOR."""
+        eps = _extract_lda_startstop_episodes(
+            ["Patient is no longer on the vent and weaning well."],
+            timestamps=["2026-01-15T13:00:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 0
+
+    def test_off_the_vent_negated(self):
+        """'Off the vent' must not create MECHANICAL_VENTILATOR."""
+        eps = _extract_lda_startstop_episodes(
+            ["Patient now off the vent after extubation."],
+            timestamps=["2026-01-15T13:30:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 0
+
+    def test_on_vent_with_stop_creates_episode_days(self):
+        """'on the vent' + 'vent discontinued' → episode with computed days."""
+        eps = _extract_lda_startstop_episodes(
+            ["Patient sedated on the vent.", "Ventilator discontinued after wean trial."],
+            timestamps=["2026-01-10T08:00:00", "2026-01-18T14:00:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 1
+        assert mv[0]["episode_days"] == 8
+        assert mv[0]["start_ts"] == "2026-01-10T08:00:00"
+        assert mv[0]["stop_ts"] == "2026-01-18T14:00:00"
+
+    # ── NIV exclusion (fail-closed) ──
+
+    def test_niv_mechanical_ventilation_not_invasive(self):
+        """'Non-Invasive Mechanical Ventilation' must NOT create MECHANICAL_VENTILATOR.
+
+        Raw evidence: Lee_Woodard:7999, Jamie_Hunter:21449, Linda_Hufford:12665, Mary_King:10440
+        """
+        eps = _extract_lda_startstop_episodes(
+            ["Non-Invasive Mechanical Ventilation        01/02   0558   1 more"],
+            timestamps=["2026-01-02T05:58:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 0
+
+    def test_bipap_no_vent_episode(self):
+        """BiPAP-only text must NOT create MECHANICAL_VENTILATOR episode."""
+        eps = _extract_lda_startstop_episodes(
+            ["Patient placed on BiPAP for respiratory distress."],
+            timestamps=["2026-01-02T06:00:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 0
+
+    def test_cpap_no_vent_episode(self):
+        """CPAP-only text must NOT create MECHANICAL_VENTILATOR episode."""
+        eps = _extract_lda_startstop_episodes(
+            ["Started on CPAP overnight."],
+            timestamps=["2026-01-02T22:00:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 0
+
+    def test_plan_prose_no_false_positive(self):
+        """Plan/status prose without explicit vent status must not fire.
+
+        'Continue current ventilator settings' contains 'ventilator' but is in
+        planning context. However, 'ventilator' alone is NOT matched by our
+        pattern; only 'on [the] [mechanical] vent*' fires.
+        """
+        eps = _extract_lda_startstop_episodes(
+            ["Plan: Continue current ventilator settings as tolerated."],
+            timestamps=["2026-01-15T08:00:00"],
+        )
+        mv = [e for e in eps if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        # "ventilator" alone without "on" prefix does not match, so no episode
+        assert len(mv) == 0
+
+    def test_dni_not_intubation(self):
+        """'do not intubate' must NOT create ENDOTRACHEAL_TUBE episode.
+
+        Raw evidence: Betty_Roll:6117 — 'DNR and DNI-do not resucitate/intubate'
+        The existing pattern \\bintubat(?:ed|ion)\\b does NOT match 'intubate'
+        (base form) — only 'intubated' or 'intubation'. Verified fail-closed.
+        """
+        eps = _extract_lda_startstop_episodes(
+            ["DNR and DNI-do not resucitate/intubate [COD1001] (Order 466727469)"],
+            timestamps=["2026-01-05T10:00:00"],
+        )
+        ett = [e for e in eps if e["device_type"] == "ENDOTRACHEAL_TUBE"]
+        assert len(ett) == 0
+
     # ── Edge cases ──
 
     def test_no_matches_empty(self):
@@ -1615,6 +1791,38 @@ class TestE21StartStopPrecision:
         episodes = _extract_lda_startstop_episodes(
             ["Patient placed on ventilator.", "Ventilator discontinued."],
             timestamps=["2026-01-15T08:00:00", "2026-01-22T08:00:00"],
+        )
+        patient = _make_patient(lda_episodes=episodes)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert not result.passed
+
+    def test_on_mechanical_ventilation_status_passes_gate(self):
+        """'on mechanical ventilation' status text creates MECHANICAL_VENTILATOR
+        episode that passes E21 vent_duration_lda gate (≥2 days).
+
+        Raw evidence: Ronald_Bittner:2153, Ronald_Bittner:12024
+        """
+        engine.ENABLE_LDA_GATES = True
+        gate = self._load_e21_lda_gate()
+        episodes = _extract_lda_startstop_episodes(
+            ["Sedated on mechanical ventilation.", "Ventilator weaned off successfully."],
+            timestamps=["2026-01-04T08:00:00", "2026-01-15T10:00:00"],
+        )
+        mv = [e for e in episodes if e["device_type"] == "MECHANICAL_VENTILATOR"]
+        assert len(mv) == 1
+        assert mv[0]["episode_days"] == 11
+        patient = _make_patient(lda_episodes=episodes)
+        result = engine.eval_lda_duration(gate, patient, _contract())
+        assert result.passed
+
+    def test_niv_only_does_not_pass_gate(self):
+        """NIV-only text must NOT create MECHANICAL_VENTILATOR episode,
+        so E21 gate must fail."""
+        engine.ENABLE_LDA_GATES = True
+        gate = self._load_e21_lda_gate()
+        episodes = _extract_lda_startstop_episodes(
+            ["Non-Invasive Mechanical Ventilation  01/02  0558  1 more"],
+            timestamps=["2026-01-02T05:58:00"],
         )
         patient = _make_patient(lda_episodes=episodes)
         result = engine.eval_lda_duration(gate, patient, _contract())
