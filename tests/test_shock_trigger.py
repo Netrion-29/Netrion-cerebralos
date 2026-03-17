@@ -24,6 +24,8 @@ import pytest
 from cerebralos.features.shock_trigger_v1 import (
     BD_SHOCK_THRESHOLD,
     SBP_SHOCK_THRESHOLD,
+    SI_ELEVATED_THRESHOLD,
+    SI_CRITICAL_THRESHOLD,
     extract_shock_trigger,
 )
 
@@ -110,6 +112,12 @@ REQUIRED_TOP_KEYS = {
 REQUIRED_EVIDENCE_KEYS = {"raw_line_id", "source", "ts", "snippet", "role"}
 
 
+REQUIRED_TRIGGER_VITALS_KEYS = {
+    "sbp", "hr", "map", "shock_index", "shock_index_classification",
+    "bd_value", "bd_specimen",
+}
+
+
 def _assert_schema(result: dict) -> None:
     """Verify all required keys exist in result."""
     missing = REQUIRED_TOP_KEYS - set(result.keys())
@@ -121,6 +129,10 @@ def _assert_schema(result: dict) -> None:
         ev_missing = REQUIRED_EVIDENCE_KEYS - set(ev.keys())
         assert not ev_missing, f"Evidence entry missing keys: {ev_missing}"
         assert ev["raw_line_id"], "Evidence raw_line_id must be non-empty"
+    tv = result.get("trigger_vitals")
+    if tv is not None:
+        tv_missing = REQUIRED_TRIGGER_VITALS_KEYS - set(tv.keys())
+        assert not tv_missing, f"trigger_vitals missing keys: {tv_missing}"
 
 
 # ── Tests ───────────────────────────────────────────────────────────
@@ -411,3 +423,222 @@ class TestShockTriggerThresholdConstants:
 
     def test_bd_threshold(self) -> None:
         assert BD_SHOCK_THRESHOLD == 6.0
+
+    def test_si_elevated_threshold(self) -> None:
+        assert SI_ELEVATED_THRESHOLD == 0.7
+
+    def test_si_critical_threshold(self) -> None:
+        assert SI_CRITICAL_THRESHOLD == 1.0
+
+
+class TestShockIndexComputation:
+    """Shock index (SI = HR / SBP) computation and classification."""
+
+    def test_si_normal(self) -> None:
+        """HR=60, SBP=100 → SI=0.6, classification=normal."""
+        feats = _make_features(
+            arrival_vitals=_make_arrival_vitals(sbp=100.0),
+            bdm=_make_bdm(initial_bd_value=2.0),
+        )
+        # Override HR in arrival_vitals
+        feats["vitals_canonical_v1"]["arrival_vitals"]["hr"] = 60.0
+        result = extract_shock_trigger(feats)
+        _assert_schema(result)
+        tv = result["trigger_vitals"]
+        assert tv["hr"] == 60.0
+        assert tv["shock_index"] == 0.6
+        assert tv["shock_index_classification"] == "normal"
+
+    def test_si_elevated(self) -> None:
+        """HR=84, SBP=120 → SI=0.7, classification=elevated."""
+        feats = _make_features(
+            arrival_vitals=_make_arrival_vitals(sbp=120.0),
+            bdm=_make_bdm(initial_bd_value=2.0),
+        )
+        feats["vitals_canonical_v1"]["arrival_vitals"]["hr"] = 84.0
+        result = extract_shock_trigger(feats)
+        _assert_schema(result)
+        tv = result["trigger_vitals"]
+        assert tv["shock_index"] == 0.7
+        assert tv["shock_index_classification"] == "elevated"
+
+    def test_si_critical(self) -> None:
+        """HR=120, SBP=100 → SI=1.2, classification=critical."""
+        feats = _make_features(
+            arrival_vitals=_make_arrival_vitals(sbp=100.0),
+            bdm=_make_bdm(initial_bd_value=2.0),
+        )
+        feats["vitals_canonical_v1"]["arrival_vitals"]["hr"] = 120.0
+        result = extract_shock_trigger(feats)
+        _assert_schema(result)
+        tv = result["trigger_vitals"]
+        assert tv["shock_index"] == 1.2
+        assert tv["shock_index_classification"] == "critical"
+
+    def test_si_exactly_1_0_is_critical(self) -> None:
+        """HR=100, SBP=100 → SI=1.0, critical (≥ threshold)."""
+        feats = _make_features(
+            arrival_vitals=_make_arrival_vitals(sbp=100.0),
+            bdm=_make_bdm(initial_bd_value=2.0),
+        )
+        feats["vitals_canonical_v1"]["arrival_vitals"]["hr"] = 100.0
+        result = extract_shock_trigger(feats)
+        _assert_schema(result)
+        tv = result["trigger_vitals"]
+        assert tv["shock_index"] == 1.0
+        assert tv["shock_index_classification"] == "critical"
+
+    def test_si_just_below_elevated(self) -> None:
+        """HR=69, SBP=100 → SI=0.69, classification=normal."""
+        feats = _make_features(
+            arrival_vitals=_make_arrival_vitals(sbp=100.0),
+            bdm=_make_bdm(initial_bd_value=2.0),
+        )
+        feats["vitals_canonical_v1"]["arrival_vitals"]["hr"] = 69.0
+        result = extract_shock_trigger(feats)
+        _assert_schema(result)
+        tv = result["trigger_vitals"]
+        assert tv["shock_index"] == 0.69
+        assert tv["shock_index_classification"] == "normal"
+
+    def test_si_null_when_hr_null(self) -> None:
+        """HR is null → shock_index is null, classification is null."""
+        feats = _make_features(
+            arrival_vitals=_make_arrival_vitals(sbp=120.0),
+            bdm=_make_bdm(initial_bd_value=2.0),
+        )
+        feats["vitals_canonical_v1"]["arrival_vitals"]["hr"] = None
+        result = extract_shock_trigger(feats)
+        _assert_schema(result)
+        tv = result["trigger_vitals"]
+        assert tv["hr"] is None
+        assert tv["shock_index"] is None
+        assert tv["shock_index_classification"] is None
+
+    def test_si_null_when_hr_missing(self) -> None:
+        """HR key missing entirely → shock_index null."""
+        feats = _make_features(
+            arrival_vitals=_make_arrival_vitals(sbp=120.0),
+            bdm=_make_bdm(initial_bd_value=2.0),
+        )
+        del feats["vitals_canonical_v1"]["arrival_vitals"]["hr"]
+        result = extract_shock_trigger(feats)
+        _assert_schema(result)
+        tv = result["trigger_vitals"]
+        assert tv["shock_index"] is None
+        assert tv["shock_index_classification"] is None
+
+    def test_si_does_not_affect_trigger(self) -> None:
+        """SI ≥ 1.0 does NOT change shock_triggered — SBP drives trigger."""
+        feats = _make_features(
+            arrival_vitals=_make_arrival_vitals(sbp=120.0),  # above threshold
+            bdm=_make_bdm(initial_bd_value=2.0),
+        )
+        feats["vitals_canonical_v1"]["arrival_vitals"]["hr"] = 130.0  # SI=1.08
+        result = extract_shock_trigger(feats)
+        _assert_schema(result)
+        assert result["shock_triggered"] == "no"
+        tv = result["trigger_vitals"]
+        assert tv["shock_index"] == 1.08
+        assert tv["shock_index_classification"] == "critical"
+
+    def test_si_with_low_sbp_shock(self) -> None:
+        """SBP < 90 + high SI → shock triggered, SI correctly computed."""
+        feats = _make_features(
+            arrival_vitals=_make_arrival_vitals(sbp=75.0),
+            bdm=_make_bdm(initial_bd_value=2.0),
+        )
+        feats["vitals_canonical_v1"]["arrival_vitals"]["hr"] = 130.0
+        result = extract_shock_trigger(feats)
+        _assert_schema(result)
+        assert result["shock_triggered"] == "yes"
+        tv = result["trigger_vitals"]
+        assert tv["shock_index"] == 1.73
+        assert tv["shock_index_classification"] == "critical"
+
+    def test_si_in_evidence_snippet(self) -> None:
+        """SI value appears in evidence snippet when computed."""
+        feats = _make_features(
+            arrival_vitals=_make_arrival_vitals(sbp=120.0),
+            bdm=_make_bdm(initial_bd_value=2.0),
+        )
+        feats["vitals_canonical_v1"]["arrival_vitals"]["hr"] = 96.0
+        result = extract_shock_trigger(feats)
+        snippet = result["evidence"][0]["snippet"]
+        assert "SI=0.8" in snippet
+        assert "HR=96.0" in snippet
+
+
+class TestShockIndexRealPatientCitations:
+    """Shock index regression tests using real patient arrival vitals.
+
+    Raw citations from canonical-selector arrival vitals
+    (vitals_canonical_v1.arrival_vitals).
+    """
+
+    def test_timothy_cowan_si_elevated(self) -> None:
+        """Timothy_Cowan: SBP=132, HR=118 → SI=0.89 (elevated).
+
+        Raw citation: data_raw/Timothy_Cowan.txt — Trauma HP Primary Survey
+        Vitals: Blood pressure 132/88, pulse (!) 118
+        """
+        feats = _make_features(
+            arrival_vitals=_make_arrival_vitals(
+                sbp=132.0,
+                map_val=102.7,
+                ts="2025-12-18T16:17:00",
+                raw_line_id="timothy_cowan_trauma_hp_vitals",
+            ),
+            bdm=_make_bdm(initial_bd_value=None),
+        )
+        feats["vitals_canonical_v1"]["arrival_vitals"]["hr"] = 118.0
+        result = extract_shock_trigger(feats)
+        _assert_schema(result)
+        assert result["shock_triggered"] == "no"
+        tv = result["trigger_vitals"]
+        assert tv["shock_index"] == 0.89
+        assert tv["shock_index_classification"] == "elevated"
+
+    def test_timothy_nachtwey_si_normal(self) -> None:
+        """Timothy_Nachtwey: SBP=140, HR=96 → SI=0.69 (normal).
+
+        Raw citation: data_raw/Timothy_Nachtwey.txt — canonical arrival vitals
+        """
+        feats = _make_features(
+            arrival_vitals=_make_arrival_vitals(
+                sbp=140.0,
+                map_val=None,
+                ts="2025-12-20T14:00:00",
+                raw_line_id="timothy_nachtwey_arrival_vitals",
+            ),
+            bdm=_make_bdm(initial_bd_value=None),
+        )
+        feats["vitals_canonical_v1"]["arrival_vitals"]["hr"] = 96.0
+        result = extract_shock_trigger(feats)
+        _assert_schema(result)
+        assert result["shock_triggered"] == "no"
+        tv = result["trigger_vitals"]
+        assert tv["shock_index"] == 0.69
+        assert tv["shock_index_classification"] == "normal"
+
+    def test_anna_dennis_si_null_no_hr(self) -> None:
+        """Anna_Dennis: SBP=145, HR=null → SI=null.
+
+        Raw citation: data_raw/Anna_Dennis.txt — canonical arrival vitals
+        HR not available in arrival vitals record.
+        """
+        feats = _make_features(
+            arrival_vitals=_make_arrival_vitals(
+                sbp=145.0,
+                map_val=None,
+                ts="2025-12-16T10:00:00",
+                raw_line_id="anna_dennis_arrival_vitals",
+            ),
+            bdm=_make_bdm(initial_bd_value=None),
+        )
+        feats["vitals_canonical_v1"]["arrival_vitals"]["hr"] = None
+        result = extract_shock_trigger(feats)
+        _assert_schema(result)
+        tv = result["trigger_vitals"]
+        assert tv["shock_index"] is None
+        assert tv["shock_index_classification"] is None
