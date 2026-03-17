@@ -1,0 +1,14 @@
+PATIENT_ID: TEST_DELIRIUM_ENCEPHALOPATHY_001
+ARRIVAL_TIME: 2026-01-10 08:00:00
+
+[CONSULT_NOTE] 2026-01-18 14:00:00
+Neurology Consult:
+Reason for consult: Encephalopathy, multiple episodes of twitching, rule out seizures.
+EEG performed showing moderate generalized slowing suggestive of systemic/metabolic encephalopathy.
+No epileptiform discharges noted.
+
+[PHYSICIAN_NOTE] 2026-01-19 06:00:00
+Problem list update:
+Acute metabolic encephalopathy
+At risk for delirium
+Respiratory failure on ventilator

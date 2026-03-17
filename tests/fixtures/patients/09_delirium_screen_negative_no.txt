@@ -1,0 +1,9 @@
+PATIENT_ID: TEST_DELIRIUM_SCREEN_NEGATIVE_001
+ARRIVAL_TIME: 2026-01-10 08:00:00
+
+[NURSING_NOTE] 2026-01-12 06:00:00
+Assessment/Plan:
+Delirium screen:  Patient is at risk for delirium given acute trauma, unfamiliar surroundings, pain, metabolic derangements, possible infection.  At present patient does not have delirium.  Delirium precautions as outlined by policy will be followed.
+
+[NURSING_NOTE] 2026-01-12 08:00:00
+Patient alert and oriented x4. Cooperative. Following commands.
