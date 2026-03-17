@@ -47,7 +47,7 @@ BASELINE_HASHES = {
     "v3_renderer":       "78ccffe75ccf6f98763f9efa8a8b917e",
     "green_card_init":   None,   # green_card not yet populated
     "green_card_adj":    None,   # green_card not yet populated
-    "ntds_engine":       "f5afd82ecda127e8854a7468bb349e8e",
+    "ntds_engine":       "4b993eb1d2ac677c6f82a7c243f39ed4",
     "protocol_engine":   "a088a2ff84d2df8440ccbdbebf81179f",
 }
 PROTECTED_FILES = {
