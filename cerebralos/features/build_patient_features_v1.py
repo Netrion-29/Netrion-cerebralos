@@ -100,6 +100,7 @@ from cerebralos.features.ventilator_settings_v1 import extract_ventilator_settin
 from cerebralos.features.trauma_daily_plan_by_day_v1 import extract_trauma_daily_plan_by_day
 from cerebralos.features.consultant_day_plans_by_day_v1 import extract_consultant_day_plans_by_day
 from cerebralos.features.non_trauma_team_day_plans_v1 import extract_non_trauma_team_day_plans
+from cerebralos.features.pupil_reactivity_v1 import extract_pupil_reactivity_for_day
 
 
 # ── helpers ─────────────────────────────────────────────────────────
@@ -260,12 +261,21 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         for w in gcs_warnings:
             warning_counter[w] += 1
 
+        # ── Pupil reactivity: per-day extraction ────────────────
+        pupil, pupil_warnings = extract_pupil_reactivity_for_day(
+            items, day_iso,
+        )
+        all_warnings.extend(pupil_warnings)
+        for w in pupil_warnings:
+            warning_counter[w] += 1
+
         feature_days[day_iso] = {
             "labs": labs_daily,
             "devices": devices,
             "services": services,
             "vitals": vitals,
             "gcs_daily": gcs,
+            "pupil_reactivity_v1": pupil,
         }
 
     # ── device carry-forward + day counts (cross-day pass) ──────
