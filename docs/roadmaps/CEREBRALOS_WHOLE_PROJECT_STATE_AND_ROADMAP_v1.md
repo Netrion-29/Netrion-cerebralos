@@ -3,7 +3,7 @@
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
 | Date        | 2026-03-17                                               |
-| Baseline    | `9266f3c` (main, after PR #250)                          |
+| Baseline    | `5870352` (main, after PR #252)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -136,6 +136,8 @@
 | #248 | `15899ec` | feat(lda): improve vent start/stop episode extraction for E21 recall |
 | #249 | `ee38274` | docs(roadmap): sync status after PR #248 vent start/stop recall merge |
 | #250 | `aaa00ee` | feat(lda): multi-episode start/stop support for MECHANICAL_VENTILATOR and ENDOTRACHEAL_TUBE |
+| #251 | `0c72419` | docs(roadmap): sync status after PR #250 multi-episode vent start/stop merge |
+| #252 | `0fd1bac` | fix(baseline): align stale NTDS engine hash in regression baseline to current main |
 
 ### Closed PRs
 
@@ -152,7 +154,7 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | last verified: ≥3616 passed (pytest, 2026-03-17, baseline `9266f3c`; lower bound, exact total may vary across environments) |
+| Total tests         | last verified: ≥3616 passed (pytest, 2026-03-17, baseline `5870352`; lower bound, exact total may vary across environments) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 47               |
 | Fixture runner      | **56 passed, 0 xfailed** |
@@ -595,7 +597,7 @@ and added two block filters:
 | 15 | **Protocol Data Coverage Mapping** | `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` | Medium | Medium | **Slices A/B/C COMPLETE.** First-pass coverage matrix: 60 EXTRACTED, 57 PARTIAL, 97 MISSING, 16 N/A (PR #220). Slice A (sex + discharge disposition): ✅ COMPLETE (PRs #222–#225) — `demographics_v1` feature module + contract doc. Slice B (blood product transfusion): ✅ COMPLETE (PRs #229–#231) — `transfusion_blood_products_v1` foundation + hardening. Slice C (structured labs): ✅ COMPLETE (PRs #226–#228, #232) — `structured_labs_v1` foundation (CBC/BMP/coag/ABG/PF) + cardiac/sepsis expansion. Ventilator settings extraction: ✅ COMPLETE (PRs #233–#237) — FiO2/PEEP/Vt/RR/vent status, mode, NIV IPAP/EPAP/rate. GCS component extraction: ✅ COMPLETE (PRs #238–#239) — E/V/M from inline + flowsheet blocks, sum-mismatch guard. |
 | 16 | **LDA engine support (Lines, Drains, Airways)** | `cerebralos/ntds_logic/engine.py`, `cerebralos/ntds_logic/build_patientfacts_from_txt.py`, `cerebralos/ntds_logic/model.py` | **High** | Large | ✅ IMPLEMENTED (v1+text+startstop+correctness+bracket-removed+per-event-enabled+vent-recall+multi-episode) — PRs #203, #206, #207, #214, #216, #244, #245, #246, #248, #250 (all merged). SourceType `LDA` added to model; `LDAEpisode` dataclass; `build_lda_episodes()` builder (structured JSON + text-derived flowsheet day-counter + insertion/removal start/stop inference); 4 gate types in engine incl. `eval_lda_overlap` (interval overlap, one-sided admission window — PR #214); `TEXT_DERIVED_STARTSTOP` confidence level; merge precedence: structured > startstop > day-counter (backfill episode_days — PR #214); `ENABLE_LDA_GATES` feature flag (default False); per-event LDA gates enabled for E05/E06/E21 via runner toggle + rule `required: true` (PRs #244–#246); bracket `[REMOVED]` patterns for Urethral Catheter + Non-Surgical Airway ETT (PR #216); vent start/stop episode extraction for E21 recall (intubation/extubation, placed-on/removed-from ventilator patterns, NIV exclusion — PR #248); multi-episode start/stop support for MECHANICAL_VENTILATOR and ENDOTRACHEAL_TUBE — sequential insert→remove pairing produces multiple non-overlapping episodes per device (PR #250); 180+ dedicated tests. LDA per-event rollout COMPLETE. |
 
-##### Post-#250 Next Candidates
+##### Post-#252 Next Candidates
 
 | # | Item | Scope | Priority | Effort | Notes |
 |---|------|-------|----------|--------|-------|
