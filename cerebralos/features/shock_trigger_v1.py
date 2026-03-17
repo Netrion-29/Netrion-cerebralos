@@ -157,13 +157,15 @@ def extract_shock_trigger(
     shock_index: Optional[float] = None
     shock_index_classification: Optional[str] = None
     if hr is not None and isinstance(hr, (int, float)) and sbp > 0:
-        shock_index = round(hr / sbp, 2)
-        if shock_index >= SI_CRITICAL_THRESHOLD:
+        si_ratio = hr / sbp
+        # Classify from the unrounded ratio to avoid threshold boundary drift.
+        if si_ratio >= SI_CRITICAL_THRESHOLD:
             shock_index_classification = "critical"
-        elif shock_index >= SI_ELEVATED_THRESHOLD:
+        elif si_ratio >= SI_ELEVATED_THRESHOLD:
             shock_index_classification = "elevated"
         else:
             shock_index_classification = "normal"
+        shock_index = round(si_ratio, 2)
 
     # Build arrival evidence entry
     sbp_snippet = f"arrival SBP={sbp}"

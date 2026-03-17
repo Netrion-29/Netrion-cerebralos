@@ -501,6 +501,32 @@ class TestShockIndexComputation:
         assert tv["shock_index"] == 0.69
         assert tv["shock_index_classification"] == "normal"
 
+    def test_si_rounds_to_0_7_but_classifies_normal(self) -> None:
+        """Unrounded SI<0.7 stays normal even if displayed SI rounds to 0.7."""
+        feats = _make_features(
+            arrival_vitals=_make_arrival_vitals(sbp=107.0),
+            bdm=_make_bdm(initial_bd_value=2.0),
+        )
+        feats["vitals_canonical_v1"]["arrival_vitals"]["hr"] = 74.5  # SI=0.696...
+        result = extract_shock_trigger(feats)
+        _assert_schema(result)
+        tv = result["trigger_vitals"]
+        assert tv["shock_index"] == 0.7
+        assert tv["shock_index_classification"] == "normal"
+
+    def test_si_rounds_to_1_0_but_classifies_elevated(self) -> None:
+        """Unrounded SI<1.0 stays elevated even if displayed SI rounds to 1.0."""
+        feats = _make_features(
+            arrival_vitals=_make_arrival_vitals(sbp=250.0),
+            bdm=_make_bdm(initial_bd_value=2.0),
+        )
+        feats["vitals_canonical_v1"]["arrival_vitals"]["hr"] = 249.0  # SI=0.996
+        result = extract_shock_trigger(feats)
+        _assert_schema(result)
+        tv = result["trigger_vitals"]
+        assert tv["shock_index"] == 1.0
+        assert tv["shock_index_classification"] == "elevated"
+
     def test_si_null_when_hr_null(self) -> None:
         """HR is null → shock_index is null, classification is null."""
         feats = _make_features(
