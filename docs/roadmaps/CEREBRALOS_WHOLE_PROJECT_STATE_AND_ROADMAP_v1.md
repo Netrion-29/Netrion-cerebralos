@@ -637,7 +637,7 @@ Single source of truth for all audit findings, gap analysis results, and
 improvement candidates discovered during protocol extraction reviews. Every
 finding undergoes classification before implementation work begins.
 
-| Intake ID | Source | Finding Summary | Classification | Evidence | Owning PR | Status | Validation Artifact | Last Updated |
+| Intake ID | Source | Finding Summary | Classification | Evidence | Owning PR(s) | Status | Validation Artifact | Last Updated |
 |-----------|--------|----------------|---------------|----------|-----------|--------|---------------------|-------------|
 | AUD-001 | Coverage mapping v1 (PR #220) | Protocol coverage matrix stale — counts stuck at 60E/57P/97M; does not reflect Slices A/B/C, vent, GCS, SI work | KEEP NOW | `PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` dated 2026-03-12; 19 elements upgraded in codebase but not reflected in doc | PR #262 (this PR) | ✅ Complete | Counts verified: 79E/48P/87M/16NA; 6/10 top gaps closed | 2026-03-16 |
 | AUD-002 | E09 raw-scan review | Delirium confirmed false negatives — Johnny_Stokes, Linda_Hufford, Ronald_Bittner show delirium evidence in raw text not captured by current mapper/rule | KEEP NOW | Raw file line citations in Terminal-Claude analysis report | Item #23 (post-#258 queue) | Not started | Pending precision test + mapper hardening PR | 2026-03-16 |

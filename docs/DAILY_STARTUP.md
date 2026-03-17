@@ -152,7 +152,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 - [CAUTI Engine Design v1](audits/CAUTI_ENGINE_DESIGN_v1.md) — CAUTI-specific LDA duration gate + alternative-source exclusion design (predecessor; CAUTI clinical requirements still authoritative; engine approval needed)
 - [Protocol Data Element Master v1](audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md) — comprehensive inventory of all data elements across 51 protocol PDFs; coverage Slices A/B/C COMPLETE (PRs #222–#232); vent settings COMPLETE (PRs #233–#237); GCS components COMPLETE (PRs #238–#239); tabular GCS flowsheet COMPLETE (PR #243)
 - [Protocol Data Coverage Mapping v1](audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md) — **source of truth for protocol coverage counts** (79E/48P/87M/16NA as of PR #262); 6/10 original top gaps closed; see Roadmap §3 item 15
-- **Canonical Audit Intake Log** → [Roadmap §3 · Audit Intake Log](roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md) — **source of truth for finding lifecycle state** (classification, owning PR, status, validation artifact)
+- **Canonical Audit Intake Log** → [Roadmap §3 · Canonical Audit Intake Log (Consolidated)](roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md) — **source of truth for finding lifecycle state** (classification, owning PR, status, validation artifact)
 
 > **NTDS Coverage:** 21/21 events fully mapped (PRs #118 – #124).
 > Fixture runner: 43 fixtures passed (56 tests), 0 xfailed.
