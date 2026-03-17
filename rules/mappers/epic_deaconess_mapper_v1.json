@@ -360,23 +360,31 @@
 			"\\bCAM[-\\s]?ICU\\s*:\\s*positive\\b",
 			"\\bbCAM\\s*:\\s*positive\\b",
 			"\\boverall\\s+(bCAM|CAM[-\\s]?ICU)\\s*:\\s*positive\\b",
-			"\\bbCAM\\s+screening\\s*:\\s*positive\\b"
+			"\\bbCAM\\s+screening\\s*:\\s*positive\\b",
+			"\\bpatient\\s+(does\\s+)?have\\s+delirium\\b",
+			"\\bacute\\s+metabolic\\s+encephalopathy\\b",
+			"\\bmetabolic\\s+encephalopathy\\b"
 		],
 		"delirium_negation_noise": [
-			"\\bat\\s+risk\\s+(for\\s+)?delirium\\b",
-			"\\brisk\\s+for\\s+delirium\\b",
+			"^(?=.*\\bat\\s+risk\\s+(for\\s+)?delirium\\b)(?!.*\\bpatient\\s+(does\\s+)?have\\s+delirium\\b)",
+			"^(?=.*\\brisk\\s+for\\s+delirium\\b)(?!.*\\bpatient\\s+(does\\s+)?have\\s+delirium\\b)",
 			"\\bprevent\\w*\\s+(\\w+\\s+)?delirium\\b",
 			"\\bpast\\s+\\w*\\s*diagnos\\w*.*\\bdelirium\\b",
 			"\\bpsychiatric\\s+diagnos\\w*.*\\bdelirium\\b",
 			"\\b(history|hx)\\s+of\\b.*\\bdelirium\\b",
 			"\\bpmh\\b.*\\bdelirium\\b",
-			"\\bdelirium\\s+screen\\b",
+			"^(?=.*\\bdelirium\\s+screen\\b)(?!.*\\bpatient\\s+(does\\s+)?have\\s+delirium\\b)",
 			"\\bdelirium\\s+protocol\\b",
-			"\\bdelirium\\s+precaution\\b",
+			"^(?=.*\\bdelirium\\s+precautions?\\b)(?!.*\\bpatient\\s+(does\\s+)?have\\s+delirium\\b)",
 			"\\bCAM[-\\s]?ICU\\s*:\\s*negative\\b",
 			"\\bbCAM\\s*:\\s*negative\\b",
 			"\\boverall\\s+(bCAM|CAM[-\\s]?ICU)\\s*:\\s*negative\\b",
-			"\\bbCAM\\s+screening\\s*:\\s*negative\\b"
+			"\\bbCAM\\s+screening\\s*:\\s*negative\\b",
+			"^\\s*delirium\\s*:\\s*$",
+			"\\bdelirium\\s+scale\\b",
+			"\\bno\\s+(\\w+\\s+)?encephalopathy\\b",
+			"\\bhepatic\\s+encephalopathy\\b",
+			"\\b(history|hx)\\s+of\\b.*\\bencephalopathy\\b"
 		],
 		"pressure_ulcer_dx": [
 			"\\bpressure\\s+(ulcer|injury|sore)\\b",

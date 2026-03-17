@@ -54,6 +54,7 @@ _SECTION_PATTERNS: Dict[str, SourceType] = {
     r"|PODIATRY|POST[-\s]?OP|THE|TRAUMA|VASCULAR|WOUND)\b[\w\s,&-]{0,40})?"
     r"PROGRESS[\s_]+NOTE": SourceType.PROGRESS_NOTE,
     r"^\[?\s*ANESTHESIA[\s_]": SourceType.ANESTHESIA_NOTE,
+    r"^\s*ASSESSMENT\s*/?\s*PLAN\s*:": SourceType.PHYSICIAN_NOTE,
 }
 
 # Words that, when appearing as the sole trailing text after a section keyword,
