@@ -14,9 +14,9 @@
 
 ## 1. Purpose
 
-Deterministic patient sex extraction from existing parsed patient data.
-Sex is a protocol-enablement prerequisite — several NTDS fields and
-clinical rules require a structured sex value.
+Deterministic patient demographics extraction from existing parsed patient data.
+Sex and discharge disposition are protocol-enablement prerequisites —
+several NTDS fields and clinical rules require structured demographic values.
 
 Design principles:
 
@@ -31,13 +31,15 @@ Design principles:
 
 ```json
 {
-  "sex": "Male"
+  "sex": "Male",
+  "discharge_disposition": "SNF"
 }
 ```
 
 | Field | Type              | Description                         |
 |-------|-------------------|-------------------------------------|
 | `sex` | `str \| null`    | Patient sex: `"Male"`, `"Female"`, or `null` if undetermined. |
+| `discharge_disposition` | `str \| null` | Final discharge disposition from `patient_movement_v1.summary.discharge_disposition_final`, or `null` if unavailable. |
 
 ---
 
@@ -49,8 +51,14 @@ Design principles:
 | `"Female"` | Patient is female |
 | `null`   | Sex not determinable from available data (fail-closed) |
 
-No other values are emitted. Any raw value not matching `"Male"` or
+No other sex values are emitted. Any raw value not matching `"Male"` or
 `"Female"` is collapsed to `null`.
+
+### 3.2 `discharge_disposition` Allowed Values
+
+The value is passed through from `patient_movement_v1.summary.discharge_disposition_final`
+as-is when it is a string. Returns `null` when unavailable or non-string.
+Common values: `"Home"`, `"SNF"`, `"Rehab"`, `"LTAC"`, `"Expired"`, etc.
 
 ---
 

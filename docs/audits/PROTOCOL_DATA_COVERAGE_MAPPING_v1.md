@@ -237,9 +237,9 @@ or NTDS event adjudication, and (c) the implementation path is clear.
 | 3 | **Ventilator mode / settings** | Airway | Required for ARDS Berlin criteria (NTDS E02) and TBI PaCO2 targeting | Flowsheet row parsing for vent mode/FiO2/PEEP |
 | 4 | **PaO2/FiO2 ratio** | Airway | Core Berlin criteria component for E02 ARDS; currently partial | LAB section ABG value parsing + computation |
 | 5 | **Chest tube placement (date/time/output)** | Airway | LDA CHEST_TUBE type already defined in `lda_events_v1.py`; text extraction needed | Wire existing LDA category to flowsheet row parsing |
-| 6 | **Sex** | Demographics | Universal demographic; affects dosing protocols and obstetric screening gates | Header line parsing or demographic section extraction |
+| 6 | ~~**Sex**~~ | Demographics | ✅ EXTRACTED (PR #223) — `demographics_v1.sex` | Header/HPI parsing in `parse_patient_txt.py` + `build_patient_features_v1.py` |
 | 7 | **ICP (intracranial pressure)** | Vital Signs | TBI Management protocol requires ICP monitoring; text likely present | Flowsheet row or note section pattern matching |
-| 8 | **Discharge disposition** | Disposition | Registry requirement; discharge section often documents destination | DISCHARGE section structured parsing |
+| 8 | ~~**Discharge disposition**~~ | Disposition | ✅ EXTRACTED (PR #259) — `demographics_v1.discharge_disposition` | Sourced from `patient_movement_v1.summary.discharge_disposition_final` |
 | 9 | **Mental health screening** | Screening | Required by protocol for all trauma patients; likely documented | Pattern matching in nursing assessment / social work notes |
 | 10 | **Antibiotic administration (type, time)** | Pharmacologic | Open fracture protocol requires antibiotics within 1 hour | MAR section antibiotic pattern matching |
 
@@ -247,22 +247,19 @@ or NTDS event adjudication, and (c) the implementation path is clear.
 
 ## Next PR Slices
 
-### Slice A — Small: Sex + Discharge Disposition Extraction
+### Slice A — ✅ COMPLETE: Sex + Discharge Disposition Extraction
 
-**Scope:** 2 elements, single-goal PR.
+**Status:** Completed across PRs #222–#225 (sex) and PR #259 (discharge disposition wiring).
 
-| Element | Source | Pattern |
-|---------|--------|---------|
-| Sex | Header line or demographic section in raw `.txt` | `Sex:` / `Gender:` field extraction |
-| Discharge disposition | DISCHARGE section text | `Discharged to:` / `Disposition:` pattern matching |
+| Element | Status | Module |
+|---------|--------|--------|
+| Sex | ✅ EXTRACTED | `demographics_v1.sex` via evidence header + HPI fallback |
+| Discharge disposition | ✅ EXTRACTED | `demographics_v1.discharge_disposition` via `patient_movement_v1.summary.discharge_disposition_final` |
 
 **Files touched:**
-- `cerebralos/features/` — new or modified feature module(s)
-- `tests/` — new test file(s) for each element
-- Baseline update if output changes
-
-**Estimated effort:** Small (2–4 hours). Both are single-pattern header/section
-extractions with minimal logic.
+- `cerebralos/features/build_patient_features_v1.py` — demographics_v1 assembly
+- `docs/contracts/demographics_v1.md` — schema contract
+- `tests/test_demographics_v1.py` — behaviour lock tests
 
 ### Slice B — Medium: Blood Product Transfusion Extraction
 

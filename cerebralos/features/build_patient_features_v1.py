@@ -639,10 +639,16 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
     )
     features["ventilator_settings_v1"] = ventilator_settings
 
-    # ── Demographics v1 (sex from evidence header) ──
+    # ── Demographics v1 (sex + discharge disposition) ──
     sex_raw = meta.get("sex")  # injected by main() from evidence header
+    dispo_final = (
+        (features.get("patient_movement_v1") or {})
+        .get("summary", {})
+        .get("discharge_disposition_final")
+    )
     features["demographics_v1"] = {
         "sex": sex_raw if sex_raw in ("Male", "Female") else None,
+        "discharge_disposition": dispo_final if isinstance(dispo_final, str) else None,
     }
 
     return {
