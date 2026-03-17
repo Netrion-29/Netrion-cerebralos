@@ -678,6 +678,102 @@ class TestArrivalVitalsVisitVitalsBlock:
         assert result["vitals"]["hr"] == 72.0
 
 
+class TestVisitVitalsBangPrefix:
+    """Visit Vitals block with (!) abnormal annotation prefix.
+
+    Raw citation: Anna_Dennis.txt:2869-2878 (TRAUMA_HP Visit Vitals block)
+      BP\t(!) 145/89
+      Pulse\t(!) 112
+      Temp\t98.7 °F (37.1 °C) (Oral)
+      Resp\t22
+      SpO2\t96%
+    """
+
+    _BANG_BLOCK = (
+        "Physical Exam:\n"
+        "Visit Vitals\n"
+        "\n"
+        "BP\t(!) 145/89\n"
+        "Pulse\t(!) 112\n"
+        "Temp\t98.7 °F (37.1 °C) (Oral)\n"
+        "Resp\t22\n"
+        "SpO2\t96%\n"
+    )
+
+    def test_pulse_bang_prefix(self):
+        """Pulse with (!) prefix → HR extracted.
+
+        Raw: Anna_Dennis.txt:2872  Pulse\t(!) 112
+        """
+        items = [_item("TRAUMA_HP", "2025-12-31T15:10:00", self._BANG_BLOCK)]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert result["status"] == "selected"
+        assert result["vitals"]["hr"] == 112.0
+
+    def test_bp_bang_prefix(self):
+        """BP with (!) prefix → SBP/DBP extracted.
+
+        Raw: Anna_Dennis.txt:2871  BP\t(!) 145/89
+        """
+        items = [_item("TRAUMA_HP", "2025-12-31T15:10:00", self._BANG_BLOCK)]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert result["vitals"]["sbp"] == 145.0
+        assert result["vitals"]["dbp"] == 89.0
+
+    def test_no_bang_still_works(self):
+        """Metrics without (!) prefix still parse normally."""
+        items = [_item("TRAUMA_HP", "2025-12-31T15:10:00", self._BANG_BLOCK)]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert result["vitals"]["temp_f"] == 98.7
+        assert result["vitals"]["rr"] == 22.0
+        assert result["vitals"]["spo2"] == 96.0
+
+    def test_all_bang_metrics(self):
+        """All Visit Vitals metrics with (!) prefix → all extracted.
+
+        Defensive test: (!) may appear on any abnormal metric.
+        """
+        text = (
+            "Visit Vitals\n"
+            "BP\t(!) 88/50\n"
+            "Pulse\t(!) 135\n"
+            "Temp\t(!) 100.8 °F (38.2 °C)\n"
+            "Resp\t(!) 28\n"
+            "SpO2\t(!) 88%\n"
+        )
+        items = [_item("TRAUMA_HP", "2025-12-31T15:10:00", text)]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert result["status"] == "selected"
+        assert result["vitals"]["sbp"] == 88.0
+        assert result["vitals"]["hr"] == 135.0
+        assert result["vitals"]["temp_f"] == 100.8
+        assert result["vitals"]["rr"] == 28.0
+        assert result["vitals"]["spo2"] == 88.0
+
+    def test_anna_dennis_second_visit_vitals(self):
+        """Second Visit Vitals block from Anna_Dennis with (!) on Pulse/BP.
+
+        Raw: Anna_Dennis.txt:3443-3452 (adapted — header simplified
+        to match Visit Vitals parser; original uses "VITAL SIGNS: Visit Vitals").
+        """
+        text = (
+            "PHYSICAL EXAM\n"
+            "Visit Vitals\n"
+            "\n"
+            "BP\t(!) 162/87\n"
+            "Pulse\t(!) 116\n"
+            "Temp\t98.7 °F (37.1 °C) (Oral)\n"
+            "Resp\t20\n"
+            "SpO2\t96%\n"
+        )
+        items = [_item("TRAUMA_HP", "2025-12-31T15:30:00", text)]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert result["status"] == "selected"
+        assert result["source_context"] == "PRIMARY_SURVEY"
+        assert result["vitals"]["hr"] == 116.0
+        assert result["vitals"]["sbp"] == 162.0
+
+
 class TestArrivalVitalsRealPatternRegression:
     """Regression tests based on raw file scan patterns."""
 

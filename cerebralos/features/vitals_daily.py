@@ -430,8 +430,8 @@ def _parse_visit_vitals_block(
                                              "line_preview": preview})
                     continue
 
-                # Pulse
-                m = re.match(r"(?i)^Pulse\t(\d+)", ln)
+                # Pulse — handle optional (!) abnormal annotation
+                m = re.match(r"(?i)^Pulse\t(?:\(!?\)\s*)?(\d+)", ln)
                 if m:
                     val = float(m.group(1))
                     g = guardrails.get("hr", {})
@@ -454,8 +454,8 @@ def _parse_visit_vitals_block(
                                              "line_preview": preview})
                     continue
 
-                # Resp
-                m = re.match(r"(?i)^Resp\t(\d+)", ln)
+                # Resp — handle optional (!) abnormal annotation
+                m = re.match(r"(?i)^Resp\t(?:\(!?\)\s*)?(\d+)", ln)
                 if m:
                     val = float(m.group(1))
                     g = guardrails.get("rr", {})
@@ -465,8 +465,8 @@ def _parse_visit_vitals_block(
                                          "line_preview": preview})
                     continue
 
-                # SpO2
-                m = re.match(r"(?i)^SpO2\t(\d+(?:\.\d+)?)\s*%?", ln)
+                # SpO2 — handle optional (!) abnormal annotation
+                m = re.match(r"(?i)^SpO2\t(?:\(!?\)\s*)?(\d+(?:\.\d+)?)\s*%?", ln)
                 if m:
                     val = float(m.group(1))
                     g = guardrails.get("spo2", {})
