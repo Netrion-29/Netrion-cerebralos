@@ -3,7 +3,7 @@
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
 | Date        | 2026-03-16                                               |
-| Baseline    | `1f90b8b` (main, after PR #257)                          |
+| Baseline    | `71a3990` (main, after PR #258)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -128,6 +128,9 @@
 | #237 | `e079dbd` | fix(protocol): tighten NIV rate FP guard and align docs/tests |
 | #238 | `e03eb95` | feat(protocol): add deterministic GCS E/V/M component extraction in gcs_daily |
 | #239 | `3a6f05f` | fix(protocol): resolve PR238 copilot findings for gcs components |
+| #240 | `71fc20e` | docs(roadmap): sync status after PR #239 |
+| #241 | `7d20e8b` | feat(protocol): add deterministic arrival vitals hardening |
+| #242 | `4aab94f` | feat(protocol): wire arrival vitals hardening into runtime build pipeline |
 | #243 | `40e6984` | feat(protocol): add deterministic tabular GCS flowsheet extraction |
 | #244 | `ca810ca` | feat(ntds): enable E05 CAUTI LDA gate |
 | #245 | `869b818` | feat(ntds): enable E06 CLABSI LDA gate |
@@ -143,6 +146,7 @@
 | #255 | `0263573` | docs(sync): update roadmap, startup, and boot header for post-PR #254 state |
 | #256 | `4d8eec6` | docs(startup): fix broken blockquote list newlines |
 | #257 | `1f90b8b` | fix(vitals): handle Epic bang-prefix in Visit Vitals parser |
+| #258 | `71a3990` | docs(sync): update roadmap/startup/boot + prompt templates for post-PR #257 state |
 
 ### Closed PRs
 
@@ -153,13 +157,15 @@
 
 ### Open PRs
 
-None.
+| PR | State | Notes |
+|----|-------|-------|
+| #259 | OPEN | Pupil reactivity extraction from nursing flowsheets (`pupil_reactivity_v1`) |
 
 ### Suite Health
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | last verified: ≥3628 passed (pytest, 2026-03-16, baseline `1f90b8b`; lower bound, exact total may vary across environments) |
+| Total tests         | last verified: ≥3628 passed (pytest, 2026-03-16, baseline `71a3990`; lower bound, exact total may vary across environments) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 47               |
 | Fixture runner      | **56 passed, 0 xfailed** |
@@ -599,19 +605,21 @@ and added two block filters:
 | 12 | PMH-aware gate handling | Engine proposal (PROTECTED `cerebralos/ntds_logic/engine.py`) | Medium | Large | Requires engine modification + design doc + explicit authorization; protocol engine has reference impl |
 | 13 | **CAUTI engine design (LDA duration gate + alt-source exclusion)** | Design doc `docs/audits/CAUTI_ENGINE_DESIGN_v1.md` | **High** | Medium–Large | ✅ DESIGN COMPLETE — requires engine-change authorization for implementation. LDA SourceType + catheter duration gate + alternative-source exclusion. See design doc for phased migration plan. |
 | ~~14~~ | ~~**E06 CLABSI spec fidelity (NHSN CLABSI)**~~ | ~~`rules/ntds/logic/2026/06_clabsi.json`, `rules/mappers/epic_deaconess_mapper_v1.json`, tests~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** — 5 required gates (clabsi_dx, clabsi_central_line_gt2d, clabsi_lab_positive, clabsi_symptoms, clabsi_after_arrival) + 2 exclusions (POA, chronic line); 7 mapper keys (clabsi_negation_noise, clabsi_central_line_in_place, clabsi_blood_culture_positive, clabsi_symptoms, clabsi_onset, clabsi_chronic_line + refined clabsi_dx) with ~56 patterns total; clabsi_dx noise filter; 76 precision tests + 3 new fixtures (chronic-line-excluded, no-culture-no, noncentral-line-no); baseline refreshed: E06 stays NO=39, 0 NTDS outcome deltas |
-| 15 | **Protocol Data Coverage Mapping** | `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` | Medium | Medium | **Slices A/B/C COMPLETE.** First-pass coverage matrix: 60 EXTRACTED, 57 PARTIAL, 97 MISSING, 16 N/A (PR #220). Slice A (sex + discharge disposition): ✅ COMPLETE (PRs #222–#225) — `demographics_v1` feature module + contract doc. Slice B (blood product transfusion): ✅ COMPLETE (PRs #229–#231) — `transfusion_blood_products_v1` foundation + hardening. Slice C (structured labs): ✅ COMPLETE (PRs #226–#228, #232) — `structured_labs_v1` foundation (CBC/BMP/coag/ABG/PF) + cardiac/sepsis expansion. Ventilator settings extraction: ✅ COMPLETE (PRs #233–#237) — FiO2/PEEP/Vt/RR/vent status, mode, NIV IPAP/EPAP/rate. GCS component extraction: ✅ COMPLETE (PRs #238–#239) — E/V/M from inline + flowsheet blocks, sum-mismatch guard. |
+| 15 | **Protocol Data Coverage Mapping** | `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` | Medium | Medium | **Slices A/B/C COMPLETE.** First-pass coverage matrix: 60 EXTRACTED, 57 PARTIAL, 97 MISSING, 16 N/A (PR #220). Slice A (sex + discharge disposition): ✅ COMPLETE (PRs #222–#225) — `demographics_v1` feature module + contract doc. Slice B (blood product transfusion): ✅ COMPLETE (PRs #229–#231) — `transfusion_blood_products_v1` foundation + hardening. Slice C (structured labs): ✅ COMPLETE (PRs #226–#228, #232) — `structured_labs_v1` foundation (CBC/BMP/coag/ABG/PF) + cardiac/sepsis expansion. Ventilator settings extraction: ✅ COMPLETE (PRs #233–#237) — FiO2/PEEP/Vt/RR/vent status, mode, NIV IPAP/EPAP/rate. GCS component extraction: ✅ COMPLETE (PRs #238–#239) — E/V/M from inline + flowsheet blocks, sum-mismatch guard. **Gap:** this doc itself is stale (still 2026-03-12) and needs a dedicated refresh PR to reflect merged work through PR #258. |
 | 16 | **LDA engine support (Lines, Drains, Airways)** | `cerebralos/ntds_logic/engine.py`, `cerebralos/ntds_logic/build_patientfacts_from_txt.py`, `cerebralos/ntds_logic/model.py` | **High** | Large | ✅ IMPLEMENTED (v1+text+startstop+correctness+bracket-removed+per-event-enabled+vent-recall+multi-episode) — PRs #203, #206, #207, #214, #216, #244, #245, #246, #248, #250 (all merged). SourceType `LDA` added to model; `LDAEpisode` dataclass; `build_lda_episodes()` builder (structured JSON + text-derived flowsheet day-counter + insertion/removal start/stop inference); 4 gate types in engine incl. `eval_lda_overlap` (interval overlap, one-sided admission window — PR #214); `TEXT_DERIVED_STARTSTOP` confidence level; merge precedence: structured > startstop > day-counter (backfill episode_days — PR #214); `ENABLE_LDA_GATES` feature flag (default False); per-event LDA gates enabled for E05/E06/E21 via runner toggle + rule `required: true` (PRs #244–#246); bracket `[REMOVED]` patterns for Urethral Catheter + Non-Surgical Airway ETT (PR #216); vent start/stop episode extraction for E21 recall (intubation/extubation, placed-on/removed-from ventilator patterns, NIV exclusion — PR #248); multi-episode start/stop support for MECHANICAL_VENTILATOR and ENDOTRACHEAL_TUBE — sequential insert→remove pairing produces multiple non-overlapping episodes per device (PR #250); 180+ dedicated tests. LDA per-event rollout COMPLETE. |
 
-##### Post-#257 Next Candidates
+##### Post-#258 Next Candidates
 
 | # | Item | Scope | Priority | Effort | Notes |
 |---|------|-------|----------|--------|-------|
 | ~~SI~~ | ~~**Shock Index computation (SI = HR/SBP)**~~ | ~~`cerebralos/features/shock_trigger_v1.py`, tests~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** (PR #254) — deterministic SI = HR / SBP added to `shock_trigger_v1`; classification: normal (< 0.7), elevated (0.7–0.99), critical (≥ 1.0); fail-closed null when HR or SBP missing; supplementary-only (does NOT alter `shock_triggered` outcome); `hr`, `shock_index`, `shock_index_classification` added to `trigger_vitals` output; evidence snippet includes SI; contract doc `docs/contracts/shock_trigger_v1.md` added; 18 new tests (40 total); 0 NTDS outcome deltas; 0 v4 drift; protected engines not modified. |
-| 17 | **Arrival vitals hardening (Primary Survey priority + ED fallback)** | `cerebralos/features/vitals_daily.py`, tests, contract doc | **High** | Medium | **PARTIAL** (PR #257) — Visit Vitals parser now handles Epic `(!)` abnormal-annotation prefix on Pulse/Resp/SpO2 regexes; Anna_Dennis HR extraction corrected (null → 112.0); no schema change; intentional v4/v5 baseline update for Anna_Dennis; 6 new tests; 3628 total passed. Remaining: structured Primary-Survey-first extraction for arrival HR/BP/RR/SpO2/Temp (TRAUMA_HP → ED fallback → DNA). |
-| 18 | **Tabular GCS flowsheet parsing follow-up** | `cerebralos/features/gcs_daily.py`, tests | Medium | Small | Extend GCS extraction for tabular flowsheet layouts (time-column headers with component rows) seen in some patients. |
+| ~~17~~ | ~~**Arrival vitals hardening (Primary Survey priority + ED fallback)**~~ | ~~`cerebralos/features/vitals_daily.py`, tests, contract doc~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** (PRs #241, #242, #257) — deterministic arrival-vitals selector (TRAUMA_HP priority, ED fallback, DNA), runtime wiring at `features.vitals_canonical_v1.arrival_vitals_hardened`, and Epic Visit Vitals `(!)` prefix hardening for Pulse/Resp/SpO2; Anna_Dennis HR corrected (null → 112.0). |
+| ~~18~~ | ~~**Tabular GCS flowsheet parsing follow-up**~~ | ~~`cerebralos/features/gcs_daily.py`, tests~~ | ~~Medium~~ | ~~Small~~ | **✅ COMPLETE** (PR #243) — deterministic tabular GCS flowsheet extraction (dynamic column detection, validation guards, integration path through ingestion/runtime). |
 | ~~19~~ | ~~**LDA gate enablement decision track**~~ | ~~`rules/ntds/logic/2026/`, config~~ | ~~Medium~~ | ~~Small~~ | **✅ COMPLETE** (PRs #244, #245, #246) — LDA gates enabled per-event for E05 CAUTI (PR #244), E06 CLABSI (PR #245), E21 VAP (PR #246). Each event rule updated `required: false` → `required: true`; per-event LDA set in `run_all_events.py` expanded to {5, 6, 21}; test fixtures + precision tests updated. Protected `engine.py` not modified — toggle handled in runner + rule JSON only. |
 | ~~20~~ | ~~**Vent start/stop recall for E21 VAP**~~ | ~~`cerebralos/ntds_logic/build_patientfacts_from_txt.py`, tests~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** (PR #248) — Citation-backed ventilator start/stop extraction patterns added: intubation/extubation, placed-on/removed-from ventilator, negated-phrase guards; NIV/BiPAP/CPAP excluded; 37 new LDA tests (positive+negative+negation); 0 NTDS outcome deltas; protected `engine.py` not modified. |
 | ~~21~~ | ~~**Multi-episode vent start/stop (E21 recall hardening)**~~ | ~~`cerebralos/ntds_logic/build_patientfacts_from_txt.py`, tests~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** (PR #250) — Sequential insert→remove pairing for MECHANICAL_VENTILATOR and ENDOTRACHEAL_TUBE; produces multiple non-overlapping episodes per device; orphan removes emit stop-only episode; orphan inserts emit open episode; merge logic updated to list-per-device with tier-based replacement and episode_days backfill; 10 new regression tests; 0 NTDS outcome deltas; protected `engine.py` not modified. |
+| 22 | **Coverage mapping refresh v2 (counts + row-level statuses)** | `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` | **High** | Medium | Recompute EXTRACTED/PARTIAL/MISSING counts and row statuses to reflect merged protocol work (Slices A/B/C, vent, GCS, shock index, arrival vitals, and related follow-ons). |
+| 23 | **E09 Delirium confirmed-miss hardening** | `rules/mappers/epic_deaconess_mapper_v1.json`, `rules/ntds/logic/2026/09_delirium.json`, precision tests | **High** | Medium | Investigate and fix confirmed false negatives from raw-file review (reported misses include Johnny_Stokes, Linda_Hufford, Ronald_Bittner) with citation-backed, fail-closed mapper/rule updates. |
 
 ##### LDA Analysis Intake Loop (Roadmap-First)
 

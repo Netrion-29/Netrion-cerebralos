@@ -210,11 +210,13 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - Docs sync (post-#254): ✅ COMPLETE (PR #255) — roadmap, startup, and boot header updated for post-PR #254 state
 > - Docs startup fix: ✅ COMPLETE (PR #256) — broken blockquote list newlines fixed in DAILY_STARTUP.md
 > - Visit Vitals bang-prefix parser fix: ✅ COMPLETE (PR #257) — Epic `(!)` abnormal-annotation prefix handled in Pulse/Resp/SpO2 Visit Vitals regexes; Anna_Dennis HR corrected (null → 112.0); no schema change; intentional v4/v5 baseline update for Anna_Dennis; 6 new tests; 3628 total passed
-> - Open PRs: none
+> - Docs sync (post-#257): ✅ COMPLETE (PR #258) — roadmap/startup/boot + boot prompt templates synced for post-PR #257 state
+> - Pupil reactivity extraction: 🟡 OPEN (PR #259) — deterministic bilateral pupil size/reactivity extraction from nursing flowsheets and prose patterns; runtime wiring under per-day `features`
+> - Open PRs: #259
 > - .gitignore cleanup: ✅ COMPLETE — `_tmp_*`, `rules/deaconess/*.pdf`, `docs/handoffs/`, audit log added to `.gitignore`
 
 > - E05 CAUTI duration-scope tightening: ✅ COMPLETE — duration gate requires explicit urinary device (foley/indwelling/urethral/urinary catheter) + duration ≥3d/>48h; `cauti_catheter_duration` (6 patterns); 65→89 E05 precision tests; 0 NTDS outcome deltas
-> - **Backlog priority:** (1) Arrival vitals hardening — remaining: Primary Survey priority + ED fallback (item 17 partial after PR #257), (2) Tabular GCS flowsheet parsing follow-up, (3) CAUTI engine implementation (requires authorization) — see Roadmap §3 post-#257 candidates
+> - **Backlog priority:** (1) Coverage mapping refresh v2 (update stale `PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` counts + row statuses), (2) E09 delirium confirmed-miss hardening (citation-backed), (3) CAUTI engine implementation (requires authorization) — see Roadmap §3 post-#258 candidates
 > - Handoff reminder: Every Claude handoff must include Codex post-handoff analysis (spec alignment, validation results, gaps/risks, next actions) plus a raw-data cross-check: compare raw NTDS/protocol sources vs current extraction and spot-check two patient raw `.txt` files (one questionable, one baseline) for capture accuracy.
 > - **Standard PR workflow:** (1) Raw-data evidence first — scan ≥2 patient `.txt` files, record exact phrases before mapper/rule edits; (2) Pre-merge checklist: targeted pytest → full pytest → `audit_cohort_counts.py --check` → `check_ntds_hashes.py` → `check_ntds_distribution.py` → `git diff --check`; (3) Address all Copilot review comments before handoff; (4) Post-handoff analysis by Codex (spec alignment, validation, gaps/risks, next actions, 2-patient raw-data spot-check); (5) Post-merge: `git switch main && git pull --ff-only`, re-run hash + distribution checks.
 >
