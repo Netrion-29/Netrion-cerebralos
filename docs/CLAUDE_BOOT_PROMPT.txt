@@ -12,5 +12,6 @@ Rules:
 - No renderer drift
 - No protected engine changes
 - Run ./scripts/gate_pr.sh before declaring completion
+- Update docs in the same PR if necessary (roadmap/startup/boot/contract docs), and explicitly state 'Docs update: necessary' or 'Docs update: not necessary' in handoff
 
 Acknowledge rulebook before proceeding.

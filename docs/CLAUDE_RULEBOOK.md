@@ -9,6 +9,7 @@ This file defines how Claude must operate inside this repository.
 - No silent schema changes (docs + validators + consumers in same PR)
 - raw_line_id required on stored evidence
 - No scope creep
+- Update docs in the same PR if necessary (roadmap/startup/boot/contract docs), and explicitly state "Docs update: necessary" or "Docs update: not necessary" in handoff
 
 ## Mandatory verification for every change
 Run:

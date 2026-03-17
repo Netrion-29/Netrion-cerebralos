@@ -25,6 +25,7 @@ Codex must not assume context outside repo files.
 4. Every stored evidence object must include raw_line_id.
 5. No silent schema changes.
 6. No scope creep.
+7. Update docs in the same PR if necessary (roadmap/startup/boot/contract docs), and explicitly state "Docs update: necessary" or "Docs update: not necessary" in handoff.
 
 If a change affects schema:
 

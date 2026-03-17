@@ -11,6 +11,7 @@ Hard rules:
 - No protected engine changes
 - No schema changes without updating docs + validators + consumers
 - All evidence entries require raw_line_id
+- Update docs in the same PR if necessary (roadmap/startup/boot/contract docs), and explicitly state 'Docs update: necessary' or 'Docs update: not necessary' in handoff
 
 Completion requirement:
 You must run:
