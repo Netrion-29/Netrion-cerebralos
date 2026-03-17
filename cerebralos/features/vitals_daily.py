@@ -54,6 +54,9 @@ ABNORMAL_THRESHOLDS: Dict[str, Dict[str, float]] = {
     "dbp":    {},  # no standalone threshold
 }
 
+# Epic-style abnormal marker, e.g. "(!)" or "( ! )".
+ABNORMAL_MARKER_RE = r"\(\s*!?\s*\)"
+
 # Keep private alias for internal callers (backward compat)
 _ABNORMAL_THRESHOLDS = ABNORMAL_THRESHOLDS
 
@@ -430,8 +433,8 @@ def _parse_visit_vitals_block(
                                              "line_preview": preview})
                     continue
 
-                # Pulse — handle optional (!) abnormal annotation
-                m = re.match(r"(?i)^Pulse\t(?:\(!?\)\s*)?(\d+)", ln)
+                # Pulse — handle optional Epic abnormal annotation.
+                m = re.match(rf"(?i)^Pulse\t(?:{ABNORMAL_MARKER_RE}\s*)?(\d+)", ln)
                 if m:
                     val = float(m.group(1))
                     g = guardrails.get("hr", {})
@@ -454,8 +457,8 @@ def _parse_visit_vitals_block(
                                              "line_preview": preview})
                     continue
 
-                # Resp — handle optional (!) abnormal annotation
-                m = re.match(r"(?i)^Resp\t(?:\(!?\)\s*)?(\d+)", ln)
+                # Resp — handle optional Epic abnormal annotation.
+                m = re.match(rf"(?i)^Resp\t(?:{ABNORMAL_MARKER_RE}\s*)?(\d+)", ln)
                 if m:
                     val = float(m.group(1))
                     g = guardrails.get("rr", {})
@@ -465,8 +468,8 @@ def _parse_visit_vitals_block(
                                          "line_preview": preview})
                     continue
 
-                # SpO2 — handle optional (!) abnormal annotation
-                m = re.match(r"(?i)^SpO2\t(?:\(!?\)\s*)?(\d+(?:\.\d+)?)\s*%?", ln)
+                # SpO2 — handle optional Epic abnormal annotation.
+                m = re.match(rf"(?i)^SpO2\t(?:{ABNORMAL_MARKER_RE}\s*)?(\d+(?:\.\d+)?)\s*%?", ln)
                 if m:
                     val = float(m.group(1))
                     g = guardrails.get("spo2", {})
@@ -524,7 +527,7 @@ def _extract_metric_from_cell(
     if not cell:
         return []
     # Strip (!) abnormal marker
-    cell = re.sub(r"\(\s*!?\s*\)", "", cell).strip()
+    cell = re.sub(ABNORMAL_MARKER_RE, "", cell).strip()
     if not cell:
         return []
 

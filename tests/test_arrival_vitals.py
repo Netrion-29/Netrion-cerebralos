@@ -750,6 +750,22 @@ class TestVisitVitalsBangPrefix:
         assert result["vitals"]["rr"] == 28.0
         assert result["vitals"]["spo2"] == 88.0
 
+    def test_resp_spo2_bang_prefix_with_inner_spaces(self):
+        """Resp/SpO2 parse when Epic marker has inner whitespace: '( ! )'."""
+        text = (
+            "Visit Vitals\n"
+            "BP\t120/80\n"
+            "Pulse\t72\n"
+            "Temp\t98.6 °F\n"
+            "Resp\t( ! ) 24\n"
+            "SpO2\t( ! ) 91%\n"
+        )
+        items = [_item("TRAUMA_HP", "2025-12-31T15:10:00", text)]
+        result = extract_arrival_vitals(items, DAY_ISO, _MINIMAL_CONFIG)
+        assert result["status"] == "selected"
+        assert result["vitals"]["rr"] == 24.0
+        assert result["vitals"]["spo2"] == 91.0
+
     def test_anna_dennis_second_visit_vitals(self):
         """Second Visit Vitals block from Anna_Dennis with (!) on Pulse/BP.
 
