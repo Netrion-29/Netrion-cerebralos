@@ -148,7 +148,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 
 - **[Whole-Project State and Roadmap v1](roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md)** ← primary context-recovery doc
 - [Trauma Build-Forward Plan v1](roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md) (historical)
-- [LDA Engine Design v1](audits/LDA_ENGINE_DESIGN_v1.md) — ✅ IMPLEMENTED (v1+text+startstop+per-event+vent-recall) Lines/Drains/Airways device-duration engine design; text-derived flowsheet day-counter extraction; insertion/removal start/stop inference (`TEXT_DERIVED_STARTSTOP`); `eval_lda_overlap` interval overlap gate; `ENABLE_LDA_GATES` feature flag (default False). See **[Whole-Project State and Roadmap v1](roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md)** LDA implementation ledger for the authoritative PR list and current status.
+- [LDA Engine Design v1](audits/LDA_ENGINE_DESIGN_v1.md) — ✅ IMPLEMENTED (v1+text+startstop+per-event+vent-recall+multi-episode) Lines/Drains/Airways device-duration engine design; text-derived flowsheet day-counter extraction; insertion/removal start/stop inference (`TEXT_DERIVED_STARTSTOP`); `eval_lda_overlap` interval overlap gate; `ENABLE_LDA_GATES` feature flag (default False). See **[Whole-Project State and Roadmap v1](roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md)** LDA implementation ledger for the authoritative PR list and current status.
 - [CAUTI Engine Design v1](audits/CAUTI_ENGINE_DESIGN_v1.md) — CAUTI-specific LDA duration gate + alternative-source exclusion design (predecessor; CAUTI clinical requirements still authoritative; engine approval needed)
 - [Protocol Data Element Master v1](audits/PROTOCOL_DATA_ELEMENT_MASTER_v1.md) — comprehensive inventory of all data elements across 51 protocol PDFs; coverage Slices A/B/C COMPLETE (PRs #222–#232); vent settings COMPLETE (PRs #233–#237); GCS components COMPLETE (PRs #238–#239); tabular GCS flowsheet COMPLETE (PR #243); see Roadmap §3 item 15 for next candidates
 
@@ -194,7 +194,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - E06 CLABSI spec fidelity (NHSN CLABSI): ✅ COMPLETE (PR #194) — 5 required gates + 2 exclusions, 7 mapper keys (~56 patterns), 76 precision tests + 3 new fixtures, 0 NTDS outcome deltas
 > - E05/E06 duration-scope tightening: ✅ COMPLETE (PRs #195, #196, #198, #201) — duration patterns require explicit device mention; punctuation variant tests added
 > - LDA engine design: ✅ COMPLETE (PR #202) — Lines/Drains/Airways device-duration engine design doc
-> - LDA engine implementation (v1+text+startstop): ✅ COMPLETE (PRs #203, #206, #207) — LDAEpisode model, build_lda_episodes() builder (structured JSON + text day-counter + insertion/removal start/stop inference), 4 gate types incl. eval_lda_overlap, TEXT_DERIVED_STARTSTOP confidence level, ENABLE_LDA_GATES=False, 118 dedicated tests
+> - LDA engine implementation (v1+text+startstop): ✅ COMPLETE (PRs #203, #206, #207) — LDAEpisode model, build_lda_episodes() builder (structured JSON + text day-counter + insertion/removal start/stop inference), 4 gate types incl. eval_lda_overlap, TEXT_DERIVED_STARTSTOP confidence level, ENABLE_LDA_GATES=False, 118 dedicated tests; multi-episode start/stop for MECHANICAL_VENTILATOR and ENDOTRACHEAL_TUBE (PR #250)
 > - Slice A (sex + discharge disposition): ✅ COMPLETE (PRs #222–#225) — `demographics_v1` feature module + contract doc
 > - Slice B (blood product transfusion): ✅ COMPLETE (PRs #229–#231) — `transfusion_blood_products_v1` foundation + hardening
 > - Slice C (structured labs foundation + expansion): ✅ COMPLETE (PRs #226–#228, #232) — CBC/BMP/coag/ABG/PF + cardiac/sepsis panels
@@ -203,6 +203,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 > - Tabular GCS flowsheet extraction: ✅ COMPLETE (PR #243) — deterministic tabular GCS flowsheet parsing
 > - LDA per-event gate enablement: ✅ COMPLETE (PRs #244–#246) — E05 CAUTI, E06 CLABSI, E21 VAP LDA gates set `required: true`; per-event toggle in runner; protected engine.py not modified
 > - Vent start/stop recall for E21 VAP: ✅ COMPLETE (PR #248) — citation-backed ventilator start/stop patterns (intubation/extubation, placed-on/removed-from ventilator), negated-phrase guards, NIV exclusion; 37 new LDA tests; 0 NTDS outcome deltas; protected engine.py not modified
+> - Multi-episode vent start/stop (E21 recall hardening): ✅ COMPLETE (PR #250) — sequential insert→remove pairing for MECHANICAL_VENTILATOR and ENDOTRACHEAL_TUBE; multiple non-overlapping episodes per device; merge logic updated to list-per-device with tier-based replacement + episode_days backfill; 10 new regression tests; 0 NTDS outcome deltas; protected engine.py not modified
 > - Open PRs: none
 > - .gitignore cleanup: ✅ COMPLETE — `_tmp_*`, `rules/deaconess/*.pdf`, `docs/handoffs/`, audit log added to `.gitignore`
 
