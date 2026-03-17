@@ -3,7 +3,7 @@
 Shock Trigger Detection — Tier 2 Feature (Roadmap Step 7, shock only)
 
 Deterministic shock trigger based on existing structured outputs:
-  - Arrival vitals (SBP) from vitals_canonical_v1.arrival_vitals
+  - Arrival vitals (SBP, HR) from vitals_canonical_v1.arrival_vitals
   - Base deficit from base_deficit_monitoring_v1
 
 Trigger rules (deterministic, fail-closed):
@@ -13,10 +13,18 @@ Trigger rules (deterministic, fail-closed):
   - Combined trigger: SBP < 90 alone is sufficient; BD > 6 alone
     triggers with type "indeterminate"; both → "hemorrhagic_likely"
 
+Shock Index (SI = HR / SBP):
+  - Computed when both arrival HR and SBP are available.
+  - Classification: normal (< 0.7), elevated (0.7–0.99), critical (≥ 1.0).
+  - Fail-closed: if HR is null, shock_index is null (no inference).
+  - SI does NOT alter shock_triggered outcome — it is a supplementary
+    computed metric for downstream consumers.
+
 Fail-closed behavior:
   - If arrival vitals status is DATA NOT AVAILABLE → shock_triggered = "DATA NOT AVAILABLE"
   - If arrival SBP is null → shock_triggered = "DATA NOT AVAILABLE"
   - If BD is unavailable, trigger is evaluated on SBP only (BD is supporting, not required)
+  - If HR is unavailable, shock_index is null (does not affect trigger evaluation)
 
 Output key: ``shock_trigger_v1`` (under top-level ``features`` dict)
 
@@ -29,7 +37,10 @@ Output schema::
       "trigger_ts": "<ISO datetime>" | null,
       "trigger_vitals": {
           "sbp": <float | null>,
+          "hr": <float | null>,
           "map": <float | null>,
+          "shock_index": <float | null>,
+          "shock_index_classification": "normal" | "elevated" | "critical" | null,
           "bd_value": <float | null>,
           "bd_specimen": "arterial" | "venous" | "unknown" | null,
       } | null,
@@ -63,6 +74,8 @@ _DNA = "DATA NOT AVAILABLE"
 
 SBP_SHOCK_THRESHOLD = 90       # SBP < 90 mmHg → hypotension trigger
 BD_SHOCK_THRESHOLD = 6.0       # BD > 6 → metabolic shock support
+SI_ELEVATED_THRESHOLD = 0.7    # SI ≥ 0.7 → elevated
+SI_CRITICAL_THRESHOLD = 1.0    # SI ≥ 1.0 → critical
 
 
 # ── Helpers ─────────────────────────────────────────────────────────
@@ -128,6 +141,7 @@ def extract_shock_trigger(
         )
 
     sbp = arrival.get("sbp")
+    hr = arrival.get("hr")
     map_val = arrival.get("map")
     arrival_ts = arrival.get("ts")
     arrival_raw_line_id = arrival.get("raw_line_id")
@@ -139,8 +153,26 @@ def extract_shock_trigger(
 
     sbp_triggered = sbp < SBP_SHOCK_THRESHOLD
 
+    # ── Compute shock index (SI = HR / SBP) ───────────────────
+    shock_index: Optional[float] = None
+    shock_index_classification: Optional[str] = None
+    if hr is not None and isinstance(hr, (int, float)) and sbp > 0:
+        si_ratio = hr / sbp
+        # Classify from the unrounded ratio to avoid threshold boundary drift.
+        if si_ratio >= SI_CRITICAL_THRESHOLD:
+            shock_index_classification = "critical"
+        elif si_ratio >= SI_ELEVATED_THRESHOLD:
+            shock_index_classification = "elevated"
+        else:
+            shock_index_classification = "normal"
+        shock_index = round(si_ratio, 2)
+
     # Build arrival evidence entry
     sbp_snippet = f"arrival SBP={sbp}"
+    if hr is not None:
+        sbp_snippet += f", HR={hr}"
+    if shock_index is not None:
+        sbp_snippet += f", SI={shock_index}"
     if map_val is not None:
         sbp_snippet += f", MAP={map_val}"
     sbp_snippet += f" (rule: SBP<{SBP_SHOCK_THRESHOLD})"
@@ -237,7 +269,10 @@ def extract_shock_trigger(
         "trigger_ts": trigger_ts,
         "trigger_vitals": {
             "sbp": sbp,
+            "hr": hr,
             "map": map_val,
+            "shock_index": shock_index,
+            "shock_index_classification": shock_index_classification,
             "bd_value": bd_value_used,
             "bd_specimen": bd_specimen_used,
         },

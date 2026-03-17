@@ -66,6 +66,18 @@ warning but does not prevent evaluation.
 
 N/A = arrival vitals not available or SBP is null.
 
+### 2.4 Shock Index (Supplementary Metric)
+
+| Parameter         | Value   |
+|-------------------|---------|
+| Metric            | `shock_index = hr / sbp` |
+| Inputs            | `features.vitals_canonical_v1.arrival_vitals.hr`, `sbp` |
+| Elevated threshold | `SI_ELEVATED_THRESHOLD = 0.7` |
+| Critical threshold | `SI_CRITICAL_THRESHOLD = 1.0` |
+| Classification    | `normal` (<0.7), `elevated` (0.7–<1.0), `critical` (≥1.0) |
+| Rounding          | Classification uses unrounded SI; stored/displayed `shock_index` is rounded to 2 decimals |
+| Trigger impact    | None (supplementary-only; does not change `shock_triggered`) |
+
 ---
 
 ## 3. Fail-Closed Behavior
@@ -74,6 +86,8 @@ N/A = arrival vitals not available or SBP is null.
 - If `arrival_vitals.sbp` is null → `shock_triggered = "DATA NOT AVAILABLE"`
 - If `base_deficit_monitoring_v1.initial_bd_value` is null → evaluate on
   SBP only (BD is supporting, not required)
+- If `arrival_vitals.hr` is null/missing → `shock_index` and
+  `shock_index_classification` are null (no inference)
 
 ---
 
@@ -95,7 +109,10 @@ N/A = arrival vitals not available or SBP is null.
 | Key           | Type           | Source                |
 |---------------|----------------|-----------------------|
 | `sbp`         | float \| null  | `arrival_vitals.sbp`  |
+| `hr`          | float \| null  | `arrival_vitals.hr`   |
 | `map`         | float \| null  | `arrival_vitals.map`  |
+| `shock_index` | float \| null  | computed `hr / sbp` (2 decimals) |
+| `shock_index_classification` | `"normal"` \| `"elevated"` \| `"critical"` \| null | computed from unrounded SI |
 | `bd_value`    | float \| null  | `initial_bd_value`    |
 | `bd_specimen` | string \| null | `initial_bd_source`   |
 
