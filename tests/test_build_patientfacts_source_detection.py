@@ -1082,3 +1082,65 @@ class TestAnesthesiaNoteAnchor:
 
     def test_is_header_prose_anesthesia_rejected(self):
         assert _is_section_header("Patient was seen by anesthesia prior to surgery") is False
+
+
+# ---------------------------------------------------------------------------
+# Assessment/Plan sub-header: preserve note-type source, coerce non-note
+# ---------------------------------------------------------------------------
+class TestAssessmentPlanSourcePreservation:
+    """Assessment/Plan is a sub-section header. It should coerce to
+    PHYSICIAN_NOTE only when the current source is a non-note bucket
+    (e.g. IMAGING). When already inside a clinical-note source it must
+    preserve that source."""
+
+    def test_coerce_from_imaging(self):
+        result = _detect_source_type("Assessment/Plan:", SourceType.IMAGING)
+        assert result == SourceType.PHYSICIAN_NOTE
+
+    def test_coerce_from_unknown(self):
+        result = _detect_source_type("Assessment/Plan:", SourceType.UNKNOWN)
+        assert result == SourceType.PHYSICIAN_NOTE
+
+    def test_coerce_from_lab(self):
+        result = _detect_source_type("Assessment/Plan:", SourceType.LAB)
+        assert result == SourceType.PHYSICIAN_NOTE
+
+    def test_coerce_from_mar(self):
+        result = _detect_source_type("Assessment/Plan:", SourceType.MAR)
+        assert result == SourceType.PHYSICIAN_NOTE
+
+    def test_preserve_physician_note(self):
+        result = _detect_source_type("Assessment/Plan:", SourceType.PHYSICIAN_NOTE)
+        assert result == SourceType.PHYSICIAN_NOTE
+
+    def test_preserve_nursing_note(self):
+        result = _detect_source_type("Assessment/Plan:", SourceType.NURSING_NOTE)
+        assert result == SourceType.NURSING_NOTE
+
+    def test_preserve_consult_note(self):
+        result = _detect_source_type("Assessment/Plan:", SourceType.CONSULT_NOTE)
+        assert result == SourceType.CONSULT_NOTE
+
+    def test_preserve_progress_note(self):
+        result = _detect_source_type("Assessment/Plan:", SourceType.PROGRESS_NOTE)
+        assert result == SourceType.PROGRESS_NOTE
+
+    def test_preserve_ed_note(self):
+        result = _detect_source_type("Assessment/Plan:", SourceType.ED_NOTE)
+        assert result == SourceType.ED_NOTE
+
+    def test_preserve_operative_note(self):
+        result = _detect_source_type("Assessment/Plan:", SourceType.OPERATIVE_NOTE)
+        assert result == SourceType.OPERATIVE_NOTE
+
+    def test_preserve_anesthesia_note(self):
+        result = _detect_source_type("Assessment/Plan:", SourceType.ANESTHESIA_NOTE)
+        assert result == SourceType.ANESTHESIA_NOTE
+
+    def test_assessment_plan_no_slash(self):
+        result = _detect_source_type("Assessment Plan:", SourceType.IMAGING)
+        assert result == SourceType.PHYSICIAN_NOTE
+
+    def test_assessment_plan_uppercase(self):
+        result = _detect_source_type("ASSESSMENT/PLAN:", SourceType.IMAGING)
+        assert result == SourceType.PHYSICIAN_NOTE

@@ -1,7 +1,9 @@
 PATIENT_ID: TEST_DELIRIUM_SCREEN_AFFIRMED_001
 ARRIVAL_TIME: 2026-01-15 08:00:00
 
-[NURSING_NOTE] 2026-01-17 06:00:00
+[IMAGING] 2026-01-16 10:00:00
+CT Head: No acute intracranial abnormality.
+
 Assessment/Plan:
 Delirium screen:  Patient is at risk for delirium given acute trauma, unfamiliar surroundings, pain, metabolic derangements, possible infection.  At present patient does have delirium.  Delirium precautions as outlined by policy will be followed.
 

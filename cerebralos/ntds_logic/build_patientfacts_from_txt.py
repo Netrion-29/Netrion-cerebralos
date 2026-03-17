@@ -34,6 +34,7 @@ from cerebralos.ntds_logic.model import (
 # Section header patterns map to SourceType
 # Use [\s_]+ so both "PHYSICIAN NOTE" and "PHYSICIAN_NOTE" match
 # (production Epic exports use spaces; synthetic test fixtures use underscores).
+_ASSESSMENT_PLAN_PATTERN = r"^\s*ASSESSMENT\s*/?\s*PLAN\s*:"
 _SECTION_PATTERNS: Dict[str, SourceType] = {
     r"^\[?\s*PHYSICIAN[\s_]+NOTE": SourceType.PHYSICIAN_NOTE,
     r"CONSULT[\s_]+NOTE": SourceType.CONSULT_NOTE,
@@ -54,8 +55,17 @@ _SECTION_PATTERNS: Dict[str, SourceType] = {
     r"|PODIATRY|POST[-\s]?OP|THE|TRAUMA|VASCULAR|WOUND)\b[\w\s,&-]{0,40})?"
     r"PROGRESS[\s_]+NOTE": SourceType.PROGRESS_NOTE,
     r"^\[?\s*ANESTHESIA[\s_]": SourceType.ANESTHESIA_NOTE,
-    r"^\s*ASSESSMENT\s*/?\s*PLAN\s*:": SourceType.PHYSICIAN_NOTE,
+    _ASSESSMENT_PLAN_PATTERN: SourceType.PHYSICIAN_NOTE,
 }
+
+# Note-type sources where Assessment/Plan sub-headers should preserve
+# the current source rather than coercing to PHYSICIAN_NOTE.
+_NOTE_SOURCES = frozenset({
+    SourceType.PHYSICIAN_NOTE, SourceType.NURSING_NOTE,
+    SourceType.CONSULT_NOTE, SourceType.PROGRESS_NOTE,
+    SourceType.ED_NOTE, SourceType.OPERATIVE_NOTE,
+    SourceType.ANESTHESIA_NOTE,
+})
 
 # Words that, when appearing as the sole trailing text after a section keyword,
 # indicate the line is clinical prose rather than a true section header.
@@ -147,6 +157,12 @@ def _detect_source_type(line: str, current_source: SourceType) -> SourceType:
                 first_word = trailing.split()[0].rstrip(":.") if trailing.split() else ""
                 if first_word in _DISCHARGE_BLOCK_FIRST_WORDS:
                     continue
+            # Assessment/Plan is a sub-section that appears inside many
+            # note types.  Preserve the current source when already in a
+            # clinical-note bucket; only coerce to PHYSICIAN_NOTE when
+            # the current source is a non-note bucket (e.g. IMAGING).
+            if pattern == _ASSESSMENT_PLAN_PATTERN and current_source in _NOTE_SOURCES:
+                return current_source
             return source_type
     return current_source
 
