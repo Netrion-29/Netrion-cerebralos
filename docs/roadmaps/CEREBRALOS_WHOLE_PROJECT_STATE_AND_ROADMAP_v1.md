@@ -2,8 +2,8 @@
 
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
-| Date        | 2026-03-16                                               |
-| Baseline    | `63c9789` (main, after PR #246)                          |
+| Date        | 2026-03-17                                               |
+| Baseline    | `1e0f081` (main, after PR #248)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -132,6 +132,8 @@
 | #244 | `ca810ca` | feat(ntds): enable E05 CAUTI LDA gate |
 | #245 | `869b818` | feat(ntds): enable E06 CLABSI LDA gate |
 | #246 | `63c9789` | feat(ntds): enable E21 VAP LDA gate |
+| #247 | `7ce70de` | docs(roadmap): sync status after LDA per-event rollout |
+| #248 | `15899ec` | feat(lda): improve vent start/stop episode extraction for E21 recall |
 
 ### Closed PRs
 
@@ -148,7 +150,7 @@ None.
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | last verified: ≥3579 passed (pytest, 2026-03-16, baseline `63c9789`; lower bound, exact total may vary across environments) |
+| Total tests         | last verified: ≥3616 passed (pytest, 2026-03-17, baseline `1e0f081`; lower bound, exact total may vary across environments) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 47               |
 | Fixture runner      | **56 passed, 0 xfailed** |
@@ -589,15 +591,16 @@ and added two block filters:
 | 13 | **CAUTI engine design (LDA duration gate + alt-source exclusion)** | Design doc `docs/audits/CAUTI_ENGINE_DESIGN_v1.md` | **High** | Medium–Large | ✅ DESIGN COMPLETE — requires engine-change authorization for implementation. LDA SourceType + catheter duration gate + alternative-source exclusion. See design doc for phased migration plan. |
 | ~~14~~ | ~~**E06 CLABSI spec fidelity (NHSN CLABSI)**~~ | ~~`rules/ntds/logic/2026/06_clabsi.json`, `rules/mappers/epic_deaconess_mapper_v1.json`, tests~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** — 5 required gates (clabsi_dx, clabsi_central_line_gt2d, clabsi_lab_positive, clabsi_symptoms, clabsi_after_arrival) + 2 exclusions (POA, chronic line); 7 mapper keys (clabsi_negation_noise, clabsi_central_line_in_place, clabsi_blood_culture_positive, clabsi_symptoms, clabsi_onset, clabsi_chronic_line + refined clabsi_dx) with ~56 patterns total; clabsi_dx noise filter; 76 precision tests + 3 new fixtures (chronic-line-excluded, no-culture-no, noncentral-line-no); baseline refreshed: E06 stays NO=39, 0 NTDS outcome deltas |
 | 15 | **Protocol Data Coverage Mapping** | `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` | Medium | Medium | **Slices A/B/C COMPLETE.** First-pass coverage matrix: 60 EXTRACTED, 57 PARTIAL, 97 MISSING, 16 N/A (PR #220). Slice A (sex + discharge disposition): ✅ COMPLETE (PRs #222–#225) — `demographics_v1` feature module + contract doc. Slice B (blood product transfusion): ✅ COMPLETE (PRs #229–#231) — `transfusion_blood_products_v1` foundation + hardening. Slice C (structured labs): ✅ COMPLETE (PRs #226–#228, #232) — `structured_labs_v1` foundation (CBC/BMP/coag/ABG/PF) + cardiac/sepsis expansion. Ventilator settings extraction: ✅ COMPLETE (PRs #233–#237) — FiO2/PEEP/Vt/RR/vent status, mode, NIV IPAP/EPAP/rate. GCS component extraction: ✅ COMPLETE (PRs #238–#239) — E/V/M from inline + flowsheet blocks, sum-mismatch guard. |
-| 16 | **LDA engine support (Lines, Drains, Airways)** | `cerebralos/ntds_logic/engine.py`, `cerebralos/ntds_logic/build_patientfacts_from_txt.py`, `cerebralos/ntds_logic/model.py` | **High** | Large | ✅ IMPLEMENTED (v1+text+startstop+correctness+bracket-removed+per-event-enabled) — PRs #203, #206, #207, #214, #216, #244, #245, #246 (all merged). SourceType `LDA` added to model; `LDAEpisode` dataclass; `build_lda_episodes()` builder (structured JSON + text-derived flowsheet day-counter + insertion/removal start/stop inference); 4 gate types in engine incl. `eval_lda_overlap` (interval overlap, one-sided admission window — PR #214); `TEXT_DERIVED_STARTSTOP` confidence level; merge precedence: structured > startstop > day-counter (backfill episode_days — PR #214); `ENABLE_LDA_GATES` feature flag (default False); per-event LDA gates enabled for E05/E06/E21 via runner toggle + rule `required: true` (PRs #244–#246); bracket `[REMOVED]` patterns for Urethral Catheter + Non-Surgical Airway ETT (PR #216); 145+ dedicated tests. LDA per-event rollout COMPLETE. |
+| 16 | **LDA engine support (Lines, Drains, Airways)** | `cerebralos/ntds_logic/engine.py`, `cerebralos/ntds_logic/build_patientfacts_from_txt.py`, `cerebralos/ntds_logic/model.py` | **High** | Large | ✅ IMPLEMENTED (v1+text+startstop+correctness+bracket-removed+per-event-enabled+vent-recall) — PRs #203, #206, #207, #214, #216, #244, #245, #246, #248 (all merged). SourceType `LDA` added to model; `LDAEpisode` dataclass; `build_lda_episodes()` builder (structured JSON + text-derived flowsheet day-counter + insertion/removal start/stop inference); 4 gate types in engine incl. `eval_lda_overlap` (interval overlap, one-sided admission window — PR #214); `TEXT_DERIVED_STARTSTOP` confidence level; merge precedence: structured > startstop > day-counter (backfill episode_days — PR #214); `ENABLE_LDA_GATES` feature flag (default False); per-event LDA gates enabled for E05/E06/E21 via runner toggle + rule `required: true` (PRs #244–#246); bracket `[REMOVED]` patterns for Urethral Catheter + Non-Surgical Airway ETT (PR #216); vent start/stop episode extraction for E21 recall (intubation/extubation, placed-on/removed-from ventilator patterns, NIV exclusion — PR #248); 180+ dedicated tests. LDA per-event rollout COMPLETE. |
 
-##### Post-#246 Next Candidates
+##### Post-#248 Next Candidates
 
 | # | Item | Scope | Priority | Effort | Notes |
 |---|------|-------|----------|--------|-------|
 | 17 | **Arrival vitals hardening (Primary Survey priority + ED fallback)** | `cerebralos/features/vitals_daily.py`, tests, contract doc | **High** | Medium | Add structured Primary-Survey-first extraction for arrival HR/BP/RR/SpO2/Temp, mirroring `gcs_daily` priority logic (TRAUMA_HP → ED fallback → DNA). Raw-file scan required. |
 | 18 | **Tabular GCS flowsheet parsing follow-up** | `cerebralos/features/gcs_daily.py`, tests | Medium | Small | Extend GCS extraction for tabular flowsheet layouts (time-column headers with component rows) seen in some patients. |
 | ~~19~~ | ~~**LDA gate enablement decision track**~~ | ~~`rules/ntds/logic/2026/`, config~~ | ~~Medium~~ | ~~Small~~ | **✅ COMPLETE** (PRs #244, #245, #246) — LDA gates enabled per-event for E05 CAUTI (PR #244), E06 CLABSI (PR #245), E21 VAP (PR #246). Each event rule updated `required: false` → `required: true`; per-event LDA set in `run_all_events.py` expanded to {5, 6, 21}; test fixtures + precision tests updated. Protected `engine.py` not modified — toggle handled in runner + rule JSON only. |
+| ~~20~~ | ~~**Vent start/stop recall for E21 VAP**~~ | ~~`cerebralos/ntds_logic/build_patientfacts_from_txt.py`, tests~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** (PR #248) — Citation-backed ventilator start/stop extraction patterns added: intubation/extubation, placed-on/removed-from ventilator, negated-phrase guards; NIV/BiPAP/CPAP excluded; 37 new LDA tests (positive+negative+negation); 0 NTDS outcome deltas; protected `engine.py` not modified. |
 
 ##### LDA Analysis Intake Loop (Roadmap-First)
 
