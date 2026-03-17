@@ -19,7 +19,7 @@ def test_validate_contract_accepts_minimal_demographics():
         "days": [],
         "evidence_gaps": [],
         "features": {
-            "demographics_v1": {"sex": "Male"},
+            "demographics_v1": {"sex": "Male", "discharge_disposition": "Home"},
         },
         "warnings": [],
         "warnings_summary": {},
