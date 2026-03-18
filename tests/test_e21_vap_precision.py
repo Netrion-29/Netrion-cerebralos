@@ -101,6 +101,26 @@ class TestVapNegationNoiseMatches:
             pats, "CXR done 12/25: No dense consolidation seen"
         )
 
+    # --- Non-pneumonia CXR attributions ---
+
+    def test_pulmonary_edema(self):
+        pats = _load_patterns()["vap_negation_noise"]
+        assert _any_pattern_matches(
+            pats, "CXR worsening consolidation, pleural effusion and pulmonary edema"
+        )
+
+    def test_fluid_overload(self):
+        pats = _load_patterns()["vap_negation_noise"]
+        assert _any_pattern_matches(
+            pats, "Diffuse interstitial opacities likely some component of fluid overload."
+        )
+
+    def test_volume_overload(self):
+        pats = _load_patterns()["vap_negation_noise"]
+        assert _any_pattern_matches(
+            pats, "Bilateral opacities consistent with volume overload."
+        )
+
 
 # ─── vap_negation_noise: must NOT match true positive VAP text ────────
 
@@ -149,6 +169,19 @@ class TestVapNegationNoiseRejects:
         pats = _load_patterns()["vap_negation_noise"]
         assert not _any_pattern_matches(
             pats, "VAP diagnosed on hospital day 7."
+        )
+
+    def test_consolidation_consistent_with_pneumonia(self):
+        """Pneumonia-attributed consolidation must NOT be caught by edema noise."""
+        pats = _load_patterns()["vap_negation_noise"]
+        assert not _any_pattern_matches(
+            pats, "Left upper lobe consolidation consistent with pneumonia"
+        )
+
+    def test_hospital_acquired_pneumonia(self):
+        pats = _load_patterns()["vap_negation_noise"]
+        assert not _any_pattern_matches(
+            pats, "Started on vancomycin and Zosyn due to hospital-acquired pneumonia concerns."
         )
 
 

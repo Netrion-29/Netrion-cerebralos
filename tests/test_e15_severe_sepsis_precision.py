@@ -190,6 +190,30 @@ class TestSepsisNegationNoiseMatches:
             "As a reminder, please ensure that the Sepsis Panel has been ordered and the patient's problem list has been updated to include appropriate diagnosis at this time (severe sepsis, septic shock, etc.)",
         )
 
+    # --- BPA template definition headers ---
+
+    def test_severe_sepsis_definition_header(self):
+        pats = _load_patterns()["sepsis_negation_noise"]
+        assert _any_pattern_matches(
+            pats,
+            "SEVERE SEPSIS: Sepsis with associated acute organ dysfunction",
+        )
+
+    def test_septic_shock_definition_header(self):
+        pats = _load_patterns()["sepsis_negation_noise"]
+        assert _any_pattern_matches(
+            pats,
+            "SEPTIC SHOCK: Severe sepsis with persistent hypotension and/or hypoperfusion",
+        )
+
+    def test_wilma_yates_bpa_definition_line(self):
+        """Full Wilma_Yates:11219 text that triggered FP risk."""
+        pats = _load_patterns()["sepsis_negation_noise"]
+        assert _any_pattern_matches(
+            pats,
+            "SEVERE SEPSIS: Sepsis with associated acute organ dysfunction",
+        )
+
     # --- Full evidence text from Wilma_Yates (the false positive) ---
 
     def test_wilma_yates_nutrition_note(self):
@@ -274,6 +298,22 @@ class TestSepsisNegationNoiseRejects:
         assert not _any_pattern_matches(
             pats,
             "Patient admitted with severe sepsis and multiple organ failure.",
+        )
+
+    def test_severe_sepsis_without_colon(self):
+        """Clinical 'severe sepsis' (no colon) must NOT be caught by header noise."""
+        pats = _load_patterns()["sepsis_negation_noise"]
+        assert not _any_pattern_matches(
+            pats,
+            "Severe sepsis secondary to urosepsis.",
+        )
+
+    def test_septic_shock_without_colon(self):
+        """Clinical 'septic shock' (no colon) must NOT be caught by header noise."""
+        pats = _load_patterns()["sepsis_negation_noise"]
+        assert not _any_pattern_matches(
+            pats,
+            "Patient in septic shock, started on levophed.",
         )
 
 

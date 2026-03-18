@@ -147,6 +147,7 @@
 | #256 | `4d8eec6` | docs(startup): fix broken blockquote list newlines |
 | #257 | `1f90b8b` | fix(vitals): handle Epic bang-prefix in Visit Vitals parser |
 | #258 | `71a3990` | docs(sync): update roadmap/startup/boot + prompt templates for post-PR #257 state |
+| #266 | `ef18faf` | fix(ntds): harden E15/E21 precision — add noise patterns for BPA template headers and non-pneumonia CXR attributions |
 
 ### Closed PRs
 
@@ -165,11 +166,11 @@
 
 | Metric              | Value            |
 |---------------------|------------------|
-| Total tests         | last verified: ≥3628 passed (pytest, 2026-03-16, baseline `71a3990`; lower bound, exact total may vary across environments) |
+| Total tests         | last verified: 3718 passed (pytest, 2026-03-17, baseline `ef18faf`) |
 | NTDS event rules    | 21 (all mapped)  |
 | Fixture files       | 47               |
 | Fixture runner      | **56 passed, 0 xfailed** |
-| Precision tests     | 10 suites (E01×2, E05, E06, E10, E15, E16, E18, E19, E21) |
+| Precision tests     | 10 suites (E01×2, E05, E06, E10, E15, E16, E18, E19, E21); 46 E15 + 34 E21 tests |
 | Cohort invariant    | 39 canonical = 39 adjusted |
 | NTDS distribution   | 21 events baselined (YES/NO/UTD/EXCLUDED per event) |
 | Canonical patients  | 39               |
@@ -620,7 +621,7 @@ and added two block filters:
 | ~~21~~ | ~~**Multi-episode vent start/stop (E21 recall hardening)**~~ | ~~`cerebralos/ntds_logic/build_patientfacts_from_txt.py`, tests~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** (PR #250) — Sequential insert→remove pairing for MECHANICAL_VENTILATOR and ENDOTRACHEAL_TUBE; produces multiple non-overlapping episodes per device; orphan removes emit stop-only episode; orphan inserts emit open episode; merge logic updated to list-per-device with tier-based replacement and episode_days backfill; 10 new regression tests; 0 NTDS outcome deltas; protected `engine.py` not modified. |
 | ~~22~~ | ~~**Coverage mapping refresh v2 (counts + row-level statuses)**~~ | ~~`docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md`~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** (PR #262) — Recomputed EXTRACTED/PARTIAL/MISSING counts (79/48/87) and updated row statuses, category matrix, heat map, slice sections, and top-10 gaps to reflect all merged protocol work through PR #260. Canonical audit-intake log added to roadmap. |
 | 23 | **E09 Delirium confirmed-miss hardening** | `rules/mappers/epic_deaconess_mapper_v1.json`, `rules/ntds/logic/2026/09_delirium.json`, precision tests | **High** | Medium | Investigate and fix confirmed false negatives from raw-file review (reported misses include Johnny_Stokes, Linda_Hufford, Ronald_Bittner) with citation-backed, fail-closed mapper/rule updates. |
-| 24 | **Cross-event precision hardening (E15 + E21)** | `rules/mappers/epic_deaconess_mapper_v1.json`, `rules/ntds/logic/2026/15_severe_sepsis.json`, `rules/ntds/logic/2026/21_vap.json`, precision tests | Medium | Medium | Tighten non-specific surrogate patterns (for example lactate/vasopressor-only sepsis signals, broad CXR opacity-only VAP signals) with explicit context guards and adversarial tests. |
+| ~~24~~ | ~~**Cross-event precision hardening (E15 + E21)**~~ | ~~`rules/mappers/epic_deaconess_mapper_v1.json`, precision tests~~ | ~~Medium~~ | ~~Small~~ | **✅ COMPLETE** (PR #266) — Added 2 `sepsis_negation_noise` patterns for BPA template definition-header text (`SEVERE SEPSIS:` / `SEPTIC SHOCK:` with colon separator) blocking Wilma_Yates screening template FP-risk lines; added 3 `vap_negation_noise` patterns for non-pneumonia CXR attributions (pulmonary edema, fluid/volume overload). Zero outcome drift: E15 YES=2 NO=37, E21 NO=39 unchanged. 46 E15 + 34 E21 precision tests passing. No rule JSON changes needed — mapper-only. |
 | 25 | **NTDS adversarial fixture standard** | `tests/fixtures/patients/`, precision suites | Medium | Small | Add conflicting-evidence fixtures (same-note positive + noise, source-type mismatches, surrogate-only negatives) as a required pattern for each NTDS hardening PR. |
 
 ##### LDA Analysis Intake Loop (Roadmap-First)
@@ -650,8 +651,8 @@ finding undergoes classification before implementation work begins.
 | AUD-007 | Coverage mapping top-10 gaps | Mental health screening — protocol-required for all trauma patients | DEFER | Gap table rank #9; lower extraction certainty | — | Not started | — | 2026-03-16 |
 | AUD-008 | Cross-event rule architecture review | E09 single-gate fragility: one evidence gate + note-level noise filtering can suppress distinct NTDS pathways simultaneously (diagnosis/signs/CAM) | KEEP NOW | `rules/ntds/logic/2026/09_delirium.json` has single `evidence_any` gate (`delirium_dx`) with `exclude_noise_keys` | Item #23 | In progress | Pending E09 precision-hardening PR | 2026-03-17 |
 | AUD-009 | Source taxonomy consistency review | Source-policy drift: clinically relevant signals can appear in source types excluded by event-level `allowed_sources` | KEEP NOW | Event rules rely on strict `allowed_sources`; source taxonomy in ingestion is broader (for example PROGRESS_NOTE contexts) | Item #23 | In progress | Pending allowed_sources alignment tests | 2026-03-17 |
-| AUD-010 | Cross-event precision review | E15 surrogate overreach risk: non-specific sepsis proxies (for example elevated lactate/vasopressor language) can satisfy diagnosis gate without infection context | TIGHTEN NEXT | `sepsis_dx` includes lactate/vasopressor proxy patterns in mapper | Item #24 | Not started | Add surrogate-only negative fixtures before any mapper change | 2026-03-17 |
-| AUD-011 | Cross-event precision review | E21 imaging specificity debt: broad CXR opacity patterns can match non-pneumonia contexts | TIGHTEN NEXT | `vap_cxr` includes broad opacity/consolidation image-language patterns | Item #24 | Not started | Add edema/atelectasis negative fixtures before any mapper change | 2026-03-17 |
+| AUD-010 | Cross-event precision review | E15 surrogate overreach risk: non-specific sepsis proxies (for example elevated lactate/vasopressor language) can satisfy diagnosis gate without infection context | KEEP NOW | `sepsis_negation_noise` now blocks BPA template definition headers; lactate/vasopressor proxy patterns retained with defense-in-depth noise layer | PR #266 (completed) | ✅ Complete | 46 E15 precision tests passing; zero outcome drift | 2026-03-17 |
+| AUD-011 | Cross-event precision review | E21 imaging specificity debt: broad CXR opacity patterns can match non-pneumonia contexts | KEEP NOW | `vap_negation_noise` now blocks pulmonary edema, fluid overload, and volume overload contexts | PR #266 (completed) | ✅ Complete | 34 E21 precision tests passing; zero outcome drift | 2026-03-17 |
 | AUD-012 | QA process standardization | Adversarial fixture gap: not all event suites include conflicting-evidence same-note tests (positive + noise) and source-mismatch tests | KEEP NOW | Current fixture set is strongest on positive/negative isolated snippets; conflicting-context coverage is uneven across events | Item #25 | Not started | Add fixture template + checklist gate in PR workflow notes | 2026-03-17 |
 
 > **Classification key:** `KEEP NOW` = implement in next PR cycle; `TIGHTEN NEXT` = approved but queued after current priorities; `DEFER` = recognized but not scheduled (low certainty, low impact, or blocked).
