@@ -506,20 +506,29 @@ def _build_summary(events: List[Dict[str, Any]]) -> Dict[str, Any]:
         except (ValueError, TypeError):
             pass
 
-    # ── ED LOS (admission → first transfer into non-ED unit) ──
+    # ── ED LOS (first ED timestamp → first transfer into non-ED unit) ──
+    ed_start_ts: Optional[str] = None
     ed_departure_ts: Optional[str] = None
     ed_los_hours: Optional[float] = None
     ed_los_minutes: Optional[float] = None
     seen_ed = False
     for ev in events:
+        ts_iso = ev.get("timestamp_iso")
+        has_valid_ts = ts_iso not in (None, _DNA)
         if _is_ed_unit(ev["unit"]):
             seen_ed = True
+            if ed_start_ts is None and has_valid_ts:
+                ed_start_ts = ts_iso
         elif seen_ed and ev["event_type"] == "Transfer In":
-            ed_departure_ts = ev["timestamp_iso"]
-            break
-    if first_admission_ts and ed_departure_ts:
+            if has_valid_ts:
+                ed_departure_ts = ts_iso
+                break
+    anchor_ts = ed_start_ts
+    if anchor_ts is None and first_admission_ts not in (None, _DNA):
+        anchor_ts = first_admission_ts
+    if anchor_ts and ed_departure_ts:
         try:
-            dt_admit = datetime.strptime(first_admission_ts, "%Y-%m-%d %H:%M:%S")
+            dt_admit = datetime.strptime(anchor_ts, "%Y-%m-%d %H:%M:%S")
             dt_ed_dep = datetime.strptime(ed_departure_ts, "%Y-%m-%d %H:%M:%S")
             delta_sec = (dt_ed_dep - dt_admit).total_seconds()
             if delta_sec > 0:

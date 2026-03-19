@@ -863,6 +863,74 @@ class TestEdLos(unittest.TestCase):
         self.assertIsNone(summary["ed_los_hours"])
         self.assertIsNone(summary["ed_los_minutes"])
 
+    def test_ed_departure_dna_skipped(self):
+        """Transfer In with _DNA timestamp must not leak into summary."""
+        events = [
+            {
+                "timestamp_raw": "12/29/25 0722",
+                "timestamp_iso": "2025-12-29 07:22:00",
+                "unit": "EMERGENCY DEPT MC",
+                "room": "1857",
+                "bed": "16",
+                "service": "Emergency",
+                "event_type": "Admission",
+                "raw_line_id": "test:1",
+            },
+            {
+                "timestamp_raw": "12/29/25 1537",
+                "timestamp_iso": "DATA NOT AVAILABLE",
+                "unit": "ORTHO NEURO TR CRE CTR",
+                "room": "4512",
+                "bed": "4512-01",
+                "service": "Trauma",
+                "event_type": "Transfer In",
+                "raw_line_id": "test:2",
+            },
+        ]
+        summary = _build_summary(events)
+        self.assertIsNone(summary["ed_departure_ts"])
+        self.assertIsNone(summary["ed_los_hours"])
+        self.assertIsNone(summary["ed_los_minutes"])
+
+    def test_ed_start_can_be_transfer_in_without_admission(self):
+        """First valid ED event can anchor ED LOS even without Admission row."""
+        events = [
+            {
+                "timestamp_raw": "12/29/25 0722",
+                "timestamp_iso": None,
+                "unit": "EMERGENCY DEPT MC",
+                "room": "1857",
+                "bed": "16",
+                "service": "Emergency",
+                "event_type": "Admission",
+                "raw_line_id": "test:1",
+            },
+            {
+                "timestamp_raw": "12/29/25 1023",
+                "timestamp_iso": "2025-12-29 10:23:00",
+                "unit": "EMERGENCY DEPT MC",
+                "room": "1857",
+                "bed": "16",
+                "service": "Trauma",
+                "event_type": "Transfer In",
+                "raw_line_id": "test:2",
+            },
+            {
+                "timestamp_raw": "12/29/25 1537",
+                "timestamp_iso": "2025-12-29 15:37:00",
+                "unit": "ORTHO NEURO TR CRE CTR",
+                "room": "4512",
+                "bed": "4512-01",
+                "service": "Trauma",
+                "event_type": "Transfer In",
+                "raw_line_id": "test:3",
+            },
+        ]
+        summary = _build_summary(events)
+        self.assertEqual(summary["ed_departure_ts"], "2025-12-29 15:37:00")
+        self.assertAlmostEqual(summary["ed_los_minutes"], 314.0, delta=1.0)
+        self.assertAlmostEqual(summary["ed_los_hours"], 5.2, delta=0.2)
+
 
 if __name__ == "__main__":
     unittest.main()
