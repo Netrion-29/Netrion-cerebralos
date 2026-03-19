@@ -46,12 +46,15 @@ Anna_Dennis, William_Simmons, Timothy_Cowan, Timothy_Nachtwey
 
 ## Baseline drift checking
 - Normal mode (`./scripts/gate_pr.sh`): compares sha256 of each
-  patient's TRAUMA_DAILY_NOTES_v4.txt against persisted hashes in
-  `scripts/baselines/v4_hashes_v1.json`. FAILS on any mismatch,
+  patient's rendered output (v3, v4, v5) against persisted hashes in
+  `scripts/baselines/v3_hashes_v1.json`, `scripts/baselines/v4_hashes_v1.json`,
+  and `scripts/baselines/v5_hashes_v1.json`. FAILS on any mismatch,
   missing patient, or missing baseline file.
-- Update mode (`./scripts/gate_pr.sh --update-baseline`): regenerates
-  the baseline JSON with current hashes, then continues to regression.
+- Update mode (per-version):
+  - `./scripts/gate_pr.sh --update-baseline`    → regenerates v4 baseline
+  - `./scripts/gate_pr.sh --update-baseline-v3` → regenerates v3 baseline
+  - `./scripts/gate_pr.sh --update-baseline-v5` → regenerates v5 baseline
   Use only after intentional output changes have been reviewed.
-- The baseline file is committed to the repo; drift is caught in CI.
+- The baseline files are committed to the repo; drift is caught in CI.
 
 End.
