@@ -29,6 +29,8 @@ from cerebralos.features.patient_movement_v1 import (
     _make_raw_line_id,
     _parse_movement_entries,
     _build_summary,
+    _compute_icu_los,
+    _parse_movement_dt,
     extract_patient_movement,
 )
 
@@ -780,6 +782,204 @@ class TestSummaryEnrichments:
         ]
         s = _build_summary(entries)
         assert s["rooms_visited"] == []
+
+
+# ── ICU LOS Computation Tests ───────────────────────────────────────
+
+
+class TestParseMovementDt:
+    """Tests for the _parse_movement_dt helper."""
+
+    def test_basic_parse(self):
+        dt = _parse_movement_dt("01/15", "0828", 2026)
+        assert dt is not None
+        assert dt.month == 1
+        assert dt.day == 15
+        assert dt.hour == 8
+        assert dt.minute == 28
+        assert dt.year == 2026
+
+    def test_midnight(self):
+        dt = _parse_movement_dt("03/01", "0000", 2026)
+        assert dt is not None
+        assert dt.hour == 0
+        assert dt.minute == 0
+
+    def test_invalid_date_returns_none(self):
+        assert _parse_movement_dt("13/40", "0000", 2026) is None
+
+    def test_invalid_time_returns_none(self):
+        assert _parse_movement_dt("01/01", "AB", 2026) is None
+
+    def test_empty_strings_return_none(self):
+        assert _parse_movement_dt("", "", 2026) is None
+
+
+class TestComputeIcuLos:
+    """Tests for _compute_icu_los — ICU length-of-stay computation."""
+
+    def test_empty_entries(self):
+        result = _compute_icu_los([])
+        assert result["icu_los_hours"] is None
+        assert result["icu_los_days"] is None
+        assert result["icu_admission_count"] == 0
+
+    def test_single_entry(self):
+        entries = [
+            {"date_raw": "01/01", "time_raw": "0504",
+             "event_type": "Admission", "level_of_care": "ICU"},
+        ]
+        result = _compute_icu_los(entries)
+        assert result["icu_admission_count"] == 1
+        assert result["icu_los_hours"] is None
+
+    def test_no_icu_entries(self):
+        # Reverse chronological: Discharge → Admission (no ICU)
+        entries = [
+            {"date_raw": "01/02", "time_raw": "1803",
+             "event_type": "Discharge", "level_of_care": "Med/Surg"},
+            {"date_raw": "01/01", "time_raw": "0138",
+             "event_type": "Admission", "level_of_care": "Emergency"},
+        ]
+        result = _compute_icu_los(entries)
+        assert result["icu_los_hours"] is None
+        assert result["icu_los_days"] is None
+        assert result["icu_admission_count"] == 0
+
+    def test_single_icu_interval(self):
+        # Reverse chron: Discharge (Med/Surg) → ICU → Admission (ED)
+        # Chrono: Admission → ICU → Discharge
+        # ICU interval: 01/01 0504 → 01/02 1803 = 36h 59m
+        entries = [
+            {"date_raw": "01/02", "time_raw": "1803",
+             "event_type": "Discharge", "level_of_care": "Med/Surg"},
+            {"date_raw": "01/01", "time_raw": "0504",
+             "event_type": "Transfer In", "level_of_care": "ICU"},
+            {"date_raw": "01/01", "time_raw": "0138",
+             "event_type": "Admission", "level_of_care": "Emergency"},
+        ]
+        result = _compute_icu_los(entries)
+        assert result["icu_admission_count"] == 1
+        # 01/01 05:04 → 01/02 18:03 = 36h 59m = 36.983... → 37.0
+        assert result["icu_los_hours"] == 37.0
+        assert result["icu_los_days"] is not None
+        assert result["icu_los_days"] == round(37.0 / 24, 1)  # 1.5
+
+    def test_multiple_icu_intervals(self):
+        # Reverse chron: Discharge → ICU2 (readmit) → Med/Surg → ICU1 → Admission
+        # Chrono: Admission → ICU1 → Med/Surg → ICU2 → Discharge
+        entries = [
+            {"date_raw": "01/10", "time_raw": "1200",
+             "event_type": "Discharge", "level_of_care": "Med/Surg"},
+            {"date_raw": "01/08", "time_raw": "0800",
+             "event_type": "Transfer In", "level_of_care": "ICU"},
+            {"date_raw": "01/05", "time_raw": "1200",
+             "event_type": "Transfer In", "level_of_care": "Med/Surg"},
+            {"date_raw": "01/02", "time_raw": "0800",
+             "event_type": "Transfer In", "level_of_care": "ICU"},
+            {"date_raw": "01/01", "time_raw": "0000",
+             "event_type": "Admission", "level_of_care": "Emergency"},
+        ]
+        result = _compute_icu_los(entries)
+        assert result["icu_admission_count"] == 2
+        # ICU1: 01/02 08:00 → 01/05 12:00 = 76h
+        # ICU2: 01/08 08:00 → 01/10 12:00 = 52h
+        # Total: 128h
+        assert result["icu_los_hours"] == 128.0
+        assert result["icu_los_days"] == round(128.0 / 24, 1)  # 5.3
+
+    def test_year_rollover(self):
+        # Reverse chron: Discharge (Jan) → ICU (Dec) → Admission (Dec)
+        # ICU: 12/31 19:21 → 01/02 15:21 = ~44h
+        entries = [
+            {"date_raw": "01/02", "time_raw": "1521",
+             "event_type": "Transfer In", "level_of_care": "Med/Surg"},
+            {"date_raw": "12/31", "time_raw": "1921",
+             "event_type": "Transfer In", "level_of_care": "ICU"},
+            {"date_raw": "12/30", "time_raw": "1251",
+             "event_type": "Admission", "level_of_care": "Med/Surg"},
+        ]
+        result = _compute_icu_los(entries)
+        assert result["icu_admission_count"] == 1
+        # 12/31 19:21 → 01/02 15:21 = 44h
+        assert result["icu_los_hours"] == 44.0
+        assert result["icu_los_days"] == round(44.0 / 24, 1)  # 1.8
+
+    def test_icu_at_discharge_unclosed(self):
+        # Patient discharges directly from ICU — the Discharge event itself
+        # has level_of_care ICU.  Because we fail-closed, the interval
+        # remains unclosed unless a later non-ICU event is recorded.
+        # Reverse chron: Discharge(ICU) → Transfer In(ICU) → Admission(ED)
+        entries = [
+            {"date_raw": "01/05", "time_raw": "1000",
+             "event_type": "Discharge", "level_of_care": "ICU"},
+            {"date_raw": "01/03", "time_raw": "0800",
+             "event_type": "Transfer In", "level_of_care": "ICU"},
+            {"date_raw": "01/01", "time_raw": "0000",
+             "event_type": "Admission", "level_of_care": "Emergency"},
+        ]
+        result = _compute_icu_los(entries)
+        # ICU starts at 01/03 08:00.  No non-ICU entry follows, so the
+        # interval is unclosed.  Admission count = 1, but duration = None.
+        assert result["icu_admission_count"] == 1
+        assert result["icu_los_hours"] is None
+
+    def test_case_insensitive_level_of_care(self):
+        entries = [
+            {"date_raw": "01/03", "time_raw": "1200",
+             "event_type": "Discharge", "level_of_care": "Med/Surg"},
+            {"date_raw": "01/02", "time_raw": "0000",
+             "event_type": "Transfer In", "level_of_care": "icu"},
+            {"date_raw": "01/01", "time_raw": "0000",
+             "event_type": "Admission", "level_of_care": "Emergency"},
+        ]
+        result = _compute_icu_los(entries)
+        assert result["icu_admission_count"] == 1
+        assert result["icu_los_hours"] == 36.0
+
+    def test_null_level_of_care_treated_as_non_icu(self):
+        entries = [
+            {"date_raw": "01/03", "time_raw": "1200",
+             "event_type": "Discharge", "level_of_care": None},
+            {"date_raw": "01/02", "time_raw": "0000",
+             "event_type": "Transfer In", "level_of_care": "ICU"},
+            {"date_raw": "01/01", "time_raw": "0000",
+             "event_type": "Admission", "level_of_care": None},
+        ]
+        result = _compute_icu_los(entries)
+        assert result["icu_admission_count"] == 1
+        # 01/02 00:00 → 01/03 12:00 = 36h
+        assert result["icu_los_hours"] == 36.0
+
+    def test_icu_los_in_build_summary(self):
+        """Verify _build_summary includes ICU LOS fields."""
+        entries = [
+            {"date_raw": "01/02", "time_raw": "1803",
+             "event_type": "Discharge", "level_of_care": "Med/Surg",
+             "unit": "Ortho", "service": "General", "room": "4637",
+             "discharge_disposition": "Home"},
+            {"date_raw": "01/01", "time_raw": "0504",
+             "event_type": "Transfer In", "level_of_care": "ICU",
+             "unit": "ICU", "service": "Trauma", "room": "4810",
+             "discharge_disposition": None},
+            {"date_raw": "01/01", "time_raw": "0138",
+             "event_type": "Admission", "level_of_care": "Emergency",
+             "unit": "ED", "service": "Emergency", "room": "1858",
+             "discharge_disposition": None},
+        ]
+        s = _build_summary(entries)
+        assert "icu_los_hours" in s
+        assert "icu_los_days" in s
+        assert "icu_admission_count" in s
+        assert s["icu_admission_count"] == 1
+        assert s["icu_los_hours"] == 37.0
+
+    def test_build_summary_empty_has_icu_fields(self):
+        """Empty entries returns null ICU fields."""
+        s = _build_summary([])
+        assert s["icu_los_hours"] is None
+        assert s["icu_los_days"] is None
+        assert s["icu_admission_count"] == 0
 
 
 if __name__ == "__main__":

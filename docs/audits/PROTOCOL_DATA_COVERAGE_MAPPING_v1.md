@@ -50,15 +50,15 @@ Coverage was assessed by:
 
 | Status | Count | Pct | Δ from v1 (2026-03-12) |
 |--------|------:|----:|:----------------------:|
-| EXTRACTED | 79 | 34.3% | +19 |
-| PARTIAL | 48 | 20.9% | −9 |
+| EXTRACTED | 80 | 34.8% | +20 |
+| PARTIAL | 47 | 20.4% | −10 |
 | MISSING | 87 | 37.8% | −10 |
 | N/A | 16 | 7.0% | 0 |
 | **Total** | **230** | 100% | — |
 
 **Actionable elements** (excluding N/A): 214
 **Actionable coverage** (EXTRACTED + PARTIAL): 127 / 214 = **59.3%** (was 54.7%)
-**Fully extracted**: 79 / 214 = **36.9%** (was 28.0%)
+**Fully extracted**: 80 / 214 = **37.4%** (was 28.0%)
 
 ### Change Log (v1 → v2 refresh)
 
@@ -96,7 +96,7 @@ Coverage was assessed by:
 | 17a | Special Populations — Geriatric | 0 | 2 | 5 | 0 | 7 | 29% |
 | 17b | Special Populations — Pediatric | 0 | 0 | 7 | 0 | 7 | 0% |
 | 17c | Special Populations — Obstetric | 0 | 0 | 6 | 0 | 6 | 0% |
-| 18 | Disposition / Discharge Planning | 2 | 4 | 3 | 2 | 11 | 67% |
+| 18 | Disposition / Discharge Planning | 3 | 3 | 3 | 2 | 11 | 67% |
 | 19 | Complications / NTDS Events | 20 | 1 | 0 | 0 | 21 | 100% |
 | 20 | Operational / Call Panel | 1 | 0 | 0 | 10 | 11 | 100% |
 
@@ -105,7 +105,7 @@ Coverage was assessed by:
 
 ---
 
-## Detailed Evidence: EXTRACTED Elements (79)
+## Detailed Evidence: EXTRACTED Elements (80)
 
 | Category | Element | Repo Evidence |
 |----------|---------|---------------|
@@ -166,6 +166,7 @@ Coverage was assessed by:
 | Screening | Blood alcohol level (BAL) | `cerebralos/features/etoh_uds_v1.py` |
 | Screening | Urine drug screen result | `cerebralos/features/etoh_uds_v1.py` |
 | Disposition | ICU admission (planned vs. unplanned) | `unplanned_icu` mapper key; E18 rule: `rules/ntds/logic/2026/18_unplanned_icu_admission.json` |
+| Disposition | ICU LOS (days) | `cerebralos/features/patient_movement_v1.py` — `icu_los_hours`, `icu_los_days`, `icu_admission_count` in summary; computed from movement entry `Level of Care: ICU` intervals |
 | Disposition | Discharge disposition | `cerebralos/features/build_patient_features_v1.py` → `demographics_v1.discharge_disposition`; primary from `patient_movement_v1.summary.discharge_disposition_final`, fallback keyword extraction (PRs #222–#225) |
 | NTDS E01 | Acute Kidney Injury (KDIGO Stage 3) | `rules/ntds/logic/2026/01_aki.json` — 3+ gate logic |
 | NTDS E03 | Alcohol Withdrawal | `rules/ntds/logic/2026/03_alcohol_withdrawal_syndrome.json` |
@@ -191,7 +192,7 @@ Coverage was assessed by:
 
 ---
 
-## Detailed Evidence: PARTIAL Elements (48)
+## Detailed Evidence: PARTIAL Elements (47)
 
 | Category | Element | What Exists | What's Missing |
 |----------|---------|-------------|----------------|
@@ -239,7 +240,6 @@ Coverage was assessed by:
 | Geriatric | Pre-injury anticoagulant use | `pmh_social_allergies_v1.py` + `anticoag_context_v1.py` | Medication specifics not structured |
 | Geriatric | Geriatric consult | `consultant_events_v1.py` may capture geriatric consult | Not geriatric-protocol-specific |
 | Disposition | Hospital LOS (days) | `adt_transfer_timeline_v1.py` captures admit/discharge | LOS not computed |
-| Disposition | ICU LOS (days) | `patient_movement_v1.py` captures ICU transfers | ICU LOS not computed |
 | Disposition | Discharge date/time | DISCHARGE section parsed | Date/time not always structured |
 | Disposition | Transfer destination (facility, level) | `adt_transfer_timeline_v1.py` captures transfers | Destination facility not structured |
 | NTDS E02 | ARDS (Berlin criteria) | E02 rule: `ards_dx` + `ards_onset` | P/F ratio components not structured |
