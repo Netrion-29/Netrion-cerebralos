@@ -93,7 +93,10 @@ Output schema::
         "transfer_count": <int>,
         "units_visited": ["...", ...],
         "levels_of_care": ["...", ...],
-        "services_seen": ["...", ...]
+        "services_seen": ["...", ...],
+        "icu_los_hours": <float> | null,
+        "icu_los_days": <float> | null,
+        "icu_admission_count": <int>
       },
       "evidence": [
         {
@@ -125,6 +128,7 @@ from __future__ import annotations
 import hashlib
 import os
 import re
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 _DNA = "DATA NOT AVAILABLE"
@@ -524,6 +528,124 @@ def _parse_movement_entries(
     return entries, warnings
 
 
+def _parse_movement_dt(date_raw: str, time_raw: str, ref_year: int) -> Optional[datetime]:
+    """
+    Parse MM/DD + HHMM into a datetime using *ref_year*.
+
+    Returns None on any parse failure (fail-closed).
+    """
+    try:
+        month, day = (int(x) for x in date_raw.split("/"))
+        hour = int(time_raw[:2])
+        minute = int(time_raw[2:])
+        return datetime(ref_year, month, day, hour, minute)
+    except (ValueError, IndexError):
+        return None
+
+
+def _compute_icu_los(
+    entries: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """
+    Compute ICU length-of-stay from movement entries.
+
+    Entries arrive in **reverse** chronological order.  The function
+    reverses them to chronological, assigns calendar years (handling
+    Dec → Jan rollover), then walks the timeline looking for ICU
+    intervals.
+
+    An ICU interval starts when an entry has ``level_of_care`` equal
+    to ``"ICU"`` (case-insensitive) and ends at the next entry whose
+    ``level_of_care`` is something other than ``"ICU"`` (or at the
+    entry with a ``"Discharge"`` event type, whichever comes first).
+
+    Returns dict with:
+        icu_los_hours  — float | None  (None when no computable ICU interval)
+        icu_los_days   — float | None
+        icu_admission_count — int  (number of distinct ICU intervals)
+
+    Fail-closed: returns nulls + 0 when data is insufficient.
+    """
+    null_result = {
+        "icu_los_hours": None,
+        "icu_los_days": None,
+        "icu_admission_count": 0,
+    }
+
+    # Need at least 2 entries to form an interval
+    if len(entries) < 2:
+        return null_result
+
+    # ── Chronological order ─────────────────────────────────────
+    chron = list(reversed(entries))
+
+    # ── Assign calendar years (handle Dec → Jan rollover) ───────
+    # Use an arbitrary base year; only deltas matter.
+    BASE_YEAR = 2026
+    prev_month = 0
+    year = BASE_YEAR
+    years: List[int] = []
+    for e in chron:
+        try:
+            month = int(e["date_raw"].split("/")[0])
+        except (ValueError, IndexError, AttributeError):
+            years.append(year)
+            continue
+        if month < prev_month:
+            year += 1
+        prev_month = month
+        years.append(year)
+
+    # ── Parse into datetimes ────────────────────────────────────
+    dts: List[Optional[datetime]] = []
+    for e, yr in zip(chron, years):
+        dts.append(_parse_movement_dt(e["date_raw"], e["time_raw"], yr))
+
+    # ── Walk timeline to find ICU intervals ─────────────────────
+    total_seconds = 0.0
+    icu_count = 0
+    in_icu = False
+    icu_start_dt: Optional[datetime] = None
+
+    for i, (entry, dt) in enumerate(zip(chron, dts)):
+        loc = (entry.get("level_of_care") or "").upper()
+        is_icu = loc == "ICU"
+
+        if is_icu and not in_icu:
+            # Entering ICU
+            in_icu = True
+            icu_start_dt = dt
+            icu_count += 1
+        elif not is_icu and in_icu:
+            # Leaving ICU
+            in_icu = False
+            if icu_start_dt is not None and dt is not None:
+                delta = (dt - icu_start_dt).total_seconds()
+                if delta > 0:
+                    total_seconds += delta
+            icu_start_dt = None
+
+    # If still in ICU at end of entries (no transfer out recorded),
+    # we cannot close the last interval → leave it uncounted in
+    # duration (fail-closed), but the admission was still counted.
+
+    if icu_count == 0:
+        return null_result
+
+    if total_seconds > 0:
+        icu_los_hours = round(total_seconds / 3600, 1)
+        icu_los_days = round(icu_los_hours / 24, 1)
+    else:
+        icu_los_hours = None
+        icu_los_days = None
+
+    return {
+        "icu_los_hours": icu_los_hours,
+        "icu_los_days": icu_los_days,
+        "icu_admission_count": icu_count,
+    }
+
+
 def _build_summary(entries: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Build summary statistics from parsed movement entries."""
     if not entries:
@@ -539,6 +661,9 @@ def _build_summary(entries: List[Dict[str, Any]]) -> Dict[str, Any]:
             "services_seen": [],
             "rooms_visited": [],
             "event_type_counts": {},
+            "icu_los_hours": None,
+            "icu_los_days": None,
+            "icu_admission_count": 0,
         }
 
     units: List[str] = []
@@ -600,6 +725,7 @@ def _build_summary(entries: List[Dict[str, Any]]) -> Dict[str, Any]:
         "services_seen": sorted(services),
         "rooms_visited": rooms,
         "event_type_counts": event_type_counts,
+        **_compute_icu_los(entries),
     }
 
 
