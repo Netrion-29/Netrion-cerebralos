@@ -623,10 +623,9 @@ and added two block filters:
 | 23 | **E09 Delirium confirmed-miss hardening** | `rules/mappers/epic_deaconess_mapper_v1.json`, `rules/ntds/logic/2026/09_delirium.json`, precision tests | **High** | Medium | Investigate and fix confirmed false negatives from raw-file review (reported misses include Johnny_Stokes, Linda_Hufford, Ronald_Bittner) with citation-backed, fail-closed mapper/rule updates. |
 | ~~24~~ | ~~**Cross-event precision hardening (E15 + E21)**~~ | ~~`rules/mappers/epic_deaconess_mapper_v1.json`, precision tests~~ | ~~Medium~~ | ~~Small~~ | **✅ COMPLETE** (PR #266) — Added 2 `sepsis_negation_noise` patterns for BPA template definition-header text (`SEVERE SEPSIS:` / `SEPTIC SHOCK:` with colon separator) blocking Wilma_Yates screening template FP-risk lines; added 3 `vap_negation_noise` patterns for non-pneumonia CXR attributions (pulmonary edema, fluid/volume overload). Zero outcome drift: E15 YES=2 NO=37, E21 NO=39 unchanged. 46 E15 + 34 E21 precision tests passing. No rule JSON changes needed — mapper-only. |
 | 25 | **NTDS adversarial fixture standard** | `tests/fixtures/patients/`, precision suites | Medium | Small | Add conflicting-evidence fixtures (same-note positive + noise, source-type mismatches, surrogate-only negatives) as a required pattern for each NTDS hardening PR. |
-| 26 | **Feature-contract leak guard sync** | `cerebralos/validation/validate_patient_features_contract_v1.py` | Medium | Small | Add 3 missing keys to `KNOWN_FEATURE_KEYS`; add sync test. See AUD-013. |
-| 27 | **Provenance validation parity** | `cerebralos/validation/validate_patient_features_contract_v1.py` | Medium | Small | Align empty-`raw_line_id` rejection with evidence validator. See AUD-014. |
-| 28 | **v3 output baseline** | `scripts/gate_pr.sh`, `scripts/baselines/` | Medium | Small | Add v3 rendered-output hash baseline mirroring v4/v5 pattern. See AUD-015. |
-| 29 | **Determinism check broadening** | `_regression_phase1_v2.py` | Medium | Small | Loop determinism rerun over all gate patients, not just `PATIENTS[0]`. See AUD-016. |
+| 26 | **Validator hardening (contract leak guard + provenance parity)** | `cerebralos/validation/validate_patient_features_contract_v1.py`, tests | Medium | Small | **Step 1 of 3.** Add 3 missing keys to `KNOWN_FEATURE_KEYS` (AUD-013) + align empty-`raw_line_id` rejection with evidence validator (AUD-014). Single PR — both touch the same validator file. Include negative tests for both fixes. |
+| 27 | **v3 output baseline** | `scripts/gate_pr.sh`, `scripts/baselines/` | Medium | Small | **Step 2 of 3.** Add `v3_hashes_v1.json` baseline + v3 hash check in `gate_pr.sh` (mirrors v4/v5 pattern). See AUD-015. |
+| 28 | **Determinism check broadening** | `_regression_phase1_v2.py` | Medium | Small | **Step 3 of 3.** Loop determinism rerun over all 4 gate patients instead of `PATIENTS[0]` only. See AUD-016. |
 
 ##### LDA Analysis Intake Loop (Roadmap-First)
 
@@ -664,6 +663,13 @@ finding undergoes classification before implementation work begins.
 | AUD-016 | Repo-hardening review | Determinism check is too narrow: `_regression_phase1_v2.py` reruns only `PATIENTS[0]` (Anna_Dennis) for determinism verification (L492); patient-specific nondeterminism in the other 3 gate patients would be missed | TIGHTEN NEXT | `_regression_phase1_v2.py` L32 (PATIENTS list), L492 (`det_pat = PATIENTS[0]`), L493–L512 (single-patient determinism loop) | — | Not started | Smallest fix: loop determinism check over all 4 gate patients (or sentinel subset) instead of `PATIENTS[0]` only | 2026-03-18 |
 
 > **Classification key:** `KEEP NOW` = implement in next PR cycle; `TIGHTEN NEXT` = approved but queued after current priorities; `DEFER` = recognized but not scheduled (low certainty, low impact, or blocked).
+
+**Repo-hardening implementation sequence (AUD-013 – AUD-016):**
+All four findings are classified `TIGHTEN NEXT` — validated and queued, not yet implemented.
+Recommended order (candidate queue items #26–#28):
+1. **Validator hardening** (#26): contract leak guard sync (AUD-013) + provenance parity (AUD-014) in one PR — both target `validate_patient_features_contract_v1.py`.
+2. **v3 output baseline** (#27): add rendered-output hash baseline for v3 to `gate_pr.sh` (AUD-015).
+3. **Determinism broadening** (#28): widen rerun loop in `_regression_phase1_v2.py` to all gate patients (AUD-016).
 
 ##### Item 16A — PR #214 Correctness Hardening Intake (2026-03-12)
 
