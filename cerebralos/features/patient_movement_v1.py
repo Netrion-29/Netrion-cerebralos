@@ -88,15 +88,26 @@ Output schema::
       ],
       "summary": {
         "movement_event_count": <int>,
+        "admission_ts": "MM/DD HHMM" | null,
         "first_movement_ts": "MM/DD HHMM" | null,
         "discharge_ts": "MM/DD HHMM" | null,
+        "discharge_disposition_final": "Home" | "SNF" | "Rehab" | "LTAC" |
+          "Swing Bed" | "Home Health" | "Expired" | null,
         "transfer_count": <int>,
         "units_visited": ["...", ...],
+        "rooms_visited": ["...", ...],
         "levels_of_care": ["...", ...],
         "services_seen": ["...", ...],
         "icu_los_hours": <float> | null,
         "icu_los_days": <float> | null,
-        "icu_admission_count": <int>
+        "icu_admission_count": <int>,
+        "event_type_counts": {
+          "Admission": <int>,
+          "Transfer In": <int>,
+          "Discharge": <int>,
+          "Checked In": <int>,
+          "Checked Out": <int>
+        }
       },
       "evidence": [
         {
@@ -556,8 +567,7 @@ def _compute_icu_los(
 
     An ICU interval starts when an entry has ``level_of_care`` equal
     to ``"ICU"`` (case-insensitive) and ends at the next entry whose
-    ``level_of_care`` is something other than ``"ICU"`` (or at the
-    entry with a ``"Discharge"`` event type, whichever comes first).
+    ``level_of_care`` is something other than ``"ICU"``.
 
     Returns dict with:
         icu_los_hours  — float | None  (None when no computable ICU interval)
@@ -572,8 +582,19 @@ def _compute_icu_los(
         "icu_admission_count": 0,
     }
 
-    # Need at least 2 entries to form an interval
-    if len(entries) < 2:
+    if not entries:
+        return null_result
+
+    # A single ICU entry still counts as an ICU admission even though
+    # there is no later non-ICU event to close the interval.
+    if len(entries) == 1:
+        loc = (entries[0].get("level_of_care") or "").upper()
+        if loc == "ICU":
+            return {
+                "icu_los_hours": None,
+                "icu_los_days": None,
+                "icu_admission_count": 1,
+            }
         return null_result
 
     # ── Chronological order ─────────────────────────────────────

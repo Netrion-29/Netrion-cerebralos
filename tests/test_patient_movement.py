@@ -830,7 +830,7 @@ class TestComputeIcuLos:
              "event_type": "Admission", "level_of_care": "ICU"},
         ]
         result = _compute_icu_los(entries)
-        assert result["icu_admission_count"] == 0
+        assert result["icu_admission_count"] == 1
         assert result["icu_los_hours"] is None
 
     def test_no_icu_entries(self):
@@ -849,7 +849,7 @@ class TestComputeIcuLos:
     def test_single_icu_interval(self):
         # Reverse chron: Discharge (Med/Surg) → ICU → Admission (ED)
         # Chrono: Admission → ICU → Discharge
-        # ICU interval: 01/01 0504 → 01/02 1803 = 37h 59m
+        # ICU interval: 01/01 0504 → 01/02 1803 = 36h 59m
         entries = [
             {"date_raw": "01/02", "time_raw": "1803",
              "event_type": "Discharge", "level_of_care": "Med/Surg"},
@@ -907,7 +907,8 @@ class TestComputeIcuLos:
 
     def test_icu_at_discharge_unclosed(self):
         # Patient discharges directly from ICU — the Discharge event itself
-        # has level_of_care ICU.  The interval should close at Discharge.
+        # has level_of_care ICU.  Because we fail-closed, the interval
+        # remains unclosed unless a later non-ICU event is recorded.
         # Reverse chron: Discharge(ICU) → Transfer In(ICU) → Admission(ED)
         entries = [
             {"date_raw": "01/05", "time_raw": "1000",
