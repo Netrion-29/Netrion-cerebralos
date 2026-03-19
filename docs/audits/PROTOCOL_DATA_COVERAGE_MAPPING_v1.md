@@ -112,7 +112,7 @@ Coverage was assessed by:
 | Demographics | Patient name / MRN | `patient_id` parsed from PATIENT_ID header line in ingestion pipeline |
 | Demographics | Date of birth / Age | `cerebralos/features/age_extraction_v1.py` |
 | Demographics | Admission date/time | ARRIVAL_TIME header parsing; `cerebralos/features/adt_transfer_timeline_v1.py` |
-| Demographics | Trauma activation category | `cerebralos/features/category_activation_v1.py`; `rules/features/category_activation_v1.json` — primary source is evidence header `TRAUMA_CATEGORY`, with narrative fallback |
+| Demographics | Trauma activation category | `cerebralos/features/category_activation_v1.py`; `rules/features/category_activation_v1.json` |
 | Demographics | Sex | `cerebralos/features/build_patient_features_v1.py` → `demographics_v1.sex`; primary from evidence header SEX, fallback `_extract_sex_hpi_fallback()` in `parse_patient_txt.py` (PRs #222–#225) |
 | Prehospital | Mechanism of injury narrative | `cerebralos/features/mechanism_region_v1.py` |
 | Injury Mech. | Blunt vs. penetrating classification | `cerebralos/features/mechanism_region_v1.py` — classifies blunt/penetrating |
@@ -121,7 +121,7 @@ Coverage was assessed by:
 | ED Assessment | Triage category (Cat I / Cat II / Consult) | `cerebralos/features/category_activation_v1.py` |
 | ED Assessment | FAST exam (positive/negative/indeterminate) | `cerebralos/features/fast_exam_v1.py` |
 | ED Assessment | ED disposition time | `cerebralos/features/adt_transfer_timeline_v1.py` summary `ed_departure_ts`, `ed_los_hours`, `ed_los_minutes` |
-| Vital Signs | Blood pressure (systolic/diastolic/MAP) | `cerebralos/features/vitals_canonical_v1.py`; `rules/features/vitals_patterns_v1.json` — arrival-vitals selector uses TRAUMA_HP Primary Survey priority with ED fallback and rule_id trace |
+| Vital Signs | Blood pressure (systolic/diastolic/MAP) | `cerebralos/features/vitals_canonical_v1.py`; `rules/features/vitals_patterns_v1.json` |
 | Vital Signs | Heart rate | `cerebralos/features/vitals_canonical_v1.py` |
 | Vital Signs | Respiratory rate | `cerebralos/features/vitals_canonical_v1.py` |
 | Vital Signs | SpO2 (pulse oximetry) | `cerebralos/features/vitals_canonical_v1.py` |
