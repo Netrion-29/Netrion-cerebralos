@@ -172,8 +172,8 @@ Coverage was assessed by:
 | NTDS E01 | Acute Kidney Injury (KDIGO Stage 3) | `rules/ntds/logic/2026/01_aki.json` — 3+ gate logic |
 | NTDS E03 | Alcohol Withdrawal | `rules/ntds/logic/2026/03_alcohol_withdrawal_syndrome.json` |
 | NTDS E04 | Cardiac Arrest | `rules/ntds/logic/2026/04_cardiac_arrest_with_cpr.json` — dual gate |
-| NTDS E05 | CAUTI (CDC SUTI 1a) | `rules/ntds/logic/2026/05_cauti.json` — 6 gates + LDA (built; duration gate present but globally disabled pending validation) |
-| NTDS E06 | CLABSI (NHSN) | `rules/ntds/logic/2026/06_clabsi.json` — 5 gates + LDA (built; duration gate present but globally disabled pending validation) |
+| NTDS E05 | CAUTI (CDC SUTI 1a) | `rules/ntds/logic/2026/05_cauti.json` — 6 gates + LDA (built; disabled by default in `engine.py`, enabled for E05 in NTDS runner/tests pending broader validation) |
+| NTDS E06 | CLABSI (NHSN) | `rules/ntds/logic/2026/06_clabsi.json` — 5 gates + LDA (built; disabled by default in `engine.py`, enabled for E06 in NTDS runner/tests pending broader validation) |
 | NTDS E07 | Deep SSI | `rules/ntds/logic/2026/07_deep_ssi.json` |
 | NTDS E08 | DVT | `rules/ntds/logic/2026/08_dvt.json` — multi-gate with imaging early-exit |
 | NTDS E09 | Delirium | `rules/ntds/logic/2026/09_delirium.json` |
@@ -188,7 +188,7 @@ Coverage was assessed by:
 | NTDS E18 | Unplanned ICU Admission | `rules/ntds/logic/2026/18_unplanned_icu_admission.json` |
 | NTDS E19 | Unplanned Intubation | `rules/ntds/logic/2026/19_unplanned_intubation.json` |
 | NTDS E20 | Unplanned Return to OR | `rules/ntds/logic/2026/20_or_return.json` |
-| NTDS E21 | Ventilator-Associated Pneumonia | `rules/ntds/logic/2026/21_vap.json` — multi-gate + LDA vent duration (built; globally disabled pending validation) |
+| NTDS E21 | Ventilator-Associated Pneumonia | `rules/ntds/logic/2026/21_vap.json` — multi-gate + LDA vent duration (built; disabled by default in `engine.py`, enabled for E21 in NTDS runner/tests pending broader validation) |
 | Operational | Trauma team activation level (Cat I / Cat II / Consult) | `cerebralos/features/category_activation_v1.py` |
 
 ---
@@ -215,7 +215,7 @@ Coverage was assessed by:
 | Imaging | MRI spine | `radiology_findings_v1.py` captures MRI mentions | Not spine-specific |
 | Imaging | Chest X-ray (serial) | `vap_cxr` mapper key captures CXR in VAP context | Generic CXR not structured |
 | Airway | Intubation (date/time/indication) | `unplanned_intubation` mapper key; `note_index_events_v1.py` | Date/time not fully structured |
-| Airway | Ventilator days | `vent_dx` mapper key; flowsheet day rows present; LDA vent-duration gate exists in NTDS logic | Duration logic built but globally disabled pending validation |
+| Airway | Ventilator days | `vent_dx` mapper key; flowsheet day rows present; LDA vent-duration gate exists in NTDS logic | Duration logic built and feature-flagged; currently exercised for VAP/E21 in the NTDS runner/tests |
 | Airway | Oxygen supplementation type/FiO2 | `cerebralos/features/incentive_spirometry_v1.py` captures IS | FiO2 not parsed |
 | Operative | Procedure type / CPT | `procedure_operatives_v1.py` captures mentions | CPT not extracted |
 | Operative | Procedure date/time | `procedure_operatives_v1.py` captures some timing | Not fully structured |
@@ -225,9 +225,9 @@ Coverage was assessed by:
 | Pharmacologic | Anticoagulant reversal agent (4F-PCC, vitamin K, protamine, idarucizumab) | `anticoag_context_v1.py` captures anticoag mentions | Reversal agents not structured |
 | Pharmacologic | Pre-injury anticoagulant/antiplatelet list | `pmh_social_allergies_v1.py` + `anticoag_context_v1.py` | Medication list not structured |
 | Device | Central venous catheter (type, site, date placed) | `clabsi_central_line_in_place` mapper key; LDA CENTRAL_LINE defined in `lda_events_v1.py` | Type/site not structured |
-| Device | Central line duration (days) | Flowsheet 'Catheter day' data present; LDA duration gate exists in NTDS logic | Duration logic built but globally disabled pending validation |
+| Device | Central line duration (days) | Flowsheet 'Catheter day' data present; LDA duration gate exists in NTDS logic | Duration logic built and feature-flagged; currently exercised for CLABSI/E06 in the NTDS runner/tests |
 | Device | Urinary catheter (Foley) placement date | `cauti_catheter_in_place` mapper key; LDA URETHRAL_CATHETER defined | Placement date not structured |
-| Device | Urinary catheter duration (days) | Flowsheet data present for ≥12 patients; LDA duration gate exists in NTDS logic | Duration logic built but globally disabled pending validation |
+| Device | Urinary catheter duration (days) | Flowsheet data present for ≥12 patients; LDA duration gate exists in NTDS logic | Duration logic built and feature-flagged; currently exercised for CAUTI/E05 in the NTDS runner/tests |
 | Device | Mechanical ventilation (start/end date) | `vent_dx` mapper key; LDA infrastructure defined | Start/end timestamps not structured |
 | Device | Sequential compression devices (SCDs) | `dvt_prophylaxis_v1.py` may capture SCD mentions | Not specifically structured |
 | Infection | Pressure ulcer (stage, location, date identified) | `pressure_ulcer_dx` mapper key detects diagnosis | Stage/location/date not structured |
