@@ -87,13 +87,15 @@ Gate must exit 0 with:
 
 Use **only** when:
 
-- An intentional, reviewed change alters v4 report output.
+- An intentional, reviewed change alters rendered report output.
 - You have confirmed the new output is correct.
 
-When you do:
+Per-version flags:
 
 ```bash
-./scripts/gate_pr.sh --update-baseline
+./scripts/gate_pr.sh --update-baseline      # v4
+./scripts/gate_pr.sh --update-baseline-v3   # v3
+./scripts/gate_pr.sh --update-baseline-v5   # v5
 ```
 
 **Required**: include an explicit note in the commit message explaining
