@@ -513,7 +513,11 @@ def main() -> int:
         hash2_features = md5_file(features_path) if features_path.is_file() else "MISSING"
         hash2_v4 = md5_file(v4_path) if v4_path.is_file() else "MISSING"
 
-        pat_ok = (hash1_features == hash2_features) and (hash1_v4 == hash2_v4)
+        # Fail-closed: any missing artifact is a determinism failure
+        any_missing = "MISSING" in (hash1_features, hash2_features, hash1_v4, hash2_v4)
+        pat_ok = (not any_missing
+                  and hash1_features == hash2_features
+                  and hash1_v4 == hash2_v4)
         if not pat_ok:
             deterministic = False
         determinism_results.append({
@@ -586,6 +590,13 @@ def main() -> int:
         print(f"  {label}: baseline={baseline[:12]}... current={current[:12]}... match={match}")
     print(f"  Zero unintended artifact drift: {all_ok}")
     print()
+
+    if not deterministic:
+        print("REGRESSION FAILED: determinism check did not pass.")
+        return 1
+    if not all_ok:
+        print("REGRESSION FAILED: artifact integrity check did not pass.")
+        return 1
 
     return 0
 
