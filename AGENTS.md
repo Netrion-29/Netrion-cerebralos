@@ -41,8 +41,10 @@ Codex/Claude may not declare "done" until:
 ./scripts/gate_pr.sh
 passes.
 
-Default gate patients:
-Betty_Roll, David_Gross, Johnny_Stokes, Larry_Corne, Ronald_Bittner, Roscella_Weatherly
+Default gate patients (values passed to `./run_patient.sh`):
+Betty Roll, David_Gross, Johnny Stokes, Larry_Corne, Ronald Bittner, Roscella Weatherly
+
+Outputs are written under underscore-slugged directories (e.g. `outputs/reporting/Betty_Roll/`).
 
 ## Baseline drift checking
 - Normal mode (`./scripts/gate_pr.sh`): compares sha256 of each

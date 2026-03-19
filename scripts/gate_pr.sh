@@ -33,7 +33,17 @@ for arg in "$@"; do
 done
 
 if [ "${#ARGS[@]}" -gt 0 ]; then
-  PATS=("${ARGS[@]}")
+  PATS=()
+  for pat in "${ARGS[@]}"; do
+    # Accept either the raw filename stem or the underscore slug.
+    if [ -f "data_raw/${pat}.txt" ]; then
+      PATS+=("$pat")
+    elif [ -f "data_raw/${pat//_/ }.txt" ]; then
+      PATS+=("${pat//_/ }")
+    else
+      echo "ERROR: no data_raw file for: $pat" >&2; exit 1
+    fi
+  done
 else
   PATS=("Betty Roll" "David_Gross" "Johnny Stokes" "Larry_Corne" "Ronald Bittner" "Roscella Weatherly")
 fi
