@@ -13,6 +13,7 @@ Produces:
       service, event_type, raw_line_id
   - summary: adt_event_count, first_admission_ts, transfer_count,
       discharge_ts, units_visited, los_hours, los_days,
+      ed_departure_ts, ed_los_hours, ed_los_minutes,
       event_type_counts, services_seen, rooms_visited,
       patient_update_count, last_unit, last_room, last_bed
 
@@ -28,6 +29,8 @@ v2 refinements:
   - Chronology validation: warns if events are out of order.
   - Enriched summary: event_type_counts, services_seen, rooms_visited,
     patient_update_count, last_unit/room/bed, los_days.
+  - ED LOS: ed_departure_ts, ed_los_hours, ed_los_minutes — computed from
+    first Transfer In to a non-ED unit after an ED event.
 
 discharge-summary-recognition-v1:
   - Source 3 fallback: when no ADT Events table is found, scans
@@ -88,6 +91,11 @@ VALID_EVENT_TYPES = frozenset({
     "Patient Update",
     "Discharge",
 })
+
+
+def _is_ed_unit(unit: str) -> bool:
+    """Return True if *unit* is an Emergency Department unit."""
+    return "EMERGENCY" in unit.upper()
 
 
 # ── Timestamp normalisation ────────────────────────────────────────
@@ -432,6 +440,7 @@ def _build_summary(events: List[Dict[str, Any]]) -> Dict[str, Any]:
     Returns dict with:
       adt_event_count, first_admission_ts, transfer_count,
       discharge_ts, units_visited, los_hours, los_days,
+      ed_departure_ts, ed_los_hours, ed_los_minutes,
       event_type_counts, services_seen, rooms_visited,
       patient_update_count, last_unit, last_room, last_bed
     """
@@ -444,6 +453,9 @@ def _build_summary(events: List[Dict[str, Any]]) -> Dict[str, Any]:
             "units_visited": [],
             "los_hours": None,
             "los_days": None,
+            "ed_departure_ts": None,
+            "ed_los_hours": None,
+            "ed_los_minutes": None,
             "event_type_counts": {},
             "services_seen": [],
             "rooms_visited": [],
@@ -494,6 +506,37 @@ def _build_summary(events: List[Dict[str, Any]]) -> Dict[str, Any]:
         except (ValueError, TypeError):
             pass
 
+    # ── ED LOS (first ED timestamp → first transfer into non-ED unit) ──
+    ed_start_ts: Optional[str] = None
+    ed_departure_ts: Optional[str] = None
+    ed_los_hours: Optional[float] = None
+    ed_los_minutes: Optional[float] = None
+    seen_ed = False
+    for ev in events:
+        ts_iso = ev.get("timestamp_iso")
+        has_valid_ts = ts_iso not in (None, _DNA)
+        if _is_ed_unit(ev["unit"]):
+            seen_ed = True
+            if ed_start_ts is None and has_valid_ts:
+                ed_start_ts = ts_iso
+        elif seen_ed and ev["event_type"] == "Transfer In":
+            if has_valid_ts:
+                ed_departure_ts = ts_iso
+                break
+    anchor_ts = ed_start_ts
+    if anchor_ts is None and first_admission_ts not in (None, _DNA):
+        anchor_ts = first_admission_ts
+    if anchor_ts and ed_departure_ts:
+        try:
+            dt_admit = datetime.strptime(anchor_ts, "%Y-%m-%d %H:%M:%S")
+            dt_ed_dep = datetime.strptime(ed_departure_ts, "%Y-%m-%d %H:%M:%S")
+            delta_sec = (dt_ed_dep - dt_admit).total_seconds()
+            if delta_sec > 0:
+                ed_los_minutes = round(delta_sec / 60, 1)
+                ed_los_hours = round(delta_sec / 3600, 1)
+        except (ValueError, TypeError):
+            pass
+
     # ── Enriched summary fields (v2) ───────────────────────────
     # Event type counts
     event_type_counts: Dict[str, int] = dict(Counter(
@@ -533,6 +576,9 @@ def _build_summary(events: List[Dict[str, Any]]) -> Dict[str, Any]:
         "units_visited": seen_units,
         "los_hours": los_hours,
         "los_days": los_days,
+        "ed_departure_ts": ed_departure_ts,
+        "ed_los_hours": ed_los_hours,
+        "ed_los_minutes": ed_los_minutes,
         "event_type_counts": event_type_counts,
         "services_seen": services_seen,
         "rooms_visited": seen_rooms,
