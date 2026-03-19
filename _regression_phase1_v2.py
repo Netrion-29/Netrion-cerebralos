@@ -7,8 +7,8 @@ What this validates
 ───────────────────
 • Artifact integrity — v3 renderer, green card engine, NTDS engine, and
   protocol engine file hashes are compared to locked baselines.
-• Determinism — runs the first patient through the pipeline twice and
-  confirms both feature and v4 output hashes are identical.
+• Determinism — runs all four gate patients through the pipeline twice and
+  confirms both feature and v4 output hashes are identical per patient.
 • Per-patient QA boxes — GCS, vitals, labs, gap, and integrity summaries.
 
 How to run
@@ -489,24 +489,41 @@ def main() -> int:
         print(f"  Pipeline OK for {pat}")
     print()
 
-    # ── Determinism check: run pipeline again for first patient ──
-    det_pat = PATIENTS[0]
-    det_slug = _slugify(det_pat)
-    features_path = REPO / "outputs" / "features" / det_slug / "patient_features_v1.json"
-    v4_path = REPO / "outputs" / "reporting" / det_slug / "TRAUMA_DAILY_NOTES_v4.txt"
-    hash1_features = md5_file(features_path) if features_path.is_file() else "MISSING"
-    hash1_v4 = md5_file(v4_path) if v4_path.is_file() else "MISSING"
+    # ── Determinism check: re-run pipeline for ALL gate patients ──
+    determinism_results = []
+    deterministic = True
+    for det_pat in PATIENTS:
+        det_slug = _slugify(det_pat)
+        features_path = REPO / "outputs" / "features" / det_slug / "patient_features_v1.json"
+        v4_path = REPO / "outputs" / "reporting" / det_slug / "TRAUMA_DAILY_NOTES_v4.txt"
+        hash1_features = md5_file(features_path) if features_path.is_file() else "MISSING"
+        hash1_v4 = md5_file(v4_path) if v4_path.is_file() else "MISSING"
 
-    result = subprocess.run(
-        ["bash", str(REPO / "run_patient.sh"), det_pat],
-        cwd=str(REPO),
-        env={**__import__("os").environ, "PYTHONPATH": str(REPO)},
-        capture_output=True, text=True,
-    )
-    hash2_features = md5_file(features_path) if features_path.is_file() else "MISSING"
-    hash2_v4 = md5_file(v4_path) if v4_path.is_file() else "MISSING"
+        det_result = subprocess.run(
+            ["bash", str(REPO / "run_patient.sh"), det_pat],
+            cwd=str(REPO),
+            env={**__import__("os").environ, "PYTHONPATH": str(REPO)},
+            capture_output=True, text=True,
+        )
+        if det_result.returncode != 0:
+            print(f"  DETERMINISM PIPELINE FAILED for {det_pat}:")
+            print(det_result.stderr[-500:] if det_result.stderr else "(no stderr)")
+            return 1
 
-    deterministic = (hash1_features == hash2_features) and (hash1_v4 == hash2_v4)
+        hash2_features = md5_file(features_path) if features_path.is_file() else "MISSING"
+        hash2_v4 = md5_file(v4_path) if v4_path.is_file() else "MISSING"
+
+        pat_ok = (hash1_features == hash2_features) and (hash1_v4 == hash2_v4)
+        if not pat_ok:
+            deterministic = False
+        determinism_results.append({
+            "patient": det_pat,
+            "hash1_features": hash1_features,
+            "hash2_features": hash2_features,
+            "hash1_v4": hash1_v4,
+            "hash2_v4": hash2_v4,
+            "ok": pat_ok,
+        })
 
     # ── Output validation boxes ──
     print("=" * 70)
@@ -526,11 +543,14 @@ def main() -> int:
 
     # ── Determinism confirmation ──
     print("DETERMINISM CHECK:")
-    print(f"  Patient: {det_pat}")
-    print(f"  Run 1 features hash: {hash1_features}")
-    print(f"  Run 2 features hash: {hash2_features}")
-    print(f"  Run 1 v4 hash:       {hash1_v4}")
-    print(f"  Run 2 v4 hash:       {hash2_v4}")
+    print(f"  Patients checked: {len(PATIENTS)}")
+    for dr in determinism_results:
+        status = "PASS" if dr["ok"] else "FAIL"
+        print(f"  [{status}] {dr['patient']}:")
+        print(f"    Run 1 features hash: {dr['hash1_features']}")
+        print(f"    Run 2 features hash: {dr['hash2_features']}")
+        print(f"    Run 1 v4 hash:       {dr['hash1_v4']}")
+        print(f"    Run 2 v4 hash:       {dr['hash2_v4']}")
     print(f"  Deterministic: {deterministic}")
     print()
 
