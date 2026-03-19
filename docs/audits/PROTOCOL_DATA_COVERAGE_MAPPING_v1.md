@@ -50,15 +50,15 @@ Coverage was assessed by:
 
 | Status | Count | Pct | Δ from v1 (2026-03-12) |
 |--------|------:|----:|:----------------------:|
-| EXTRACTED | 80 | 34.8% | +20 |
-| PARTIAL | 47 | 20.4% | −10 |
+| EXTRACTED | 81 | 35.2% | +21 |
+| PARTIAL | 46 | 20.0% | −11 |
 | MISSING | 87 | 37.8% | −10 |
 | N/A | 16 | 7.0% | 0 |
 | **Total** | **230** | 100% | — |
 
 **Actionable elements** (excluding N/A): 214
 **Actionable coverage** (EXTRACTED + PARTIAL): 127 / 214 = **59.3%** (was 54.7%)
-**Fully extracted**: 80 / 214 = **37.4%** (was 28.0%)
+**Fully extracted**: 81 / 214 = **37.9%** (was 28.0%)
 
 ### Change Log (v1 → v2 refresh)
 
@@ -80,7 +80,7 @@ Coverage was assessed by:
 | 1 | Demographics / Patient Identification | 5 | 1 | 1 | 1 | 8 | 86% |
 | 2 | Prehospital / EMS | 1 | 0 | 6 | 1 | 8 | 14% |
 | 3 | Injury Mechanism / Classification | 2 | 0 | 8 | 2 | 12 | 20% |
-| 4 | Emergency Department Assessment | 3 | 1 | 5 | 0 | 9 | 44% |
+| 4 | Emergency Department Assessment | 4 | 0 | 5 | 0 | 9 | 44% |
 | 5 | Vital Signs / Hemodynamic Monitoring | 7 | 1 | 2 | 0 | 10 | 80% |
 | 6 | Neurologic Assessment | 1 | 7 | 1 | 0 | 9 | 89% |
 | 7 | Laboratory / Diagnostics | 11 | 0 | 5 | 0 | 16 | 69% |
@@ -105,7 +105,7 @@ Coverage was assessed by:
 
 ---
 
-## Detailed Evidence: EXTRACTED Elements (80)
+## Detailed Evidence: EXTRACTED Elements (81)
 
 | Category | Element | Repo Evidence |
 |----------|---------|---------------|
@@ -120,6 +120,7 @@ Coverage was assessed by:
 | ED Assessment | ED arrival date/time | ARRIVAL_TIME header; `cerebralos/features/adt_transfer_timeline_v1.py` |
 | ED Assessment | Triage category (Cat I / Cat II / Consult) | `cerebralos/features/category_activation_v1.py` |
 | ED Assessment | FAST exam (positive/negative/indeterminate) | `cerebralos/features/fast_exam_v1.py` |
+| ED Assessment | ED disposition time | `cerebralos/features/adt_transfer_timeline_v1.py` summary `ed_departure_ts`, `ed_los_hours`, `ed_los_minutes` |
 | Vital Signs | Blood pressure (systolic/diastolic/MAP) | `cerebralos/features/vitals_canonical_v1.py`; `rules/features/vitals_patterns_v1.json` |
 | Vital Signs | Heart rate | `cerebralos/features/vitals_canonical_v1.py` |
 | Vital Signs | Respiratory rate | `cerebralos/features/vitals_canonical_v1.py` |
@@ -192,12 +193,11 @@ Coverage was assessed by:
 
 ---
 
-## Detailed Evidence: PARTIAL Elements (47)
+## Detailed Evidence: PARTIAL Elements (46)
 
 | Category | Element | What Exists | What's Missing |
 |----------|---------|-------------|----------------|
 | Demographics | Transferring facility | `adt_transfer_timeline_v1.py` captures transfers | Facility name not structured |
-| ED Assessment | ED disposition time | `adt_transfer_timeline_v1.py` captures transfers | No explicit ED dispo timestamp |
 | Vital Signs | Serial vital sign monitoring | `vitals_canonical_v1.py` captures values | Serial compliance not assessed |
 | Neurologic | GCS post-resuscitation | `neuro_trigger_v1.py` captures GCS mentions | Post-resuscitation timing not determined |
 | Neurologic | Pupil reactivity (bilateral) | `neuro_trigger_v1.py` captures pupil mentions | Bilateral/reactive status not structured |

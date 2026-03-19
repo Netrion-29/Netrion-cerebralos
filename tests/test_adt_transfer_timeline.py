@@ -27,6 +27,7 @@ from cerebralos.features.adt_transfer_timeline_v1 import (
     _validate_chronology,
     _build_summary,
     _extract_discharge_from_items,
+    _is_ed_unit,
     _parse_date_mdy,
     extract_adt_transfer_timeline,
 )
@@ -397,6 +398,7 @@ class TestEnrichedSummary(unittest.TestCase):
             "los_days", "event_type_counts", "services_seen",
             "rooms_visited", "patient_update_count",
             "last_unit", "last_room", "last_bed",
+            "ed_departure_ts", "ed_los_hours", "ed_los_minutes",
         ]:
             self.assertIn(key, summary)
 
@@ -704,6 +706,162 @@ class TestSource3Integration(unittest.TestCase):
         result = extract_adt_transfer_timeline({"days": {}}, days_data)
         self.assertIsNone(result["summary"]["discharge_ts"])
         self.assertEqual(result["summary"]["adt_event_count"], 0)
+
+
+# ── ED LOS tests ────────────────────────────────────────────────
+
+class TestIsEdUnit(unittest.TestCase):
+    """Test _is_ed_unit helper."""
+
+    def test_emergency_dept_mc(self):
+        self.assertTrue(_is_ed_unit("EMERGENCY DEPT MC"))
+
+    def test_emergency_dept_gw(self):
+        self.assertTrue(_is_ed_unit("EMERGENCY DEPT GW"))
+
+    def test_case_insensitive(self):
+        self.assertTrue(_is_ed_unit("emergency dept mc"))
+        self.assertTrue(_is_ed_unit("Emergency Dept GW"))
+
+    def test_non_ed_unit(self):
+        self.assertFalse(_is_ed_unit("ORTHO NEURO TR CRE CTR"))
+        self.assertFalse(_is_ed_unit("SRG TRAUMA CV ICU 7480"))
+
+    def test_empty_string(self):
+        self.assertFalse(_is_ed_unit(""))
+
+
+class TestEdLos(unittest.TestCase):
+    """Test ED LOS computation in _build_summary()."""
+
+    def test_empty_events_ed_fields_null(self):
+        summary = _build_summary([])
+        self.assertIsNone(summary["ed_departure_ts"])
+        self.assertIsNone(summary["ed_los_hours"])
+        self.assertIsNone(summary["ed_los_minutes"])
+
+    def test_ed_to_floor_michael_dougan(self):
+        """Michael Dougan: ED MC → ORTHO NEURO TR CRE CTR."""
+        events = _extract_adt_from_lines(SAMPLE_HEADER_LINES)
+        summary = _build_summary(events)
+        # Transfer In to ORTHO at 12/29/25 1537
+        self.assertEqual(summary["ed_departure_ts"], "2025-12-29 15:37:00")
+        # Admission at 0722, departure at 1537 → 8h 15m = 495 min
+        self.assertAlmostEqual(summary["ed_los_minutes"], 495.0, delta=1.0)
+        self.assertAlmostEqual(summary["ed_los_hours"], 8.2, delta=0.2)
+
+    def test_ed_to_icu_ronald_bittner(self):
+        """Ronald Bittner: ED GW → ED MC → SRG TRAUMA CV ICU."""
+        events = _extract_adt_headerless(SAMPLE_HEADERLESS_LINES)
+        summary = _build_summary(events)
+        # Transfer In to ICU at 01/01/26 0227
+        self.assertEqual(summary["ed_departure_ts"], "2026-01-01 02:27:00")
+        # Admission at 2038, departure at 0227 → 5h 49m = 349 min
+        self.assertAlmostEqual(summary["ed_los_minutes"], 349.0, delta=1.0)
+        self.assertAlmostEqual(summary["ed_los_hours"], 5.8, delta=0.2)
+
+    def test_inter_ed_transfer_skipped(self):
+        """Inter-ED transfers (GW→MC) do not count as ED departure."""
+        events = _extract_adt_headerless(SAMPLE_HEADERLESS_LINES)
+        summary = _build_summary(events)
+        # ED departure should NOT be the inter-ED Transfer In at EMERGENCY DEPT MC
+        self.assertNotEqual(summary["ed_departure_ts"], "2026-01-01 01:38:00")
+        # Should be the Transfer In to ICU
+        self.assertEqual(summary["ed_departure_ts"], "2026-01-01 02:27:00")
+
+    def test_no_ed_events_null(self):
+        """Patient with no ED events → null ED LOS."""
+        events = [
+            {
+                "timestamp_raw": "12/29/25 0722",
+                "timestamp_iso": "2025-12-29 07:22:00",
+                "unit": "ORTHO NEURO TR CRE CTR",
+                "room": "4512",
+                "bed": "4512-01",
+                "service": "Trauma",
+                "event_type": "Admission",
+                "raw_line_id": "test:1",
+            },
+            {
+                "timestamp_raw": "01/07/26 1754",
+                "timestamp_iso": "2026-01-07 17:54:00",
+                "unit": "ORTHO NEURO TR CRE CTR",
+                "room": "4507",
+                "bed": "4507-01",
+                "service": "Trauma",
+                "event_type": "Discharge",
+                "raw_line_id": "test:2",
+            },
+        ]
+        summary = _build_summary(events)
+        self.assertIsNone(summary["ed_departure_ts"])
+        self.assertIsNone(summary["ed_los_hours"])
+        self.assertIsNone(summary["ed_los_minutes"])
+
+    def test_ed_only_no_transfer_out_null(self):
+        """Patient stays in ED entire visit (discharged from ED) → null."""
+        events = [
+            {
+                "timestamp_raw": "12/29/25 0722",
+                "timestamp_iso": "2025-12-29 07:22:00",
+                "unit": "EMERGENCY DEPT MC",
+                "room": "1857",
+                "bed": "16",
+                "service": "Emergency",
+                "event_type": "Admission",
+                "raw_line_id": "test:1",
+            },
+            {
+                "timestamp_raw": "12/29/25 1200",
+                "timestamp_iso": "2025-12-29 12:00:00",
+                "unit": "EMERGENCY DEPT MC",
+                "room": "1857",
+                "bed": "16",
+                "service": "Emergency",
+                "event_type": "Discharge",
+                "raw_line_id": "test:2",
+            },
+        ]
+        summary = _build_summary(events)
+        self.assertIsNone(summary["ed_departure_ts"])
+        self.assertIsNone(summary["ed_los_hours"])
+        self.assertIsNone(summary["ed_los_minutes"])
+
+    def test_ed_los_summary_keys_present(self):
+        """ED LOS keys are always present in summary output."""
+        summary = _build_summary([])
+        self.assertIn("ed_departure_ts", summary)
+        self.assertIn("ed_los_hours", summary)
+        self.assertIn("ed_los_minutes", summary)
+
+    def test_ed_los_positive_only(self):
+        """Negative delta (bad data) → null ED LOS (fail-closed)."""
+        events = [
+            {
+                "timestamp_raw": "12/29/25 1500",
+                "timestamp_iso": "2025-12-29 15:00:00",
+                "unit": "EMERGENCY DEPT MC",
+                "room": "1857",
+                "bed": "16",
+                "service": "Emergency",
+                "event_type": "Admission",
+                "raw_line_id": "test:1",
+            },
+            {
+                "timestamp_raw": "12/29/25 1400",
+                "timestamp_iso": "2025-12-29 14:00:00",
+                "unit": "ORTHO NEURO TR CRE CTR",
+                "room": "4512",
+                "bed": "4512-01",
+                "service": "Trauma",
+                "event_type": "Transfer In",
+                "raw_line_id": "test:2",
+            },
+        ]
+        summary = _build_summary(events)
+        # Negative delta → null (fail-closed)
+        self.assertIsNone(summary["ed_los_hours"])
+        self.assertIsNone(summary["ed_los_minutes"])
 
 
 if __name__ == "__main__":
