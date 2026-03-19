@@ -76,7 +76,7 @@ Raw data file (`data_raw/<patient>.txt`), path injected via
 - Roscella_Weatherly — rich Notes (25 entries)
 - Lee_Woodard — rich Notes (40 entries)
 - Michael_Dougan — no Notes section (negative control)
-- Anna_Dennis, William_Simmons, Timothy_Cowan, Timothy_Nachtwey — gate
+- Betty_Roll, David_Gross, Johnny_Stokes, Larry_Corne, Ronald_Bittner, Roscella_Weatherly — gate
 
 ## Dependencies
 - `meta.source_file` injected by builder from evidence JSON
