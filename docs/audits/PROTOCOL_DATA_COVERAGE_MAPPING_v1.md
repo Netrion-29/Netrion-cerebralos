@@ -112,7 +112,7 @@ Coverage was assessed by:
 | Demographics | Patient name / MRN | `patient_id` parsed from PATIENT_ID header line in ingestion pipeline |
 | Demographics | Date of birth / Age | `cerebralos/features/age_extraction_v1.py` |
 | Demographics | Admission date/time | ARRIVAL_TIME header parsing; `cerebralos/features/adt_transfer_timeline_v1.py` |
-| Demographics | Trauma activation category | `cerebralos/features/category_activation_v1.py`; `rules/features/category_activation_v1.json` |
+| Demographics | Trauma activation category | `cerebralos/features/category_activation_v1.py`; `rules/features/category_activation_v1.json` — primary source is evidence header `TRAUMA_CATEGORY`, with narrative fallback |
 | Demographics | Sex | `cerebralos/features/build_patient_features_v1.py` → `demographics_v1.sex`; primary from evidence header SEX, fallback `_extract_sex_hpi_fallback()` in `parse_patient_txt.py` (PRs #222–#225) |
 | Prehospital | Mechanism of injury narrative | `cerebralos/features/mechanism_region_v1.py` |
 | Injury Mech. | Blunt vs. penetrating classification | `cerebralos/features/mechanism_region_v1.py` — classifies blunt/penetrating |
@@ -121,12 +121,12 @@ Coverage was assessed by:
 | ED Assessment | Triage category (Cat I / Cat II / Consult) | `cerebralos/features/category_activation_v1.py` |
 | ED Assessment | FAST exam (positive/negative/indeterminate) | `cerebralos/features/fast_exam_v1.py` |
 | ED Assessment | ED disposition time | `cerebralos/features/adt_transfer_timeline_v1.py` summary `ed_departure_ts`, `ed_los_hours`, `ed_los_minutes` |
-| Vital Signs | Blood pressure (systolic/diastolic/MAP) | `cerebralos/features/vitals_canonical_v1.py`; `rules/features/vitals_patterns_v1.json` |
+| Vital Signs | Blood pressure (systolic/diastolic/MAP) | `cerebralos/features/vitals_canonical_v1.py`; `rules/features/vitals_patterns_v1.json` — arrival-vitals selector uses TRAUMA_HP Primary Survey priority with ED fallback and rule_id trace |
 | Vital Signs | Heart rate | `cerebralos/features/vitals_canonical_v1.py` |
 | Vital Signs | Respiratory rate | `cerebralos/features/vitals_canonical_v1.py` |
 | Vital Signs | SpO2 (pulse oximetry) | `cerebralos/features/vitals_canonical_v1.py` |
 | Vital Signs | Temperature (core) | `cerebralos/features/vitals_canonical_v1.py` |
-| Vital Signs | GCS (total + components E/V/M) | `cerebralos/features/gcs_daily.py` — structured E/V/M component extraction from inline + flowsheet + tabular sources; sum-mismatch guard; compact-intubated fix (PRs #238–#239, #243) |
+| Vital Signs | GCS (total + components E/V/M) | `cerebralos/features/gcs_daily.py` — structured E/V/M component extraction from inline + flowsheet + tabular sources; emits per-day `arrival_gcs`, `best_gcs`, `worst_gcs`, and `all_readings`; sum-mismatch guard; compact-intubated fix (PRs #238–#239, #243) |
 | Vital Signs | Shock index (HR/SBP) | `cerebralos/features/shock_trigger_v1.py` — deterministic SI = HR/SBP; classification: normal/elevated/critical; fail-closed null (PR #254) |
 | Neurologic | Spinal clearance status | `cerebralos/features/spine_clearance_v1.py` |
 | Laboratory | Base deficit (serial) | `cerebralos/features/base_deficit_monitoring_v1.py` |
@@ -172,8 +172,8 @@ Coverage was assessed by:
 | NTDS E01 | Acute Kidney Injury (KDIGO Stage 3) | `rules/ntds/logic/2026/01_aki.json` — 3+ gate logic |
 | NTDS E03 | Alcohol Withdrawal | `rules/ntds/logic/2026/03_alcohol_withdrawal_syndrome.json` |
 | NTDS E04 | Cardiac Arrest | `rules/ntds/logic/2026/04_cardiac_arrest_with_cpr.json` — dual gate |
-| NTDS E05 | CAUTI (CDC SUTI 1a) | `rules/ntds/logic/2026/05_cauti.json` — 6 gates + LDA |
-| NTDS E06 | CLABSI (NHSN) | `rules/ntds/logic/2026/06_clabsi.json` — 5 gates + LDA |
+| NTDS E05 | CAUTI (CDC SUTI 1a) | `rules/ntds/logic/2026/05_cauti.json` — 6 gates + LDA (built; duration gate present but globally disabled pending validation) |
+| NTDS E06 | CLABSI (NHSN) | `rules/ntds/logic/2026/06_clabsi.json` — 5 gates + LDA (built; duration gate present but globally disabled pending validation) |
 | NTDS E07 | Deep SSI | `rules/ntds/logic/2026/07_deep_ssi.json` |
 | NTDS E08 | DVT | `rules/ntds/logic/2026/08_dvt.json` — multi-gate with imaging early-exit |
 | NTDS E09 | Delirium | `rules/ntds/logic/2026/09_delirium.json` |
@@ -188,7 +188,7 @@ Coverage was assessed by:
 | NTDS E18 | Unplanned ICU Admission | `rules/ntds/logic/2026/18_unplanned_icu_admission.json` |
 | NTDS E19 | Unplanned Intubation | `rules/ntds/logic/2026/19_unplanned_intubation.json` |
 | NTDS E20 | Unplanned Return to OR | `rules/ntds/logic/2026/20_or_return.json` |
-| NTDS E21 | Ventilator-Associated Pneumonia | `rules/ntds/logic/2026/21_vap.json` — multi-gate + LDA vent duration |
+| NTDS E21 | Ventilator-Associated Pneumonia | `rules/ntds/logic/2026/21_vap.json` — multi-gate + LDA vent duration (built; globally disabled pending validation) |
 | Operational | Trauma team activation level (Cat I / Cat II / Consult) | `cerebralos/features/category_activation_v1.py` |
 
 ---
@@ -215,7 +215,7 @@ Coverage was assessed by:
 | Imaging | MRI spine | `radiology_findings_v1.py` captures MRI mentions | Not spine-specific |
 | Imaging | Chest X-ray (serial) | `vap_cxr` mapper key captures CXR in VAP context | Generic CXR not structured |
 | Airway | Intubation (date/time/indication) | `unplanned_intubation` mapper key; `note_index_events_v1.py` | Date/time not fully structured |
-| Airway | Ventilator days | `vent_dx` mapper key; flowsheet day rows present | LDA vent day extraction pending |
+| Airway | Ventilator days | `vent_dx` mapper key; flowsheet day rows present; LDA vent-duration gate exists in NTDS logic | Duration logic built but globally disabled pending validation |
 | Airway | Oxygen supplementation type/FiO2 | `cerebralos/features/incentive_spirometry_v1.py` captures IS | FiO2 not parsed |
 | Operative | Procedure type / CPT | `procedure_operatives_v1.py` captures mentions | CPT not extracted |
 | Operative | Procedure date/time | `procedure_operatives_v1.py` captures some timing | Not fully structured |
@@ -225,9 +225,9 @@ Coverage was assessed by:
 | Pharmacologic | Anticoagulant reversal agent (4F-PCC, vitamin K, protamine, idarucizumab) | `anticoag_context_v1.py` captures anticoag mentions | Reversal agents not structured |
 | Pharmacologic | Pre-injury anticoagulant/antiplatelet list | `pmh_social_allergies_v1.py` + `anticoag_context_v1.py` | Medication list not structured |
 | Device | Central venous catheter (type, site, date placed) | `clabsi_central_line_in_place` mapper key; LDA CENTRAL_LINE defined in `lda_events_v1.py` | Type/site not structured |
-| Device | Central line duration (days) | Flowsheet 'Catheter day' data present | LDA duration gate pending full activation |
+| Device | Central line duration (days) | Flowsheet 'Catheter day' data present; LDA duration gate exists in NTDS logic | Duration logic built but globally disabled pending validation |
 | Device | Urinary catheter (Foley) placement date | `cauti_catheter_in_place` mapper key; LDA URETHRAL_CATHETER defined | Placement date not structured |
-| Device | Urinary catheter duration (days) | Flowsheet data present for ≥12 patients | LDA duration gate pending full activation |
+| Device | Urinary catheter duration (days) | Flowsheet data present for ≥12 patients; LDA duration gate exists in NTDS logic | Duration logic built but globally disabled pending validation |
 | Device | Mechanical ventilation (start/end date) | `vent_dx` mapper key; LDA infrastructure defined | Start/end timestamps not structured |
 | Device | Sequential compression devices (SCDs) | `dvt_prophylaxis_v1.py` may capture SCD mentions | Not specifically structured |
 | Infection | Pressure ulcer (stage, location, date identified) | `pressure_ulcer_dx` mapper key detects diagnosis | Stage/location/date not structured |
