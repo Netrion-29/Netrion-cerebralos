@@ -1,83 +1,84 @@
 {
   "E01": {
     "EXCLUDED": 1,
-    "NO": 38
+    "NO": 42
   },
   "E02": {
     "EXCLUDED": 1,
-    "NO": 38
+    "NO": 41,
+    "UNABLE_TO_DETERMINE": 1
   },
   "E03": {
-    "NO": 39
+    "NO": 43
   },
   "E04": {
     "EXCLUDED": 2,
-    "NO": 37
+    "NO": 41
   },
   "E05": {
     "EXCLUDED": 4,
-    "NO": 35
+    "NO": 39
   },
   "E06": {
-    "NO": 39
+    "NO": 43
   },
   "E07": {
-    "NO": 39
+    "NO": 43
   },
   "E08": {
-    "NO": 38,
+    "NO": 42,
     "UNABLE_TO_DETERMINE": 1
   },
   "E09": {
-    "EXCLUDED": 1,
-    "NO": 35,
+    "EXCLUDED": 2,
+    "NO": 38,
     "YES": 3
   },
   "E10": {
     "EXCLUDED": 1,
-    "NO": 37,
+    "NO": 41,
     "YES": 1
   },
   "E11": {
-    "NO": 39
+    "NO": 43
   },
   "E12": {
     "EXCLUDED": 1,
-    "NO": 38
+    "NO": 42
   },
   "E13": {
     "EXCLUDED": 2,
-    "NO": 36,
+    "NO": 40,
     "YES": 1
   },
   "E14": {
-    "NO": 39
+    "NO": 43
   },
   "E15": {
-    "NO": 37,
-    "YES": 2
+    "NO": 39,
+    "YES": 4
   },
   "E16": {
-    "EXCLUDED": 5,
-    "NO": 31,
-    "YES": 3
+    "EXCLUDED": 7,
+    "NO": 32,
+    "YES": 4
   },
   "E17": {
-    "NO": 39
+    "NO": 43
   },
   "E18": {
-    "NO": 38,
-    "YES": 1
+    "NO": 41,
+    "YES": 2
   },
   "E19": {
-    "NO": 37,
-    "YES": 2
+    "NO": 39,
+    "YES": 4
   },
   "E20": {
     "EXCLUDED": 4,
-    "NO": 35
+    "NO": 39
   },
   "E21": {
-    "NO": 39
+    "NO": 43
   }
 }
