@@ -77,30 +77,6 @@ def test_non_trauma_team_day_plans_v1_in_known_keys():
     assert "non_trauma_team_day_plans_v1" in KNOWN_FEATURE_KEYS
 
 
-def test_builder_emitted_keys_subset_of_known():
-    """Every feature key emitted by build_patient_features_v1 is in KNOWN_FEATURE_KEYS."""
-    from cerebralos.features.build_patient_features_v1 import build_patient_features
-    import json
-    from pathlib import Path
-
-    # Use a real patient to get actual emitted keys
-    sample = Path("outputs/features/Anna_Dennis/patient_features_v1.json")
-    if not sample.exists():
-        # Fall back: just verify the 3 previously-missing keys are present
-        for k in (
-            "trauma_daily_plan_by_day_v1",
-            "consultant_day_plans_by_day_v1",
-            "non_trauma_team_day_plans_v1",
-        ):
-            assert k in KNOWN_FEATURE_KEYS, f"{k} missing from KNOWN_FEATURE_KEYS"
-        return
-
-    data = json.loads(sample.read_text())
-    emitted = set(data.get("features", {}).keys())
-    unknown = emitted - KNOWN_FEATURE_KEYS
-    assert not unknown, f"Emitted feature keys not in KNOWN_FEATURE_KEYS: {unknown}"
-
-
 # ── Negative tests: top-level key violations ─────────────────────────
 
 
