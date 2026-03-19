@@ -25,7 +25,7 @@ from cerebralos.features.build_patient_features_v1 import build_patient_features
 
 # Arrival day with:
 #   - TRAUMA_HP: SBP 82 (< 90 → shock), HR 128 (> 120 → tachycardia)
-#   - LAB: base deficit -8.2 (> 6 → BD shock trigger)
+#   - LAB: base deficit 8.2 (> 6 → BD shock trigger)
 #   - CONSULT_NOTE: Orthopedic Surgery with plan section
 _ARRIVAL_DAY = "2026-01-15"
 _ARRIVAL_TS = "2026-01-15 14:30:00"
@@ -52,7 +52,7 @@ _LAB_ITEM = {
     "payload": {
         "text": (
             "ABG (Arterial)\n"
-            "  Base Deficit        -8.2        mEq/L     (-2.0 - 2.0)  01/15/2026 14:45\n"
+            "  Base Deficit        8.2        mEq/L     (-2.0 - 2.0)  01/15/2026 14:45\n"
         ),
     },
 }
@@ -96,8 +96,8 @@ _DAYS_DATA = {
 
 class TestBuilderOrderDependentAssembly:
     """
-    Single end-to-end build from synthetic input, asserting all five
-    order-dependent feature outputs.
+    Single end-to-end build from synthetic input, asserting all seven
+    order-dependent feature outputs across the dependency graph.
     """
 
     @pytest.fixture(scope="class")
@@ -148,6 +148,20 @@ class TestBuilderOrderDependentAssembly:
         tv = features["shock_trigger_v1"].get("trigger_vitals") or {}
         assert tv.get("sbp") == 82.0, (
             f"trigger_vitals.sbp={tv.get('sbp')}; expected 82.0 from arrival vitals"
+        )
+
+    def test_shock_trigger_consumed_bd(self, features):
+        """shock_trigger must have consumed BD from base_deficit_monitoring_v1."""
+        st = features["shock_trigger_v1"]
+        tv = st.get("trigger_vitals") or {}
+        assert tv.get("bd_value") == 8.2, (
+            f"trigger_vitals.bd_value={tv.get('bd_value')}; expected 8.2 "
+            "proving BD was consumed from base_deficit_monitoring_v1"
+        )
+        rule = st.get("trigger_rule_id") or ""
+        assert "bd_gt6" in rule, (
+            f"trigger_rule_id={rule!r}; expected 'bd_gt6' substring "
+            "proving BD > 6 contributed to shock trigger"
         )
 
     def test_shock_trigger_has_evidence(self, features):
@@ -226,7 +240,7 @@ class TestBuilderOrderDependentAssembly:
     # ── Cross-chain consistency ──────────────────────────────────
 
     def test_all_order_dependent_keys_exist_in_features(self, features):
-        """Guard: all five order-dependent keys must be present."""
+        """Guard: all seven order-dependent keys must be present."""
         required = [
             "vitals_canonical_v1",
             "base_deficit_monitoring_v1",
