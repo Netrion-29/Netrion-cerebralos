@@ -79,7 +79,15 @@ KNOWN_FEATURE_KEYS = frozenset({
     "ventilator_settings_v1",
     "vitals_qa",
     "demographics_v1",
+    "trauma_daily_plan_by_day_v1",
+    "consultant_day_plans_by_day_v1",
+    "non_trauma_team_day_plans_v1",
 })
+
+
+def _lacks_raw_line_id(entry: Any) -> bool:
+    """True when *entry* is a dict without a truthy raw_line_id."""
+    return isinstance(entry, dict) and not entry.get("raw_line_id")
 
 
 # ── Validation logic ───────────────────────────────────────────────
@@ -158,7 +166,7 @@ def _check_evidence_line_ids(
 
             missing_count = 0
             for entry in entries:
-                if isinstance(entry, dict) and "raw_line_id" not in entry:
+                if _lacks_raw_line_id(entry):
                     missing_count += 1
 
             if missing_count > 0:
@@ -173,7 +181,7 @@ def _check_evidence_line_ids(
             if isinstance(bd_series, list):
                 bd_missing = sum(
                     1 for e in bd_series
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if bd_missing > 0:
                     errors.append(
@@ -187,7 +195,7 @@ def _check_evidence_line_ids(
             if isinstance(inr_series, list):
                 inr_missing = sum(
                     1 for e in inr_series
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if inr_missing > 0:
                     errors.append(
@@ -203,7 +211,7 @@ def _check_evidence_line_ids(
             if isinstance(fast_evidence, list):
                 fast_missing = sum(
                     1 for e in fast_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if fast_missing > 0:
                     errors.append(
@@ -217,7 +225,7 @@ def _check_evidence_line_ids(
             if isinstance(eu_evidence, list):
                 eu_missing = sum(
                     1 for e in eu_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if eu_missing > 0:
                     errors.append(
@@ -231,7 +239,7 @@ def _check_evidence_line_ids(
             if isinstance(ipd_evidence, list):
                 ipd_missing = sum(
                     1 for e in ipd_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if ipd_missing > 0:
                     errors.append(
@@ -246,7 +254,7 @@ def _check_evidence_line_ids(
                 if isinstance(de_ev, list):
                     de_missing = sum(
                         1 for e in de_ev
-                        if isinstance(e, dict) and "raw_line_id" not in e
+                        if _lacks_raw_line_id(e)
                     )
                     if de_missing > 0:
                         errors.append(
@@ -261,7 +269,7 @@ def _check_evidence_line_ids(
             if isinstance(st_evidence, list):
                 st_missing = sum(
                     1 for e in st_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if st_missing > 0:
                     errors.append(
@@ -275,7 +283,7 @@ def _check_evidence_line_ids(
             if isinstance(nt_evidence, list):
                 nt_missing = sum(
                     1 for e in nt_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if nt_missing > 0:
                     errors.append(
@@ -289,7 +297,7 @@ def _check_evidence_line_ids(
             if isinstance(ae_evidence, list):
                 ae_missing = sum(
                     1 for e in ae_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if ae_missing > 0:
                     errors.append(
@@ -303,7 +311,7 @@ def _check_evidence_line_ids(
             if isinstance(mr_evidence, list):
                 mr_missing = sum(
                     1 for e in mr_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if mr_missing > 0:
                     errors.append(
@@ -317,7 +325,7 @@ def _check_evidence_line_ids(
             if isinstance(sb_evidence, list):
                 sb_missing = sum(
                     1 for e in sb_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if sb_missing > 0:
                     errors.append(
@@ -331,7 +339,7 @@ def _check_evidence_line_ids(
             if isinstance(hip_evidence, list):
                 hip_missing = sum(
                     1 for e in hip_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if hip_missing > 0:
                     errors.append(
@@ -345,7 +353,7 @@ def _check_evidence_line_ids(
             if isinstance(rf_evidence, list):
                 rf_missing = sum(
                     1 for e in rf_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if rf_missing > 0:
                     errors.append(
@@ -359,7 +367,7 @@ def _check_evidence_line_ids(
             if isinstance(ns_evidence, list):
                 ns_missing = sum(
                     1 for e in ns_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if ns_missing > 0:
                     errors.append(
@@ -373,7 +381,7 @@ def _check_evidence_line_ids(
             if isinstance(is_evidence, list):
                 is_missing = sum(
                     1 for e in is_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if is_missing > 0:
                     errors.append(
@@ -387,7 +395,7 @@ def _check_evidence_line_ids(
             if isinstance(ac_evidence, list):
                 ac_missing = sum(
                     1 for e in ac_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if ac_missing > 0:
                     errors.append(
@@ -401,7 +409,7 @@ def _check_evidence_line_ids(
                 if isinstance(entries, list):
                     entry_missing = sum(
                         1 for e in entries
-                        if isinstance(e, dict) and "raw_line_id" not in e
+                        if _lacks_raw_line_id(e)
                     )
                     if entry_missing > 0:
                         errors.append(
@@ -415,7 +423,7 @@ def _check_evidence_line_ids(
             if isinstance(adt_evidence, list):
                 adt_missing = sum(
                     1 for e in adt_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if adt_missing > 0:
                     errors.append(
@@ -426,7 +434,7 @@ def _check_evidence_line_ids(
             if isinstance(adt_events, list):
                 evt_missing = sum(
                     1 for e in adt_events
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if evt_missing > 0:
                     errors.append(
@@ -440,7 +448,7 @@ def _check_evidence_line_ids(
             if isinstance(psa_evidence, list):
                 psa_missing = sum(
                     1 for e in psa_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if psa_missing > 0:
                     errors.append(
@@ -454,7 +462,7 @@ def _check_evidence_line_ids(
                 if isinstance(entries, list):
                     entry_missing = sum(
                         1 for e in entries
-                        if isinstance(e, dict) and "raw_line_id" not in e
+                        if _lacks_raw_line_id(e)
                     )
                     if entry_missing > 0:
                         errors.append(
@@ -468,7 +476,7 @@ def _check_evidence_line_ids(
             if isinstance(po_evidence, list):
                 po_ev_missing = sum(
                     1 for e in po_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if po_ev_missing > 0:
                     errors.append(
@@ -479,7 +487,7 @@ def _check_evidence_line_ids(
             if isinstance(po_events, list):
                 po_evt_missing = sum(
                     1 for e in po_events
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if po_evt_missing > 0:
                     errors.append(
@@ -496,7 +504,7 @@ def _check_evidence_line_ids(
                     if not isinstance(day_val, dict):
                         continue
                     for rec in day_val.get("records", []):
-                        if isinstance(rec, dict) and "raw_line_id" not in rec:
+                        if _lacks_raw_line_id(rec):
                             vc_missing += 1
                 if vc_missing > 0:
                     errors.append(
@@ -510,7 +518,7 @@ def _check_evidence_line_ids(
             if isinstance(sc_evidence, list):
                 sc_missing = sum(
                     1 for e in sc_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if sc_missing > 0:
                     errors.append(
@@ -524,7 +532,7 @@ def _check_evidence_line_ids(
             if isinstance(ni_evidence, list):
                 ni_missing = sum(
                     1 for e in ni_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if ni_missing > 0:
                     errors.append(
@@ -541,7 +549,7 @@ def _check_evidence_line_ids(
                     if not isinstance(dev, dict):
                         continue
                     for e in dev.get("evidence", []):
-                        if isinstance(e, dict) and "raw_line_id" not in e:
+                        if _lacks_raw_line_id(e):
                             lda_missing += 1
                 if lda_missing > 0:
                     errors.append(
@@ -571,7 +579,7 @@ def _check_evidence_line_ids(
                     if not isinstance(ev, dict):
                         continue
                     for e in ev.get("evidence", []):
-                        if isinstance(e, dict) and "raw_line_id" not in e:
+                        if _lacks_raw_line_id(e):
                             uo_missing += 1
                 if uo_missing > 0:
                     errors.append(
@@ -601,12 +609,12 @@ def _check_evidence_line_ids(
                             if comp_data.get("status") != "available":
                                 continue
                             for entry in comp_data.get("series", []):
-                                if isinstance(entry, dict) and "raw_line_id" not in entry:
+                                if _lacks_raw_line_id(entry):
                                     sl_missing += 1
                     # Check pf_ratio when available
                     pf = day_panels.get("pf_ratio", {})
                     if isinstance(pf, dict) and pf.get("status") == "available":
-                        if "raw_line_id" not in pf:
+                        if _lacks_raw_line_id(pf):
                             sl_missing += 1
                 if sl_missing > 0:
                     errors.append(
@@ -620,7 +628,7 @@ def _check_evidence_line_ids(
             if isinstance(tbp_evidence, list):
                 tbp_missing = sum(
                     1 for e in tbp_evidence
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if tbp_missing > 0:
                     errors.append(
@@ -634,7 +642,7 @@ def _check_evidence_line_ids(
             if isinstance(vs_events, list):
                 vs_missing = sum(
                     1 for e in vs_events
-                    if isinstance(e, dict) and "raw_line_id" not in e
+                    if _lacks_raw_line_id(e)
                 )
                 if vs_missing > 0:
                     errors.append(
