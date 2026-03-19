@@ -68,9 +68,9 @@ _ADMIN_CONFIRM_SIGNALS: list[re.Pattern[str]] = [
 _DISCONTINUE_PATTERNS: list[re.Pattern[str]] = [
     re.compile(r"\bDISCONTINUED\b"),
     re.compile(r"\bdiscontinued\b", re.IGNORECASE),
-    re.compile(r"\b(?:stop|stopped)\s+(?:keppra|levetiracetam|phenytoin|dilantin)\b", re.IGNORECASE),
-    re.compile(r"\b(?:keppra|levetiracetam|phenytoin|dilantin)\s+(?:was\s+)?discontinued\b", re.IGNORECASE),
-    re.compile(r"\b(?:keppra|levetiracetam|phenytoin|dilantin)\s+(?:was\s+)?stopped\b", re.IGNORECASE),
+    re.compile(r"\b(?:stop|stopped)\s+(?:keppra|levetiracetam|phenytoin|dilantin|depakote|valproate|valproic|vimpat|lacosamide)\b", re.IGNORECASE),
+    re.compile(r"\b(?:keppra|levetiracetam|phenytoin|dilantin|depakote|valproate|valproic|vimpat|lacosamide)\s+(?:was\s+)?discontinued\b", re.IGNORECASE),
+    re.compile(r"\b(?:keppra|levetiracetam|phenytoin|dilantin|depakote|valproate|valproic|vimpat|lacosamide)\s+(?:was\s+)?stopped\b", re.IGNORECASE),
 ]
 
 # ── Outpatient / home medication section markers ────────────────────
@@ -94,7 +94,12 @@ _FREQUENCY_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-_DNA = "DATA_NOT_AVAILABLE"
+# ── Negative MAR statuses (must NOT count as admin) ─────────────────
+_NEGATIVE_STATUS_PATTERNS: list[re.Pattern[str]] = [
+    re.compile(r"\bNot\s+Given\b", re.IGNORECASE),
+    re.compile(r"\bPatient\s+Refused\b", re.IGNORECASE),
+    re.compile(r"\bHeld\b"),
+]
 
 
 # ── Helpers ─────────────────────────────────────────────────────────
@@ -161,6 +166,11 @@ def _match_agent(line: str) -> Optional[str]:
             if pat.search(line):
                 return canonical
     return None
+
+
+def _has_negative_status(line: str) -> bool:
+    """Check if line contains a negative MAR status (Not Given, Patient Refused, Held)."""
+    return any(p.search(line) for p in _NEGATIVE_STATUS_PATTERNS)
 
 
 def _has_admin_signal(line: str) -> bool:
@@ -252,7 +262,7 @@ def extract_seizure_prophylaxis(
     admin_evidence: List[Dict[str, Any]] = []
     mention_evidence: List[Dict[str, Any]] = []
     discontinue_evidence: List[Dict[str, Any]] = []
-    dose_entries: List[Dict[str, str]] = []
+    dose_entries: List[Dict[str, Optional[str]]] = []
     agents_found: set[str] = set()
     home_med_detected = False
 
@@ -318,6 +328,17 @@ def extract_seizure_prophylaxis(
                     })
                     continue  # Don't double-count as admin/mention
 
+                # Negative MAR status — "Not Given", "Patient Refused",
+                # "Held" — must NOT count as admin evidence.
+                if _has_negative_status(stripped) or _has_negative_status(context_block):
+                    mention_evidence.append({
+                        "ts": item_dt,
+                        "raw_line_id": raw_line_id,
+                        "snippet": snip,
+                        "agent": agent,
+                    })
+                    continue
+
                 # Administration confirmation — check current line AND
                 # nearby context (MAR splits agent name / "Given" across lines)
                 if _has_admin_signal(stripped) or _has_admin_signal(context_block):
@@ -350,7 +371,7 @@ def extract_seizure_prophylaxis(
 
     # Deduplicate dose entries by (agent, dose_text, route, frequency)
     seen_doses: set[tuple] = set()
-    unique_doses: List[Dict[str, str]] = []
+    unique_doses: List[Dict[str, Optional[str]]] = []
     for d in dose_entries:
         key = (d["agent"], d["dose_text"], d.get("route"), d.get("frequency"))
         if key not in seen_doses:

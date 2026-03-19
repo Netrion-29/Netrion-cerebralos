@@ -27,6 +27,7 @@ from cerebralos.features.seizure_prophylaxis_v1 import (
     _match_agent,
     _has_admin_signal,
     _has_discontinue_signal,
+    _has_negative_status,
     _is_outpatient_section,
     _extract_dose_info,
     _normalize_route,
@@ -141,6 +142,32 @@ def test_discontinue_signal_was_discontinued():
 
 def test_discontinue_signal_absent():
     assert not _has_discontinue_signal("Continue Keppra 750mg BID")
+
+
+def test_discontinue_depakote():
+    assert _has_discontinue_signal("Stop Depakote due to elevated LFTs")
+
+
+def test_discontinue_vimpat():
+    assert _has_discontinue_signal("Vimpat was discontinued")
+
+
+# ── Unit tests: negative MAR status ─────────────────────────────────────
+
+def test_negative_status_not_given():
+    assert _has_negative_status("Not Given : 30 mg : Subcutaneous")
+
+
+def test_negative_status_patient_refused():
+    assert _has_negative_status("Patient Refused : 1 tablet : Oral")
+
+
+def test_negative_status_held():
+    assert _has_negative_status("Held : 500 mg : Oral")
+
+
+def test_negative_status_absent():
+    assert not _has_negative_status("Given 01/15/2025 0800")
 
 
 # ── Unit tests: outpatient section ──────────────────────────────────
@@ -409,3 +436,60 @@ def test_evidence_fields():
             assert "snippet" in e
             assert "agent" in e
             assert len(e["raw_line_id"]) == 16
+
+
+# ── Integration: negative MAR status must NOT count as admin ─────────
+
+KEPPRA_NOT_GIVEN = """\
+levETIRAcetam
+Not Given  01/15/2025 0800
+1,000 mg  Intravenous  Scheduled  Q12H
+"""
+
+
+def test_keppra_not_given_mar():
+    """MAR 'Not Given' must NOT produce admin evidence."""
+    days = _make_days_data(items_by_day={
+        "2025-01-15": [_make_item(KEPPRA_NOT_GIVEN, item_type="MAR",
+                                   dt="2025-01-15T08:00:00")],
+    })
+    result = extract_seizure_prophylaxis(_pat_features(), days)
+    assert result["detected"] is True
+    assert result["admin_evidence_count"] == 0
+    assert result["mention_evidence_count"] >= 1
+
+
+KEPPRA_PATIENT_REFUSED = """\
+levETIRAcetam (KEPPRA) 500 mg tablet
+Patient Refused  01/15/2025 2000
+"""
+
+
+def test_keppra_patient_refused_mar():
+    """MAR 'Patient Refused' must NOT produce admin evidence."""
+    days = _make_days_data(items_by_day={
+        "2025-01-15": [_make_item(KEPPRA_PATIENT_REFUSED, item_type="MAR",
+                                   dt="2025-01-15T20:00:00")],
+    })
+    result = extract_seizure_prophylaxis(_pat_features(), days)
+    assert result["detected"] is True
+    assert result["admin_evidence_count"] == 0
+    assert result["mention_evidence_count"] >= 1
+
+
+KEPPRA_HELD = """\
+levETIRAcetam
+Held : 500 mg : Oral
+"""
+
+
+def test_keppra_held_mar():
+    """MAR 'Held' must NOT produce admin evidence."""
+    days = _make_days_data(items_by_day={
+        "2025-01-15": [_make_item(KEPPRA_HELD, item_type="MAR",
+                                   dt="2025-01-15T08:00:00")],
+    })
+    result = extract_seizure_prophylaxis(_pat_features(), days)
+    assert result["detected"] is True
+    assert result["admin_evidence_count"] == 0
+    assert result["mention_evidence_count"] >= 1
