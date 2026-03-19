@@ -42,7 +42,7 @@ Codex/Claude may not declare "done" until:
 passes.
 
 Default gate patients:
-Anna_Dennis, William_Simmons, Timothy_Cowan, Timothy_Nachtwey
+Betty_Roll, David_Gross, Johnny_Stokes, Larry_Corne, Ronald_Bittner, Roscella_Weatherly
 
 ## Baseline drift checking
 - Normal mode (`./scripts/gate_pr.sh`): compares sha256 of each

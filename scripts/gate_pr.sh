@@ -35,7 +35,7 @@ done
 if [ "${#ARGS[@]}" -gt 0 ]; then
   PATS=("${ARGS[@]}")
 else
-  PATS=("Anna_Dennis" "William Simmons" "Timothy_Cowan" "Timothy_Nachtwey")
+  PATS=("Betty Roll" "David_Gross" "Johnny Stokes" "Larry_Corne" "Ronald Bittner" "Roscella Weatherly")
 fi
 
 echo "=============================================="

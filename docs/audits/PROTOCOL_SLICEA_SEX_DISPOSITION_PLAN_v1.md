@@ -336,7 +336,7 @@ Captures terminal outcomes.
 - [ ] `pytest tests/ -x` (full suite) passes
 - [ ] `./scripts/gate_pr.sh` passes (baseline drift check)
 - [ ] `patient_features_v1.json` contract validator passes
-- [ ] Manual spot-check: 4 gate patients (Anna_Dennis, William_Simmons, Timothy_Cowan, Timothy_Nachtwey) have correct sex and disposition values
+- [ ] Manual spot-check: 6 gate patients (Betty_Roll, David_Gross, Johnny_Stokes, Larry_Corne, Ronald_Bittner, Roscella_Weatherly) have correct sex and disposition values
 - [ ] No changes to protected engines (`ntds_logic/engine.py`, `protocol_engine/engine.py`)
 - [ ] No changes to v3/v4 renderer outputs
 

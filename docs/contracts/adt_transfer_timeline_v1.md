@@ -133,7 +133,7 @@ The `report_features_qa.py` renders:
 
 ## Gate Patients
 
-Standard gate: Anna_Dennis, William_Simmons, Timothy_Cowan, Timothy_Nachtwey.
+Standard gate: Betty_Roll, David_Gross, Johnny_Stokes, Larry_Corne, Ronald_Bittner, Roscella_Weatherly.
 ADT-positive validation: Michael_Dougan (header), Gary_Linder (embedded note),
 Ronald Bittner (headerless variant).
 
