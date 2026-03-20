@@ -85,7 +85,6 @@ _AGENT_PATTERNS: list[Tuple[str, list[re.Pattern[str]]]] = [
     ]),
     ("ciprofloxacin", [
         re.compile(r"\bciprofloxacin\b", re.IGNORECASE),
-        re.compile(r"\bcipro\b", re.IGNORECASE),
     ]),
     # ── Lincosamides ──
     ("clindamycin", [
@@ -130,10 +129,34 @@ _AGENT_PATTERNS: list[Tuple[str, list[re.Pattern[str]]]] = [
 
 # ── Allergy section markers (lines in these sections are excluded) ──
 _ALLERGY_SECTION_PATTERNS: list[re.Pattern[str]] = [
-    re.compile(r"^Allerg(?:ies|y)\s*$", re.IGNORECASE),
+    re.compile(r"^Allerg(?:ies|y):?\s*$", re.IGNORECASE),
     re.compile(r"^Allergen\s+Reactions?\s*$", re.IGNORECASE),
     re.compile(r"^Allergy\s+(?:List|Review)", re.IGNORECASE),
 ]
+
+# ── Outpatient / home medication section markers ───────────────────
+# Antibiotics listed in these sections are home medications, not
+# inpatient administrations.
+_OUTPATIENT_SECTION_PATTERNS: list[re.Pattern[str]] = [
+    re.compile(r"Current\s+Outpatient\s+Medications?\s+on\s+File", re.IGNORECASE),
+    re.compile(r"Outpatient\s+Medications?\s+(?:Prior|Before)", re.IGNORECASE),
+    re.compile(r"Home\s+Medications?", re.IGNORECASE),
+    re.compile(r"Medications?\s+Prior\s+to\s+(?:Admission|Encounter)", re.IGNORECASE),
+]
+
+# ── Discharge instruction section markers ──────────────────────────
+# Generic antibiotic language in discharge instructions is not admin.
+_DISCHARGE_INSTRUCTION_PATTERNS: list[re.Pattern[str]] = [
+    re.compile(r"^Discharge\s+Instructions?", re.IGNORECASE),
+    re.compile(r"^Instructions?\s+(?:Upon|After|at)\s+Discharge", re.IGNORECASE),
+    re.compile(r"^Patient\s+Instructions?", re.IGNORECASE),
+]
+
+# ── Allergy-line detector (tab-separated drug + reaction) ──────────
+_ALLERGY_LINE_PATTERN = re.compile(
+    r"^[•\t\s]*.*\t+\s*(?:Hives|Anaphylaxis|Rash|Other/Unknown|Swelling|Nausea|Itching)",
+    re.IGNORECASE,
+)
 
 # ── Administration confirmation signals ─────────────────────────────
 _ADMIN_CONFIRM_SIGNALS: list[re.Pattern[str]] = [
@@ -151,6 +174,10 @@ _DISCONTINUE_PATTERNS: list[re.Pattern[str]] = [
     re.compile(r"\bcompleted\s+course\b", re.IGNORECASE),
     re.compile(r"\bcompleted\b.*\b(?:antibiotic|abx)\b", re.IGNORECASE),
     re.compile(r"\b(?:antibiotic|abx)\b.*\bcompleted\b", re.IGNORECASE),
+    # Bracket-format status markers from Epic med roster
+    re.compile(r"\[DISCONTINUED\]", re.IGNORECASE),
+    re.compile(r"\[COMPLETED\]", re.IGNORECASE),
+    re.compile(r"\bcan\s+stop\b", re.IGNORECASE),
 ]
 
 # ── Negative MAR statuses ──────────────────────────────────────────
@@ -239,6 +266,21 @@ def _has_discontinue_signal(line: str) -> bool:
 def _is_allergy_section(line: str) -> bool:
     """Check if line marks the start of an allergy section."""
     return any(p.search(line) for p in _ALLERGY_SECTION_PATTERNS)
+
+
+def _is_allergy_line(line: str) -> bool:
+    """Check if line is a tab-separated allergy entry (drug + reaction)."""
+    return bool(_ALLERGY_LINE_PATTERN.search(line))
+
+
+def _is_outpatient_section(line: str) -> bool:
+    """Check if line marks the start of an outpatient / home medication section."""
+    return any(p.search(line) for p in _OUTPATIENT_SECTION_PATTERNS)
+
+
+def _is_discharge_instruction_section(line: str) -> bool:
+    """Check if line marks the start of a discharge instruction section."""
+    return any(p.search(line) for p in _DISCHARGE_INSTRUCTION_PATTERNS)
 
 
 def _extract_dose_info(line: str, agent: str) -> Optional[Dict[str, Optional[str]]]:
@@ -371,6 +413,8 @@ def extract_antibiotic_admin(
             source_id = item.get("id", "")
 
             in_allergy_section = False
+            in_outpatient_section = False
+            in_discharge_instruction_section = False
             lines = text.split("\n")
 
             for idx, line in enumerate(lines):
@@ -384,15 +428,43 @@ def extract_antibiotic_admin(
                     in_allergy_section = True
                     continue
 
-                # Exit allergy section on next section header
-                if in_allergy_section and re.match(
+                # Track outpatient / home medication section context
+                if _is_outpatient_section(stripped):
+                    in_outpatient_section = True
+                    continue
+
+                # Track discharge instruction section context
+                if _is_discharge_instruction_section(stripped):
+                    in_discharge_instruction_section = True
+                    continue
+
+                # Exit section context on next section header
+                if (in_allergy_section or in_outpatient_section
+                        or in_discharge_instruction_section) and re.match(
                     r"^[A-Z][A-Za-z ]+:?\s*$", stripped,
                 ):
-                    if not _is_allergy_section(stripped):
+                    if not (_is_allergy_section(stripped)
+                            or _is_outpatient_section(stripped)
+                            or _is_discharge_instruction_section(stripped)):
                         in_allergy_section = False
+                        in_outpatient_section = False
+                        in_discharge_instruction_section = False
 
                 # Skip lines inside allergy sections
                 if in_allergy_section:
+                    continue
+
+                # Skip lines inside outpatient / home med sections
+                if in_outpatient_section:
+                    continue
+
+                # Skip lines inside discharge instruction sections
+                if in_discharge_instruction_section:
+                    continue
+
+                # Skip individual allergy-format lines (tab-separated
+                # drug + reaction) even if allergy header was missed.
+                if _is_allergy_line(stripped):
                     continue
 
                 agent = _match_agent(stripped)
@@ -403,19 +475,23 @@ def extract_antibiotic_admin(
                 raw_line_id = _make_raw_line_id(source_id, item_dt, stripped[:80])
                 snip = _snippet(stripped)
 
-                # Build context window (current + next 4 lines) for
+                # Build context window (current + next 2 lines) for
                 # multi-line MAR entries where agent, dose, route, freq
-                # are on separate lines.
+                # are on separate lines.  Kept narrow (2 lines, not 4)
+                # to prevent cross-medication admin signal bleed.
                 context_lines = [stripped]
-                for offset in range(1, 5):
+                for offset in range(1, 3):
                     if idx + offset < len(lines):
                         nl = lines[idx + offset].strip()
                         if nl:
                             context_lines.append(nl)
                 context_block = " ".join(context_lines)
 
-                # Discontinuation / completion detection
-                if _has_discontinue_signal(stripped) or _has_discontinue_signal(context_block):
+                # Discontinuation / completion detection.
+                # Only check the current line — context_block scanning
+                # for discontinue creates false positives when an
+                # unrelated "discontinued" appears on a nearby line.
+                if _has_discontinue_signal(stripped):
                     discontinue_evidence.append({
                         "ts": item_dt,
                         "raw_line_id": raw_line_id,
