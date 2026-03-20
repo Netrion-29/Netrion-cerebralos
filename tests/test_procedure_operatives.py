@@ -482,6 +482,14 @@ class TestCPTCodeExtraction:
         """'VEST CPT' (chest physiotherapy) is not a CPT code."""
         assert _extract_cpt_codes("Continue VEST CPT with saline") == []
 
+    def test_vest_cpt_with_5digit_code_excluded(self):
+        """'VEST CPT 30905' must not be captured as CPT 30905."""
+        assert _extract_cpt_codes("Continue VEST CPT 30905 daily") == []
+
+    def test_vest_cpt_extra_spacing_excluded(self):
+        """'VEST  CPT 30905' with extra spacing still excluded."""
+        assert _extract_cpt_codes("Continue VEST  CPT 30905 daily") == []
+
     def test_narrative_cpt_codes_no_number(self):
         """Narrative 'CPT Codes for chemo' without actual code → empty."""
         assert _extract_cpt_codes("billing (CPT Codes for chemo)") == []

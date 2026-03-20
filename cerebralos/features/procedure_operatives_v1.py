@@ -185,10 +185,11 @@ def _extract_cpt_codes(text: str) -> List[str]:
     seen: set[str] = set()
     codes: List[str] = []
     for m in _RE_CPT_CODE.finditer(text):
-        # Guard: reject "VEST CPT" (chest physiotherapy)
+        # Guard: reject "VEST CPT" (chest physiotherapy).
+        # Use a wider lookback window so variable spacing still matches.
         start = m.start()
-        prefix = text[max(0, start - 5):start].strip().upper()
-        if prefix.endswith("VEST"):
+        prefix = text[max(0, start - 10):start]
+        if re.search(r"VEST\s*$", prefix, re.IGNORECASE):
             continue
         code = m.group(1)
         if code not in seen:
