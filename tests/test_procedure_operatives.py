@@ -10,6 +10,7 @@ import pytest
 
 from cerebralos.features.procedure_operatives_v1 import (
     extract_procedure_operatives,
+    _extract_cpt_codes,
     _extract_label,
     _extract_milestones,
     _extract_preop_dx,
@@ -435,3 +436,118 @@ class TestDeterminism:
         r1 = extract_procedure_operatives(_empty_features(), days_data)
         r2 = extract_procedure_operatives(_empty_features(), days_data)
         assert r1 == r2
+
+
+# ── Tests: CPT code extraction ─────────────────────────────────────
+
+class TestCPTCodeExtraction:
+    """Unit tests for _extract_cpt_codes helper."""
+
+    def test_explicit_cpt_space(self):
+        """'CPT 30905' → ['30905']."""
+        assert _extract_cpt_codes("Control of nasal bleeding  CPT 30905") == ["30905"]
+
+    def test_explicit_cpt_colon(self):
+        """'CPT: 31622' → ['31622']."""
+        assert _extract_cpt_codes("Bronchoscopy CPT: 31622") == ["31622"]
+
+    def test_explicit_cpt_hash(self):
+        """'CPT #27236' → ['27236']."""
+        assert _extract_cpt_codes("ORIF femur CPT #27236") == ["27236"]
+
+    def test_case_insensitive(self):
+        """'cpt 30905' → ['30905']."""
+        assert _extract_cpt_codes("nasal bleeding  cpt 30905") == ["30905"]
+
+    def test_multiple_cpts(self):
+        """Two CPT codes on one line."""
+        text = "Procedure: ORIF  CPT 27236|Bronchoscopy  CPT 31622"
+        codes = _extract_cpt_codes(text)
+        assert codes == ["27236", "31622"]
+
+    def test_duplicate_cpts_deduped(self):
+        """Same CPT repeated → single entry."""
+        text = "CPT 30905|Repeated: CPT 30905"
+        assert _extract_cpt_codes(text) == ["30905"]
+
+    def test_no_cpt_present(self):
+        """No CPT token → empty list."""
+        assert _extract_cpt_codes("ORIF distal radius fracture") == []
+
+    def test_empty_string(self):
+        """Empty text → empty list."""
+        assert _extract_cpt_codes("") == []
+
+    def test_vest_cpt_excluded(self):
+        """'VEST CPT' (chest physiotherapy) is not a CPT code."""
+        assert _extract_cpt_codes("Continue VEST CPT with saline") == []
+
+    def test_narrative_cpt_codes_no_number(self):
+        """Narrative 'CPT Codes for chemo' without actual code → empty."""
+        assert _extract_cpt_codes("billing (CPT Codes for chemo)") == []
+
+    def test_partial_4_digit_code(self):
+        """4-digit code after CPT is not valid (must be 5)."""
+        assert _extract_cpt_codes("CPT 3090") == []
+
+    def test_6_digit_code_rejected(self):
+        """6-digit code → only first 5 digits captured if boundary exists."""
+        # "309050" has no word boundary after 5 digits, so no match
+        assert _extract_cpt_codes("CPT 309050") == []
+
+
+class TestCPTIntegration:
+    """Integration tests: CPT codes in full extractor output."""
+
+    def test_cpt_on_procedure_event(self):
+        """Procedure item with explicit CPT → cpt_codes in event."""
+        days_data = _make_days_data({
+            "2026-01-05": [{
+                "type": "PROCEDURE",
+                "dt": "2026-01-05T14:00:00",
+                "text": "Surgical Procedure Performed:  "
+                        "Control of posterior nasal bleeding    CPT 30905",
+            }]
+        })
+        result = extract_procedure_operatives(_empty_features(), days_data)
+        assert result["events"][0]["cpt_codes"] == ["30905"]
+
+    def test_no_cpt_field_when_absent(self):
+        """Procedure item without CPT → no cpt_codes key on event."""
+        days_data = _make_days_data({
+            "2026-01-05": [{
+                "type": "PROCEDURE",
+                "dt": "2026-01-05T14:00:00",
+                "text": "Procedure: ORIF distal radius fracture",
+            }]
+        })
+        result = extract_procedure_operatives(_empty_features(), days_data)
+        assert "cpt_codes" not in result["events"][0]
+
+    def test_multiple_cpts_on_event(self):
+        """Multiple CPT codes in one procedure text."""
+        days_data = _make_days_data({
+            "2026-01-05": [{
+                "type": "OP_NOTE",
+                "dt": "2026-01-05T10:00:00",
+                "text": "Procedure: Debridement and closure\n"
+                        "CPT 27236\nCPT 31622",
+            }]
+        })
+        result = extract_procedure_operatives(_empty_features(), days_data)
+        assert result["events"][0]["cpt_codes"] == ["27236", "31622"]
+
+    def test_raw_line_id_present_with_cpt(self):
+        """Event with CPT still has raw_line_id for traceability."""
+        days_data = _make_days_data({
+            "2026-01-05": [{
+                "type": "PROCEDURE",
+                "dt": "2026-01-05T14:00:00",
+                "text": "Control of bleeding CPT 30905",
+                "raw_line_id": "abc123",
+            }]
+        })
+        result = extract_procedure_operatives(_empty_features(), days_data)
+        ev = result["events"][0]
+        assert ev["cpt_codes"] == ["30905"]
+        assert ev["raw_line_id"] == "abc123"

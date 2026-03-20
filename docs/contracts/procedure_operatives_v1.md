@@ -52,6 +52,7 @@ Items not in this map are ignored (fail-closed).
       ],
       "anesthesia_type": "General",    // optional
       "asa_status": "3",               // optional
+      "cpt_codes": ["30905"],           // optional, explicit CPT only
       "raw_line_id": "item:2025-12-31:22",
       "evidence": [
         {
@@ -95,6 +96,25 @@ Labels are extracted from explicit structured headings only:
 
 No procedure labels are inferred from narrative, radiology, or
 impression text.
+
+## CPT Code Extraction
+
+Explicit CPT codes are extracted when the literal token `CPT` appears
+followed by a 5-digit code (standard CPT-4 format).  The field
+`cpt_codes` is an optional list on each event — only present when at
+least one explicit CPT code is found.
+
+**Extraction rules:**
+
+- Requires the literal token `CPT` (case-insensitive) preceding a
+  5-digit number.
+- Chest physiotherapy references (`VEST CPT`) are excluded.
+- Narrative mentions without an actual code value (`CPT Codes for
+  chemo`) produce no output.
+- Bare 5-digit numbers without a `CPT` label are NOT captured
+  (fail-closed).
+- Partial codes (4 digits) and overlong codes (6+ digits) are rejected.
+- Duplicate codes within the same event are deduplicated.
 
 ## Anesthesia Milestones
 
