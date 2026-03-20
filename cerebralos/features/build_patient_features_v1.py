@@ -99,6 +99,7 @@ from cerebralos.features.transfusion_blood_products_v1 import extract_transfusio
 from cerebralos.features.ventilator_settings_v1 import extract_ventilator_settings
 from cerebralos.features.trauma_daily_plan_by_day_v1 import extract_trauma_daily_plan_by_day
 from cerebralos.features.seizure_prophylaxis_v1 import extract_seizure_prophylaxis
+from cerebralos.features.antibiotic_admin_v1 import extract_antibiotic_admin
 from cerebralos.features.consultant_day_plans_by_day_v1 import extract_consultant_day_plans_by_day
 from cerebralos.features.non_trauma_team_day_plans_v1 import extract_non_trauma_team_day_plans
 
@@ -554,6 +555,12 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         days_data,                # full days_json for raw text access
     )
 
+    # ── Antibiotic Administration v1 (cross-day, trauma protocol data element) ──
+    antibiotic_admin = extract_antibiotic_admin(
+        {"days": feature_days},  # pat_features subset
+        days_data,                # full days_json for raw text access
+    )
+
     # ── Assemble features dict (all feature modules live here) ──
     features: Dict[str, Any] = {
         "vitals_canonical_v1": {
@@ -587,6 +594,7 @@ def build_patient_features(days_data: Dict[str, Any]) -> Dict[str, Any]:
         "trauma_daily_plan_by_day_v1": trauma_daily_plan_by_day,
         "structured_labs_v1": structured_labs,
         "seizure_prophylaxis_v1": seizure_prophylaxis,
+        "antibiotic_admin_v1": antibiotic_admin,
         "vitals_qa": agg_vitals_qa,
     }
 
