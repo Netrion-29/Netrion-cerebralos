@@ -715,7 +715,7 @@ class TestDoseEntries:
 
 
 class TestFalsePositiveDefense:
-    def test_generic_antibiotics_no_not_match(self):
+    def test_generic_antibiotics_no_match(self):
         """Generic 'Antibiotics: no' must not trigger detection."""
         text = "Antibiotics: no"
         days_data = _make_days_data({

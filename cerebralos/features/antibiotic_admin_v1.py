@@ -37,17 +37,14 @@ _AGENT_PATTERNS: list[Tuple[str, list[re.Pattern[str]]]] = [
     # ── Cephalosporins ──
     ("cefazolin", [
         re.compile(r"\bcefazolin\b", re.IGNORECASE),
-        re.compile(r"\bceFAZolin\b"),  # Epic mixed-case
         re.compile(r"\bancef\b", re.IGNORECASE),
     ]),
     ("ceftriaxone", [
         re.compile(r"\bceftriaxone\b", re.IGNORECASE),
-        re.compile(r"\bcefTRIAXone\b"),  # Epic mixed-case
         re.compile(r"\brocephin\b", re.IGNORECASE),
     ]),
     ("cefepime", [
         re.compile(r"\bcefepime\b", re.IGNORECASE),
-        re.compile(r"\bceFEPIme\b"),  # Epic mixed-case
         re.compile(r"\bmaxipime\b", re.IGNORECASE),
     ]),
     ("ceftazidime", [
@@ -184,7 +181,7 @@ _DISCONTINUE_PATTERNS: list[re.Pattern[str]] = [
 _NEGATIVE_STATUS_PATTERNS: list[re.Pattern[str]] = [
     re.compile(r"\bNot\s+Given\b", re.IGNORECASE),
     re.compile(r"\bPatient\s+Refused\b", re.IGNORECASE),
-    re.compile(r"\bHeld\b"),
+    re.compile(r"\bHeld\b", re.IGNORECASE),
 ]
 
 # ── Dose extraction ─────────────────────────────────────────────────
@@ -200,26 +197,6 @@ _FREQUENCY_PATTERN = re.compile(
     r"Q6H|q6h|Q24H|q24h|Q18H|q18h|EVERY\s+\d+\s+HOURS?|"
     r"3\s+times\s+per\s+day|once\s+daily)\b",
     re.IGNORECASE,
-)
-
-# ── MAR structured format: bullet-point multi-line entries ──────────
-# Pattern for lines like:
-#   ceFAZolin 2 g in sodium chloride 0.9% 50mL IVPB  3 times per day
-_INLINE_MED_PATTERN = re.compile(
-    r"^(?:\[START\s+ON\s+[\d/]+\]\s*)?"
-    r"([\w\-]+(?:\s*\([\w\s]+\))?(?:\s+IV)?)\s+"
-    r"(\d[\d,]*(?:\.\d+)?)\s*(mg|g|gm|mcg)\b",
-    re.IGNORECASE,
-)
-
-# Start-date pattern: [START ON MM/DD/YYYY]
-_START_DATE_PATTERN = re.compile(
-    r"\[START\s+ON\s+(\d{1,2}/\d{1,2}/\d{4})\]", re.IGNORECASE,
-)
-
-# Dose/Frequency/Start/End table header pattern
-_ORDER_TABLE_PATTERN = re.compile(
-    r"Dose\s+Frequency\s+Start\s+End", re.IGNORECASE,
 )
 
 
@@ -313,7 +290,7 @@ def _normalize_route(raw: str) -> str:
 def _normalize_frequency(raw: str) -> str:
     """Normalize frequency to a consistent representation."""
     upper = raw.upper().strip()
-    # Normalize "3 times per day" → "TID", "EVERY 8 HOURS" → "Q8H", etc.
+    # Normalize "3 times per day" → "Q8H", "EVERY 8 HOURS" → "Q8H", etc.
     if re.match(r"3\s+TIMES\s+PER\s+DAY", upper):
         return "Q8H"
     if re.match(r"ONCE\s+DAILY", upper):
