@@ -2518,6 +2518,32 @@ class TestSeizureProphylaxisRendering(unittest.TestCase):
         self.assertIn("First mention:  2026-01-01T09:00:00", result)
         self.assertNotIn("First admin:", result)
 
+    def test_seizure_dose_truncation(self):
+        """More than 3 dose entries should show truncation; 4th must not render."""
+        data = _minimal_features()
+        doses = [
+            {"agent": f"sz_{i}", "dose_text": f"{i}00 mg", "route": "PO", "frequency": "BID"}
+            for i in range(5)
+        ]
+        data["features"]["seizure_prophylaxis_v1"] = {
+            "detected": True,
+            "agents": [f"sz_{i}" for i in range(5)],
+            "home_med_present": False,
+            "first_admin_ts": "2026-01-01T08:00:00",
+            "discontinued": False,
+            "admin_evidence_count": 5,
+            "dose_entries": doses,
+        }
+        result = render_v5(data)
+        # First 3 should be present
+        self.assertIn("(sz_0)", result)
+        self.assertIn("(sz_2)", result)
+        # 4th and 5th must NOT appear
+        self.assertNotIn("(sz_3)", result)
+        self.assertNotIn("(sz_4)", result)
+        # Truncation notice
+        self.assertIn("+2 more dose entries", result)
+
     def test_seizure_prophylaxis_determinism(self):
         """Two renders produce identical output."""
         data = _minimal_features()

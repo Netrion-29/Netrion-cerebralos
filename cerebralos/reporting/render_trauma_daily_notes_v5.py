@@ -67,6 +67,12 @@ _MAX_URINE_SAMPLES = 8
 # Max length for a single plan item display line
 _MAX_PLAN_ITEM_LEN = 120
 
+# Deterministic cap for seizure prophylaxis dose lines
+_MAX_SEIZURE_DOSE_LINES = 3
+
+# Deterministic cap for antibiotic dose lines
+_MAX_ANTIBIOTIC_DOSE_LINES = 5
+
 # ── B7 Narrative Integration Constants ───────────────────────────
 
 # Timeline item types that carry clinically useful narrative text,
@@ -111,6 +117,22 @@ def _fv(val: Any, decimals: int = 1) -> str:
     if isinstance(val, float):
         return f"{val:.{decimals}f}"
     return str(val)
+
+
+def _render_dose_entries(
+    doses: List[Dict[str, Any]], max_lines: int, out: List[str],
+) -> None:
+    """Append formatted dose lines to *out*, truncating beyond *max_lines*."""
+    for d in doses[:max_lines]:
+        parts = [d.get("dose_text", "")]
+        if d.get("route"):
+            parts.append(d["route"])
+        if d.get("frequency"):
+            parts.append(d["frequency"])
+        agent_tag = f" ({d['agent']})" if d.get("agent") else ""
+        out.append(f"        Dose:           {' '.join(p for p in parts if p)}{agent_tag}")
+    if len(doses) > max_lines:
+        out.append(f"        ... +{len(doses) - max_lines} more dose entries")
 
 
 def _fb(val: Any) -> str:
@@ -986,14 +1008,7 @@ def _render_prophylaxis(feats: Dict[str, Any]) -> List[str]:
                 out.append(f"        Admin evidence: {admin_count}")
             doses = szr.get("dose_entries", [])
             if doses:
-                for d in doses[:3]:
-                    parts = [d.get("dose_text", "")]
-                    if d.get("route"):
-                        parts.append(d["route"])
-                    if d.get("frequency"):
-                        parts.append(d["frequency"])
-                    agent_tag = f" ({d['agent']})" if d.get("agent") else ""
-                    out.append(f"        Dose:           {' '.join(p for p in parts if p)}{agent_tag}")
+                _render_dose_entries(doses, _MAX_SEIZURE_DOSE_LINES, out)
         else:
             out.append(f"  Seizure Prophylaxis: Not detected")
     else:
@@ -1021,16 +1036,7 @@ def _render_prophylaxis(feats: Dict[str, Any]) -> List[str]:
                 out.append(f"        Admin evidence: {admin_count}")
             doses = abx.get("dose_entries", [])
             if doses:
-                for d in doses[:5]:
-                    parts = [d.get("dose_text", "")]
-                    if d.get("route"):
-                        parts.append(d["route"])
-                    if d.get("frequency"):
-                        parts.append(d["frequency"])
-                    agent_tag = f" ({d['agent']})" if d.get("agent") else ""
-                    out.append(f"        Dose:           {' '.join(p for p in parts if p)}{agent_tag}")
-                if len(doses) > 5:
-                    out.append(f"        ... +{len(doses) - 5} more dose entries")
+                _render_dose_entries(doses, _MAX_ANTIBIOTIC_DOSE_LINES, out)
         else:
             out.append(f"  Antibiotics: Not detected")
     else:
