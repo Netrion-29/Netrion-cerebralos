@@ -661,6 +661,7 @@ finding undergoes classification before implementation work begins.
 | AUD-014 | Repo-hardening review | Provenance validation strictness mismatch: `validate_evidence_raw_line_id.py` rejects empty `raw_line_id` (`if not rid:`); `validate_patient_features_contract_v1.py` only checks key presence (`"raw_line_id" not in entry`), so `raw_line_id: ""` passes contract validation | TIGHTEN NEXT | `cerebralos/validation/validate_evidence_raw_line_id.py` L45 (falsy check); `cerebralos/validation/validate_patient_features_contract_v1.py` L161 (presence-only check) | — | Not started | Smallest fix: change contract validator to `if not entry.get("raw_line_id"):` for parity with evidence validator | 2026-03-18 |
 | AUD-015 | Repo-hardening review | v3 output drift blind spot: `gate_pr.sh` baselines v4 and v5 rendered outputs (L15–L16), not v3; `_regression_phase1_v2.py` protects v3 renderer file hash, not rendered v3 output; upstream changes could alter v3 output without a rendered-output baseline failure | TIGHTEN NEXT | `scripts/gate_pr.sh` L15–L16 (v4+v5 only); `_regression_phase1_v2.py` L32 (PATIENTS); v3 files exist in `outputs/reporting/` but no hash baseline | — | Not started | Smallest fix: add `v3_hashes_v1.json` baseline + v3 hash check in `gate_pr.sh` (mirrors v4/v5 pattern) | 2026-03-18 |
 | AUD-016 | Repo-hardening review | Determinism check is too narrow: `_regression_phase1_v2.py` reruns only `PATIENTS[0]` (Anna_Dennis) for determinism verification (L492); patient-specific nondeterminism in the other 3 gate patients would be missed | TIGHTEN NEXT | `_regression_phase1_v2.py` L32 (PATIENTS list), L492 (`det_pat = PATIENTS[0]`), L493–L512 (single-patient determinism loop) | This PR | ✅ Complete | Determinism rerun loops all 4 gate patients; per-patient PASS/FAIL output; gate verified | 2026-03-18 |
+| AUD-017 | Audit ledger consolidation | Protocol + NTDS extraction audit findings consolidated into durable repo docs — protocol completion ledger (186 elements across 6 status tiers) and NTDS support ledger (E01–E21 with tier classification and LDA detail) | KEEP NOW | Codebase audit + raw-file scan of 6 patients; cross-referenced against `PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` | Docs-only consolidation PR | ✅ Complete | `docs/audits/PROTOCOL_EXTRACTION_COMPLETION_LEDGER_v1.md`, `docs/audits/NTDS_EXTRACTION_SUPPORT_LEDGER_v1.md` | 2026-03-21 |
 
 > **Classification key:** `KEEP NOW` = implement in next PR cycle; `TIGHTEN NEXT` = approved but queued after current priorities; `DEFER` = recognized but not scheduled (low certainty, low impact, or blocked).
 
@@ -669,6 +670,38 @@ All four findings are now ✅ COMPLETE.
 1. ~~**Validator hardening** (#26)~~: ✅ COMPLETE — contract leak guard sync (AUD-013) + provenance parity (AUD-014) merged.
 2. ~~**v3 output baseline** (#27)~~: ✅ COMPLETE — rendered-output hash baseline for v3 added to `gate_pr.sh` (AUD-015, PR #271).
 3. ~~**Determinism broadening** (#28)~~: ✅ COMPLETE — determinism rerun now loops all 4 gate patients (AUD-016).
+
+##### Audit Ledger Consolidation (AUD-017) — 2026-03-21
+
+Protocol and NTDS extraction audit findings consolidated into two durable
+ledger docs. These preserve findings from chat-transcript audits in-repo
+so they survive session turnover.
+
+**Ledger docs:**
+- `docs/audits/PROTOCOL_EXTRACTION_COMPLETION_LEDGER_v1.md` — 186 protocol
+  elements across 6 status tiers (65 extracted-and-usable, 5 extracted-but-not-rendered,
+  46 partially-extracted, 22 missing-with-evidence, 48 no-cohort-evidence)
+- `docs/audits/NTDS_EXTRACTION_SUPPORT_LEDGER_v1.md` — E01–E21 event-by-event
+  with tier classification (10 Tier 1 fully operational, 6 Tier 2 operational with gaps,
+  4 Tier 3 partial), LDA gate detail, and protected-engine future-fix track
+
+**Highest-confidence next actions (protocol):**
+1. Wire seizure prophylaxis / antibiotic admin / transfusion / vent settings / structured labs into v5 renderer (5 features extracted but invisible)
+2. Radiology study classification — build CT type classifier (100% cohort evidence, standardized headers)
+3. Central line type/site/date — parse from LDA + procedure notes
+4. Lab threshold alerting — hyperglycemia / anemia / coagulopathy / hypothermia gates on already-extracted values
+5. E02 ARDS P/F ratio gate — wire existing ABG data into Berlin criteria threshold
+
+**Highest-confidence next actions (NTDS):**
+1. E09 delirium false-negative hardening (AUD-002) — mapper patterns for confirmed misses
+2. Build precision test suites for 11 untested events (E02, E03, E04, E07, E08, E11, E13, E14, E17, E20, E12)
+3. E02 ARDS P/F ratio threshold gate
+4. SSI precision hardening (E07, E11, E17)
+
+**Explicit deferrals:**
+- ICP extraction: **no current cohort evidence** — do not prioritize
+- Chest tube extraction: LDA type defined but **zero cohort evidence** — defer
+- Protected-engine items (LDA default enablement, protocol-engine consumer disconnect): future-fix track
 
 ##### Item 16A — PR #214 Correctness Hardening Intake (2026-03-12)
 
