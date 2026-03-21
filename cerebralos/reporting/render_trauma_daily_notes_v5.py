@@ -67,6 +67,12 @@ _MAX_URINE_SAMPLES = 8
 # Max length for a single plan item display line
 _MAX_PLAN_ITEM_LEN = 120
 
+# Deterministic cap for seizure prophylaxis dose lines
+_MAX_SEIZURE_DOSE_LINES = 3
+
+# Deterministic cap for antibiotic dose lines
+_MAX_ANTIBIOTIC_DOSE_LINES = 5
+
 # ── B7 Narrative Integration Constants ───────────────────────────
 
 # Timeline item types that carry clinically useful narrative text,
@@ -111,6 +117,22 @@ def _fv(val: Any, decimals: int = 1) -> str:
     if isinstance(val, float):
         return f"{val:.{decimals}f}"
     return str(val)
+
+
+def _render_dose_entries(
+    doses: List[Dict[str, Any]], max_lines: int, out: List[str],
+) -> None:
+    """Append formatted dose lines to *out*, truncating beyond *max_lines*."""
+    for d in doses[:max_lines]:
+        parts = [d.get("dose_text", "")]
+        if d.get("route"):
+            parts.append(d["route"])
+        if d.get("frequency"):
+            parts.append(d["frequency"])
+        agent_tag = f" ({d['agent']})" if d.get("agent") else ""
+        out.append(f"        Dose:           {' '.join(p for p in parts if p)}{agent_tag}")
+    if len(doses) > max_lines:
+        out.append(f"        ... +{len(doses) - max_lines} more dose entries")
 
 
 def _fb(val: Any) -> str:
@@ -958,6 +980,67 @@ def _render_prophylaxis(feats: Dict[str, Any]) -> List[str]:
             out.append(f"        Delay flag (>48h): {_fb(delay_flag)}")
     else:
         out.append(f"  GI:   {_DNA}")
+
+    # Seizure Prophylaxis
+    szr = feats.get("seizure_prophylaxis_v1", {})
+    if szr:
+        detected = szr.get("detected")
+        if detected:
+            agents = szr.get("agents", [])
+            out.append(f"  Seizure Prophylaxis: Detected")
+            if agents:
+                out.append(f"        Agents:         {', '.join(agents)}")
+            home = szr.get("home_med_present")
+            if home is not None:
+                out.append(f"        Home med:       {_fb(home)}")
+            first_admin = szr.get("first_admin_ts")
+            if first_admin:
+                out.append(f"        First admin:    {first_admin}")
+            elif szr.get("first_mention_ts"):
+                out.append(f"        First mention:  {szr['first_mention_ts']}")
+            disc = szr.get("discontinued")
+            if disc is not None:
+                disc_ts = szr.get("discontinued_ts")
+                disc_str = f" ({disc_ts})" if disc and disc_ts else ""
+                out.append(f"        Discontinued:   {_fb(disc)}{disc_str}")
+            admin_count = szr.get("admin_evidence_count")
+            if admin_count is not None:
+                out.append(f"        Admin evidence: {admin_count}")
+            doses = szr.get("dose_entries", [])
+            if doses:
+                _render_dose_entries(doses, _MAX_SEIZURE_DOSE_LINES, out)
+        else:
+            out.append(f"  Seizure Prophylaxis: Not detected")
+    else:
+        out.append(f"  Seizure Prophylaxis: {_DNA}")
+
+    # Antibiotic Administration
+    abx = feats.get("antibiotic_admin_v1", {})
+    if abx:
+        detected = abx.get("detected")
+        if detected:
+            agents = abx.get("agents", [])
+            out.append(f"  Antibiotics: Detected")
+            if agents:
+                out.append(f"        Agents:         {', '.join(agents)}")
+            first_admin = abx.get("first_admin_ts")
+            if first_admin:
+                out.append(f"        First admin:    {first_admin}")
+            elif abx.get("first_mention_ts"):
+                out.append(f"        First mention:  {abx['first_mention_ts']}")
+            disc = abx.get("discontinued")
+            if disc is not None:
+                out.append(f"        Discontinued:   {_fb(disc)}")
+            admin_count = abx.get("admin_evidence_count")
+            if admin_count is not None:
+                out.append(f"        Admin evidence: {admin_count}")
+            doses = abx.get("dose_entries", [])
+            if doses:
+                _render_dose_entries(doses, _MAX_ANTIBIOTIC_DOSE_LINES, out)
+        else:
+            out.append(f"  Antibiotics: Not detected")
+    else:
+        out.append(f"  Antibiotics: {_DNA}")
 
     out.append("")
     return out
