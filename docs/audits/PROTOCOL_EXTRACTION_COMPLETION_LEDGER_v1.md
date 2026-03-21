@@ -102,6 +102,14 @@ These elements are extracted AND consumed by at least one downstream system (v5 
 
 ---
 
+## Ledger: Extracted but Under-Documented (0 elements)
+
+No elements currently carry this status. The tier is retained in the taxonomy
+for future use — any element whose extractor is usable but whose docs are
+stale or incomplete should be classified here.
+
+---
+
 ## Ledger: Extracted but Not Rendered/Usable (5 elements)
 
 These features are extracted into patient_features_v1.json but have **no downstream renderer or consumer**. They represent visibility gaps — the extraction work is done but the data is not surfaced.

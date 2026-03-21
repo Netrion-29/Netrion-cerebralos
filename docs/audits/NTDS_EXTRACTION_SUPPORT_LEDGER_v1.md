@@ -39,14 +39,13 @@
 
 ## Event-by-Event Ledger (E01–E21)
 
-### Tier 1 — Fully Operational, Precision-Tested (10 events)
+### Tier 1 — Fully Operational, Precision-Tested (9 events)
 
 | Event | Name | Gates | Mapper Keys (patterns) | Allowed Sources | LDA? | Precision Tests | Status | Blocker | Remaining Work |
 |-------|------|-------|----------------------|-----------------|------|-----------------|--------|---------|----------------|
 | E01 | Acute Kidney Injury | evidence_any (3), timing_after_arrival, 2 exclusions | 7 keys (~45 patterns): aki_dx, aki_stage3_lab, aki_new_dialysis, aki_chronic_rrt, aki_onset, aki_negation_noise, history_noise | PHYSICIAN, LAB, DISCHARGE, ED, CONSULT, NURSING, PROGRESS | No | test_e01_aki_precision.py, test_e01_aki_stage3_precision.py | fully operational | none | 3 residual UTDs (Carlton_Van_Ness, David_Gross, Ronald_Bittner) — genuine clinical ambiguity |
 | E05 | CAUTI (CDC SUTI 1a) | evidence_any (5), lda_duration, timing_after_arrival, 2 exclusions | 7 keys (~82 patterns): cauti_dx, cauti_negation_noise, cauti_catheter_duration, cauti_symptoms, cauti_culture_positive, cauti_chronic_catheter, cauti_onset | PHYSICIAN, CONSULT, NURSING, LAB, PROGRESS, DISCHARGE, ED, LDA | **Yes** (URINARY_CATHETER ≥2d) | test_e05_cauti_precision.py | fully operational | none | LDA catheter timeline synchronization with culture onset |
 | E06 | CLABSI (NHSN) | evidence_any (5), lda_duration, timing_after_arrival, 2 exclusions | 7 keys (~68 patterns): clabsi_dx, clabsi_symptoms, clabsi_blood_culture_positive, clabsi_central_line_duration, clabsi_chronic_line, clabsi_onset, clabsi_negation_noise | PHYSICIAN, CONSULT, NURSING, LAB, PROGRESS, DISCHARGE, ED, LDA | **Yes** (CENTRAL_LINE ≥2d) | test_e06_clabsi_precision.py | fully operational | none | PICC vs CVC line-type distinction in LDA |
-| E09 | Delirium | evidence_any (1), 1 exclusion | 2 keys (~28 patterns): delirium_dx, delirium_negation_noise | PHYSICIAN, NURSING, CONSULT, ED | No | test_e09_delirium_precision.py | operational with gaps | mapper gap | **Known false negatives** (AUD-002): Johnny_Stokes, Linda_Hufford, Ronald_Bittner have raw-file delirium evidence not captured. E09 has single `evidence_any` gate — single-gate fragility risk (AUD-008). CAM-ICU/bCAM instrument scores not structured. |
 | E10 | Myocardial Infarction | evidence_any (1), 1 exclusion | 2 keys (~11 patterns): mi_dx, mi_negation_noise | PHYSICIAN, LAB, DISCHARGE, ED, CONSULT | No | test_e10_mi_precision.py | fully operational | none | Troponin threshold cutoff validation |
 | E15 | Severe Sepsis | evidence_any (1), 1 exclusion | 2 keys (~17 patterns): sepsis_dx, sepsis_negation_noise | PHYSICIAN, LAB, DISCHARGE, ED, NURSING, CONSULT | No | test_e15_severe_sepsis_precision.py (46 tests) | fully operational | none | Expand organ dysfunction detection (lactate, vasopressor) |
 | E16 | Stroke/CVA | evidence_any (1), 1 exclusion | 2 keys (~16 patterns): stroke_dx, stroke_negation_noise | PHYSICIAN, IMAGING, DISCHARGE, ED, CONSULT | No | test_e16_stroke_precision.py | fully operational | none | NIHSS score integration; ischemic vs hemorrhagic distinction |
@@ -54,7 +53,7 @@
 | E19 | Unplanned Intubation | evidence_any (1), 1 exclusion | 2 keys (~24 patterns): unplanned_intubation, intubation_negation_noise | PROCEDURE, PHYSICIAN, ED, ANESTHESIA | No | test_e19_unplanned_intubation_precision.py | fully operational | none | Prophylactic vs emergent exclusion validation |
 | E21 | VAP | evidence_any (3), lda_duration, 1 exclusion | 6 keys (~42 patterns): vent_dx, vap_dx, vap_cxr, prophylaxis_noise, vap_negation_noise, history_noise | PHYSICIAN, NURSING, PROGRESS, OPERATIVE, ANESTHESIA, PROCEDURE, ED, LDA | **Yes** (MECHANICAL_VENTILATOR ≥2d) | test_e21_vap_precision.py (34 tests) | fully operational | none | CXR infiltrate temporal correlation; reintubation consolidation |
 
-### Tier 2 — Operational With Gaps, No Precision Tests (6 events)
+### Tier 2 — Operational With Gaps (7 events)
 
 | Event | Name | Gates | Mapper Keys (patterns) | Allowed Sources | LDA? | Precision Tests | Status | Blocker | Remaining Work |
 |-------|------|-------|----------------------|-----------------|------|-----------------|--------|---------|----------------|
@@ -62,15 +61,17 @@
 | E03 | Alcohol Withdrawal | evidence_any (1), 1 exclusion | 1 key (~7 patterns): alcohol_withdrawal_dx | PHYSICIAN, NURSING, ED | No | **None** | operational with gaps | precision test gap | Add CIWA score patterns; build precision test suite |
 | E04 | Cardiac Arrest With CPR | evidence_any (2), 1 exclusion | 2 keys (~11 patterns): cardiac_arrest_dx, cpr_documented | PHYSICIAN, NURSING, ED | No | **None** | operational with gaps | precision test gap | Add ROSC timing patterns; build precision test suite |
 | E08 | DVT | evidence_any (2), timing_after_arrival, requires_treatment_any (2), 1 exclusion | 7 keys (~40 patterns): dvt_dx, dvt_dx_negative, dvt_dx_noise_prophylaxis, dvt_onset, dvt_treatment_anticoag, dvt_treatment_filter, dvt_poa_phrase | PHYSICIAN, CONSULT, IMAGING, DISCHARGE, ED, NURSING, MAR, PROCEDURE | No | **None** | operational with gaps | precision test gap | Build precision test suite; PE/DVT concordance validation |
+| E09 | Delirium | evidence_any (1), 1 exclusion | 2 keys (~28 patterns): delirium_dx, delirium_negation_noise | PHYSICIAN, NURSING, CONSULT, ED | No | test_e09_delirium_precision.py | operational with gaps | mapper gap | **Known false negatives** (AUD-002): Johnny_Stokes, Linda_Hufford, Ronald_Bittner have raw-file delirium evidence not captured. E09 has single `evidence_any` gate — single-gate fragility risk (AUD-008). CAM-ICU/bCAM instrument scores not structured. |
 | E14 | Pulmonary Embolism | evidence_any (2), timing_after_arrival, 1 exclusion | 8 keys (~71 patterns): pe_dx_positive, pe_dx_negative, pe_prophylaxis_noise, pe_history_noise, pe_ruleout_noise, pe_poa_strict, pe_onset, pe_subsegmental_only | IMAGING, PHYSICIAN, CONSULT, DISCHARGE, ED, NURSING | No | **None** | operational with gaps | precision test gap | Build precision test suite; subsegmental PE inclusion threshold |
 | E20 | Unplanned Return to OR | evidence_any (3), 3 exclusions | 7 keys (~69 patterns): or_initial_procedure, or_return_unplanned, or_planned_staged, or_same_site, or_ir, osh_or, or_procedure_context | OPERATIVE, PHYSICIAN, PROCEDURE, DISCHARGE, ANESTHESIA | No | **None** | operational with gaps | precision test gap | Build precision test suite; improve staged-washout vs unplanned differentiation |
 
-### Tier 3 — Partial Rule Support (4 events)
+### Tier 3 — Partial Rule Support (5 events)
 
 | Event | Name | Gates | Mapper Keys (patterns) | Allowed Sources | LDA? | Precision Tests | Status | Blocker | Remaining Work |
 |-------|------|-------|----------------------|-----------------|------|-----------------|--------|---------|----------------|
 | E07 | Deep Surgical Site Infection | evidence_any (1), 1 exclusion | 1 key (~7 patterns): deep_ssi_dx | OPERATIVE, PHYSICIAN, DISCHARGE, PROCEDURE, IMAGING | No | **None** | partial rule support | mapper gap, rule gap, precision test gap | Add fascial-plane depth criteria; distinguish from superficial findings; add culture positivity gate; build precision test suite |
 | E11 | Organ/Space SSI | evidence_any (1), 1 exclusion | 1 key (~7 patterns): organ_space_ssi_dx | OPERATIVE, PHYSICIAN, DISCHARGE, PROCEDURE, IMAGING | No | **None** | partial rule support | mapper gap, rule gap, precision test gap | Add intra-abdominal abscess location; fluid culture criteria; build precision test suite |
+| E12 | Osteomyelitis | evidence_any (1), 1 exclusion | 1 key (~7 patterns): osteomyelitis_dx | PHYSICIAN, IMAGING, OPERATIVE, PROCEDURE | No | **None** | partial rule support | mapper gap, precision test gap | Template-based rule; add bone biopsy culture gate, anatomic site classification; build precision test suite |
 | E13 | Pressure Ulcer | evidence_any (1), 1 exclusion | 1 key (~5 patterns): pressure_ulcer_dx | NURSING, PHYSICIAN, DISCHARGE | No | **None** | partial rule support | mapper gap, precision test gap | Add staging (I–IV), anatomic location, hospital-acquired vs community distinction; build precision test suite |
 | E17 | Superficial Incisional SSI | evidence_any (1), 1 exclusion | 1 key (~6 patterns): superficial_ssi_dx | PHYSICIAN, OPERATIVE, DISCHARGE, PROCEDURE | No | **None** | partial rule support | mapper gap, rule gap, precision test gap | Add wound erythema + drainage + culture criteria; build precision test suite |
 
@@ -113,7 +114,7 @@ LDA (Lines, Drains, Airways) device-duration gates are a critical infrastructure
 | Coverage Level | Events | Count |
 |----------------|--------|-------|
 | **Has precision tests** | E01, E05, E06, E09, E10, E15, E16, E18, E19, E21 | 10 |
-| **No precision tests** | E02, E03, E04, E07, E08, E11, E13, E14, E17, E20 | 11 |
+| **No precision tests** | E02, E03, E04, E07, E08, E11, E12, E13, E14, E17, E20 | 11 |
 
 ### Mapper Coverage Summary
 
@@ -151,10 +152,10 @@ Based on: (1) evidence of known gaps in current cohort, (2) NTDS compliance impa
 | Rank | Action | Events | Type | Impact |
 |------|--------|--------|------|--------|
 | 1 | **E09 delirium false-negative hardening** (AUD-002) — add mapper patterns for confirmed misses (Johnny_Stokes, Linda_Hufford, Ronald_Bittner) | E09 | Mapper + rule | High — known false negatives |
-| 2 | **Build precision test suites for Tier 2 events** (E02, E03, E04, E08, E14, E20) — 6 events with no precision tests | E02, E03, E04, E08, E14, E20 | Tests only | High — coverage gap |
+| 2 | **Build precision test suites for Tier 2 events lacking them** (E02, E03, E04, E08, E14, E20) — 6 of 7 Tier 2 events have no precision tests (E09 already has tests) | E02, E03, E04, E08, E14, E20 | Tests only | High — coverage gap |
 | 3 | **E02 ARDS: wire P/F ratio threshold** — ABG pO2 and FiO2 already extracted in structured_labs_v1; Berlin criteria P/F ≤ 300 not applied as rule gate | E02 | Rule + mapper | Medium — improves ARDS adjudication |
 | 4 | **SSI precision hardening (E07, E11, E17)** — add depth/culture/drainage criteria to distinguish superficial from deep from organ/space | E07, E11, E17 | Mapper + rule | Medium — reduces SSI misclassification |
-| 5 | **Build precision test suites for Tier 3 events** (E07, E11, E13, E17) — 4 events with minimal mapper coverage and no tests | E07, E11, E13, E17 | Tests only | Medium — coverage gap |
+| 5 | **Build precision test suites for Tier 3 events** (E07, E11, E12, E13, E17) — 5 events with minimal mapper coverage and no tests | E07, E11, E12, E13, E17 | Tests only | Medium — coverage gap |
 
 **Explicit note:** LDA gate default enablement and protocol-engine consumer disconnect are future-fix-track items requiring engine-change authorization. They are not included in the ranked next actions.
 

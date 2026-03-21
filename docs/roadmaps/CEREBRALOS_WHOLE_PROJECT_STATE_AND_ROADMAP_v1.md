@@ -682,8 +682,8 @@ so they survive session turnover.
   elements across 6 status tiers (65 extracted-and-usable, 5 extracted-but-not-rendered,
   46 partially-extracted, 22 missing-with-evidence, 48 no-cohort-evidence)
 - `docs/audits/NTDS_EXTRACTION_SUPPORT_LEDGER_v1.md` — E01–E21 event-by-event
-  with tier classification (10 Tier 1 fully operational, 6 Tier 2 operational with gaps,
-  4 Tier 3 partial), LDA gate detail, and protected-engine future-fix track
+  with tier classification (9 Tier 1 fully operational, 7 Tier 2 operational with gaps,
+  5 Tier 3 partial), LDA gate detail, and protected-engine future-fix track
 
 **Highest-confidence next actions (protocol):**
 1. Wire seizure prophylaxis / antibiotic admin / transfusion / vent settings / structured labs into v5 renderer (5 features extracted but invisible)
