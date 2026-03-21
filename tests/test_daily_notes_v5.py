@@ -2415,5 +2415,281 @@ class TestProtocolCLIWiring(unittest.TestCase):
             self.assertNotIn("PROTOCOL SIGNAL SUMMARY", text)
 
 
+# ════════════════════════════════════════════════════════════════════
+# Seizure Prophylaxis Rendering Tests
+# ════════════════════════════════════════════════════════════════════
+
+
+class TestSeizureProphylaxisRendering(unittest.TestCase):
+    """Tests for seizure prophylaxis visibility in v5 renderer."""
+
+    def test_seizure_prophylaxis_detected(self):
+        """Positive rendering when seizure prophylaxis is detected."""
+        data = _minimal_features()
+        data["features"]["seizure_prophylaxis_v1"] = {
+            "detected": True,
+            "agents": ["levetiracetam"],
+            "home_med_present": False,
+            "first_mention_ts": "2026-01-01T08:00:00",
+            "first_admin_ts": "2026-01-01T10:00:00",
+            "discontinued": False,
+            "discontinued_ts": None,
+            "admin_evidence_count": 3,
+            "mention_evidence_count": 2,
+            "dose_entries": [
+                {"agent": "levetiracetam", "dose_text": "500 mg", "route": "PO", "frequency": "BID"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("Seizure Prophylaxis: Detected", result)
+        self.assertIn("levetiracetam", result)
+        self.assertIn("Home med:       No", result)
+        self.assertIn("First admin:    2026-01-01T10:00:00", result)
+        self.assertIn("Discontinued:   No", result)
+        self.assertIn("Admin evidence: 3", result)
+        self.assertIn("500 mg PO BID", result)
+
+    def test_seizure_prophylaxis_multiple_agents(self):
+        """Multiple seizure prophylaxis agents render correctly."""
+        data = _minimal_features()
+        data["features"]["seizure_prophylaxis_v1"] = {
+            "detected": True,
+            "agents": ["levetiracetam", "phenytoin"],
+            "home_med_present": True,
+            "first_mention_ts": "2026-01-01T06:00:00",
+            "first_admin_ts": "2026-01-01T08:00:00",
+            "discontinued": True,
+            "discontinued_ts": "2026-01-03T14:00:00",
+            "admin_evidence_count": 5,
+            "mention_evidence_count": 3,
+            "dose_entries": [
+                {"agent": "levetiracetam", "dose_text": "1000 mg", "route": "IV", "frequency": "BID"},
+                {"agent": "phenytoin", "dose_text": "100 mg", "route": "PO", "frequency": "Q8H"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("levetiracetam, phenytoin", result)
+        self.assertIn("Home med:       Yes", result)
+        self.assertIn("Discontinued:   Yes (2026-01-03T14:00:00)", result)
+        self.assertIn("1000 mg IV BID", result)
+        self.assertIn("(levetiracetam)", result)
+        self.assertIn("(phenytoin)", result)
+
+    def test_seizure_prophylaxis_not_detected(self):
+        """When detected is False, show 'Not detected'."""
+        data = _minimal_features()
+        data["features"]["seizure_prophylaxis_v1"] = {
+            "detected": False,
+            "agents": [],
+            "home_med_present": False,
+            "first_mention_ts": None,
+            "first_admin_ts": None,
+            "discontinued": False,
+            "discontinued_ts": None,
+            "admin_evidence_count": 0,
+            "mention_evidence_count": 0,
+            "dose_entries": [],
+        }
+        result = render_v5(data)
+        self.assertIn("Seizure Prophylaxis: Not detected", result)
+
+    def test_seizure_prophylaxis_absent_feature(self):
+        """When feature is completely absent, show DNA."""
+        data = _minimal_features()
+        result = render_v5(data)
+        self.assertIn("Seizure Prophylaxis: DATA NOT AVAILABLE", result)
+
+    def test_seizure_prophylaxis_mention_only(self):
+        """Detected with no admin_ts falls back to first_mention_ts."""
+        data = _minimal_features()
+        data["features"]["seizure_prophylaxis_v1"] = {
+            "detected": True,
+            "agents": ["levetiracetam"],
+            "home_med_present": False,
+            "first_mention_ts": "2026-01-01T09:00:00",
+            "first_admin_ts": None,
+            "discontinued": False,
+            "discontinued_ts": None,
+            "admin_evidence_count": 0,
+            "mention_evidence_count": 1,
+            "dose_entries": [],
+        }
+        result = render_v5(data)
+        self.assertIn("First mention:  2026-01-01T09:00:00", result)
+        self.assertNotIn("First admin:", result)
+
+    def test_seizure_prophylaxis_determinism(self):
+        """Two renders produce identical output."""
+        data = _minimal_features()
+        data["features"]["seizure_prophylaxis_v1"] = {
+            "detected": True,
+            "agents": ["levetiracetam"],
+            "home_med_present": False,
+            "first_mention_ts": "2026-01-01T08:00:00",
+            "first_admin_ts": "2026-01-01T10:00:00",
+            "discontinued": False,
+            "admin_evidence_count": 2,
+            "dose_entries": [],
+        }
+        r1 = render_v5(data)
+        r2 = render_v5(data)
+        self.assertEqual(r1, r2)
+
+
+# ════════════════════════════════════════════════════════════════════
+# Antibiotic Administration Rendering Tests
+# ════════════════════════════════════════════════════════════════════
+
+
+class TestAntibioticAdminRendering(unittest.TestCase):
+    """Tests for antibiotic administration visibility in v5 renderer."""
+
+    def test_antibiotics_detected(self):
+        """Positive rendering when antibiotics are detected."""
+        data = _minimal_features()
+        data["features"]["antibiotic_admin_v1"] = {
+            "detected": True,
+            "agents": ["cefazolin", "vancomycin"],
+            "first_mention_ts": "2026-01-01T07:00:00",
+            "first_admin_ts": "2026-01-01T08:30:00",
+            "discontinued": False,
+            "admin_evidence_count": 4,
+            "mention_evidence_count": 2,
+            "dose_entries": [
+                {"agent": "cefazolin", "dose_text": "2 g", "route": "IV", "frequency": "Q8H"},
+                {"agent": "vancomycin", "dose_text": "1 g", "route": "IV", "frequency": "Q12H"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("Antibiotics: Detected", result)
+        self.assertIn("cefazolin, vancomycin", result)
+        self.assertIn("First admin:    2026-01-01T08:30:00", result)
+        self.assertIn("Discontinued:   No", result)
+        self.assertIn("Admin evidence: 4", result)
+        self.assertIn("2 g IV Q8H", result)
+        self.assertIn("(cefazolin)", result)
+        self.assertIn("1 g IV Q12H", result)
+        self.assertIn("(vancomycin)", result)
+
+    def test_antibiotics_discontinued(self):
+        """Discontinued antibiotics render correctly."""
+        data = _minimal_features()
+        data["features"]["antibiotic_admin_v1"] = {
+            "detected": True,
+            "agents": ["piperacillin-tazobactam"],
+            "first_mention_ts": "2026-01-01T10:00:00",
+            "first_admin_ts": "2026-01-01T12:00:00",
+            "discontinued": True,
+            "admin_evidence_count": 6,
+            "mention_evidence_count": 1,
+            "dose_entries": [
+                {"agent": "piperacillin-tazobactam", "dose_text": "4.5 g", "route": "IV", "frequency": "Q6H"},
+            ],
+        }
+        result = render_v5(data)
+        self.assertIn("Discontinued:   Yes", result)
+        self.assertIn("piperacillin-tazobactam", result)
+
+    def test_antibiotics_not_detected(self):
+        """When detected is False, show 'Not detected'."""
+        data = _minimal_features()
+        data["features"]["antibiotic_admin_v1"] = {
+            "detected": False,
+            "agents": [],
+            "first_mention_ts": None,
+            "first_admin_ts": None,
+            "discontinued": False,
+            "admin_evidence_count": 0,
+            "mention_evidence_count": 0,
+            "dose_entries": [],
+        }
+        result = render_v5(data)
+        self.assertIn("Antibiotics: Not detected", result)
+
+    def test_antibiotics_absent_feature(self):
+        """When feature is completely absent, show DNA."""
+        data = _minimal_features()
+        result = render_v5(data)
+        self.assertIn("Antibiotics: DATA NOT AVAILABLE", result)
+
+    def test_antibiotics_mention_only(self):
+        """Detected with no admin_ts falls back to first_mention_ts."""
+        data = _minimal_features()
+        data["features"]["antibiotic_admin_v1"] = {
+            "detected": True,
+            "agents": ["ceftriaxone"],
+            "first_mention_ts": "2026-01-02T14:00:00",
+            "first_admin_ts": None,
+            "discontinued": False,
+            "admin_evidence_count": 0,
+            "mention_evidence_count": 1,
+            "dose_entries": [],
+        }
+        result = render_v5(data)
+        self.assertIn("First mention:  2026-01-02T14:00:00", result)
+        self.assertNotIn("First admin:", result)
+
+    def test_antibiotics_dose_truncation(self):
+        """More than 5 dose entries should show truncation notice."""
+        data = _minimal_features()
+        doses = [
+            {"agent": f"agent_{i}", "dose_text": f"{i}00 mg", "route": "IV", "frequency": "Q8H"}
+            for i in range(8)
+        ]
+        data["features"]["antibiotic_admin_v1"] = {
+            "detected": True,
+            "agents": [f"agent_{i}" for i in range(8)],
+            "first_admin_ts": "2026-01-01T08:00:00",
+            "discontinued": False,
+            "admin_evidence_count": 8,
+            "mention_evidence_count": 0,
+            "dose_entries": doses,
+        }
+        result = render_v5(data)
+        self.assertIn("+3 more dose entries", result)
+        # First 5 should be present
+        self.assertIn("(agent_0)", result)
+        self.assertIn("(agent_4)", result)
+        # 6th should not be present
+        self.assertNotIn("(agent_5)", result)
+
+    def test_antibiotics_determinism(self):
+        """Two renders produce identical output."""
+        data = _minimal_features()
+        data["features"]["antibiotic_admin_v1"] = {
+            "detected": True,
+            "agents": ["cefazolin"],
+            "first_admin_ts": "2026-01-01T08:00:00",
+            "discontinued": False,
+            "admin_evidence_count": 2,
+            "dose_entries": [
+                {"agent": "cefazolin", "dose_text": "1 g", "route": "IV", "frequency": "Q8H"},
+            ],
+        }
+        r1 = render_v5(data)
+        r2 = render_v5(data)
+        self.assertEqual(r1, r2)
+
+    def test_antibiotics_in_prophylaxis_section(self):
+        """Antibiotics should appear within the PROPHYLAXIS STATUS section."""
+        data = _minimal_features()
+        data["features"]["antibiotic_admin_v1"] = {
+            "detected": True,
+            "agents": ["cefazolin"],
+            "first_admin_ts": "2026-01-01T08:00:00",
+            "discontinued": False,
+            "admin_evidence_count": 1,
+            "dose_entries": [],
+        }
+        result = render_v5(data)
+        # Antibiotics line should appear after PROPHYLAXIS STATUS header
+        proph_pos = result.index("PROPHYLAXIS STATUS")
+        abx_pos = result.index("Antibiotics: Detected")
+        # And before the next major section header (TRIGGER / HEMODYNAMIC STATUS)
+        trigger_pos = result.index("TRIGGER / HEMODYNAMIC STATUS")
+        self.assertGreater(abx_pos, proph_pos)
+        self.assertLess(abx_pos, trigger_pos)
+
+
 if __name__ == "__main__":
     unittest.main()

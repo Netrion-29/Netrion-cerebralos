@@ -959,6 +959,83 @@ def _render_prophylaxis(feats: Dict[str, Any]) -> List[str]:
     else:
         out.append(f"  GI:   {_DNA}")
 
+    # Seizure Prophylaxis
+    szr = feats.get("seizure_prophylaxis_v1", {})
+    if szr:
+        detected = szr.get("detected")
+        if detected:
+            agents = szr.get("agents", [])
+            out.append(f"  Seizure Prophylaxis: Detected")
+            if agents:
+                out.append(f"        Agents:         {', '.join(agents)}")
+            home = szr.get("home_med_present")
+            if home is not None:
+                out.append(f"        Home med:       {_fb(home)}")
+            first_admin = szr.get("first_admin_ts")
+            if first_admin:
+                out.append(f"        First admin:    {first_admin}")
+            elif szr.get("first_mention_ts"):
+                out.append(f"        First mention:  {szr['first_mention_ts']}")
+            disc = szr.get("discontinued")
+            if disc is not None:
+                disc_ts = szr.get("discontinued_ts")
+                disc_str = f" ({disc_ts})" if disc and disc_ts else ""
+                out.append(f"        Discontinued:   {_fb(disc)}{disc_str}")
+            admin_count = szr.get("admin_evidence_count")
+            if admin_count is not None:
+                out.append(f"        Admin evidence: {admin_count}")
+            doses = szr.get("dose_entries", [])
+            if doses:
+                for d in doses[:3]:
+                    parts = [d.get("dose_text", "")]
+                    if d.get("route"):
+                        parts.append(d["route"])
+                    if d.get("frequency"):
+                        parts.append(d["frequency"])
+                    agent_tag = f" ({d['agent']})" if d.get("agent") else ""
+                    out.append(f"        Dose:           {' '.join(p for p in parts if p)}{agent_tag}")
+        else:
+            out.append(f"  Seizure Prophylaxis: Not detected")
+    else:
+        out.append(f"  Seizure Prophylaxis: {_DNA}")
+
+    # Antibiotic Administration
+    abx = feats.get("antibiotic_admin_v1", {})
+    if abx:
+        detected = abx.get("detected")
+        if detected:
+            agents = abx.get("agents", [])
+            out.append(f"  Antibiotics: Detected")
+            if agents:
+                out.append(f"        Agents:         {', '.join(agents)}")
+            first_admin = abx.get("first_admin_ts")
+            if first_admin:
+                out.append(f"        First admin:    {first_admin}")
+            elif abx.get("first_mention_ts"):
+                out.append(f"        First mention:  {abx['first_mention_ts']}")
+            disc = abx.get("discontinued")
+            if disc is not None:
+                out.append(f"        Discontinued:   {_fb(disc)}")
+            admin_count = abx.get("admin_evidence_count")
+            if admin_count is not None:
+                out.append(f"        Admin evidence: {admin_count}")
+            doses = abx.get("dose_entries", [])
+            if doses:
+                for d in doses[:5]:
+                    parts = [d.get("dose_text", "")]
+                    if d.get("route"):
+                        parts.append(d["route"])
+                    if d.get("frequency"):
+                        parts.append(d["frequency"])
+                    agent_tag = f" ({d['agent']})" if d.get("agent") else ""
+                    out.append(f"        Dose:           {' '.join(p for p in parts if p)}{agent_tag}")
+                if len(doses) > 5:
+                    out.append(f"        ... +{len(doses) - 5} more dose entries")
+        else:
+            out.append(f"  Antibiotics: Not detected")
+    else:
+        out.append(f"  Antibiotics: {_DNA}")
+
     out.append("")
     return out
 
