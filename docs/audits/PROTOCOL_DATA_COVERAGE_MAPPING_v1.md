@@ -70,8 +70,8 @@ Coverage was assessed by:
 | Airway | 2 MISSING → EXTRACTED | #233–#237, #226–#228 | Vent mode/settings, PaO2/FiO2 ratio |
 | Demographics | 1 MISSING → EXTRACTED | #222–#225 | Sex |
 | Disposition | 1 MISSING → EXTRACTED | #222–#225 | Discharge disposition |
-| Pharmacologic | 1 MISSING → EXTRACTED | (this PR) | Seizure prophylaxis |
-| Pharmacologic | 1 MISSING → EXTRACTED | #278 | Antibiotic administration (type, time, route, status) |
+| Pharmacologic | 1 MISSING → EXTRACTED | #277 | Seizure prophylaxis |
+| Pharmacologic | 1 MISSING → EXTRACTED | #278 | Antibiotic administration (type, time) |
 
 ---
 
@@ -107,7 +107,7 @@ Coverage was assessed by:
 
 ---
 
-## Detailed Evidence: EXTRACTED Elements (82)
+## Detailed Evidence: EXTRACTED Elements (83)
 
 | Category | Element | Repo Evidence |
 |----------|---------|---------------|
@@ -150,7 +150,7 @@ Coverage was assessed by:
 | Pharmacologic | GI prophylaxis agent (PPI/H2 blocker) | `cerebralos/features/gi_prophylaxis_v1.py` |
 | Pharmacologic | VTE chemoprophylaxis (LMWH/UFH, timing) | `cerebralos/features/dvt_prophylaxis_v1.py`; `dvt_treatment_anticoag` mapper key |
 | Pharmacologic | Seizure prophylaxis (agent, start, duration) | `cerebralos/features/seizure_prophylaxis_v1.py` — levetiracetam/phenytoin/valproate/lacosamide detection; dose/route/frequency; home med vs inpatient; admin confirmation; discontinuation tracking |
-| Pharmacologic | Antibiotic administration (type, time, route, status) | `cerebralos/features/antibiotic_admin_v1.py` — MAR-section antibiotic row parsing; drug name, dose, route, frequency, admin timestamp, held/missed status; per-day event list with raw_line_id traceability (PR #278) |
+| Pharmacologic | Antibiotic administration (type, time) | `cerebralos/features/antibiotic_admin_v1.py` — MAR-section antibiotic row parsing; drug name, dose, route, frequency, admin timestamp, held/missed status; per-day event list with raw_line_id traceability (PR #278) |
 | Resuscitation | MTP activation (yes/no, time) | `cerebralos/features/transfusion_blood_products_v1.py` — MTP pattern detection with timestamp (PRs #229–#231) |
 | Resuscitation | pRBC units transfused | `cerebralos/features/transfusion_blood_products_v1.py` — MAR section blood product row parsing; unit count (PRs #229–#231) |
 | Resuscitation | FFP units transfused | `cerebralos/features/transfusion_blood_products_v1.py` — MAR section FFP row parsing; unit count (PRs #229–#231) |
