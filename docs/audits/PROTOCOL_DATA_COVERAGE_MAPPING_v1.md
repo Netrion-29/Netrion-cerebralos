@@ -50,15 +50,15 @@ Coverage was assessed by:
 
 | Status | Count | Pct | Δ from v1 (2026-03-12) |
 |--------|------:|----:|:----------------------:|
-| EXTRACTED | 82 | 35.7% | +22 |
+| EXTRACTED | 83 | 36.1% | +23 |
 | PARTIAL | 46 | 20.0% | −11 |
-| MISSING | 86 | 37.4% | −11 |
+| MISSING | 85 | 37.0% | −12 |
 | N/A | 16 | 7.0% | 0 |
 | **Total** | **230** | 100% | — |
 
 **Actionable elements** (excluding N/A): 214
-**Actionable coverage** (EXTRACTED + PARTIAL): 128 / 214 = **59.8%** (was 54.7%)
-**Fully extracted**: 82 / 214 = **38.3%** (was 28.0%)
+**Actionable coverage** (EXTRACTED + PARTIAL): 129 / 214 = **60.3%** (was 54.7%)
+**Fully extracted**: 83 / 214 = **38.8%** (was 28.0%)
 
 ### Change Log (v1 → v2 refresh)
 
@@ -71,6 +71,7 @@ Coverage was assessed by:
 | Demographics | 1 MISSING → EXTRACTED | #222–#225 | Sex |
 | Disposition | 1 MISSING → EXTRACTED | #222–#225 | Discharge disposition |
 | Pharmacologic | 1 MISSING → EXTRACTED | (this PR) | Seizure prophylaxis |
+| Pharmacologic | 1 MISSING → EXTRACTED | #278 | Antibiotic administration (type, time, route, status) |
 
 ---
 
@@ -89,7 +90,7 @@ Coverage was assessed by:
 | 9 | Airway / Respiratory | 2 | 3 | 4 | 0 | 9 | 56% |
 | 10 | Resuscitation / Blood Products | 6 | 0 | 6 | 0 | 12 | 50% |
 | 11 | Operative / Procedural | 2 | 5 | 5 | 0 | 12 | 58% |
-| 12 | Pharmacologic Interventions | 3 | 2 | 4 | 0 | 9 | 56% |
+| 12 | Pharmacologic Interventions | 4 | 2 | 3 | 0 | 9 | 67% |
 | 13 | Device / Line Management | 0 | 6 | 6 | 0 | 12 | 50% |
 | 14 | Infection Prevention / HAI Monitoring | 7 | 2 | 2 | 0 | 11 | 82% |
 | 15 | Prophylaxis (DVT / GI / Hypothermia) | 2 | 2 | 3 | 0 | 7 | 57% |
@@ -106,7 +107,7 @@ Coverage was assessed by:
 
 ---
 
-## Detailed Evidence: EXTRACTED Elements (81)
+## Detailed Evidence: EXTRACTED Elements (82)
 
 | Category | Element | Repo Evidence |
 |----------|---------|---------------|
@@ -149,6 +150,7 @@ Coverage was assessed by:
 | Pharmacologic | GI prophylaxis agent (PPI/H2 blocker) | `cerebralos/features/gi_prophylaxis_v1.py` |
 | Pharmacologic | VTE chemoprophylaxis (LMWH/UFH, timing) | `cerebralos/features/dvt_prophylaxis_v1.py`; `dvt_treatment_anticoag` mapper key |
 | Pharmacologic | Seizure prophylaxis (agent, start, duration) | `cerebralos/features/seizure_prophylaxis_v1.py` — levetiracetam/phenytoin/valproate/lacosamide detection; dose/route/frequency; home med vs inpatient; admin confirmation; discontinuation tracking |
+| Pharmacologic | Antibiotic administration (type, time, route, status) | `cerebralos/features/antibiotic_admin_v1.py` — MAR-section antibiotic row parsing; drug name, dose, route, frequency, admin timestamp, held/missed status; per-day event list with raw_line_id traceability (PR #278) |
 | Resuscitation | MTP activation (yes/no, time) | `cerebralos/features/transfusion_blood_products_v1.py` — MTP pattern detection with timestamp (PRs #229–#231) |
 | Resuscitation | pRBC units transfused | `cerebralos/features/transfusion_blood_products_v1.py` — MAR section blood product row parsing; unit count (PRs #229–#231) |
 | Resuscitation | FFP units transfused | `cerebralos/features/transfusion_blood_products_v1.py` — MAR section FFP row parsing; unit count (PRs #229–#231) |
@@ -267,7 +269,7 @@ Six of the original ten gaps have been closed since the initial audit.
 | 7 | **ICP (intracranial pressure)** | Vital Signs | MISSING | Flowsheet row or note section pattern matching |
 | 8 | ~~Discharge disposition~~ | Disposition | ✅ EXTRACTED | `demographics_v1.discharge_disposition` (PRs #222–#225) |
 | 9 | **Mental health screening** | Screening | MISSING | Pattern matching in nursing assessment / social work notes |
-| 10 | **Antibiotic administration (type, time)** | Pharmacologic | MISSING | MAR section antibiotic pattern matching |
+| 10 | ~~Antibiotic administration (type, time)~~ | Pharmacologic | ✅ EXTRACTED | `antibiotic_admin_v1.py` (PR #278) |
 
 ---
 
@@ -318,11 +320,11 @@ Category                                     Coverage  Bar
  8 · Imaging / Radiology                        75%   ███████████████
  7 · Laboratory / Diagnostics                   69%   █████████████▊
 18 · Disposition / Discharge Planning           67%   █████████████▍
+12 · Pharmacologic Interventions                67%   █████████████▍
 16 · Screening / Behavioral Health              64%   ████████████▊
 11 · Operative / Procedural                     58%   ███████████▌
 15 · Prophylaxis (DVT / GI / Hypothermia)       57%   ███████████▍
  9 · Airway / Respiratory                       56%   ███████████
-12 · Pharmacologic Interventions                56%   ███████████
 10 · Resuscitation / Blood Products             50%   ██████████
 13 · Device / Line Management                   50%   ██████████
  4 · Emergency Department Assessment            44%   ████████▊
