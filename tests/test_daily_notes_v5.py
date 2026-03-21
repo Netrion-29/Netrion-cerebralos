@@ -2717,5 +2717,280 @@ class TestAntibioticAdminRendering(unittest.TestCase):
         self.assertLess(abx_pos, trigger_pos)
 
 
+# ════════════════════════════════════════════════════════════════════
+# Structured Labs Overview Tests
+# ════════════════════════════════════════════════════════════════════
+
+class TestStructuredLabsOverview(unittest.TestCase):
+    """Tests for the STRUCTURED LABS OVERVIEW patient-level section."""
+
+    def _labs_feature(self, panels_by_day=None, days_with_labs=1):
+        """Build a structured_labs_v1 feature dict."""
+        return {
+            "panels_by_day": panels_by_day or {},
+            "summary": {
+                "days_with_labs": days_with_labs,
+                "panels_complete_count": 0,
+                "pf_available_count": 0,
+            },
+            "parse_warnings": [],
+            "notes": [],
+        }
+
+    def _cbc_panel(self, hgb=None, hct=None, wbc=None, plt=None):
+        """Build a CBC panel with optional component overrides."""
+        components = {}
+        for key, val in [("Hgb", hgb), ("Hct", hct), ("WBC", wbc), ("Plt", plt)]:
+            if val is not None:
+                components[key] = {
+                    "status": "available",
+                    "first": val[0],
+                    "last": val[0],
+                    "delta": 0.0,
+                    "n_values": 1,
+                    "abnormal": val[1] if len(val) > 1 else False,
+                    "series": [],
+                }
+            else:
+                components[key] = {"status": "DATA NOT AVAILABLE"}
+        return {"components": components, "complete": False, "available_count": 0, "total_count": 4}
+
+    def _bmp_panel(self, na=None, k=None, cr=None, glucose=None):
+        """Build a BMP panel with optional component overrides."""
+        components = {}
+        for key, val in [("Na", na), ("K", k), ("Cr", cr), ("Glucose", glucose)]:
+            if val is not None:
+                components[key] = {
+                    "status": "available",
+                    "first": val[0],
+                    "last": val[0],
+                    "delta": 0.0,
+                    "n_values": 1,
+                    "abnormal": val[1] if len(val) > 1 else False,
+                    "series": [],
+                }
+            else:
+                components[key] = {"status": "DATA NOT AVAILABLE"}
+        return {"components": components, "complete": False, "available_count": 0, "total_count": 4}
+
+    # ── Feature absent ──
+
+    def test_absent_feature_renders_dna(self):
+        """When structured_labs_v1 key is missing, render DATA NOT AVAILABLE."""
+        data = _minimal_features()
+        result = render_v5(data)
+        self.assertIn("STRUCTURED LABS OVERVIEW", result)
+        # Find DNA within the section
+        idx = result.index("STRUCTURED LABS OVERVIEW")
+        section = result[idx:idx + 300]
+        self.assertIn("DATA NOT AVAILABLE", section)
+
+    # ── Empty panels ──
+
+    def test_empty_panels_renders_no_labs(self):
+        """When feature exists but no panels have available components."""
+        data = _minimal_features()
+        data["features"]["structured_labs_v1"] = self._labs_feature(
+            panels_by_day={"2026-01-01": {"cbc": {"components": {}, "complete": False, "available_count": 0, "total_count": 4},
+                                           "bmp": {"components": {}, "complete": False, "available_count": 0, "total_count": 4}}},
+            days_with_labs=1,
+        )
+        result = render_v5(data)
+        idx = result.index("STRUCTURED LABS OVERVIEW")
+        section = result[idx:idx + 300]
+        self.assertIn("No structured labs available", section)
+
+    # ── One-day labs ──
+
+    def test_one_day_labs(self):
+        """Single lab day renders admission only, no 'Most recent' block."""
+        data = _minimal_features()
+        cbc = self._cbc_panel(hgb=(12.7, False), hct=(38.0, False), wbc=(10.2, False), plt=(210, False))
+        bmp = self._bmp_panel(na=(140, False), k=(4.0, False), cr=(1.1, False), glucose=(120, False))
+        data["features"]["structured_labs_v1"] = self._labs_feature(
+            panels_by_day={"2026-01-01": {"cbc": cbc, "bmp": bmp}},
+            days_with_labs=1,
+        )
+        result = render_v5(data)
+        idx = result.index("STRUCTURED LABS OVERVIEW")
+        section = result[idx:idx + 600]
+        self.assertIn("Days with labs: 1", section)
+        self.assertIn("Admission (2026-01-01):", section)
+        self.assertIn("CBC:", section)
+        self.assertIn("BMP:", section)
+        self.assertIn("Hgb 12.7", section)
+        self.assertIn("Na 140", section)
+        self.assertNotIn("Most recent", section)
+
+    # ── Two-day labs (admission + most recent) ──
+
+    def test_two_day_labs(self):
+        """Two lab days renders both admission and most recent blocks."""
+        data = _minimal_features()
+        cbc1 = self._cbc_panel(hgb=(12.7, False), hct=(38.0, False), wbc=(10.2, False), plt=(210, False))
+        bmp1 = self._bmp_panel(na=(140, False), k=(4.0, False), cr=(1.1, False), glucose=(120, False))
+        cbc2 = self._cbc_panel(hgb=(10.8, True), hct=(32.0, True), wbc=(12.5, False), plt=(180, False))
+        bmp2 = self._bmp_panel(na=(138, False), k=(3.8, False), cr=(1.4, True), glucose=(110, False))
+        data["features"]["structured_labs_v1"] = self._labs_feature(
+            panels_by_day={
+                "2026-01-01": {"cbc": cbc1, "bmp": bmp1},
+                "2026-01-03": {"cbc": cbc2, "bmp": bmp2},
+            },
+            days_with_labs=2,
+        )
+        result = render_v5(data)
+        idx = result.index("STRUCTURED LABS OVERVIEW")
+        section = result[idx:idx + 800]
+        self.assertIn("Days with labs: 2", section)
+        self.assertIn("Admission (2026-01-01):", section)
+        self.assertIn("Most recent (2026-01-03):", section)
+        self.assertIn("Hgb 12.7", section)
+        self.assertIn("Hgb 10.8 (!)", section)
+
+    # ── Abnormal markers ──
+
+    def test_abnormal_markers(self):
+        """Components with abnormal=true get (!) appended."""
+        data = _minimal_features()
+        cbc = self._cbc_panel(hgb=(7.2, True), hct=(22.0, True), wbc=(18.5, True), plt=(45, True))
+        bmp = self._bmp_panel(na=(128, True), k=(5.8, True), cr=(3.2, True), glucose=(250, True))
+        data["features"]["structured_labs_v1"] = self._labs_feature(
+            panels_by_day={"2026-01-01": {"cbc": cbc, "bmp": bmp}},
+            days_with_labs=1,
+        )
+        result = render_v5(data)
+        idx = result.index("STRUCTURED LABS OVERVIEW")
+        section = result[idx:idx + 600]
+        self.assertIn("Hgb 7.2 (!)", section)
+        self.assertIn("Hct 22.0 (!)", section)
+        self.assertIn("WBC 18.5 (!)", section)
+        self.assertIn("Plt 45 (!)", section)
+        self.assertIn("Na 128 (!)", section)
+        self.assertIn("K 5.8 (!)", section)
+        self.assertIn("Cr 3.2 (!)", section)
+        self.assertIn("Glucose 250 (!)", section)
+
+    # ── Missing individual components render as -- ──
+
+    def test_missing_components_render_dashes(self):
+        """Components with status DATA NOT AVAILABLE render as '--'."""
+        data = _minimal_features()
+        cbc = self._cbc_panel(hgb=(12.7, False))  # Only Hgb available
+        bmp = self._bmp_panel(na=(140, False))  # Only Na available
+        data["features"]["structured_labs_v1"] = self._labs_feature(
+            panels_by_day={"2026-01-01": {"cbc": cbc, "bmp": bmp}},
+            days_with_labs=1,
+        )
+        result = render_v5(data)
+        idx = result.index("STRUCTURED LABS OVERVIEW")
+        section = result[idx:idx + 600]
+        self.assertIn("Hgb 12.7", section)
+        self.assertIn("Hct --", section)
+        self.assertIn("WBC --", section)
+        self.assertIn("Plt --", section)
+        self.assertIn("Na 140", section)
+        self.assertIn("K --", section)
+        self.assertIn("Cr --", section)
+        self.assertIn("Glucose --", section)
+
+    # ── Section position: between PROPHYLAXIS and TRIGGER ──
+
+    def test_section_position(self):
+        """STRUCTURED LABS OVERVIEW appears between PROPHYLAXIS STATUS and TRIGGER / HEMODYNAMIC STATUS."""
+        data = _minimal_features()
+        data["features"]["structured_labs_v1"] = self._labs_feature(
+            panels_by_day={"2026-01-01": {"cbc": self._cbc_panel(hgb=(12.0, False)), "bmp": self._bmp_panel(na=(140, False))}},
+            days_with_labs=1,
+        )
+        result = render_v5(data)
+        proph_pos = result.index("PROPHYLAXIS STATUS")
+        labs_pos = result.index("STRUCTURED LABS OVERVIEW")
+        trigger_pos = result.index("TRIGGER / HEMODYNAMIC STATUS")
+        self.assertGreater(labs_pos, proph_pos)
+        self.assertLess(labs_pos, trigger_pos)
+
+    # ── Deterministic ordering ──
+
+    def test_deterministic_output(self):
+        """Two renders of same data produce identical output."""
+        data = _minimal_features()
+        cbc = self._cbc_panel(hgb=(12.7, False), hct=(38.0, False), wbc=(10.2, False), plt=(210, False))
+        bmp = self._bmp_panel(na=(140, False), k=(4.0, False), cr=(1.1, False), glucose=(120, False))
+        data["features"]["structured_labs_v1"] = self._labs_feature(
+            panels_by_day={"2026-01-01": {"cbc": cbc, "bmp": bmp}},
+            days_with_labs=1,
+        )
+        r1 = render_v5(data)
+        r2 = render_v5(data)
+        self.assertEqual(r1, r2)
+
+    # ── Component display order is CBC then BMP ──
+
+    def test_cbc_before_bmp(self):
+        """CBC line appears before BMP line within each day block."""
+        data = _minimal_features()
+        cbc = self._cbc_panel(hgb=(12.0, False), hct=(38.0, False), wbc=(10.0, False), plt=(200, False))
+        bmp = self._bmp_panel(na=(140, False), k=(4.0, False), cr=(1.0, False), glucose=(100, False))
+        data["features"]["structured_labs_v1"] = self._labs_feature(
+            panels_by_day={"2026-01-01": {"cbc": cbc, "bmp": bmp}},
+            days_with_labs=1,
+        )
+        result = render_v5(data)
+        idx = result.index("STRUCTURED LABS OVERVIEW")
+        section = result[idx:]
+        cbc_line_pos = section.index("CBC:")
+        bmp_line_pos = section.index("BMP:")
+        self.assertLess(cbc_line_pos, bmp_line_pos)
+
+    # ── __UNDATED__ days excluded ──
+
+    def test_undated_days_excluded(self):
+        """__UNDATED__ days are not rendered in the overview."""
+        data = _minimal_features()
+        cbc = self._cbc_panel(hgb=(12.0, False))
+        data["features"]["structured_labs_v1"] = self._labs_feature(
+            panels_by_day={
+                "__UNDATED__": {"cbc": cbc, "bmp": self._bmp_panel()},
+                "2026-01-01": {"cbc": cbc, "bmp": self._bmp_panel(na=(140, False))},
+            },
+            days_with_labs=1,
+        )
+        result = render_v5(data)
+        idx = result.index("STRUCTURED LABS OVERVIEW")
+        section = result[idx:idx + 600]
+        self.assertNotIn("__UNDATED__", section)
+        self.assertIn("Admission (2026-01-01):", section)
+
+    # ── Integer values render correctly ──
+
+    def test_integer_values(self):
+        """Integer lab values (e.g., Plt 210) render without decimal."""
+        data = _minimal_features()
+        cbc = self._cbc_panel(plt=(210, False))
+        data["features"]["structured_labs_v1"] = self._labs_feature(
+            panels_by_day={"2026-01-01": {"cbc": cbc, "bmp": self._bmp_panel()}},
+            days_with_labs=1,
+        )
+        result = render_v5(data)
+        idx = result.index("STRUCTURED LABS OVERVIEW")
+        section = result[idx:idx + 600]
+        self.assertIn("Plt 210", section)
+
+    # ── Days with labs count from summary ──
+
+    def test_days_with_labs_from_summary(self):
+        """Days-with-labs count comes from summary, not from panel count."""
+        data = _minimal_features()
+        cbc = self._cbc_panel(hgb=(12.0, False))
+        data["features"]["structured_labs_v1"] = self._labs_feature(
+            panels_by_day={"2026-01-01": {"cbc": cbc, "bmp": self._bmp_panel(na=(140, False))}},
+            days_with_labs=5,  # Summary says 5 even though we only pass 1 day
+        )
+        result = render_v5(data)
+        idx = result.index("STRUCTURED LABS OVERVIEW")
+        section = result[idx:idx + 300]
+        self.assertIn("Days with labs: 5", section)
+
+
 if __name__ == "__main__":
     unittest.main()
