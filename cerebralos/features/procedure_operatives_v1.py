@@ -136,6 +136,16 @@ _ANESTHESIA_MILESTONES: List[Tuple[str, re.Pattern]] = [
 ]
 
 
+# ── CPT code extraction ────────────────────────────────────────────
+# Matches explicit "CPT <5-digit>" when the token "CPT" is preceded by
+# a word boundary (not part of a longer word like "VEST CPT" which is
+# chest physiotherapy).  Requires exactly 5 digits (standard CPT-4).
+_RE_CPT_CODE = re.compile(
+    r"(?<![A-Za-z])CPT\s*#?\s*:?\s*(\d{5})\b",
+    re.IGNORECASE,
+)
+
+
 # ── Anesthesia detail extraction ───────────────────────────────────
 # Simple key:value extraction for anesthesia type, ASA status, airway
 
@@ -162,6 +172,30 @@ def _clean_label(raw: str) -> str:
     if len(label) > 200:
         label = label[:200] + "…"
     return label
+
+
+def _extract_cpt_codes(text: str) -> List[str]:
+    """Extract explicit CPT codes from procedure text.
+
+    Returns a deduplicated list of 5-digit CPT code strings in
+    encounter order.  Only codes preceded by the literal token
+    "CPT" are captured — never inferred from procedure names.
+    Fail-closed: returns [] when no explicit CPT is present.
+    """
+    seen: set[str] = set()
+    codes: List[str] = []
+    for m in _RE_CPT_CODE.finditer(text):
+        # Guard: reject "VEST CPT" (chest physiotherapy).
+        # Use a wider lookback window so variable spacing still matches.
+        start = m.start()
+        prefix = text[max(0, start - 10):start]
+        if re.search(r"VEST\s*$", prefix, re.IGNORECASE):
+            continue
+        code = m.group(1)
+        if code not in seen:
+            seen.add(code)
+            codes.append(code)
+    return codes
 
 
 def _extract_label(text: str) -> Optional[str]:
@@ -302,6 +336,7 @@ def extract_procedure_operatives(
             label = _extract_label(text_for_regex)
             status = _extract_status(text_for_regex)
             preop_dx = _extract_preop_dx(text_for_regex)
+            cpt_codes = _extract_cpt_codes(text_for_regex)
 
             # Build item reference for evidence
             item_ref = _make_item_ref(day_iso, item_idx)
@@ -339,6 +374,8 @@ def extract_procedure_operatives(
                 event["anesthesia_type"] = anesthesia_details["anesthesia_type"]
             if anesthesia_details.get("asa_status"):
                 event["asa_status"] = anesthesia_details["asa_status"]
+            if cpt_codes:
+                event["cpt_codes"] = cpt_codes
 
             events.append(event)
 
