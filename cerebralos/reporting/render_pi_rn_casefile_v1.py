@@ -462,7 +462,7 @@ def _render_status_bar(bundle: Dict[str, Any]) -> str:
 
     if not chips:
         return ""
-    return f'<div class="status-bar">{"" .join(chips)}</div>'
+    return f'<div class="status-bar">{"".join(chips)}</div>'
 
 
 def _status_chip(label: str, value: str, cls: str) -> str:
@@ -488,7 +488,7 @@ def _render_compliance_snapshot(bundle: Dict[str, Any]) -> str:
         return ""
 
     yes_n = sum(1 for v in ntds.values() if isinstance(v, dict) and str(v.get("outcome", "")).upper() == "YES")
-    utd_n = sum(1 for v in ntds.values() if isinstance(v, dict) and str(v.get("outcome", "")).upper() == "UTD")
+    utd_n = sum(1 for v in ntds.values() if isinstance(v, dict) and str(v.get("outcome", "")).upper() in ("UTD", "UNABLE_TO_DETERMINE"))
     nc_n = sum(1 for r in protocols if isinstance(r, dict) and str(r.get("outcome", "")).upper() == "NON_COMPLIANT")
 
     if yes_n == 0 and utd_n == 0 and nc_n == 0:
@@ -529,7 +529,10 @@ def _render_admission_snapshot(bundle: Dict[str, Any]) -> str:
     los = f"{los_val} day{'s' if los_val != 1 else ''}" if los_val is not None else "\u2014"
 
     age_data = summary.get("age")
-    age = str(age_data.get("age", "\u2014")) if isinstance(age_data, dict) and age_data.get("age") is not None else "\u2014"
+    _ay = age_data.get("age_years") if isinstance(age_data, dict) else None
+    if _ay is None:
+        _ay = age_data.get("age") if isinstance(age_data, dict) else None
+    age = str(_ay) if _ay is not None else "\u2014"
     demo = summary.get("demographics")
     sex = str(demo.get("sex", "\u2014")) if isinstance(demo, dict) and demo.get("sex") else "\u2014"
     age_sex = f"{age} / {sex}"

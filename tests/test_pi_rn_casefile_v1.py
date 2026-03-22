@@ -268,9 +268,8 @@ class TestFailClosed:
 
     def test_absent_consultants_omits_card(self):
         html = render_casefile(_MINIMAL_BUNDLE)
-        # Detail card 'Consults' section should not appear;
-        # the word may appear as an admission-snapshot label.
-        assert 'card-title">Consults</div>' not in html
+        # Detail card should not appear when consultants are null
+        assert 'card-title">Consultants</div>' not in html
 
     def test_empty_daily_shows_no_day_cards(self):
         html = render_casefile(_MINIMAL_BUNDLE)
@@ -480,6 +479,10 @@ class TestComplianceSnapshot:
     def test_ntds_utd_count(self):
         out = _render_compliance_snapshot(_FULL_BUNDLE)
         assert "NTDS UTD" in out
+        # UNABLE_TO_DETERMINE (DVT event) must count toward UTD bucket
+        assert 'csnap-utd' in out
+        # Exactly 1 UTD event in fixture
+        assert '<div class="cn">1</div>' in out.split('NTDS UTD')[0].split('csnap-box')[-1]
 
     def test_protocol_nc_count(self):
         out = _render_compliance_snapshot(_FULL_BUNDLE)
