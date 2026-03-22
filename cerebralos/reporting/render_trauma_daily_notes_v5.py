@@ -1047,6 +1047,108 @@ def _render_prophylaxis(feats: Dict[str, Any]) -> List[str]:
 
 
 # ════════════════════════════════════════════════════════════════════
+# §6b  STRUCTURED LABS OVERVIEW
+# ════════════════════════════════════════════════════════════════════
+
+# CBC and BMP components to render, in display order
+_LABS_CBC_KEYS = ("Hgb", "Hct", "WBC", "Plt")
+_LABS_BMP_KEYS = ("Na", "K", "Cr", "Glucose")
+
+
+def _fmt_lab_val(val: Any) -> str:
+    """Format a lab value: strip .0 from integer-like floats (e.g. 210.0 -> '210')."""
+    if val is None:
+        return "--"
+    if isinstance(val, float):
+        if val == int(val):
+            return str(int(val))
+        return f"{val:.1f}"
+    return str(val)
+
+
+def _format_lab_panel_line(
+    panel: Dict[str, Any], keys: tuple, label: str,
+) -> str:
+    """Format a single panel line like 'CBC: Hgb 12.7  Hct 38.0 ...'."""
+    parts: List[str] = []
+    for key in keys:
+        comp = panel.get("components", {}).get(key, {})
+        status = comp.get("status")
+        if status == "available":
+            val = comp.get("last")
+            abnormal = comp.get("abnormal", False)
+            val_str = _fmt_lab_val(val)
+            if abnormal:
+                val_str += " (!)"
+            parts.append(f"{key} {val_str}")
+        else:
+            parts.append(f"{key} --")
+    return f"    {label}: {('  '.join(parts))}"
+
+
+def _render_structured_labs_overview(feats: Dict[str, Any]) -> List[str]:
+    """Render patient-level structured labs overview (admission + most recent)."""
+    out: List[str] = []
+    out.append("STRUCTURED LABS OVERVIEW")
+    out.append("-" * 60)
+
+    labs = feats.get("structured_labs_v1")
+    if labs is None:
+        out.append(f"  {_DNA}")
+        out.append("")
+        return out
+
+    panels_by_day = labs.get("panels_by_day", {})
+    summary = labs.get("summary", {})
+    days_with_labs = summary.get("days_with_labs", 0)
+
+    # Collect sorted day keys (exclude __UNDATED__)
+    day_keys = sorted(k for k in panels_by_day if k != "__UNDATED__")
+
+    # Check if any CBC or BMP panel has at least one available component
+    def _has_any_available(day_key: str) -> bool:
+        day_panels = panels_by_day.get(day_key, {})
+        for panel_name in ("cbc", "bmp"):
+            panel = day_panels.get(panel_name, {})
+            comps = panel.get("components", {})
+            for key in (_LABS_CBC_KEYS if panel_name == "cbc" else _LABS_BMP_KEYS):
+                comp = comps.get(key, {})
+                if comp.get("status") == "available":
+                    return True
+        return False
+
+    # Filter to days that have at least one renderable lab
+    renderable_days = [d for d in day_keys if _has_any_available(d)]
+
+    if not renderable_days:
+        out.append("  No structured labs available")
+        out.append("")
+        return out
+
+    out.append(f"  Days with labs: {days_with_labs}")
+
+    # Determine admission and most-recent days
+    admission_day = renderable_days[0]
+    most_recent_day = renderable_days[-1]
+
+    def _append_day_labs(day_key: str, label: str) -> None:
+        day_panels = panels_by_day.get(day_key, {})
+        out.append(f"  {label} ({day_key}):")
+        cbc = day_panels.get("cbc", {})
+        out.append(_format_lab_panel_line(cbc, _LABS_CBC_KEYS, "CBC"))
+        bmp = day_panels.get("bmp", {})
+        out.append(_format_lab_panel_line(bmp, _LABS_BMP_KEYS, "BMP"))
+
+    _append_day_labs(admission_day, "Admission")
+
+    if most_recent_day != admission_day:
+        _append_day_labs(most_recent_day, "Most recent")
+
+    out.append("")
+    return out
+
+
+# ════════════════════════════════════════════════════════════════════
 # §7  TRIGGER / HEMODYNAMIC STATUS
 # ════════════════════════════════════════════════════════════════════
 
@@ -2173,6 +2275,7 @@ def render_v5(
     out.extend(_render_urine_output(feats))
     out.extend(_render_consultant_summary(feats))
     out.extend(_render_prophylaxis(feats))
+    out.extend(_render_structured_labs_overview(feats))
     out.extend(_render_trigger_hemodynamic(feats))
     out.extend(_render_bd_inr_trend(feats))
     out.extend(_render_impression_drift(feats))
