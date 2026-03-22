@@ -64,11 +64,11 @@ reads and uses for case review.
 
 | Field | Source |
 |-------|--------|
-| Patient name | `patient_evidence_v1.json` demographics |
-| Date of birth | `patient_evidence_v1.json` demographics |
+| Patient name | `patient_evidence_v1.json → meta.patient_name` |
+| Date of birth | `patient_evidence_v1.json → meta.dob` |
 | Age | Computed from DOB + admission date |
-| Mechanism of injury (MOI) | `patient_features_v1.json → features.trauma_activation_v1` |
-| PMH / especially anticoagulants | `patient_features_v1.json → features.demographics_v1` + future PMH extraction |
+| Mechanism of injury (MOI) | `patient_features_v1.json → features.mechanism_region_v1` |
+| PMH / especially anticoagulants | `patient_features_v1.json → features.pmh_social_allergies_v1` + `features.anticoag_context_v1` |
 | Injuries | `patient_features_v1.json → features` (injury-related modules) |
 | Consultants | `patient_features_v1.json → features.consultant_day_plans_by_day_v1` |
 | Admission / discharge dates | `patient_days_v1.json` day range |
@@ -87,7 +87,7 @@ Each hospital day shows:
 | Changes in course | `patient_features_v1.json → features.trauma_daily_plan_by_day_v1` |
 | Vitals snapshot | `patient_features_v1.json → features.vitals_canonical_v1` |
 | Ventilator settings | `patient_features_v1.json → features.ventilator_settings_v1` |
-| GCS | `patient_features_v1.json → features.gcs_daily` |
+| GCS | `patient_features_v1.json → days[YYYY-MM-DD].gcs_daily` |
 
 **NTDS + Protocol Non-Compliance (prominently visible)**
 
