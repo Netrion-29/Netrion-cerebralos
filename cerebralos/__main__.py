@@ -202,6 +202,27 @@ def cmd_run(args: list) -> int:
     except Exception as exc:
         print(f"  V5:    error -- {exc}")
 
+    # Bundle v1 (casefile assembly — skip if required artifacts absent)
+    _bundle_evidence = _PROJECT_ROOT / "outputs" / "evidence" / patient_path.stem / "patient_evidence_v1.json"
+    _bundle_features = _PROJECT_ROOT / "outputs" / "features" / patient_path.stem / "patient_features_v1.json"
+    _bundle_timeline = _PROJECT_ROOT / "outputs" / "timeline" / patient_path.stem / "patient_days_v1.json"
+    if _bundle_evidence.is_file() and _bundle_features.is_file() and _bundle_timeline.is_file():
+        try:
+            from cerebralos.reporting.build_patient_bundle_v1 import (
+                assemble_bundle, write_bundle,
+            )
+            bundle_out = (
+                _PROJECT_ROOT / "outputs" / "casefile"
+                / patient_path.stem / "patient_bundle_v1.json"
+            )
+            bundle = assemble_bundle(patient_path.stem)
+            write_bundle(bundle, bundle_out)
+            print(f"  Bundle: {bundle_out}")
+        except Exception as exc:
+            print(f"  Bundle: error -- {exc}")
+    else:
+        print("  Bundle: skipped (required pipeline artifacts not found)")
+
     # Excel
     try:
         from cerebralos.reporting.excel_dashboard import update_excel_dashboard
