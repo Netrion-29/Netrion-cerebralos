@@ -2,8 +2,8 @@
 
 | Field       | Value                                                    |
 |-------------|----------------------------------------------------------|
-| Date        | 2026-03-16                                               |
-| Baseline    | `71a3990` (main, after PR #258)                          |
+| Date        | 2026-03-22                                               |
+| Baseline    | `b8ac647` (main, after PR #292)                          |
 | Owner       | Sarah                                                    |
 | Status      | Active — this is the primary context-recovery doc        |
 
@@ -148,6 +148,17 @@
 | #257 | `1f90b8b` | fix(vitals): handle Epic bang-prefix in Visit Vitals parser |
 | #258 | `71a3990` | docs(sync): update roadmap/startup/boot + prompt templates for post-PR #257 state |
 | #266 | `ef18faf` | fix(ntds): harden E15/E21 precision — add noise patterns for BPA template headers and non-pneumonia CXR attributions |
+| #271 | — | fix(gate): add v3 output baseline to gate_pr.sh (AUD-015) |
+| #283 | `13aabe6` | feat(v5): add STRUCTURED LABS OVERVIEW patient-level section |
+| #284 | `2212eaf` | feat(v5): add --sections control surface for optional section filtering |
+| #285 | `8e799ff` | docs: establish PI RN Casefile v1 product direction + soft-archive dashboard |
+| #286 | `ab3d895` | feat: add patient_bundle_v1 assembler, validator, contract, tests |
+| #287 | `031c815` | feat: PI RN Casefile v1 — single-patient HTML renderer |
+| #288 | `7ffce00` | feat: PI RN Casefile v1 — one-click workflow (Phase 5) |
+| #289 | `8a82f0c` | feat: PI RN Casefile Hub v1 — local patient index |
+| #290 | `340ef14` | feat: above-the-fold Clinical Snapshot for PI RN casefile |
+| #291 | `3c4d8a2` | fix: bundle daily mapping reads module.days[date] for nested features |
+| #292 | `b8ac647` | feat: day-card renderer refinement — real-shape alignment for GCS, labs, vitals, consultant plans |
 
 ### Closed PRs
 
@@ -703,6 +714,54 @@ so they survive session turnover.
 - Chest tube extraction: LDA type defined but **zero cohort evidence** — defer
 - Protected-engine items (LDA default enablement, protocol-engine consumer disconnect): future-fix track
 
+##### PI RN Casefile — Merged State (2026-03-22)
+
+The PI RN Casefile pipeline is operational on main (PRs #285–#292). Current state:
+
+| Layer | Component | PR | Status |
+|-------|-----------|------|--------|
+| Direction | Product direction docs + soft-archive | #285 | ✅ Merged |
+| Bundle | `patient_bundle_v1` contract + assembler + validator | #286 | ✅ Merged |
+| Renderer | Single-patient HTML casefile renderer | #287 | ✅ Merged |
+| Workflow | One-click `run_casefile_v1.sh` | #288 | ✅ Merged |
+| Hub | Patient hub (local index) | #289 | ✅ Merged |
+| Renderer | Above-the-fold clinical snapshot | #290 | ✅ Merged |
+| Bundle | Daily mapping fix (nested-days wiring) | #291 | ✅ Merged |
+| Renderer | Day-card refinement (real-shape alignment) | #292 | ✅ Merged |
+
+**What the casefile renders today:**
+- Above-the-fold header: patient name, DOB, age, LOS, activation category,
+  admitting physician, anticoag status, MOI + body regions, PMH, consultants
+- Per hospital-day cards: vitals, GCS (severity-coded), structured labs
+  (H/L flag highlighting), consultant plans (per-service), trauma team plans
+- Compliance: NTDS 21-event outcome badges, protocol compliance summary
+
+**Stale findings now corrected:**
+- Bundle nested-days mapping bugs → **fixed in PR #291**
+- Day-card renderer real-shape alignment → **fixed in PR #292**
+- Labs canonical guard (empty `latest` fallback) → **fixed in PR #292**
+
+These should not be referenced as open issues in future work.
+
+**Upstream extraction gap (still open):**
+- `trauma_daily_plan_by_day_v1` returns null/empty for most gate patients.
+  This is a feature extraction gap, not a bundle or renderer bug. The bundle
+  wiring and renderer for daily plans are correct (PRs #291, #292) — the
+  feature module itself does not produce populated output for these patients.
+
+**Casefile content expansion — recommended next PRs:**
+
+| # | Theme | Gap Type | Key Modules |
+|---|-------|----------|-------------|
+| 1 | Injury inventory + imaging results | Renderer | `radiology_findings_v1`, `mechanism_region_v1` |
+| 2 | Procedure/operative timeline | Bundle + renderer | `procedure_operatives_v1` |
+| 3 | Resuscitation/hemodynamic summary | Bundle + renderer | `base_deficit_monitoring_v1`, `transfusion_blood_products_v1` |
+| 4 | Device duration + prophylaxis grid | Renderer | `lda_events_v1`, `dvt_prophylaxis_v1` |
+| 5 | Daily narrative investigation | Upstream feature | `trauma_daily_plan_by_day_v1` |
+
+**Full coverage matrix:** `docs/roadmaps/CASEFILE_VISION_COVERAGE_MATRIX_v1.md`
+**Status dashboard:** `docs/STATUS_DASHBOARD_v1.md`
+
 ##### Item 16A — PR #214 Correctness Hardening Intake (2026-03-12)
 
 Accepted into merged PR #214:
@@ -978,9 +1037,12 @@ summary header, daily admission notes, NTDS + protocol non-compliance.
 | Doc | Purpose |
 |-----|---------|
 | `AGENTS.md` | Non-negotiable constraints, roles, locked contracts |
+| `docs/STATUS_DASHBOARD_v1.md` | One-page current state overview |
+| `docs/roadmaps/CASEFILE_VISION_COVERAGE_MATRIX_v1.md` | Vision → implementation mapping for casefile |
+| `docs/roadmaps/PI_RN_CASEFILE_V1.md` | Product direction (casefile vision) |
 | `docs/DAILY_STARTUP.md` | Daily startup checklist, gate commands |
 | `docs/CHATGPT_BOOT_HEADER.md` | ChatGPT/Codex session bootstrap |
-| `docs/roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md` | Original build-forward plan (historical) |
+| `docs/roadmaps/TRAUMA_BUILD_FORWARD_PLAN_v1.md` | Original build-forward plan (historical — superseded by this doc) |
 | `README.md` | Repo overview + scratch policy |
 
 ---
