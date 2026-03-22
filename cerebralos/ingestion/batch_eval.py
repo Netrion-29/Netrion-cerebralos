@@ -16,7 +16,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, FrozenSet, List, Optional
 
 # Add project to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
@@ -366,7 +366,7 @@ def _generate_v5_report(
     ntds_results: Optional[List[Dict[str, Any]]],
     output_path: Optional[Path] = None,
     protocol_results: Optional[List[Dict[str, Any]]] = None,
-    sections: Optional[Any] = None,
+    sections: Optional[FrozenSet[str]] = None,
 ) -> str:
     """
     Generate TRAUMA_DAILY_NOTES_v5 report for a patient.

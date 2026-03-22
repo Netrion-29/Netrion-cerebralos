@@ -3057,7 +3057,7 @@ class TestSectionsControlSurface(unittest.TestCase):
         result = render_v5(data, sections=frozenset({"bd_inr_monitoring"}))
         self.assertIn("BASE DEFICIT / INR MONITORING", result)
         # Other filterable sections should be absent
-        self.assertNotIn("IMPRESSION/PLAN DRIFT", result)
+        self.assertNotIn("IMPRESSION / PLAN DRIFT", result)
         self.assertNotIn("NOTE SECTIONS", result)
         self.assertNotIn("SPINE CLEARANCE", result)
 

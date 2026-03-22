@@ -105,16 +105,16 @@ V5_PROTOCOLS_FLAG=""
 if [[ -n "$PROTOCOL_RESULTS" && -f "$PROTOCOL_RESULTS" ]]; then
   V5_PROTOCOLS_FLAG="--protocols $PROTOCOL_RESULTS"
 fi
-V5_SECTIONS_FLAG=""
+V5_SECTIONS_ARGS=()
 if [[ -n "${CEREBRAL_V5_SECTIONS:-}" ]]; then
-  V5_SECTIONS_FLAG="--sections $CEREBRAL_V5_SECTIONS"
+  V5_SECTIONS_ARGS=(--sections "$CEREBRAL_V5_SECTIONS")
 fi
 python3 cerebralos/reporting/render_trauma_daily_notes_v5.py \
   --features "outputs/features/$SLUG/patient_features_v1.json" \
   --days "outputs/timeline/$SLUG/patient_days_v1.json" \
   $V5_NTDS_FLAG \
   $V5_PROTOCOLS_FLAG \
-  $V5_SECTIONS_FLAG \
+  ${V5_SECTIONS_ARGS[@]+"${V5_SECTIONS_ARGS[@]}"} \
   --out "outputs/reporting/$SLUG/TRAUMA_DAILY_NOTES_v5.txt"
 
 echo "---- sanity checks ----"

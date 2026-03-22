@@ -84,6 +84,9 @@ def cmd_run(args: list) -> int:
             sections_raw = args[i + 1]
             skip_next = True
             continue
+        if a == "--sections" and i + 1 >= len(args):
+            print("Error: --sections requires a value (comma-separated section keys).")
+            sys.exit(1)
         if a.startswith("--sections="):
             sections_raw = a[len("--sections="):]
             continue
