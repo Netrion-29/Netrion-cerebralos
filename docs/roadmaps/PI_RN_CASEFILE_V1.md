@@ -199,11 +199,13 @@ This shape is **not locked** until the contract PR is merged.
 
 ### Phase 5 — One-Click Run/Open Workflow
 
-- macOS: double-click or Automator action
-- Runs `./run_patient.sh <patient> --ntds --protocols`
-- Opens casefile in default browser automatically
-- Operator goes from "I have a patient file" to "I'm reading the casefile"
-  in one action
+- [x] Shell wrapper: `scripts/run_casefile_v1.sh` — runs full pipeline + opens casefile
+- [x] Interactive prompt when no patient argument given
+- [x] VS Code task: `.vscode/tasks.json` — "PI RN Casefile — Run Patient"
+- [x] Auto-open casefile in default browser (macOS `open`, Linux `xdg-open`)
+- [x] `CEREBRAL_NO_OPEN=1` for CI/sandbox suppression
+- [x] `README.md` quick-start section
+- [ ] macOS Automator action (deferred — documentation only)
 
 ### Phase 6 — Cross-Patient Hub
 
