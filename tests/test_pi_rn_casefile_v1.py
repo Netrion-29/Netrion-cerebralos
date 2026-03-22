@@ -140,8 +140,8 @@ _FULL_BUNDLE = {
                     "evidence": [{"role": "procedure_event", "snippet": "tracheostomy", "raw_line_id": "proc002"}],
                 },
             ],
-            "procedure_event_count": 2,
-            "operative_event_count": 0,
+            "procedure_event_count": 0,
+            "operative_event_count": 2,
             "anesthesia_event_count": 0,
             "categories_present": ["operative"],
             "evidence": [],
@@ -1078,7 +1078,7 @@ class TestImagingStudies:
     def test_evidence_items_shown(self):
         out = _render_imaging_studies(_FULL_BUNDLE)
         assert "RADIOLOGY" in out
-        assert "rib_fracture" in out.lower().replace("_", "_") or "Rib Fracture" in out
+        assert "rib_fracture" in out.lower() or "Rib Fracture" in out
         assert "2026-01-01" in out
 
     def test_snippet_shown(self):
@@ -1130,7 +1130,7 @@ class TestProcedures:
     def test_summary_counts(self):
         out = _render_procedures(_FULL_BUNDLE)
         assert "2 events" in out
-        assert "2 procedure" in out
+        assert "2 operatives" in out
 
     def test_absent_procedures_omits_section(self):
         out = _render_procedures(_MINIMAL_BUNDLE)

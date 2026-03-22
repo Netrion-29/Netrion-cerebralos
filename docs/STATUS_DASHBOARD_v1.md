@@ -82,7 +82,6 @@ casefile, not building new extraction logic.
 | 1 | **Resuscitation / hemodynamic summary** | (new section) | `base_deficit_monitoring_v1`, `transfusion_blood_products_v1` |
 | 2 | **Device duration + prophylaxis grid** | LDAs (#14), PT/OT/disposition (#22) | `lda_events_v1`, `dvt_prophylaxis_v1`, `non_trauma_team_day_plans_v1` |
 | 3 | **Daily narrative investigation** | Daily notes (#20) | `trauma_daily_plan_by_day_v1` — upstream extraction gap |
-| 5 | **Daily narrative investigation** | Daily notes (#20) | `trauma_daily_plan_by_day_v1` — upstream extraction gap |
 
 ---
 

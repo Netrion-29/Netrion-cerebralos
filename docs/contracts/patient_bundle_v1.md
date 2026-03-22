@@ -186,8 +186,8 @@ Bundle-level warnings. Includes:
 | LDA episode detail | Available via features if needed; not curated for v1 header |
 | Injury-specific feature modules | Complex; defer to v1.1 when casefile renderer needs them |
 
-> **NOTE (v1.1 update):** Injury, imaging, and procedure data are now
-> carried in `summary.injuries`, `summary.imaging`, and
+> **NOTE (PR #294, 2026-03-22):** Injury, imaging, and procedure data
+> are now carried in `summary.injuries`, `summary.imaging`, and
 > `summary.procedures` respectively. The "Intentionally Excluded" note
 > above is retained for historical context only.
 

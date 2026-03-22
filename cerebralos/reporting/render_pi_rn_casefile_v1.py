@@ -959,9 +959,9 @@ def _render_procedures(bundle: Dict[str, Any]) -> str:
     if proc_ct or op_ct or anes_ct:
         parts = []
         if proc_ct:
-            parts.append(f"{proc_ct} procedure")
+            parts.append(f"{proc_ct} procedure{'s' if proc_ct != 1 else ''}")
         if op_ct:
-            parts.append(f"{op_ct} operative")
+            parts.append(f"{op_ct} operative{'s' if op_ct != 1 else ''}")
         if anes_ct:
             parts.append(f"{anes_ct} anesthesia")
         summary_line += f" ({', '.join(parts)})"
