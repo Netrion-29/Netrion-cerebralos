@@ -35,6 +35,8 @@ from cerebralos.reporting.render_pi_rn_casefile_v1 import (
     _render_primary_injuries,
     _render_imaging_studies,
     _render_procedures,
+    _render_devices,
+    _render_prophylaxis,
 )
 
 
@@ -148,6 +150,81 @@ _FULL_BUNDLE = {
             "warnings": [],
             "notes": [],
             "source_rule_id": "procedure_operatives_v1",
+        },
+        "devices": {
+            "devices": [
+                {
+                    "device_type": "Peripheral IV",
+                    "device_label": "PIV #1",
+                    "category": "PIV",
+                    "placed_ts": "01/01/26 1030",
+                    "removed_ts": "01/03/26 0800",
+                    "duration_text": "2 days",
+                    "site": "Left hand",
+                    "source_format": "LDA",
+                    "assessment_count": 5,
+                    "event_rows": 8,
+                    "evidence": [{"raw_line_id": "lda001"}],
+                },
+                {
+                    "device_type": "Triple Lumen Catheter",
+                    "device_label": "Central Line #1",
+                    "category": "Central Line",
+                    "placed_ts": "01/01/26 1200",
+                    "removed_ts": None,
+                    "duration_text": None,
+                    "site": "Right subclavian",
+                    "source_format": "LDA",
+                    "assessment_count": 3,
+                    "event_rows": 4,
+                    "evidence": [{"raw_line_id": "lda002"}],
+                },
+            ],
+            "lda_device_count": 2,
+            "active_devices_count": 1,
+            "categories_present": ["Central Line", "PIV"],
+            "devices_with_placement": ["Central Line #1", "PIV #1"],
+            "devices_with_removal": ["PIV #1"],
+            "source_file": "test.txt",
+            "source_rule_id": "lda_events_raw_file",
+            "warnings": [],
+            "notes": [],
+        },
+        "dvt_prophylaxis": {
+            "pharm_first_ts": "2026-01-01T20:00:00",
+            "mech_first_ts": None,
+            "first_ts": "2026-01-01T20:00:00",
+            "delay_hours": 9.9,
+            "delay_flag_24h": False,
+            "excluded_reason": None,
+            "orders_only_count": 0,
+            "pharm_admin_evidence_count": 1,
+            "pharm_ambiguous_mention_count": 0,
+            "mech_admin_evidence_count": 0,
+            "evidence": {"pharm": [], "mech": [], "exclusion": []},
+        },
+        "gi_prophylaxis": {
+            "pharm_first_ts": "2026-01-01T20:05:00",
+            "delay_hours": 10.0,
+            "delay_flag_48h": False,
+            "excluded_reason": None,
+            "pharm_admin_evidence_count": 1,
+            "pharm_ambiguous_mention_count": 0,
+            "orders_only_count": 0,
+            "evidence": {"pharm": [], "exclusion": []},
+        },
+        "seizure_prophylaxis": {
+            "detected": True,
+            "agents": ["Levetiracetam"],
+            "home_med_present": False,
+            "first_mention_ts": "2026-01-01T12:00:00",
+            "first_admin_ts": "2026-01-01T14:00:00",
+            "discontinued": False,
+            "discontinued_ts": None,
+            "dose_entries": [{"agent": "Levetiracetam", "dose_text": "500mg", "route": "IV", "frequency": "BID"}],
+            "admin_evidence_count": 2,
+            "mention_evidence_count": 1,
+            "evidence": {"admin": [], "mention": [], "discontinued": []},
         },
     },
     "compliance": {
@@ -276,6 +353,10 @@ _MINIMAL_BUNDLE = {
         "injuries": None,
         "imaging": None,
         "procedures": None,
+        "devices": None,
+        "dvt_prophylaxis": None,
+        "gi_prophylaxis": None,
+        "seizure_prophylaxis": None,
     },
     "compliance": {
         "ntds_summary": None,
@@ -1064,8 +1145,11 @@ class TestPrimaryInjuries:
         html = render_casefile(_FULL_BUNDLE)
         moi_pos = html.index("Mechanism of Injury")
         injuries_pos = html.index("Primary Injuries")
+        procedures_pos = html.index("Operative / Procedural Timeline")
+        devices_pos = html.index("Lines / Drains / Airways")
+        proph_pos = html.index("Prophylaxis Summary")
         pmh_pos = html.index("PMH / Anticoagulants")
-        assert moi_pos < injuries_pos < pmh_pos
+        assert moi_pos < injuries_pos < procedures_pos < devices_pos < proph_pos < pmh_pos
 
 
 # ── Imaging Studies tests ────────────────────────────────────────────
@@ -1206,6 +1290,169 @@ class TestProcedures:
         assert long_label not in out
 
 
+# ── Devices (LDA) tests ────────────────────────────────────────────
+
+class TestDevices:
+    def test_devices_section_present_full_bundle(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert "Lines / Drains / Airways" in html
+
+    def test_device_type_shown(self):
+        out = _render_devices(_FULL_BUNDLE)
+        assert "Peripheral IV" in out
+        assert "Triple Lumen Catheter" in out
+
+    def test_category_badge_shown(self):
+        out = _render_devices(_FULL_BUNDLE)
+        assert "dev-cat" in out
+        assert "PIV" in out
+        assert "Central Line" in out
+
+    def test_placement_shown(self):
+        out = _render_devices(_FULL_BUNDLE)
+        assert "01/01/26 1030" in out
+
+    def test_removal_shown(self):
+        out = _render_devices(_FULL_BUNDLE)
+        assert "01/03/26 0800" in out
+
+    def test_duration_shown(self):
+        out = _render_devices(_FULL_BUNDLE)
+        assert "2 days" in out
+
+    def test_site_shown(self):
+        out = _render_devices(_FULL_BUNDLE)
+        assert "Left hand" in out
+        assert "Right subclavian" in out
+
+    def test_active_status_badge(self):
+        out = _render_devices(_FULL_BUNDLE)
+        assert "dev-active" in out
+        assert "Active" in out
+
+    def test_removed_status_badge(self):
+        out = _render_devices(_FULL_BUNDLE)
+        assert "dev-removed" in out
+        assert "Removed" in out
+
+    def test_summary_counts(self):
+        out = _render_devices(_FULL_BUNDLE)
+        assert "2 devices" in out
+        assert "1 active" in out
+
+    def test_absent_devices_omits_section(self):
+        out = _render_devices(_MINIMAL_BUNDLE)
+        assert out == ""
+
+    def test_empty_devices_list_omits_section(self):
+        bundle = {"summary": {"devices": {"devices": [], "lda_device_count": 0}}}
+        out = _render_devices(bundle)
+        assert out == ""
+
+    def test_deterministic(self):
+        out1 = _render_devices(_FULL_BUNDLE)
+        out2 = _render_devices(_FULL_BUNDLE)
+        assert out1 == out2
+
+
+# ── Prophylaxis tests ──────────────────────────────────────────────
+
+class TestProphylaxis:
+    def test_prophylaxis_section_present_full_bundle(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert "Prophylaxis Summary" in html
+
+    def test_dvt_prophylaxis_shown(self):
+        out = _render_prophylaxis(_FULL_BUNDLE)
+        assert "DVT Prophylaxis" in out
+        assert "Pharmacologic started" in out
+
+    def test_dvt_delay_hours_shown(self):
+        out = _render_prophylaxis(_FULL_BUNDLE)
+        assert "9.9h" in out
+
+    def test_gi_prophylaxis_shown(self):
+        out = _render_prophylaxis(_FULL_BUNDLE)
+        assert "GI Prophylaxis" in out
+        assert "Started" in out
+
+    def test_seizure_prophylaxis_detected(self):
+        out = _render_prophylaxis(_FULL_BUNDLE)
+        assert "Seizure Prophylaxis" in out
+        assert "Levetiracetam" in out
+        assert "proph-detected" in out
+
+    def test_seizure_admin_time_shown(self):
+        out = _render_prophylaxis(_FULL_BUNDLE)
+        assert "2026-01-01T14:00:00" in out
+
+    def test_dvt_excluded(self):
+        bundle = {"summary": {"dvt_prophylaxis": {
+            "excluded_reason": "THERAPEUTIC_ANTICOAG",
+            "pharm_first_ts": None, "mech_first_ts": None,
+            "delay_hours": None, "delay_flag_24h": None,
+        }}}
+        out = _render_prophylaxis(bundle)
+        assert "proph-excluded" in out
+        assert "THERAPEUTIC_ANTICOAG" in out
+
+    def test_dvt_delay_flag(self):
+        bundle = {"summary": {"dvt_prophylaxis": {
+            "pharm_first_ts": "2026-01-03T10:00:00",
+            "mech_first_ts": None,
+            "delay_hours": 48.0, "delay_flag_24h": True,
+            "excluded_reason": None,
+        }}}
+        out = _render_prophylaxis(bundle)
+        assert "proph-delay" in out
+        assert "delayed &gt;24h" in out or "delayed >24h" in out
+
+    def test_gi_delay_flag(self):
+        bundle = {"summary": {"gi_prophylaxis": {
+            "pharm_first_ts": "2026-01-04T10:00:00",
+            "delay_hours": 72.0, "delay_flag_48h": True,
+            "excluded_reason": None,
+        }}}
+        out = _render_prophylaxis(bundle)
+        assert "proph-delay" in out
+        assert "delayed &gt;48h" in out or "delayed >48h" in out
+
+    def test_seizure_not_detected(self):
+        bundle = {"summary": {"seizure_prophylaxis": {
+            "detected": False, "agents": [],
+            "first_admin_ts": None, "discontinued": False,
+            "discontinued_ts": None,
+        }}}
+        out = _render_prophylaxis(bundle)
+        assert "proph-not-detected" in out
+        assert "Not detected" in out
+
+    def test_seizure_discontinued(self):
+        bundle = {"summary": {"seizure_prophylaxis": {
+            "detected": True, "agents": ["Phenytoin"],
+            "first_admin_ts": "2026-01-01T12:00:00",
+            "discontinued": True, "discontinued_ts": "2026-01-03T08:00:00",
+        }}}
+        out = _render_prophylaxis(bundle)
+        assert "Phenytoin" in out
+        assert "D/C" in out
+        assert "2026-01-03" in out
+
+    def test_absent_prophylaxis_omits_section(self):
+        out = _render_prophylaxis(_MINIMAL_BUNDLE)
+        assert out == ""
+
+    def test_all_none_omits_section(self):
+        bundle = {"summary": {"dvt_prophylaxis": None, "gi_prophylaxis": None, "seizure_prophylaxis": None}}
+        out = _render_prophylaxis(bundle)
+        assert out == ""
+
+    def test_deterministic(self):
+        out1 = _render_prophylaxis(_FULL_BUNDLE)
+        out2 = _render_prophylaxis(_FULL_BUNDLE)
+        assert out1 == out2
+
+
 # ── Fail-closed: new clinical sections ──────────────────────────────
 
 class TestFailClosedClinicalSections:
@@ -1220,3 +1467,11 @@ class TestFailClosedClinicalSections:
     def test_absent_procedures_no_section(self):
         html = render_casefile(_MINIMAL_BUNDLE)
         assert "Operative / Procedural Timeline" not in html
+
+    def test_absent_devices_no_section(self):
+        html = render_casefile(_MINIMAL_BUNDLE)
+        assert "Lines / Drains / Airways" not in html
+
+    def test_absent_prophylaxis_no_section(self):
+        html = render_casefile(_MINIMAL_BUNDLE)
+        assert "Prophylaxis Summary" not in html
