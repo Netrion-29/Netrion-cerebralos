@@ -236,6 +236,84 @@ details.day-card[open] > summary.day-summary::before { transform: rotate(90deg);
 }
 .toggle-btn:hover { background: var(--blue-100); }
 
+/* Status bar */
+.status-bar {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+.status-chip {
+    flex: 1 1 0; min-width: 140px;
+    border-radius: var(--card-radius); padding: 10px 14px;
+    border: 1px solid var(--slate-200); background: white;
+    box-shadow: var(--card-shadow);
+}
+.status-chip .sc-label {
+    font-size: 0.68em; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--slate-400); margin-bottom: 2px;
+}
+.status-chip .sc-value {
+    font-size: 0.95em; font-weight: 700;
+}
+.sc-alert { border-left: 4px solid var(--red-600); }
+.sc-alert .sc-value { color: var(--red-700); }
+.sc-ok { border-left: 4px solid var(--green-600); }
+.sc-ok .sc-value { color: var(--green-700); }
+.sc-warn { border-left: 4px solid var(--amber-500); }
+.sc-warn .sc-value { color: var(--amber-600); }
+.sc-na { border-left: 4px solid var(--slate-300); }
+.sc-na .sc-value { color: var(--slate-400); }
+
+/* Compliance snapshot */
+.compliance-snap {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.csnap-box {
+    flex: 1 1 0; min-width: 100px; text-align: center; padding: 10px 8px;
+    border-radius: var(--card-radius); border: 1px solid var(--slate-200);
+    background: white; box-shadow: var(--card-shadow);
+}
+.csnap-box .cn { font-size: 1.5em; font-weight: 800; line-height: 1.1; }
+.csnap-box .cl {
+    font-size: 0.66em; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--slate-500); margin-top: 2px;
+}
+.csnap-yes .cn { color: var(--red-600); }
+.csnap-utd .cn { color: var(--amber-600); }
+.csnap-nc .cn { color: var(--red-700); }
+.csnap-clear .cn { color: var(--green-600); }
+
+/* Admission snapshot */
+.admit-snap {
+    background: white; border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow); margin-bottom: 12px;
+    border: 1px solid var(--slate-200); overflow: hidden;
+}
+.admit-snap .as-title {
+    font-size: 0.78em; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--slate-500); padding: 12px 18px 6px;
+}
+.admit-snap .as-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 8px 18px; padding: 0 18px 14px;
+}
+.admit-snap .as-item .al {
+    font-size: 0.68em; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--slate-400); margin-bottom: 1px;
+}
+.admit-snap .as-item .av { font-weight: 600; font-size: 0.88em; }
+
+/* First-day snapshot */
+.day1-snap {
+    background: white; border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow); margin-bottom: 12px;
+    border: 1px solid var(--slate-200); overflow: hidden;
+}
+.day1-snap .d1-title {
+    font-size: 0.78em; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--slate-500); padding: 12px 18px 6px;
+}
+.day1-snap .d1-body { padding: 0 18px 14px; }
+
 /* Print */
 @media print {
     body { padding: 0; font-size: 11px; }
@@ -271,6 +349,286 @@ def _render_header(bundle: Dict[str, Any]) -> str:
         '<div class="cf-header">'
         f'<h1>{name}</h1>'
         f'<div class="subtitle">PI RN Casefile v1 &middot; LOS: {_e(los_str)}</div>'
+        "</div>"
+    )
+
+
+def _render_status_bar(bundle: Dict[str, Any]) -> str:
+    """Render the above-the-fold clinical status summary bar.
+
+    Shows compact badges for activation level, shock status,
+    anticoagulation, and penetrating mechanism.  Fail-closed:
+    any missing field renders as '\u2014' with neutral styling.
+    """
+    summary = bundle.get("summary") or {}
+    chips: List[str] = []
+
+    # ── Activation ────────────────────────────────────────────
+    activation = summary.get("activation")
+    if isinstance(activation, dict):
+        detected = activation.get("detected")
+        cat = activation.get("category")
+        if detected is True or (cat and detected is not False):
+            if isinstance(cat, str) and cat.strip():
+                norm = cat.strip()
+                # Category might be "Level II" already or just "II"
+                if norm.startswith("Level"):
+                    label = norm
+                else:
+                    label = f"Level {norm}"
+                cls = "sc-alert" if norm in ("I", "Level I") else "sc-warn"
+                chips.append(_status_chip("Activation", _e(label), cls))
+            else:
+                chips.append(_status_chip("Activation", "Detected", "sc-warn"))
+        elif detected is False:
+            chips.append(_status_chip("Activation", "Not Detected", "sc-ok"))
+        else:
+            chips.append(_status_chip("Activation", "\u2014", "sc-na"))
+    else:
+        chips.append(_status_chip("Activation", "\u2014", "sc-na"))
+
+    # ── Shock Triggered ───────────────────────────────────────
+    shock = summary.get("shock_trigger")
+    if isinstance(shock, dict):
+        triggered = shock.get("shock_triggered")
+        if triggered is True or (isinstance(triggered, str) and triggered.lower() == "yes"):
+            chips.append(_status_chip("Shock", "Triggered", "sc-alert"))
+        elif triggered is False or (isinstance(triggered, str) and triggered.lower() == "no"):
+            chips.append(_status_chip("Shock", "Not Triggered", "sc-ok"))
+        else:
+            chips.append(_status_chip("Shock", "\u2014", "sc-na"))
+    else:
+        chips.append(_status_chip("Shock", "\u2014", "sc-na"))
+
+    # ── Anticoagulation ───────────────────────────────────────
+    anticoag = summary.get("anticoagulants")
+    if isinstance(anticoag, dict):
+        ac_present = anticoag.get("anticoag_present", "")
+        ap_present = anticoag.get("antiplatelet_present", "")
+        # Fallback for simplified test-fixture shape
+        on_ac = anticoag.get("on_anticoagulant")
+
+        drug_count = len(anticoag.get("home_anticoagulants", []))
+        ap_count = len(anticoag.get("home_antiplatelets", []))
+        agents = anticoag.get("agents", [])
+
+        has_anticoag = (
+            (isinstance(ac_present, str) and ac_present.lower() == "yes")
+            or on_ac is True
+        )
+        has_antiplatelet = (
+            isinstance(ap_present, str) and ap_present.lower() == "yes"
+        )
+
+        if has_anticoag or has_antiplatelet:
+            label_parts: List[str] = []
+            if has_anticoag:
+                label_parts.append(f"Anticoag ({drug_count or len(agents)})")
+            if has_antiplatelet:
+                label_parts.append(f"Antiplatelet ({ap_count})")
+            chips.append(_status_chip("Anticoagulation", "Yes \u2014 " + ", ".join(label_parts), "sc-alert"))
+        elif (
+            (isinstance(ac_present, str) and ac_present.lower() == "no")
+            or on_ac is False
+        ):
+            chips.append(_status_chip("Anticoagulation", "No", "sc-ok"))
+        else:
+            chips.append(_status_chip("Anticoagulation", "\u2014", "sc-na"))
+    else:
+        chips.append(_status_chip("Anticoagulation", "\u2014", "sc-na"))
+
+    # ── Penetrating Mechanism ─────────────────────────────────
+    mechanism = summary.get("mechanism")
+    if isinstance(mechanism, dict):
+        pen = mechanism.get("penetrating_mechanism")
+        if pen is True:
+            chips.append(_status_chip("Penetrating", "Yes", "sc-alert"))
+        elif pen is False:
+            chips.append(_status_chip("Penetrating", "No", "sc-ok"))
+        else:
+            chips.append(_status_chip("Penetrating", "\u2014", "sc-na"))
+    else:
+        chips.append(_status_chip("Penetrating", "\u2014", "sc-na"))
+
+    # ── Discharge Status ──────────────────────────────────────
+    p = bundle.get("patient") or {}
+    discharge_dt = p.get("discharge_datetime")
+    if discharge_dt and discharge_dt != "DATA_NOT_AVAILABLE":
+        chips.append(_status_chip("Status", "Discharged", "sc-ok"))
+    elif p.get("arrival_datetime"):
+        chips.append(_status_chip("Status", "Active", "sc-warn"))
+    else:
+        chips.append(_status_chip("Status", "\u2014", "sc-na"))
+
+    if not chips:
+        return ""
+    return f'<div class="status-bar">{"".join(chips)}</div>'
+
+
+def _status_chip(label: str, value: str, cls: str) -> str:
+    """Return a single status chip HTML fragment."""
+    return (
+        f'<div class="status-chip {cls}">'
+        f'<div class="sc-label">{_e(label)}</div>'
+        f'<div class="sc-value">{value}</div>'
+        "</div>"
+    )
+
+
+def _render_compliance_snapshot(bundle: Dict[str, Any]) -> str:
+    """Render above-the-fold NTDS YES / UTD / Protocol NC counts."""
+    compliance = bundle.get("compliance")
+    if not compliance or not isinstance(compliance, dict):
+        return ""
+
+    ntds = compliance.get("ntds_event_outcomes") or {}
+    protocols = compliance.get("protocol_results") or []
+
+    if not ntds and not protocols:
+        return ""
+
+    yes_n = sum(1 for v in ntds.values() if isinstance(v, dict) and str(v.get("outcome", "")).upper() == "YES")
+    utd_n = sum(1 for v in ntds.values() if isinstance(v, dict) and str(v.get("outcome", "")).upper() in ("UTD", "UNABLE_TO_DETERMINE"))
+    nc_n = sum(1 for r in protocols if isinstance(r, dict) and str(r.get("outcome", "")).upper() == "NON_COMPLIANT")
+
+    if yes_n == 0 and utd_n == 0 and nc_n == 0:
+        # All clear
+        def _box(n: int, lbl: str) -> str:
+            return (
+                f'<div class="csnap-box csnap-clear">'
+                f'<div class="cn">{n}</div>'
+                f'<div class="cl">{_e(lbl)}</div>'
+                "</div>"
+            )
+        return (
+            '<div class="compliance-snap">'
+            + _box(0, "NTDS YES") + _box(0, "NTDS UTD") + _box(0, "Protocol NC")
+            + "</div>"
+        )
+
+    parts: List[str] = []
+    for n, lbl, cls in [(yes_n, "NTDS YES", "csnap-yes"), (utd_n, "NTDS UTD", "csnap-utd"), (nc_n, "Protocol NC", "csnap-nc")]:
+        c = cls if n > 0 else "csnap-clear"
+        parts.append(
+            f'<div class="csnap-box {c}">'
+            f'<div class="cn">{n}</div>'
+            f'<div class="cl">{_e(lbl)}</div>'
+            "</div>"
+        )
+    return '<div class="compliance-snap">' + "".join(parts) + "</div>"
+
+
+def _render_admission_snapshot(bundle: Dict[str, Any]) -> str:
+    """Render a dense 9-field admission summary grid."""
+    p = bundle.get("patient") or {}
+    summary = bundle.get("summary") or {}
+
+    arrival = _na(p.get("arrival_datetime"))
+    discharge = _na(p.get("discharge_datetime"))
+    los_val = _compute_los(p.get("arrival_datetime"), p.get("discharge_datetime"))
+    los = f"{los_val} day{'s' if los_val != 1 else ''}" if los_val is not None else "\u2014"
+
+    age_data = summary.get("age")
+    _ay = age_data.get("age_years") if isinstance(age_data, dict) else None
+    if _ay is None:
+        _ay = age_data.get("age") if isinstance(age_data, dict) else None
+    age = str(_ay) if _ay is not None else "\u2014"
+    demo = summary.get("demographics")
+    sex = str(demo.get("sex", "\u2014")) if isinstance(demo, dict) and demo.get("sex") else "\u2014"
+    age_sex = f"{age} / {sex}"
+
+    mech = summary.get("mechanism")
+    mechanism_str = _na(mech.get("mechanism_primary", "").title() if isinstance(mech, dict) and mech.get("mechanism_primary") else None)
+
+    mech_data = summary.get("mechanism") or {}
+    regions_raw = mech_data.get("body_region_labels", []) if isinstance(mech_data, dict) else []
+    if isinstance(regions_raw, list) and regions_raw:
+        regions = ", ".join(_e(str(r).title()) for r in regions_raw if r) or "\u2014"
+    else:
+        regions = "\u2014"
+
+    consult_raw = bundle.get("consultants") or {}
+    if isinstance(consult_raw, dict):
+        services = consult_raw.get("consultant_services", []) or []
+        consults = ", ".join(_e(str(s)) for s in services if s) or "\u2014"
+    else:
+        consults = "\u2014"
+
+    pmh_data = summary.get("pmh")
+    pmh_items = pmh_data.get("pmh_items", []) or [] if isinstance(pmh_data, dict) else []
+    pmh = "; ".join(_e(str(i.get("text", ""))) for i in pmh_items if isinstance(i, dict) and i.get("text")) or "\u2014"
+
+    anticoag = summary.get("anticoagulants") or {}
+    agent_list: List[str] = []
+    if isinstance(anticoag, dict):
+        for a in anticoag.get("agents", []):
+            if a:
+                agent_list.append(str(a))
+        for a in anticoag.get("home_anticoagulants", []):
+            if isinstance(a, dict) and a.get("agent"):
+                agent_list.append(str(a["agent"]))
+            elif isinstance(a, str) and a:
+                agent_list.append(a)
+        for a in anticoag.get("home_antiplatelets", []):
+            if isinstance(a, dict) and a.get("agent"):
+                agent_list.append(str(a["agent"]))
+            elif isinstance(a, str) and a:
+                agent_list.append(a)
+    agents_str = ", ".join(_e(a) for a in agent_list) or "\u2014"
+
+    fields = [
+        ("Arrival", arrival), ("Discharge", discharge), ("LOS", los),
+        ("Age / Sex", age_sex), ("Mechanism", mechanism_str),
+        ("Body Regions", regions), ("Consultants", consults),
+        ("PMH", pmh), ("Anticoag / Antiplatelet", agents_str),
+    ]
+    grid = ""
+    for label, val in fields:
+        grid += (
+            f'<div class="as-item">'
+            f'<div class="al">{_e(label)}</div>'
+            f'<div class="av">{val}</div>'
+            "</div>"
+        )
+    return (
+        '<div class="admit-snap">'
+        '<div class="as-title">Admission Snapshot</div>'
+        f'<div class="as-grid">{grid}</div>'
+        "</div>"
+    )
+
+
+def _render_first_day_snapshot(bundle: Dict[str, Any]) -> str:
+    """Render vitals/GCS/labs/vent from the earliest daily block."""
+    daily = bundle.get("daily") or {}
+    if not daily:
+        return ""
+    first_key = sorted(daily.keys())[0]
+    day = daily[first_key]
+    if not isinstance(day, dict):
+        return ""
+
+    sections: List[str] = []
+    vitals = day.get("vitals")
+    if vitals:
+        sections.append(_render_vitals(vitals))
+    gcs = day.get("gcs")
+    if gcs:
+        sections.append(_render_gcs(gcs))
+    labs = day.get("labs")
+    if labs:
+        sections.append(_render_labs(labs))
+    vent = day.get("ventilator")
+    if vent:
+        sections.append(_render_ventilator(vent))
+
+    if not sections:
+        return ""
+    body = "".join(sections)
+    return (
+        '<div class="day1-snap">'
+        f'<div class="d1-title">Day 1 Clinical Snapshot \u2014 {_e(first_key)}</div>'
+        f'<div class="d1-body">{body}</div>'
         "</div>"
     )
 
@@ -796,7 +1154,13 @@ def _render_footer(bundle: Dict[str, Any]) -> str:
 def render_casefile(bundle: Dict[str, Any]) -> str:
     """Render a complete self-contained HTML casefile from a bundle dict."""
     parts = [
+        # ── Above the fold ────────────────────────────
         _render_header(bundle),
+        _render_status_bar(bundle),
+        _render_compliance_snapshot(bundle),
+        _render_admission_snapshot(bundle),
+        _render_first_day_snapshot(bundle),
+        # ── Detail sections ───────────────────────────
         _render_patient_card(bundle),
         _render_moi(bundle),
         _render_pmh(bundle),

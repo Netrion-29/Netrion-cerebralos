@@ -24,6 +24,10 @@ from cerebralos.reporting.render_pi_rn_casefile_v1 import (
     _compute_los,
     _render_vitals,
     _outcome_badge,
+    _render_status_bar,
+    _render_compliance_snapshot,
+    _render_admission_snapshot,
+    _render_first_day_snapshot,
 )
 
 
@@ -262,11 +266,10 @@ class TestFailClosed:
         # PMH card should not appear when both pmh and anticoagulants are null
         assert "PMH / Anticoagulants" not in html
 
-    def test_absent_consultants_omits_section(self):
+    def test_absent_consultants_omits_card(self):
         html = render_casefile(_MINIMAL_BUNDLE)
-        # Header card "Consultants" should not appear
-        count = html.count("Consultants")
-        assert count == 0
+        # Detail card should not appear when consultants are null
+        assert 'card-title">Consultants</div>' not in html
 
     def test_empty_daily_shows_no_day_cards(self):
         html = render_casefile(_MINIMAL_BUNDLE)
@@ -393,3 +396,226 @@ class TestErrorBadge:
     def test_error_badge_case_insensitive(self):
         badge = _outcome_badge("error")
         assert "badge-error" in badge
+
+
+# ── Clinical Status Bar tests ────────────────────────────────────
+
+class TestClinicalStatusBar:
+    def test_status_bar_present_full_bundle(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert "status-bar" in html
+
+    def test_activation_chip_present(self):
+        out = _render_status_bar(_FULL_BUNDLE)
+        assert "Activation" in out
+        assert "Level" in out
+
+    def test_shock_not_triggered(self):
+        out = _render_status_bar(_FULL_BUNDLE)
+        assert "Not Triggered" in out
+
+    def test_shock_triggered_yes(self):
+        b = {"summary": {"shock_trigger": {"shock_triggered": "yes"}}}
+        out = _render_status_bar(b)
+        assert "Triggered" in out
+        assert "sc-alert" in out
+
+    def test_shock_triggered_bool_true(self):
+        b = {"summary": {"shock_trigger": {"shock_triggered": True}}}
+        out = _render_status_bar(b)
+        assert "sc-alert" in out
+
+    def test_anticoag_yes(self):
+        out = _render_status_bar(_FULL_BUNDLE)
+        assert "Anticoagulation" in out
+        assert "sc-alert" in out
+
+    def test_anticoag_no(self):
+        b = {"summary": {"anticoagulants": {"on_anticoagulant": False}}}
+        out = _render_status_bar(b)
+        assert "sc-ok" in out
+
+    def test_anticoag_absent(self):
+        out = _render_status_bar(_MINIMAL_BUNDLE)
+        assert "Anticoagulation" in out
+
+    def test_penetrating_no(self):
+        out = _render_status_bar(_FULL_BUNDLE)
+        assert "Penetrating" in out
+        assert "sc-ok" in out
+
+    def test_penetrating_yes(self):
+        b = {"summary": {"mechanism": {"penetrating_mechanism": True}}}
+        out = _render_status_bar(b)
+        assert "sc-alert" in out
+
+    def test_discharge_status_discharged(self):
+        out = _render_status_bar(_FULL_BUNDLE)
+        assert "Discharged" in out
+
+    def test_discharge_status_active(self):
+        b = {"patient": {"arrival_datetime": "2026-01-01", "discharge_datetime": None}}
+        out = _render_status_bar(b)
+        assert "Active" in out
+
+    def test_minimal_bundle_renders_status_bar(self):
+        out = _render_status_bar(_MINIMAL_BUNDLE)
+        assert "status-bar" in out
+
+
+# ── Compliance Snapshot tests ────────────────────────────────────
+
+class TestComplianceSnapshot:
+    def test_snapshot_present_full_bundle(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert "compliance-snap" in html
+
+    def test_ntds_yes_count(self):
+        out = _render_compliance_snapshot(_FULL_BUNDLE)
+        assert "NTDS YES" in out
+        # 1 YES event in fixture
+        assert '>1</div>' in out
+
+    def test_ntds_utd_count(self):
+        out = _render_compliance_snapshot(_FULL_BUNDLE)
+        assert "NTDS UTD" in out
+        # UNABLE_TO_DETERMINE (DVT event) must count toward UTD bucket
+        assert 'csnap-utd' in out
+        # Exactly 1 UTD event in fixture
+        assert '<div class="cn">1</div>' in out.split('NTDS UTD')[0].split('csnap-box')[-1]
+
+    def test_protocol_nc_count(self):
+        out = _render_compliance_snapshot(_FULL_BUNDLE)
+        assert "Protocol NC" in out
+
+    def test_compliance_absent_omits_section(self):
+        out = _render_compliance_snapshot(_MINIMAL_BUNDLE)
+        assert out == ""
+
+    def test_zero_counts_green(self):
+        b = {
+            "compliance": {
+                "ntds_event_outcomes": {
+                    "1": {"outcome": "NO"},
+                    "2": {"outcome": "NO"},
+                },
+                "protocol_results": [{"outcome": "COMPLIANT"}],
+            }
+        }
+        out = _render_compliance_snapshot(b)
+        assert "csnap-clear" in out
+        assert "csnap-yes" not in out
+
+
+# ── Admission Snapshot tests ─────────────────────────────────────
+
+class TestAdmissionSnapshot:
+    def test_snapshot_present_full_bundle(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert "Admission Snapshot" in html
+
+    def test_arrival_shown(self):
+        out = _render_admission_snapshot(_FULL_BUNDLE)
+        assert "2026-01-01" in out
+
+    def test_mechanism_shown(self):
+        out = _render_admission_snapshot(_FULL_BUNDLE)
+        assert "Fall" in out
+
+    def test_age_sex_shown(self):
+        out = _render_admission_snapshot(_FULL_BUNDLE)
+        assert "71" in out
+        assert "F" in out
+
+    def test_body_regions_shown(self):
+        out = _render_admission_snapshot(_FULL_BUNDLE)
+        assert "Head" in out
+        assert "Chest" in out
+
+    def test_consultants_shown(self):
+        out = _render_admission_snapshot(_FULL_BUNDLE)
+        assert "Ortho" in out
+        assert "Neurosurgery" in out
+
+    def test_pmh_shown(self):
+        out = _render_admission_snapshot(_FULL_BUNDLE)
+        assert "Hypertension" in out
+
+    def test_anticoag_agents_shown(self):
+        out = _render_admission_snapshot(_FULL_BUNDLE)
+        assert "Warfarin" in out
+
+    def test_minimal_bundle_still_renders(self):
+        out = _render_admission_snapshot(_MINIMAL_BUNDLE)
+        assert "Admission Snapshot" in out
+        # All fields should be dashes
+        assert "\u2014" in out
+
+
+# ── First-Day Snapshot tests ─────────────────────────────────────
+
+class TestFirstDaySnapshot:
+    def test_snapshot_present_full_bundle(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert "Day 1 Clinical Snapshot" in html
+
+    def test_vitals_in_snapshot(self):
+        out = _render_first_day_snapshot(_FULL_BUNDLE)
+        assert "88" in out   # HR
+        assert "130" in out  # SBP
+
+    def test_gcs_in_snapshot(self):
+        out = _render_first_day_snapshot(_FULL_BUNDLE)
+        assert "E4" in out
+        assert "V5" in out
+
+    def test_labs_in_snapshot(self):
+        out = _render_first_day_snapshot(_FULL_BUNDLE)
+        assert "cbc" in out
+
+    def test_earliest_day_selected(self):
+        """Snapshot uses the chronologically earliest day."""
+        b = {
+            "daily": {
+                "2026-01-03": {"vitals": [{"hr": 99}]},
+                "2026-01-01": {"vitals": [{"hr": 77}]},
+                "2026-01-02": {"vitals": [{"hr": 88}]},
+            }
+        }
+        out = _render_first_day_snapshot(b)
+        assert "77" in out
+        assert "2026-01-01" in out
+
+    def test_empty_daily_omits_snapshot(self):
+        out = _render_first_day_snapshot(_MINIMAL_BUNDLE)
+        assert out == ""
+
+    def test_no_vitals_no_gcs_omits_snapshot(self):
+        b = {"daily": {"2026-01-01": {"vitals": None, "gcs": None, "labs": None, "ventilator": None}}}
+        out = _render_first_day_snapshot(b)
+        assert out == ""
+
+    def test_deterministic_first_day(self):
+        out1 = _render_first_day_snapshot(_FULL_BUNDLE)
+        out2 = _render_first_day_snapshot(_FULL_BUNDLE)
+        assert out1 == out2
+
+
+# ── Above-the-fold ordering test ─────────────────────────────────
+
+class TestAboveFoldOrdering:
+    def test_status_bar_before_compliance(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert html.index("status-bar") < html.index("compliance-snap")
+
+    def test_compliance_before_admission(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert html.index("compliance-snap") < html.index("Admission Snapshot")
+
+    def test_admission_before_first_day(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert html.index("Admission Snapshot") < html.index("Day 1 Clinical Snapshot")
+
+    def test_above_fold_before_detail(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert html.index("Day 1 Clinical Snapshot") < html.index("Patient Information")
