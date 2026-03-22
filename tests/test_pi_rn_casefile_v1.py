@@ -22,6 +22,8 @@ from cerebralos.reporting.render_pi_rn_casefile_v1 import (
     render_casefile,
     render_casefile_to_file,
     _compute_los,
+    _render_vitals,
+    _outcome_badge,
 )
 
 
@@ -331,3 +333,63 @@ class TestLOS:
 
     def test_compute_los_iso_format(self):
         assert _compute_los("2026-01-01T08:00:00", "2026-01-03T12:00:00") == 2
+
+
+class TestCanonicalVitals:
+    """Tests for canonical vitals_canonical_v1 shape: {"records": [...]}."""
+
+    _CANONICAL_VITALS = {
+        "records": [
+            {
+                "ts": "2026-01-01T11:23:00",
+                "day": "2026-01-01",
+                "source": "NURSING_NOTE",
+                "confidence": 50,
+                "raw_line_id": "abf573bcc8f62f87",
+                "sbp": 181.0,
+                "dbp": 74.0,
+                "map": 109.7,
+                "hr": 62.0,
+                "rr": 18.0,
+                "spo2": 92.0,
+                "temp_c": 36.9,
+                "temp_f": 98.5,
+                "o2_device": None,
+                "o2_flow_lpm": None,
+            }
+        ]
+    }
+
+    def test_canonical_shape_renders(self):
+        html = _render_vitals(self._CANONICAL_VITALS)
+        assert "Vitals" in html
+        assert "62.0" in html   # hr
+        assert "181.0" in html  # sbp
+        assert "18.0" in html   # rr
+
+    def test_canonical_temp_rendered(self):
+        html = _render_vitals(self._CANONICAL_VITALS)
+        assert "Temp" in html
+        assert "98.5" in html   # temp_f preferred over temp_c
+
+    def test_flat_list_still_works(self):
+        html = _render_vitals([{"hr": 88, "sbp": 130, "resp": 18}])
+        assert "88" in html
+        assert "130" in html
+        assert "RR" in html
+
+    def test_empty_records_returns_empty(self):
+        assert _render_vitals({"records": []}) == ""
+
+    def test_none_returns_empty(self):
+        assert _render_vitals(None) == ""
+
+
+class TestErrorBadge:
+    def test_error_badge_has_correct_class(self):
+        badge = _outcome_badge("ERROR")
+        assert "badge-error" in badge
+
+    def test_error_badge_case_insensitive(self):
+        badge = _outcome_badge("error")
+        assert "badge-error" in badge

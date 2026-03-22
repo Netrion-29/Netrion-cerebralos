@@ -218,21 +218,24 @@ def cmd_run(args: list) -> int:
             bundle = assemble_bundle(patient_path.stem)
             write_bundle(bundle, bundle_out)
             print(f"  Bundle: {bundle_out}")
-
-            # Casefile v1 HTML render
-            from cerebralos.reporting.render_pi_rn_casefile_v1 import (
-                render_casefile, 
-            )
-            casefile_out = (
-                _PROJECT_ROOT / "outputs" / "casefile"
-                / patient_path.stem / "casefile_v1.html"
-            )
-            casefile_html = render_casefile(bundle)
-            casefile_out.parent.mkdir(parents=True, exist_ok=True)
-            casefile_out.write_text(casefile_html, encoding="utf-8")
-            print(f"  Casefile: {casefile_out}")
         except Exception as exc:
             print(f"  Bundle: error -- {exc}")
+            bundle_out = None
+
+        # Casefile v1 HTML render
+        if bundle_out and bundle_out.is_file():
+            try:
+                from cerebralos.reporting.render_pi_rn_casefile_v1 import (
+                    render_casefile_to_file,
+                )
+                casefile_out = (
+                    _PROJECT_ROOT / "outputs" / "casefile"
+                    / patient_path.stem / "casefile_v1.html"
+                )
+                render_casefile_to_file(bundle_out, casefile_out)
+                print(f"  Casefile: {casefile_out}")
+            except Exception as exc:
+                print(f"  Casefile: error -- {exc}")
     else:
         print("  Bundle: skipped (required pipeline artifacts not found)")
 

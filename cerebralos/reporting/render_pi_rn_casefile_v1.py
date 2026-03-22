@@ -142,6 +142,7 @@ h1,h2,h3,h4 { margin: 0; font-weight: 700; }
 .badge-no, .badge-compliant { background: var(--green-600); }
 .badge-utd, .badge-unable, .badge-indeterminate { background: var(--amber-500); color: var(--slate-800); }
 .badge-excluded, .badge-not-triggered { background: var(--slate-400); }
+.badge-error { background: var(--red-700); }
 
 /* Compliance stat row */
 .stat-row {
@@ -268,7 +269,7 @@ def _render_header(bundle: Dict[str, Any]) -> str:
     los_str = f"{los} day{'s' if los != 1 else ''}" if los is not None else "—"
     return (
         '<div class="cf-header">'
-        f'<h1>{_e(name)}</h1>'
+        f'<h1>{name}</h1>'
         f'<div class="subtitle">PI RN Casefile v1 &middot; LOS: {_e(los_str)}</div>'
         "</div>"
     )
@@ -413,6 +414,7 @@ def _outcome_badge(outcome: str) -> str:
         "COMPLIANT": "badge-compliant", "NON_COMPLIANT": "badge-non-compliant",
         "NOT_TRIGGERED": "badge-not-triggered",
         "INDETERMINATE": "badge-indeterminate",
+        "ERROR": "badge-error",
     }
     cls = cls_map.get(o, "badge-excluded")
     return f'<span class="badge {cls}">{_e(o)}</span>'
@@ -423,10 +425,10 @@ def _render_ntds_summary(bundle: Dict[str, Any]) -> str:
     if not outcomes or not isinstance(outcomes, dict):
         return ""
 
-    # Count outcomes
+    # Count outcomes (normalize case/whitespace)
     counts: Dict[str, int] = {}
     for ev in outcomes.values():
-        o = ev.get("outcome", "")
+        o = ev.get("outcome", "").upper().strip()
         counts[o] = counts.get(o, 0) + 1
 
     yes_ct = counts.get("YES", 0)
@@ -446,10 +448,11 @@ def _render_ntds_summary(bundle: Dict[str, Any]) -> str:
     rows = ""
     for eid, ev in sorted(outcomes.items(), key=lambda x: int(x[0])):
         outcome = ev.get("outcome", "")
+        outcome_norm = outcome.upper().strip()
         row_cls = ""
-        if outcome == "YES":
+        if outcome_norm == "YES":
             row_cls = ' class="row-yes"'
-        elif outcome == "UNABLE_TO_DETERMINE":
+        elif outcome_norm == "UNABLE_TO_DETERMINE":
             row_cls = ' class="row-utd"'
         rows += (
             f"<tr{row_cls}>"
@@ -508,8 +511,15 @@ def _render_vitals(vitals: Any) -> str:
     """Render a vitals snapshot for a single day."""
     if not vitals:
         return ""
-    # vitals can be a list of readings or a dict
-    readings = vitals if isinstance(vitals, list) else [vitals]
+    # Canonical shape: {"records": [...]}; also accept flat list or single dict
+    if isinstance(vitals, dict):
+        readings = vitals.get("records", [])
+        if not readings:
+            readings = [vitals]
+    elif isinstance(vitals, list):
+        readings = vitals
+    else:
+        return ""
     if not readings:
         return ""
     # Use the first reading for a quick snapshot
@@ -517,11 +527,20 @@ def _render_vitals(vitals: Any) -> str:
     if not v:
         return ""
     chips = ""
-    for key, label in [
-        ("hr", "HR"), ("sbp", "SBP"), ("dbp", "DBP"), ("map", "MAP"),
-        ("resp", "RR"), ("spo2", "SpO2"), ("temp", "Temp"),
+    for keys, label in [
+        (("hr",), "HR"),
+        (("sbp",), "SBP"),
+        (("dbp",), "DBP"),
+        (("map",), "MAP"),
+        (("rr", "resp"), "RR"),
+        (("spo2",), "SpO2"),
+        (("temp_f", "temp_c", "temp"), "Temp"),
     ]:
-        val = v.get(key)
+        val = None
+        for k in keys:
+            val = v.get(k)
+            if val is not None:
+                break
         if val is not None:
             chips += (
                 f'<div class="vital-chip">'
@@ -838,7 +857,11 @@ def main() -> int:
         return 1
 
     out_path = Path(args.out)
-    render_casefile_to_file(bundle_path, out_path)
+    try:
+        render_casefile_to_file(bundle_path, out_path)
+    except (json.JSONDecodeError, KeyError, TypeError) as exc:
+        print(f"Error: Failed to render casefile: {exc}", file=sys.stderr)
+        return 1
     print(f"OK  Casefile written: {out_path}")
     return 0
 
