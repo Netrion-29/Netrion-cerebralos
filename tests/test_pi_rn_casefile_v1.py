@@ -23,6 +23,10 @@ from cerebralos.reporting.render_pi_rn_casefile_v1 import (
     render_casefile_to_file,
     _compute_los,
     _render_vitals,
+    _render_gcs,
+    _render_labs,
+    _render_plans,
+    _render_consultant_plans,
     _outcome_badge,
     _render_status_bar,
     _render_compliance_snapshot,
@@ -89,15 +93,65 @@ _FULL_BUNDLE = {
     },
     "daily": {
         "2026-01-01": {
-            "vitals": [{"hr": 88, "sbp": 130, "dbp": 72, "resp": 18, "spo2": 97}],
-            "labs": {"cbc": {"wbc": 8.2, "hgb": 12.5}},
-            "gcs": {"best": 15, "eye": 4, "verbal": 5, "motor": 6},
+            "vitals": {
+                "records": [{"hr": 88, "sbp": 130, "dbp": 72, "resp": 18, "spo2": 97}],
+                "count": 1,
+                "abnormal_total": 0,
+            },
+            "labs": {
+                "latest": {
+                    "Hemoglobin": {
+                        "component": "Hemoglobin",
+                        "value_num": 12.5,
+                        "value_raw": "12.5",
+                        "flags": [],
+                        "unit": "GM/DL",
+                    },
+                    "Glucose": {
+                        "component": "Glucose",
+                        "value_num": 320.0,
+                        "value_raw": "320",
+                        "flags": ["H"],
+                        "unit": "MG/DL",
+                    },
+                },
+                "daily": {},
+                "series": {},
+            },
+            "gcs": {
+                "arrival_gcs_value": 15,
+                "arrival_gcs": {"value": 15, "intubated": False, "source": "TRAUMA_HP", "dt": "2026-01-01T10:10:00", "timestamp_quality": "exact"},
+                "best_gcs": {"value": 15, "intubated": False, "source": "TRAUMA_HP", "dt": "2026-01-01T10:10:00", "timestamp_quality": "exact"},
+                "worst_gcs": {"value": 15, "intubated": False, "source": "TRAUMA_HP", "dt": "2026-01-01T10:10:00", "timestamp_quality": "exact"},
+                "all_readings": [{"value": 15, "intubated": False, "source": "TRAUMA_HP"}],
+                "warnings": [],
+            },
             "ventilator": None,
-            "plans": {"disposition": "Admit to floor"},
-            "consultant_plans": {"Ortho": "Non-operative management"},
+            "plans": None,
+            "consultant_plans": {
+                "services": {
+                    "Ortho": {
+                        "items": [
+                            {
+                                "ts": "2026-01-01T12:00:00",
+                                "author_name": "Dr. Jones",
+                                "item_text": "Non-operative management of L2 fracture",
+                                "item_type": "recommendation",
+                                "evidence": [],
+                            }
+                        ]
+                    }
+                },
+                "service_count": 1,
+                "item_count": 1,
+            },
         },
         "2026-01-02": {
-            "vitals": [{"hr": 78, "sbp": 124}],
+            "vitals": {
+                "records": [{"hr": 78, "sbp": 124}],
+                "count": 1,
+                "abnormal_total": 0,
+            },
             "labs": None,
             "gcs": None,
             "ventilator": None,
@@ -219,18 +273,19 @@ class TestRenderCasefile:
     def test_gcs_rendered(self):
         html = render_casefile(_FULL_BUNDLE)
         assert "GCS" in html
-        assert "E4" in html
-        assert "V5" in html
-        assert "M6" in html
+        assert "15" in html
+        assert "gcs-ok" in html
 
     def test_labs_rendered(self):
         html = render_casefile(_FULL_BUNDLE)
         assert "Labs" in html
-        assert "cbc" in html
+        assert "Hemoglobin" in html
+        assert "12.5" in html
 
     def test_consultant_plans_rendered(self):
         html = render_casefile(_FULL_BUNDLE)
-        assert "Non-operative management" in html
+        assert "Non-operative management of L2 fracture" in html
+        assert "Ortho" in html
 
     def test_warnings_rendered(self):
         html = render_casefile(_FULL_BUNDLE)
@@ -566,12 +621,13 @@ class TestFirstDaySnapshot:
 
     def test_gcs_in_snapshot(self):
         out = _render_first_day_snapshot(_FULL_BUNDLE)
-        assert "E4" in out
-        assert "V5" in out
+        assert "GCS" in out
+        assert "15" in out
 
     def test_labs_in_snapshot(self):
         out = _render_first_day_snapshot(_FULL_BUNDLE)
-        assert "cbc" in out
+        assert "Hemoglobin" in out
+        assert "12.5" in out
 
     def test_earliest_day_selected(self):
         """Snapshot uses the chronologically earliest day."""
@@ -619,3 +675,250 @@ class TestAboveFoldOrdering:
     def test_above_fold_before_detail(self):
         html = render_casefile(_FULL_BUNDLE)
         assert html.index("Day 1 Clinical Snapshot") < html.index("Patient Information")
+
+
+# ── Plans rendering ─────────────────────────────────────────────────
+
+class TestPlansRendering:
+    """Verify _render_plans handles real nested notes shape."""
+
+    def test_notes_shape_renders_note_type(self):
+        plans = {
+            "notes": [
+                {
+                    "note_type": "Trauma Progress Note",
+                    "author": "Dr. Smith",
+                    "dt": "2026-01-01T11:00:00",
+                    "impression_lines": ["s/p fall"],
+                    "plan_lines": ["Serial neuro checks"],
+                    "raw_line_id": "abc",
+                }
+            ]
+        }
+        out = _render_plans(plans)
+        assert "Trauma Progress Note" in out
+        assert "Dr. Smith" in out
+        assert "plan-note-header" in out
+
+    def test_notes_impression_and_plan_lines(self):
+        plans = {
+            "notes": [
+                {
+                    "note_type": "Note",
+                    "author": "",
+                    "impression_lines": ["Acute SDH"],
+                    "plan_lines": ["Maintain SBP < 150"],
+                }
+            ]
+        }
+        out = _render_plans(plans)
+        assert "Acute SDH" in out
+        assert "Maintain SBP" in out
+        assert "impression-lines" in out
+        assert "plan-lines" in out
+
+    def test_empty_notes_returns_empty(self):
+        assert _render_plans({"notes": []}) == ""
+        assert _render_plans(None) == ""
+        assert _render_plans({}) == ""
+
+    def test_legacy_flat_dict_fallback(self):
+        out = _render_plans({"disposition": "Admit to floor"})
+        assert "disposition" in out
+        assert "Admit to floor" in out
+
+    def test_legacy_string_fallback(self):
+        out = _render_plans("Transfer to ICU")
+        assert "Transfer to ICU" in out
+
+
+# ── Consultant plans rendering ──────────────────────────────────────
+
+class TestConsultantPlansRendering:
+    """Verify _render_consultant_plans handles real nested services shape."""
+
+    def test_services_shape_renders_service_name(self):
+        cp = {
+            "services": {
+                "Ortho": {
+                    "items": [
+                        {
+                            "item_text": "Non-op management",
+                            "author_name": "Dr. Jones",
+                            "ts": "2026-01-01T12:00:00",
+                            "item_type": "recommendation",
+                            "evidence": [],
+                        }
+                    ]
+                }
+            },
+            "service_count": 1,
+            "item_count": 1,
+        }
+        out = _render_consultant_plans(cp)
+        assert "Ortho" in out
+        assert "consult-service-name" in out
+        assert "Non-op management" in out
+        assert "Dr. Jones" in out
+
+    def test_multiple_services_sorted(self):
+        cp = {
+            "services": {
+                "Neurosurgery": {"items": [{"item_text": "Repeat CT", "author_name": "", "ts": ""}]},
+                "Cardiology": {"items": [{"item_text": "Echo ordered", "author_name": "", "ts": ""}]},
+            },
+            "service_count": 2,
+            "item_count": 2,
+        }
+        out = _render_consultant_plans(cp)
+        assert "Cardiology" in out
+        assert "Neurosurgery" in out
+        # Sorted: Cardiology before Neurosurgery
+        assert out.index("Cardiology") < out.index("Neurosurgery")
+
+    def test_empty_services_returns_empty(self):
+        assert _render_consultant_plans({"services": {}}) == ""
+        assert _render_consultant_plans(None) == ""
+        assert _render_consultant_plans({}) == ""
+
+    def test_legacy_flat_dict_fallback(self):
+        out = _render_consultant_plans({"Ortho": "Non-op management"})
+        assert "Ortho" in out
+        assert "Non-op management" in out
+
+
+# ── GCS rendering ───────────────────────────────────────────────────
+
+class TestGCSRendering:
+    """Verify _render_gcs handles real and legacy shapes."""
+
+    def test_real_shape_renders_score(self):
+        gcs = {
+            "arrival_gcs_value": 15,
+            "best_gcs": {"value": 15},
+            "worst_gcs": {"value": 15},
+            "all_readings": [],
+            "warnings": [],
+        }
+        out = _render_gcs(gcs)
+        assert "GCS" in out
+        assert "15" in out
+        assert "gcs-ok" in out
+
+    def test_moderate_severity(self):
+        gcs = {"arrival_gcs_value": 10, "best_gcs": {"value": 10}, "worst_gcs": {"value": 10}}
+        out = _render_gcs(gcs)
+        assert "gcs-mod" in out
+
+    def test_severe_severity(self):
+        gcs = {"arrival_gcs_value": 6, "best_gcs": {"value": 6}, "worst_gcs": {"value": 6}}
+        out = _render_gcs(gcs)
+        assert "gcs-severe" in out
+
+    def test_best_worst_range_shown(self):
+        gcs = {"arrival_gcs_value": 12, "best_gcs": {"value": 14}, "worst_gcs": {"value": 10}}
+        out = _render_gcs(gcs)
+        assert "Best 14" in out
+        assert "Worst 10" in out
+
+    def test_legacy_shape_fallback(self):
+        gcs = {"best": 14, "eye": 4, "verbal": 5, "motor": 5}
+        out = _render_gcs(gcs)
+        assert "GCS Total: 14" in out
+        assert "E4" in out
+
+    def test_empty_returns_empty(self):
+        assert _render_gcs(None) == ""
+        assert _render_gcs({}) == ""
+
+
+# ── Labs rendering ──────────────────────────────────────────────────
+
+class TestLabsRendering:
+    """Verify _render_labs handles real and legacy shapes."""
+
+    def test_real_shape_renders_components(self):
+        labs = {
+            "latest": {
+                "Hemoglobin": {"value_raw": "12.5", "value_num": 12.5, "flags": [], "unit": "GM/DL"},
+            },
+            "daily": {},
+            "series": {},
+        }
+        out = _render_labs(labs)
+        assert "Hemoglobin" in out
+        assert "12.5" in out
+        assert "GM/DL" in out
+
+    def test_flagged_lab_highlighted(self):
+        labs = {
+            "latest": {
+                "Glucose": {"value_raw": "320", "value_num": 320.0, "flags": ["H"], "unit": "MG/DL"},
+            },
+            "daily": {},
+            "series": {},
+        }
+        out = _render_labs(labs)
+        assert "lab-flag" in out
+        assert "(H)" in out
+        assert "320" in out
+
+    def test_empty_latest_returns_empty(self):
+        assert _render_labs({"latest": {}, "daily": {}, "series": {}}) == ""
+        assert _render_labs(None) == ""
+
+    def test_legacy_panel_shape_fallback(self):
+        labs = {"cbc": {"wbc": 8.2, "rbc": 4.5}}
+        out = _render_labs(labs)
+        assert "cbc" in out
+        assert "8.2" in out
+
+
+# ── Empty section suppression ───────────────────────────────────────
+
+class TestEmptySectionSuppression:
+    """Null or empty sections produce no HTML."""
+
+    def test_null_plans_suppressed(self):
+        assert _render_plans(None) == ""
+
+    def test_null_consultant_plans_suppressed(self):
+        assert _render_consultant_plans(None) == ""
+
+    def test_null_gcs_suppressed(self):
+        assert _render_gcs(None) == ""
+
+    def test_null_labs_suppressed(self):
+        assert _render_labs(None) == ""
+
+    def test_empty_dict_suppressed(self):
+        assert _render_plans({}) == ""
+        assert _render_consultant_plans({}) == ""
+        assert _render_gcs({}) == ""
+        assert _render_labs({}) == ""
+
+    def test_canonical_labs_empty_latest_suppressed(self):
+        """Canonical shape with empty latest must not fall into legacy fallback."""
+        assert _render_labs({"latest": {}, "daily": {}, "series": {}}) == ""
+
+
+# ── Day-card section ordering ───────────────────────────────────────
+
+class TestDayCardSectionOrdering:
+    """Sections within a day card appear in the correct order.
+
+    Anchors on day-section-title text which only appears inside rendered
+    day-body divs, not in the <style> block.
+    """
+
+    def test_vitals_before_gcs_before_labs_before_consults(self):
+        html = render_casefile(_FULL_BUNDLE)
+        # Locate inside rendered body using section-title markers
+        body_start = html.index("day-body")
+        vitals_pos = html.index('>Vitals<', body_start)
+        gcs_pos = html.index('>GCS<', body_start)
+        labs_pos = html.index('>Labs<', body_start)
+        consult_pos = html.index('>Consultant Plans<', body_start)
+        assert vitals_pos < gcs_pos
+        assert gcs_pos < labs_pos
+        assert labs_pos < consult_pos

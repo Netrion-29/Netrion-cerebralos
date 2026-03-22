@@ -213,6 +213,35 @@ details.day-card[open] > summary.day-summary::before { transform: rotate(90deg);
 .vital-chip .vl { font-size: 0.68em; text-transform: uppercase; color: var(--slate-400); }
 .vital-chip .vv { font-size: 1em; font-weight: 700; }
 
+/* Day summary badge */
+.day-badge { font-size: 0.72em; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: auto; }
+.day-badge-data { background: var(--green-100); color: var(--green-700); }
+.day-badge-empty { background: var(--slate-100); color: var(--slate-400); }
+
+/* Plan notes */
+.plan-note { margin-bottom: 8px; padding: 6px 0; border-bottom: 1px solid var(--slate-100); }
+.plan-note:last-child { border-bottom: none; }
+.plan-note-header { font-size: 0.78em; font-weight: 700; color: var(--slate-600); margin-bottom: 3px; }
+.plan-note-meta { font-size: 0.72em; color: var(--slate-400); margin-bottom: 3px; }
+.plan-lines { font-size: 0.86em; padding: 0; margin: 2px 0 0 16px; }
+.plan-lines li { padding: 1px 0; }
+.impression-lines { color: var(--slate-600); font-style: italic; }
+
+/* Consultant plan items */
+.consult-service { margin-bottom: 8px; }
+.consult-service-name { font-size: 0.82em; font-weight: 700; color: var(--blue-700); margin-bottom: 3px; }
+.consult-item { font-size: 0.86em; padding: 3px 0; border-bottom: 1px solid var(--slate-50); }
+.consult-item:last-child { border-bottom: none; }
+.consult-item-meta { font-size: 0.72em; color: var(--slate-400); }
+
+/* GCS severity */
+.gcs-ok { color: var(--green-700); font-weight: 700; }
+.gcs-mod { color: var(--amber-600); font-weight: 700; }
+.gcs-severe { color: var(--red-600); font-weight: 700; }
+
+/* Lab flag highlighting */
+.lab-flag { color: var(--red-600); font-weight: 600; font-size: 0.85em; }
+
 /* Warnings */
 .warning-list { list-style: none; padding: 0; margin: 0; }
 .warning-list li {
@@ -917,22 +946,48 @@ def _render_vitals(vitals: Any) -> str:
 
 
 def _render_gcs(gcs: Any) -> str:
-    """Render GCS for a single day."""
+    """Render GCS for a single day.
+
+    Real bundle shape:
+      gcs.arrival_gcs_value: int
+      gcs.best_gcs: {value, intubated, source, dt}
+      gcs.worst_gcs: {value, intubated, source, dt}
+      gcs.all_readings: [{value, intubated, source}]
+    Also supports legacy shape: {best, eye, verbal, motor}.
+    """
     if not gcs or not isinstance(gcs, dict):
         return ""
-    best = gcs.get("best")
-    e = gcs.get("eye")
-    v = gcs.get("verbal")
-    m = gcs.get("motor")
     parts = []
-    if best is not None:
-        parts.append(f"GCS Total: {_e(str(best))}")
-    if e is not None or v is not None or m is not None:
-        parts.append(
-            f"E{_e(str(e or '?'))} "
-            f"V{_e(str(v or '?'))} "
-            f"M{_e(str(m or '?'))}"
-        )
+    # ── Real nested shape ──
+    total = gcs.get("arrival_gcs_value")
+    best_obj = gcs.get("best_gcs")
+    worst_obj = gcs.get("worst_gcs")
+    if total is not None or best_obj or worst_obj:
+        score = total
+        if score is None and isinstance(best_obj, dict):
+            score = best_obj.get("value")
+        if score is not None:
+            sev_cls = "gcs-ok" if int(score) >= 13 else ("gcs-mod" if int(score) >= 9 else "gcs-severe")
+            parts.append(f'<span class="{sev_cls}">GCS {_e(str(score))}</span>')
+        if isinstance(best_obj, dict) and isinstance(worst_obj, dict):
+            b_val = best_obj.get("value")
+            w_val = worst_obj.get("value")
+            if b_val is not None and w_val is not None and b_val != w_val:
+                parts.append(f"Best {_e(str(b_val))} / Worst {_e(str(w_val))}")
+    else:
+        # ── Legacy flat shape ──
+        best = gcs.get("best")
+        e = gcs.get("eye")
+        v = gcs.get("verbal")
+        m = gcs.get("motor")
+        if best is not None:
+            parts.append(f"GCS Total: {_e(str(best))}")
+        if e is not None or v is not None or m is not None:
+            parts.append(
+                f"E{_e(str(e or '?'))} "
+                f"V{_e(str(v or '?'))} "
+                f"M{_e(str(m or '?'))}"
+            )
     if not parts:
         return ""
     return (
@@ -944,37 +999,74 @@ def _render_gcs(gcs: Any) -> str:
 
 
 def _render_labs(labs: Any) -> str:
-    """Render structured labs for a single day."""
+    """Render structured labs for a single day.
+
+    Real bundle shape:
+      labs.latest: {component_name: {value_raw, value_num, flags, unit}}
+      labs.daily: dict
+      labs.series: dict
+    Also supports legacy shape: {panel_name: {analyte: value}}.
+    """
     if not labs or not isinstance(labs, dict):
         return ""
     items = ""
-    for panel_name, panel_data in sorted(labs.items()):
-        if isinstance(panel_data, dict):
-            vals = []
-            for k, v in sorted(panel_data.items()):
-                if v is not None:
-                    vals.append(f"{_e(k)}: {_e(str(v))}")
-            if vals:
+    # ── Detect canonical shape by presence of known top-level keys ──
+    _CANONICAL_KEYS = {"latest", "daily", "series"}
+    is_canonical = bool(_CANONICAL_KEYS & labs.keys())
+
+    if is_canonical:
+        # ── Real nested shape: {"latest": {comp: {value_raw, flags, ...}}} ──
+        latest = labs.get("latest")
+        if isinstance(latest, dict) and latest:
+            for comp_name in sorted(latest.keys()):
+                comp = latest[comp_name]
+                if not isinstance(comp, dict):
+                    continue
+                val = comp.get("value_raw", comp.get("value_num", ""))
+                if val is None or val == "":
+                    continue
+                unit = comp.get("unit", "")
+                flags = comp.get("flags", []) or []
+                flag_str = ""
+                if flags:
+                    flag_str = f' <span class="lab-flag">({" ".join(_e(str(f)) for f in flags)})</span>'
+                unit_str = f" {_e(unit)}" if unit else ""
                 items += (
                     f'<div class="day-kv">'
-                    f'<span class="dk">{_e(panel_name)}:</span> '
-                    f'{", ".join(vals)}'
+                    f'<span class="dk">{_e(comp_name)}:</span> '
+                    f'{_e(str(val))}{unit_str}{flag_str}'
                     "</div>"
                 )
-        elif isinstance(panel_data, list):
-            for entry in panel_data:
-                if isinstance(entry, dict):
-                    vals = []
-                    for k, v in sorted(entry.items()):
-                        if v is not None:
-                            vals.append(f"{_e(k)}: {_e(str(v))}")
-                    if vals:
-                        items += (
-                            f'<div class="day-kv">'
-                            f'<span class="dk">{_e(panel_name)}:</span> '
-                            f'{", ".join(vals)}'
-                            "</div>"
-                        )
+        # canonical shape with empty latest → return empty (fail-closed)
+    else:
+        # ── Legacy flat shape: {panel: {analyte: value}} ──
+        for panel_name, panel_data in sorted(labs.items()):
+            if isinstance(panel_data, dict):
+                vals = []
+                for k, v in sorted(panel_data.items()):
+                    if v is not None:
+                        vals.append(f"{_e(k)}: {_e(str(v))}")
+                if vals:
+                    items += (
+                        f'<div class="day-kv">'
+                        f'<span class="dk">{_e(panel_name)}:</span> '
+                        f'{", ".join(vals)}'
+                        "</div>"
+                    )
+            elif isinstance(panel_data, list):
+                for entry in panel_data:
+                    if isinstance(entry, dict):
+                        vals = []
+                        for k, v in sorted(entry.items()):
+                            if v is not None:
+                                vals.append(f"{_e(k)}: {_e(str(v))}")
+                        if vals:
+                            items += (
+                                f'<div class="day-kv">'
+                                f'<span class="dk">{_e(panel_name)}:</span> '
+                                f'{", ".join(vals)}'
+                                "</div>"
+                            )
     if not items:
         return ""
     return (
@@ -1014,7 +1106,12 @@ def _render_ventilator(vent: Any) -> str:
 
 
 def _render_plans(plans: Any) -> str:
-    """Render trauma daily plan / changes in course for a single day."""
+    """Render trauma daily plan / changes in course for a single day.
+
+    Real bundle shape:
+      plans.notes: [{note_type, author, dt, impression_lines, plan_lines, raw_line_id}]
+    Also supports legacy shapes: plain string, flat dict, or list.
+    """
     if not plans:
         return ""
     if isinstance(plans, str):
@@ -1025,6 +1122,52 @@ def _render_plans(plans: Any) -> str:
             "</div>"
         )
     if isinstance(plans, dict):
+        # ── Real nested shape: {"notes": [...]} ──
+        notes = plans.get("notes")
+        if isinstance(notes, list):
+            if not notes:
+                return ""
+            parts = ""
+            for note in notes:
+                if not isinstance(note, dict):
+                    continue
+                note_type = note.get("note_type", "")
+                author = note.get("author", "")
+                dt = note.get("dt", "")
+                header = _e(note_type) if note_type else "Note"
+                meta_parts = [p for p in [_e(author), _e(dt)] if p]
+                meta = f'<div class="plan-note-meta">{", ".join(meta_parts)}</div>' if meta_parts else ""
+
+                impression = note.get("impression_lines", []) or []
+                plan_lines = note.get("plan_lines", []) or []
+
+                imp_html = ""
+                if impression:
+                    imp_items = "".join(f"<li>{_e(str(ln))}</li>" for ln in impression if ln)
+                    if imp_items:
+                        imp_html = f'<ul class="plan-lines impression-lines">{imp_items}</ul>'
+
+                plan_html = ""
+                if plan_lines:
+                    plan_items = "".join(f"<li>{_e(str(ln))}</li>" for ln in plan_lines if ln)
+                    if plan_items:
+                        plan_html = f'<ul class="plan-lines">{plan_items}</ul>'
+
+                if imp_html or plan_html:
+                    parts += (
+                        f'<div class="plan-note">'
+                        f'<div class="plan-note-header">{header}</div>'
+                        f'{meta}{imp_html}{plan_html}'
+                        '</div>'
+                    )
+            if parts:
+                return (
+                    '<div class="day-section">'
+                    '<div class="day-section-title">Course / Plan</div>'
+                    f'{parts}</div>'
+                )
+            return ""
+        # ── Legacy flat dict shape ──
         items = ""
         for k, v in plans.items():
             if v is not None:
@@ -1047,13 +1190,58 @@ def _render_plans(plans: Any) -> str:
 
 
 def _render_consultant_plans(cp: Any) -> str:
-    """Render consultant plans for a single day."""
+    """Render consultant plans for a single day.
+
+    Real bundle shape:
+      cp.services: {service_name: {items: [{item_text, item_type, author_name, ts, evidence}]}}
+      cp.service_count: int
+      cp.item_count: int
+    Also supports legacy shapes: flat {service: plan_text} dict or list.
+    """
     if not cp:
         return ""
     if isinstance(cp, dict):
+        # ── Real nested shape: {"services": {...}} ──
+        services = cp.get("services")
+        if isinstance(services, dict) and services:
+            parts = ""
+            for svc_name in sorted(services.keys()):
+                svc_data = services[svc_name]
+                if not isinstance(svc_data, dict):
+                    continue
+                items_list = svc_data.get("items", [])
+                if not isinstance(items_list, list) or not items_list:
+                    continue
+                item_html = ""
+                for item in items_list:
+                    if not isinstance(item, dict):
+                        continue
+                    text = item.get("item_text", "")
+                    if not text:
+                        continue
+                    author = item.get("author_name", "")
+                    ts = item.get("ts", "")
+                    meta_parts = [p for p in [_e(author), _e(ts)] if p]
+                    meta = f' <span class="consult-item-meta">{", ".join(meta_parts)}</span>' if meta_parts else ""
+                    item_html += f'<div class="consult-item">{_e(text)}{meta}</div>'
+                if item_html:
+                    parts += (
+                        f'<div class="consult-service">'
+                        f'<div class="consult-service-name">{_e(svc_name)}</div>'
+                        f'{item_html}'
+                        '</div>'
+                    )
+            if parts:
+                return (
+                    '<div class="day-section">'
+                    '<div class="day-section-title">Consultant Plans</div>'
+                    f'{parts}</div>'
+                )
+            return ""
+        # ── Legacy flat dict shape: {service_name: plan_text} ──
         items = ""
         for service, plan in sorted(cp.items()):
-            if plan is not None:
+            if plan is not None and not isinstance(plan, dict):
                 items += (
                     f'<div class="day-kv">'
                     f'<span class="dk">{_e(service)}:</span> {_e(str(plan))}'
