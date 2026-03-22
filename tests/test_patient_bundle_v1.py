@@ -360,5 +360,4 @@ class TestDailyNestedDaysMapping:
         # Exclude build.generated_at_utc for determinism check
         for b in (b1, b2):
             b["build"].pop("generated_at_utc", None)
-        import json
         assert json.dumps(b1, sort_keys=True) == json.dumps(b2, sort_keys=True)
