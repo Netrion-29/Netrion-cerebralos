@@ -202,6 +202,21 @@ def cmd_run(args: list) -> int:
     except Exception as exc:
         print(f"  V5:    error -- {exc}")
 
+    # Bundle v1 (casefile assembly)
+    try:
+        from cerebralos.reporting.build_patient_bundle_v1 import (
+            assemble_bundle, write_bundle,
+        )
+        bundle_out = (
+            _PROJECT_ROOT / "outputs" / "casefile"
+            / patient_path.stem / "patient_bundle_v1.json"
+        )
+        bundle = assemble_bundle(patient_path.stem)
+        write_bundle(bundle, bundle_out)
+        print(f"  Bundle: {bundle_out}")
+    except Exception as exc:
+        print(f"  Bundle: error -- {exc}")
+
     # Excel
     try:
         from cerebralos.reporting.excel_dashboard import update_excel_dashboard

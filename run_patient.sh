@@ -117,6 +117,16 @@ python3 cerebralos/reporting/render_trauma_daily_notes_v5.py \
   ${V5_SECTIONS_ARGS[@]+"${V5_SECTIONS_ARGS[@]}"} \
   --out "outputs/reporting/$SLUG/TRAUMA_DAILY_NOTES_v5.txt"
 
+# Bundle v1 (casefile assembly — always runs after pipeline completes)
+echo ""
+echo "---- patient bundle v1 ----"
+mkdir -p "outputs/casefile/$SLUG"
+python3 cerebralos/reporting/build_patient_bundle_v1.py \
+  --slug "$SLUG" \
+  --out "outputs/casefile/$SLUG/patient_bundle_v1.json"
+python3 cerebralos/validation/validate_patient_bundle_contract_v1.py \
+  --in "outputs/casefile/$SLUG/patient_bundle_v1.json"
+
 echo "---- sanity checks ----"
 echo -n "noise(ADS/OMNICELL): "
 grep -ciE "ADS Dispense|OMNICELL" "outputs/reporting/$SLUG/TRAUMA_DAILY_NOTES_v3.txt" || true
