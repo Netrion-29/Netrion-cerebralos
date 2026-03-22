@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import textwrap
 from pathlib import Path
 from typing import Any, Dict
 
@@ -106,7 +105,7 @@ class TestExtractCard:
         assert card["slug"] == "Test_Patient"
         assert card["age"] == 55
         assert card["sex"] == "Male"
-        assert card["mechanism"] == "fall"
+        assert card["mechanism"] == "Fall"
         assert card["ntds_yes"] == 1
         assert card["ntds_utd"] == 1
         assert card["ntds_total"] == 3
@@ -153,6 +152,20 @@ class TestExtractCard:
         assert card["ntds_utd"] == 0
         assert card["ntds_total"] == 0
         assert card["protocol_noncompliant"] == 0
+
+    def test_empty_string_arrival_normalized(self):
+        bundle = _make_bundle(arrival="")
+        card = extract_card(bundle)
+        assert card is not None
+        assert card["arrival"] is None
+        assert card["arrival_sort"] == ""
+
+    def test_data_not_available_discharge_normalized(self):
+        bundle = _make_bundle(discharge="DATA_NOT_AVAILABLE")
+        card = extract_card(bundle)
+        assert card is not None
+        assert card["discharge"] is None
+        assert card["is_discharged"] is False
 
     def test_null_compliance_section(self):
         bundle = _make_bundle()
@@ -334,6 +347,23 @@ class TestDeterminism:
         out2 = tmp_path / "hub2.html"
         generate_hub(tmp_path, out1, generated_at=ts)
         generate_hub(tmp_path, out2, generated_at=ts)
+        assert out1.read_text() == out2.read_text()
+
+    def test_generated_at_derived_from_bundles(self, tmp_path):
+        """When no generated_at is supplied, it is derived from bundle data."""
+        b1 = _make_bundle(name="Alice", slug="Alice")
+        b1["build"]["generated_at_utc"] = "2026-01-10T08:00:00Z"
+        b2 = _make_bundle(name="Bob", slug="Bob")
+        b2["build"]["generated_at_utc"] = "2026-01-12T16:00:00Z"
+        _write_bundle(tmp_path, "Alice", b1)
+        _write_bundle(tmp_path, "Bob", b2)
+
+        out1 = tmp_path / "hub1.html"
+        out2 = tmp_path / "hub2.html"
+        generate_hub(tmp_path, out1)  # no generated_at
+        generate_hub(tmp_path, out2)  # no generated_at
+        content = out1.read_text()
+        assert "2026-01-12T16:00:00Z" in content
         assert out1.read_text() == out2.read_text()
 
 

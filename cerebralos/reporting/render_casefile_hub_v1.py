@@ -12,10 +12,11 @@ from __future__ import annotations
 
 import json
 import html as html_mod
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+_SENTINEL_VALUES = {None, "", "DATA_NOT_AVAILABLE"}
 
 # ── Constants ──────────────────────────────────────────────────────
 
@@ -37,6 +38,27 @@ def _safe_get(d: Any, *keys: str, default: Any = None) -> Any:
         if cur is None:
             return default
     return cur
+
+
+def _normalize_dt(raw: Any) -> Optional[str]:
+    """Return *raw* if it's a usable datetime string, else None."""
+    if raw in _SENTINEL_VALUES:
+        return None
+    if not isinstance(raw, str):
+        return None
+    return raw
+
+
+def _parse_dt(raw: Optional[str]) -> Optional[datetime]:
+    """Parse a datetime string in supported formats. Returns None on failure."""
+    if raw is None:
+        return None
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"):
+        try:
+            return datetime.strptime(raw, fmt)
+        except ValueError:
+            continue
+    return None
 
 
 def _compute_los(arrival: Optional[str], discharge: Optional[str]) -> Optional[int]:
@@ -95,13 +117,20 @@ def extract_card(bundle: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     if not name or not slug:
         return None
 
-    arrival = patient.get("arrival_datetime")
-    discharge = patient.get("discharge_datetime")
+    arrival = _normalize_dt(patient.get("arrival_datetime"))
+    discharge = _normalize_dt(patient.get("discharge_datetime"))
     trauma_cat = patient.get("trauma_category")
-    if trauma_cat == "DATA_NOT_AVAILABLE":
+    if trauma_cat in _SENTINEL_VALUES:
         trauma_cat = None
 
     compliance = bundle.get("compliance")
+    mechanism = _safe_get(bundle, "summary", "mechanism", "mechanism_primary")
+    if mechanism:
+        mechanism = str(mechanism).title()
+
+    # Parse arrival for stable sort key (ISO string from parsed dt)
+    arrival_parsed = _parse_dt(arrival)
+    arrival_sort = arrival_parsed.strftime("%Y-%m-%dT%H:%M:%S") if arrival_parsed else ""
 
     return {
         "name": name,
@@ -109,12 +138,13 @@ def extract_card(bundle: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         "age": _safe_get(bundle, "summary", "age", "age_years"),
         "sex": _safe_get(bundle, "summary", "demographics", "sex"),
         "arrival": arrival,
+        "arrival_sort": arrival_sort,
         "arrival_display": _format_date(arrival),
         "discharge": discharge,
         "discharge_display": _format_date(discharge),
         "los_days": _compute_los(arrival, discharge),
         "trauma_category": trauma_cat,
-        "mechanism": _safe_get(bundle, "summary", "mechanism", "mechanism_primary"),
+        "mechanism": mechanism,
         "body_regions": _safe_get(bundle, "summary", "mechanism", "body_region_labels") or [],
         "ntds_yes": _count_ntds(compliance, "YES"),
         "ntds_utd": _count_ntds(compliance, "UNABLE_TO_DETERMINE"),
@@ -159,7 +189,7 @@ def scan_bundles(casefile_root: Path) -> tuple[list[dict[str, Any]], list[str]]:
 def sort_cards(cards: list[dict[str, Any]], key: str = "arrival") -> list[dict[str, Any]]:
     """Sort cards by *key*. Default: arrival date newest first."""
     if key == "arrival":
-        return sorted(cards, key=lambda c: c.get("arrival") or "", reverse=True)
+        return sorted(cards, key=lambda c: c.get("arrival_sort", ""), reverse=True)
     if key == "name":
         return sorted(cards, key=lambda c: c.get("name", "").lower())
     if key == "los":
@@ -395,7 +425,7 @@ def _render_card_html(card: Dict[str, Any]) -> str:
     if card["sex"]:
         demo_parts.append(_e(card["sex"]))
     if card["mechanism"]:
-        demo_parts.append(_e(card["mechanism"]).title())
+        demo_parts.append(_e(card["mechanism"]))
     if demo_parts:
         lines.append(f'<div class="card-demo">{" · ".join(demo_parts)}</div>')
 
@@ -431,11 +461,26 @@ def _render_card_html(card: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _derive_generated_at_from_bundles(casefile_root: Path) -> str:
+    """Derive a deterministic timestamp from the newest bundle build time."""
+    latest: Optional[str] = None
+    for bp in sorted(casefile_root.glob(f"*/{BUNDLE_FILENAME}")):
+        try:
+            with open(bp, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            ts = _safe_get(data, "build", "generated_at_utc")
+            if isinstance(ts, str) and (latest is None or ts > latest):
+                latest = ts
+        except (json.JSONDecodeError, OSError):
+            continue
+    return latest or ""
+
+
 def render_hub(cards: list[dict[str, Any]], warnings: list[str],
                generated_at: Optional[str] = None) -> str:
     """Render the full hub HTML page. *cards* should already be sorted."""
     if generated_at is None:
-        generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        generated_at = ""
 
     parts: list[str] = []
     parts.append("<!DOCTYPE html>")
@@ -522,6 +567,10 @@ def generate_hub(casefile_root: Optional[Path] = None,
 
     cards, warnings = scan_bundles(casefile_root)
     cards = sort_cards(cards, key="arrival")
+
+    if generated_at is None:
+        generated_at = _derive_generated_at_from_bundles(casefile_root)
+
     html = render_hub(cards, warnings, generated_at=generated_at)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
