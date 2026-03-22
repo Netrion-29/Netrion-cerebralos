@@ -23,7 +23,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "LATEST=$(ls -t outputs/casefile/*/casefile_v1.html 2>/dev/null | head -1); if [ -n \"$LATEST\" ]; then open \"$LATEST\"; echo \"Opened: $LATEST\"; else echo 'No casefile found.'; fi"
+        "LATEST=$(ls -t outputs/casefile/*/casefile_v1.html 2>/dev/null | head -1); if [ -n \"$LATEST\" ]; then if command -v open >/dev/null 2>&1; then open \"$LATEST\"; elif command -v xdg-open >/dev/null 2>&1; then xdg-open \"$LATEST\"; else echo \"Open manually: $LATEST\"; fi; echo \"Opened: $LATEST\"; else echo 'No casefile found.'; fi"
       ],
       "presentation": {
         "reveal": "always",

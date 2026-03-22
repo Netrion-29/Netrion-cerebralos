@@ -63,7 +63,10 @@ if [[ ! -f "$RAW_FILE" ]]; then
       echo "         data_raw/${PAT_SPACE}.txt" >&2
       echo "" >&2
       echo "Available patients:" >&2
-      ls data_raw/*.txt 2>/dev/null | xargs -I{} basename {} .txt | sort >&2
+      for f in data_raw/*.txt; do
+        [[ -e "$f" ]] || continue
+        basename "$f" .txt
+      done | sort >&2
       exit 1
     fi
     # Use the original name from the filename for run_patient.sh
@@ -86,11 +89,10 @@ echo ""
 
 export CEREBRAL_NTDS=1
 export CEREBRAL_PROTOCOLS=1
-export CEREBRAL_NO_OPEN=1
 
 echo "Running canonical pipeline (run_patient.sh)..."
 echo ""
-./run_patient.sh "$PAT"
+CEREBRAL_NO_OPEN=1 ./run_patient.sh "$PAT"
 
 # ── Verify casefile was produced ──────────────────────────────────
 
