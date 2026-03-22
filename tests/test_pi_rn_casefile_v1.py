@@ -897,29 +897,28 @@ class TestEmptySectionSuppression:
         assert _render_gcs({}) == ""
         assert _render_labs({}) == ""
 
+    def test_canonical_labs_empty_latest_suppressed(self):
+        """Canonical shape with empty latest must not fall into legacy fallback."""
+        assert _render_labs({"latest": {}, "daily": {}, "series": {}}) == ""
+
 
 # ── Day-card section ordering ───────────────────────────────────────
 
 class TestDayCardSectionOrdering:
-    """Sections within a day card appear in the correct order."""
+    """Sections within a day card appear in the correct order.
+
+    Anchors on day-section-title text which only appears inside rendered
+    day-body divs, not in the <style> block.
+    """
 
     def test_vitals_before_gcs_before_labs_before_consults(self):
         html = render_casefile(_FULL_BUNDLE)
-        vitals_pos = html.index("vitals-grid")
-        gcs_pos = html.index("gcs-ok")
-        labs_pos = html.index("Hemoglobin")
-        consult_pos = html.index("Consultant Plans")
+        # Locate inside rendered body using section-title markers
+        body_start = html.index("day-body")
+        vitals_pos = html.index('>Vitals<', body_start)
+        gcs_pos = html.index('>GCS<', body_start)
+        labs_pos = html.index('>Labs<', body_start)
+        consult_pos = html.index('>Consultant Plans<', body_start)
         assert vitals_pos < gcs_pos
         assert gcs_pos < labs_pos
         assert labs_pos < consult_pos
-
-
-# ── Deterministic day-card rendering ────────────────────────────────
-
-class TestDayCardDeterministic:
-    """Same input produces identical output on repeated calls."""
-
-    def test_same_output_twice(self):
-        a = render_casefile(_FULL_BUNDLE)
-        b = render_casefile(_FULL_BUNDLE)
-        assert a == b

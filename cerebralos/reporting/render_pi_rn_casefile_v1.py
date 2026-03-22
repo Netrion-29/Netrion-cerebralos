@@ -1010,28 +1010,34 @@ def _render_labs(labs: Any) -> str:
     if not labs or not isinstance(labs, dict):
         return ""
     items = ""
-    # ── Real nested shape: {"latest": {comp: {value_raw, flags, ...}}} ──
-    latest = labs.get("latest")
-    if isinstance(latest, dict) and latest:
-        for comp_name in sorted(latest.keys()):
-            comp = latest[comp_name]
-            if not isinstance(comp, dict):
-                continue
-            val = comp.get("value_raw", comp.get("value_num", ""))
-            if val is None or val == "":
-                continue
-            unit = comp.get("unit", "")
-            flags = comp.get("flags", []) or []
-            flag_str = ""
-            if flags:
-                flag_str = f' <span class="lab-flag">({" ".join(_e(str(f)) for f in flags)})</span>'
-            unit_str = f" {_e(unit)}" if unit else ""
-            items += (
-                f'<div class="day-kv">'
-                f'<span class="dk">{_e(comp_name)}:</span> '
-                f'{_e(str(val))}{unit_str}{flag_str}'
-                "</div>"
-            )
+    # ── Detect canonical shape by presence of known top-level keys ──
+    _CANONICAL_KEYS = {"latest", "daily", "series"}
+    is_canonical = bool(_CANONICAL_KEYS & labs.keys())
+
+    if is_canonical:
+        # ── Real nested shape: {"latest": {comp: {value_raw, flags, ...}}} ──
+        latest = labs.get("latest")
+        if isinstance(latest, dict) and latest:
+            for comp_name in sorted(latest.keys()):
+                comp = latest[comp_name]
+                if not isinstance(comp, dict):
+                    continue
+                val = comp.get("value_raw", comp.get("value_num", ""))
+                if val is None or val == "":
+                    continue
+                unit = comp.get("unit", "")
+                flags = comp.get("flags", []) or []
+                flag_str = ""
+                if flags:
+                    flag_str = f' <span class="lab-flag">({" ".join(_e(str(f)) for f in flags)})</span>'
+                unit_str = f" {_e(unit)}" if unit else ""
+                items += (
+                    f'<div class="day-kv">'
+                    f'<span class="dk">{_e(comp_name)}:</span> '
+                    f'{_e(str(val))}{unit_str}{flag_str}'
+                    "</div>"
+                )
+        # canonical shape with empty latest → return empty (fail-closed)
     else:
         # ── Legacy flat shape: {panel: {analyte: value}} ──
         for panel_name, panel_data in sorted(labs.items()):
