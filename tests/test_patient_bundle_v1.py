@@ -53,7 +53,25 @@ _MINIMAL_FEATURES = {
         "mechanism_region_v1": {"mechanism": "MVC"},
         "demographics_v1": {"sex": "M"},
         "vitals_canonical_v1": {
-            "2025-01-01": [{"hr": 80}],
+            "days": {
+                "2025-01-01": {"records": [{"hr": 80, "sbp": 120}], "count": 1},
+            },
+        },
+        "trauma_daily_plan_by_day_v1": {
+            "days": {
+                "2025-01-01": {"notes": [{"note_type": "Trauma Progress", "plan_lines": ["Continue care"]}]},
+            },
+            "total_notes": 1,
+        },
+        "consultant_day_plans_by_day_v1": {
+            "days": {
+                "2025-01-01": {"services": {"Ortho": {"items": [{"item_text": "Weight-bearing"}], "item_count": 1}}},
+            },
+            "total_days": 1,
+        },
+        "ventilator_settings_v1": {
+            "events": [],
+            "summary": {"total_events": 0},
         },
         "consultant_events_v1": {"services": ["Ortho"]},
     },
@@ -251,3 +269,96 @@ class TestV5MissingWarning:
         root, slug = required_only_outputs
         bundle = assemble_bundle(slug, outputs_root=root)
         assert any("V5 report not found" in w for w in bundle["warnings"])
+
+
+# ── Daily mapping tests ─────────────────────────────────────────────
+
+class TestDailyNestedDaysMapping:
+    """Verify that the assembler reads module.days[date] for day-keyed features."""
+
+    def test_vitals_populated_from_nested_days(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        day = bundle["daily"]["2025-01-01"]
+        assert day["vitals"] is not None
+        assert day["vitals"]["records"][0]["hr"] == 80
+
+    def test_vitals_null_for_absent_day(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        day = bundle["daily"]["2025-01-02"]
+        assert day["vitals"] is None
+
+    def test_plans_populated_from_nested_days(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        day = bundle["daily"]["2025-01-01"]
+        assert day["plans"] is not None
+        assert day["plans"]["notes"][0]["plan_lines"] == ["Continue care"]
+
+    def test_plans_null_for_absent_day(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        day = bundle["daily"]["2025-01-02"]
+        assert day["plans"] is None
+
+    def test_consultant_plans_populated_from_nested_days(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        day = bundle["daily"]["2025-01-01"]
+        assert day["consultant_plans"] is not None
+        assert "Ortho" in day["consultant_plans"]["services"]
+
+    def test_consultant_plans_null_for_absent_day(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        day = bundle["daily"]["2025-01-02"]
+        assert day["consultant_plans"] is None
+
+    def test_ventilator_stays_null_no_days_key(self, full_outputs):
+        """Ventilator module has no days sub-dict; should remain null."""
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        day = bundle["daily"]["2025-01-01"]
+        assert day["ventilator"] is None
+
+    def test_gcs_still_from_feat_days(self, full_outputs):
+        """GCS comes from features.days[date].gcs_daily, not features dict."""
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        day = bundle["daily"]["2025-01-01"]
+        assert day["gcs"] is not None
+        assert day["gcs"]["best"] == 15
+
+    def test_flat_keyed_module_fallback(self, tmp_path):
+        """If a module has no 'days' sub-dict, fall back to top-level date key."""
+        slug = "Flat_Test"
+        _write_artifact(tmp_path, f"evidence/{slug}/patient_evidence_v1.json", _MINIMAL_EVIDENCE)
+        flat_features = {
+            "build": {"version": "1.0"},
+            "patient_id": "12345",
+            "days": {"2025-01-01": {}, "2025-01-02": {}},
+            "evidence_gaps": [],
+            "features": {
+                "vitals_canonical_v1": {
+                    "2025-01-01": [{"hr": 72}],
+                },
+            },
+            "warnings": [],
+            "warnings_summary": {},
+        }
+        _write_artifact(tmp_path, f"features/{slug}/patient_features_v1.json", flat_features)
+        _write_artifact(tmp_path, f"timeline/{slug}/patient_days_v1.json", _MINIMAL_TIMELINE)
+        bundle = assemble_bundle(slug, outputs_root=tmp_path)
+        day = bundle["daily"]["2025-01-01"]
+        assert day["vitals"] == [{"hr": 72}]
+
+    def test_daily_mapping_deterministic(self, full_outputs):
+        root, slug = full_outputs
+        b1 = assemble_bundle(slug, outputs_root=root)
+        b2 = assemble_bundle(slug, outputs_root=root)
+        # Exclude build.generated_at_utc for determinism check
+        for b in (b1, b2):
+            b["build"].pop("generated_at_utc", None)
+        import json
+        assert json.dumps(b1, sort_keys=True) == json.dumps(b2, sort_keys=True)
