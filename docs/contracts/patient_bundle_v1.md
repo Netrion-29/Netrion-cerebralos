@@ -1,11 +1,11 @@
 # Contract: `patient_bundle_v1.json`
 
-| Field       | Value                                                    |
-|-------------|----------------------------------------------------------|
-| Date        | 2026-03-22                                               |
-| Status      | **LOCKED** — enforced by validator                       |
-| Version     | 1.0                                                      |
-| Direction   | See `docs/roadmaps/PI_RN_CASEFILE_V1.md`                 |
+| Field     | Value                                        |
+|-----------|----------------------------------------------|
+| Date      | 2026-03-22                                   |
+| Status    | **LOCKED** — enforced by validator            |
+| Version   | 1.0                                          |
+| Direction | See `docs/roadmaps/PI_RN_CASEFILE_V1.md`     |
 
 ---
 

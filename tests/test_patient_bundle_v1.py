@@ -74,7 +74,10 @@ _NTDS_SUMMARY = {
 }
 
 
-def _write_artifact(root: Path, rel: str, data: dict) -> None:
+from typing import Any
+
+
+def _write_artifact(root: Path, rel: str, data: Any) -> None:
     """Write a JSON artifact under the test root."""
     path = root / rel
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -218,3 +221,33 @@ class TestValidateContract:
         data["warnings"] = "not a list"
         errors = validate_contract(data)
         assert any("WARNINGS_TYPE_ERROR" in e for e in errors)
+
+    def test_non_dict_root_fails(self):
+        errors = validate_contract([1, 2, 3])
+        assert len(errors) == 1
+        assert "ROOT_TYPE_ERROR" in errors[0]
+
+    def test_consultants_bad_type_fails(self):
+        data = {k: {} for k in ALLOWED_TOP_LEVEL_KEYS}
+        data["build"] = {"bundle_version": "1.0"}
+        data["patient"] = {"slug": "Test"}
+        data["warnings"] = []
+        data["consultants"] = "not a dict"
+        errors = validate_contract(data)
+        assert any("CONSULTANTS_TYPE_ERROR" in e for e in errors)
+
+    def test_consultants_null_passes(self):
+        data = {k: {} for k in ALLOWED_TOP_LEVEL_KEYS}
+        data["build"] = {"bundle_version": "1.0"}
+        data["patient"] = {"slug": "Test"}
+        data["warnings"] = []
+        data["consultants"] = None
+        errors = validate_contract(data)
+        assert not any("CONSULTANTS" in e for e in errors)
+
+
+class TestV5MissingWarning:
+    def test_v5_absent_adds_warning(self, required_only_outputs):
+        root, slug = required_only_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        assert any("V5 report not found" in w for w in bundle["warnings"])

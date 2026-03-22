@@ -72,15 +72,6 @@ def _resolve_outputs_root() -> Path:
     return Path(__file__).resolve().parent.parent.parent / "outputs"
 
 
-def _extract_per_day_from_feature(
-    feature_data: Any, day_keys: List[str],
-) -> Dict[str, Any]:
-    """Extract per-day slices from a feature module that is keyed by date."""
-    if not isinstance(feature_data, dict):
-        return {d: None for d in day_keys}
-    return {d: feature_data.get(d) for d in day_keys}
-
-
 # ── Assembly ───────────────────────────────────────────────────────
 
 def assemble_bundle(
@@ -154,6 +145,8 @@ def assemble_bundle(
         warnings.append("Protocol results not found; compliance.protocol_results set to null")
 
     v5_path = root / "reporting" / slug / "TRAUMA_DAILY_NOTES_v5.txt"
+    if not v5_path.is_file():
+        warnings.append("V5 report not found; artifacts.v5_report_path set to null")
 
     # ── Build sections ──────────────────────────────────────────
 

@@ -42,13 +42,21 @@ ALLOWED_TOP_LEVEL_KEYS = frozenset({
 
 # ── Validation logic ───────────────────────────────────────────────
 
-def validate_contract(data: Dict[str, Any]) -> List[str]:
+def validate_contract(data: Any) -> List[str]:
     """
     Validate patient_bundle_v1.json against the locked contract.
 
     Returns a list of error strings (empty = valid).
     """
     errors: List[str] = []
+
+    # 0. Root must be a JSON object (dict)
+    if not isinstance(data, dict):
+        errors.append(
+            f"ROOT_TYPE_ERROR: bundle root must be a JSON object (dict), "
+            f"got {type(data).__name__}"
+        )
+        return errors
 
     top_keys = set(data.keys())
 
@@ -118,7 +126,15 @@ def validate_contract(data: Dict[str, Any]) -> List[str]:
             f"got {type(artifacts_val).__name__}"
         )
 
-    # 9. warnings must be a list
+    # 9. consultants must be a dict or null
+    consultants_val = data.get("consultants")
+    if consultants_val is not None and not isinstance(consultants_val, dict):
+        errors.append(
+            f"CONSULTANTS_TYPE_ERROR: 'consultants' must be dict or null, "
+            f"got {type(consultants_val).__name__}"
+        )
+
+    # 10. warnings must be a list
     warnings_val = data.get("warnings")
     if not isinstance(warnings_val, list):
         errors.append(
