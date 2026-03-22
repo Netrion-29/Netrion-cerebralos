@@ -1055,6 +1055,17 @@ _LABS_CBC_KEYS = ("Hgb", "Hct", "WBC", "Plt")
 _LABS_BMP_KEYS = ("Na", "K", "Cr", "Glucose")
 
 
+def _fmt_lab_val(val: Any) -> str:
+    """Format a lab value: strip .0 from integer-like floats (e.g. 210.0 -> '210')."""
+    if val is None:
+        return "--"
+    if isinstance(val, float):
+        if val == int(val):
+            return str(int(val))
+        return f"{val:.1f}"
+    return str(val)
+
+
 def _format_lab_panel_line(
     panel: Dict[str, Any], keys: tuple, label: str,
 ) -> str:
@@ -1066,7 +1077,7 @@ def _format_lab_panel_line(
         if status == "available":
             val = comp.get("last")
             abnormal = comp.get("abnormal", False)
-            val_str = _fv(val) if isinstance(val, float) else str(val) if val is not None else "--"
+            val_str = _fmt_lab_val(val)
             if abnormal:
                 val_str += " (!)"
             parts.append(f"{key} {val_str}")

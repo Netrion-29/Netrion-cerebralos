@@ -2862,7 +2862,7 @@ class TestStructuredLabsOverview(unittest.TestCase):
         idx = result.index("STRUCTURED LABS OVERVIEW")
         section = result[idx:idx + 600]
         self.assertIn("Hgb 7.2 (!)", section)
-        self.assertIn("Hct 22.0 (!)", section)
+        self.assertIn("Hct 22 (!)", section)
         self.assertIn("WBC 18.5 (!)", section)
         self.assertIn("Plt 45 (!)", section)
         self.assertIn("Na 128 (!)", section)
@@ -2964,7 +2964,7 @@ class TestStructuredLabsOverview(unittest.TestCase):
     # ── Integer values render correctly ──
 
     def test_integer_values(self):
-        """Integer lab values (e.g., Plt 210) render without decimal."""
+        """Pure int lab values render without decimal."""
         data = _minimal_features()
         cbc = self._cbc_panel(plt=(210, False))
         data["features"]["structured_labs_v1"] = self._labs_feature(
@@ -2975,6 +2975,42 @@ class TestStructuredLabsOverview(unittest.TestCase):
         idx = result.index("STRUCTURED LABS OVERVIEW")
         section = result[idx:idx + 600]
         self.assertIn("Plt 210", section)
+        self.assertNotIn("Plt 210.0", section)
+
+    def test_integer_like_floats(self):
+        """Float values like 210.0 render as '210', not '210.0'."""
+        data = _minimal_features()
+        cbc = self._cbc_panel(plt=(210.0, False), wbc=(8.0, False))
+        bmp = self._bmp_panel(na=(140.0, False), glucose=(120.0, False))
+        data["features"]["structured_labs_v1"] = self._labs_feature(
+            panels_by_day={"2026-01-01": {"cbc": cbc, "bmp": bmp}},
+            days_with_labs=1,
+        )
+        result = render_v5(data)
+        idx = result.index("STRUCTURED LABS OVERVIEW")
+        section = result[idx:idx + 600]
+        self.assertIn("Plt 210", section)
+        self.assertNotIn("Plt 210.0", section)
+        self.assertIn("WBC 8", section)
+        self.assertNotIn("WBC 8.0", section)
+        self.assertIn("Na 140", section)
+        self.assertNotIn("Na 140.0", section)
+        self.assertIn("Glucose 120", section)
+        self.assertNotIn("Glucose 120.0", section)
+
+    def test_fractional_floats_keep_decimal(self):
+        """Non-integer floats like 12.7 keep their decimal."""
+        data = _minimal_features()
+        cbc = self._cbc_panel(hgb=(12.7, False), hct=(38.3, False))
+        data["features"]["structured_labs_v1"] = self._labs_feature(
+            panels_by_day={"2026-01-01": {"cbc": cbc, "bmp": self._bmp_panel()}},
+            days_with_labs=1,
+        )
+        result = render_v5(data)
+        idx = result.index("STRUCTURED LABS OVERVIEW")
+        section = result[idx:idx + 600]
+        self.assertIn("Hgb 12.7", section)
+        self.assertIn("Hct 38.3", section)
 
     # ── Days with labs count from summary ──
 
