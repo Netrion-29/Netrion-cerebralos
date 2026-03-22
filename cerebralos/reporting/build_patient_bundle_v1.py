@@ -182,7 +182,13 @@ def assemble_bundle(
         for bundle_key, feat_key in _DAILY_FROM_FEATURES.items():
             feat_module = feat.get(feat_key)
             if isinstance(feat_module, dict):
-                day_data[bundle_key] = feat_module.get(day_key)
+                # Try nested days[date] first (canonical shape), then
+                # fall back to top-level date key for flat modules.
+                days_sub = feat_module.get("days")
+                if isinstance(days_sub, dict):
+                    day_data[bundle_key] = days_sub.get(day_key)
+                else:
+                    day_data[bundle_key] = feat_module.get(day_key)
             else:
                 day_data[bundle_key] = None
 
