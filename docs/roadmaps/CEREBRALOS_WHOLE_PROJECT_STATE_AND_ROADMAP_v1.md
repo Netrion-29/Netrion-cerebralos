@@ -937,7 +937,43 @@ Every mapper, rule, or test change **must** follow this workflow:
 
 ---
 
-## 7. Key References
+## 7. Product Direction — PI RN Casefile v1 (2026-03-22)
+
+The product direction has shifted to **single-patient casefile first**.
+
+**Primary user:** One PI RN reviewing trauma patients for NTDS compliance
+and protocol adherence.
+
+**Primary artifact:** A rendered single-patient case file (HTML) that
+assembles all pipeline outputs into one reviewable document — trauma
+summary header, daily admission notes, NTDS + protocol non-compliance.
+
+**What this means for ongoing work:**
+- All current extraction work (NTDS, protocols, features) continues — it
+  feeds the casefile.
+- v5 text notes remain useful as a narrative artifact but are not the
+  end-state product.
+- The old Next.js dashboard (`dashboard/`) is **legacy / soft-archived** —
+  not the active product path. Preserved for reference only.
+- Future UI work should build on a new `patient_bundle_v1` + casefile
+  renderer path, not the legacy dashboard.
+- Cross-patient views come later (Phase 6).
+- Excel dashboard remains a secondary/future-friendly surface (Phase 7).
+
+**Implementation sequence:**
+1. Docs + soft-archive (this entry)
+2. `patient_bundle_v1` contract
+3. Bundle assembler
+4. Single-patient casefile renderer
+5. One-click run/open workflow
+6. Cross-patient hub
+7. Excel secondary refinement
+
+**Full direction doc:** `docs/roadmaps/PI_RN_CASEFILE_V1.md`
+
+---
+
+## 8. Key References
 
 | Doc | Purpose |
 |-----|---------|

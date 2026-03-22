@@ -1,5 +1,28 @@
 # CerebralOS Dashboard
 
+> **⚠️ LEGACY — SOFT-ARCHIVED (2026-03-22)**
+>
+> This Next.js dashboard is **not the active product path**. It is preserved
+> for reference only. Do not invest new development effort here.
+>
+> The active product direction is the **PI RN Casefile v1** — a single-patient
+> case file / chart. See `docs/roadmaps/PI_RN_CASEFILE_V1.md` for the full
+> product direction document.
+>
+> **Why soft-archived:**
+> - Primary user (PI RN) needs a single-patient review experience, not a
+>   cross-patient dashboard.
+> - This dashboard was a useful prototype but is not trusted as the
+>   production surface.
+> - Future cross-patient views (Phase 6) will be built on the new
+>   `patient_bundle_v1` architecture, not this codebase.
+>
+> **What this means:**
+> - This code is NOT deleted — it remains for reference and historical context.
+> - No files have been moved or removed.
+> - The dashboard may still run locally (`npm run dev`) but is not maintained.
+> - Bug fixes, feature additions, and dependency updates are not planned.
+
 Local-first Next.js 14 dashboard for NTDS event outcomes and Deaconess protocol compliance.
 
 ## Quick Start
