@@ -209,10 +209,14 @@ This shape is **not locked** until the contract PR is merged.
 
 ### Phase 6 — Cross-Patient Hub
 
-- Multi-patient summary view (cohort-level)
-- Filter/sort by NTDS outcomes, protocol compliance, date range
-- Builds on patient bundles — one bundle per patient, hub reads all
-- Not required for v1 — the PI RN reviews one patient at a time
+- [x] Hub renderer: `cerebralos/reporting/render_casefile_hub_v1.py` — reads all `patient_bundle_v1.json` files
+- [x] Output: `outputs/casefile/hub_v1.html` — self-contained local HTML index
+- [x] Patient cards: name, age/sex, arrival/discharge, LOS, mechanism, NTDS YES/UTD, protocol NC
+- [x] Client-side search by name, filter by discharge status, sort (arrival/name/LOS/NTDS)
+- [x] One-click link to each patient's `casefile_v1.html`
+- [x] Shell wrapper: `scripts/run_casefile_hub_v1.sh`
+- [x] Tests: `tests/test_casefile_hub_v1.py` (51 tests)
+- [ ] Wire hub refresh into patient pipeline (deferred — separate scope)
 
 ### Phase 7 — Excel Secondary Refinement
 

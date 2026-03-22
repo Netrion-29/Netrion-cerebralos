@@ -61,6 +61,18 @@ Or run interactively (prompts for patient name):
 The casefile is written to `outputs/casefile/<Slug>/casefile_v1.html` and opens
 automatically in the default browser. Set `CEREBRAL_NO_OPEN=1` to suppress auto-open.
 
+## Patient Hub — Quick Start
+
+Generate a local patient index that links to all processed casefiles:
+
+```bash
+./scripts/run_casefile_hub_v1.sh
+```
+
+The hub is written to `outputs/casefile/hub_v1.html` and opens automatically.
+It reads existing `patient_bundle_v1.json` files — run the casefile pipeline for
+one or more patients first.
+
 ## Local Scratch Policy
 
 To keep PRs auditable and deterministic:
