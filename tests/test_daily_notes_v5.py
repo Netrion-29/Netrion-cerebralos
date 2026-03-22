@@ -19,7 +19,11 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from cerebralos.reporting.render_trauma_daily_notes_v5 import render_v5
+from cerebralos.reporting.render_trauma_daily_notes_v5 import (
+    render_v5,
+    V5_FILTERABLE_SECTIONS,
+    V5_ALWAYS_ON_SECTIONS,
+)
 
 _DNA = "DATA NOT AVAILABLE"
 
@@ -3026,6 +3030,153 @@ class TestStructuredLabsOverview(unittest.TestCase):
         idx = result.index("STRUCTURED LABS OVERVIEW")
         section = result[idx:idx + 300]
         self.assertIn("Days with labs: 5", section)
+
+
+# ════════════════════════════════════════════════════════════════════
+# --sections control surface
+# ════════════════════════════════════════════════════════════════════
+
+class TestSectionsControlSurface(unittest.TestCase):
+    """Tests for the --sections v5 filtering control surface."""
+
+    # ── Default behaviour unchanged when sections=None ──
+
+    def test_default_none_renders_all(self):
+        """sections=None must produce identical output to no-arg call."""
+        data = _minimal_features()
+        result_default = render_v5(data)
+        result_none = render_v5(data, sections=None)
+        self.assertEqual(result_default, result_none)
+
+    # ── Single section selection ──
+
+    def test_single_section_renders_only_that_section(self):
+        """Selecting a single filterable section omits others."""
+        data = _minimal_features()
+        # bd_inr_monitoring always renders a header even with no data
+        result = render_v5(data, sections=frozenset({"bd_inr_monitoring"}))
+        self.assertIn("BASE DEFICIT / INR MONITORING", result)
+        # Other filterable sections should be absent
+        self.assertNotIn("IMPRESSION / PLAN DRIFT", result)
+        self.assertNotIn("NOTE SECTIONS", result)
+        self.assertNotIn("SPINE CLEARANCE", result)
+
+    # ── Multiple section selection ──
+
+    def test_multiple_sections_selection(self):
+        """Selecting multiple sections renders all of them."""
+        data = _minimal_features()
+        result = render_v5(data, sections=frozenset({
+            "bd_inr_monitoring", "impression_drift",
+        }))
+        self.assertIn("BASE DEFICIT / INR MONITORING", result)
+        self.assertIn("IMPRESSION / PLAN DRIFT", result)
+        # Other filterable sections omitted
+        self.assertNotIn("NOTE SECTIONS", result)
+        self.assertNotIn("INCENTIVE SPIROMETRY", result)
+
+    # ── Always-on sections present regardless of filter ──
+
+    def test_always_on_sections_present_with_filter(self):
+        """Always-on sections must render even when sections filter is active."""
+        data = _minimal_features()
+        result = render_v5(data, sections=frozenset({"bd_inr_monitoring"}))
+        self.assertIn("PATIENT SUMMARY", result)
+        self.assertIn("ESTABLISHED INJURY CATALOG", result)
+        self.assertIn("PROPHYLAXIS STATUS", result)
+        self.assertIn("TRIGGER / HEMODYNAMIC STATUS", result)
+        self.assertIn("PER-DAY CLINICAL STATUS", result)
+
+    # ── Canonical order preserved regardless of input order ──
+
+    def test_canonical_order_independent_of_input(self):
+        """Output order must match canonical render order, not input order."""
+        data = _minimal_features()
+        order_a = render_v5(data, sections=frozenset({
+            "impression_drift", "bd_inr_monitoring", "structured_labs_overview",
+        }))
+        order_b = render_v5(data, sections=frozenset({
+            "structured_labs_overview", "bd_inr_monitoring", "impression_drift",
+        }))
+        self.assertEqual(order_a, order_b)
+        # Verify relative order: STRUCTURED LABS before BD/INR before IMPRESSION
+        idx_labs = order_a.index("STRUCTURED LABS OVERVIEW")
+        idx_bd = order_a.index("BASE DEFICIT / INR MONITORING")
+        idx_drift = order_a.index("IMPRESSION / PLAN DRIFT")
+        self.assertLess(idx_labs, idx_bd)
+        self.assertLess(idx_bd, idx_drift)
+
+    # ── Unknown section key fails closed ──
+
+    def test_unknown_section_key_raises(self):
+        """Unknown section keys must raise ValueError (fail-closed)."""
+        data = _minimal_features()
+        with self.assertRaises(ValueError) as ctx:
+            render_v5(data, sections=frozenset({"nonexistent_section"}))
+        self.assertIn("nonexistent_section", str(ctx.exception))
+        self.assertIn("Unknown", str(ctx.exception))
+
+    def test_mixed_valid_and_unknown_key_raises(self):
+        """A mix of valid and unknown keys must still fail-closed."""
+        data = _minimal_features()
+        with self.assertRaises(ValueError):
+            render_v5(data, sections=frozenset({"spine_clearance", "bogus"}))
+
+    # ── Empty allowlist fails closed ──
+
+    def test_empty_frozenset_raises(self):
+        """Empty frozenset must raise ValueError (fail-closed)."""
+        data = _minimal_features()
+        with self.assertRaises(ValueError) as ctx:
+            render_v5(data, sections=frozenset())
+        self.assertIn("empty", str(ctx.exception).lower())
+
+    # ── Constants are consistent ──
+
+    def test_filterable_and_always_on_are_disjoint(self):
+        """Filterable and always-on sets must not overlap."""
+        overlap = V5_FILTERABLE_SECTIONS & V5_ALWAYS_ON_SECTIONS
+        self.assertEqual(overlap, set())
+
+    def test_filterable_sections_count(self):
+        """v1 exposes exactly 10 filterable section keys."""
+        self.assertEqual(len(V5_FILTERABLE_SECTIONS), 10)
+
+    # ── NTDS / protocol interaction with sections filter ──
+
+    def test_ntds_gated_by_sections_filter(self):
+        """ntds_signal_summary is omitted if not in sections allowlist."""
+        data = _minimal_features()
+        ntds = [{"event_id": "E01", "outcome": "YES", "label": "AKI"}]
+        result_all = render_v5(data, ntds_results=ntds, sections=None)
+        self.assertIn("NTDS SIGNAL SUMMARY", result_all)
+        result_filtered = render_v5(
+            data, ntds_results=ntds,
+            sections=frozenset({"bd_inr_monitoring"}),
+        )
+        self.assertNotIn("NTDS SIGNAL SUMMARY", result_filtered)
+
+    def test_protocol_gated_by_sections_filter(self):
+        """protocol_signal_summary is omitted if not in sections allowlist."""
+        data = _minimal_features()
+        protos = [{"protocol_id": "P01", "outcome": "TRIGGERED", "label": "DVT"}]
+        result_all = render_v5(data, protocol_results=protos, sections=None)
+        self.assertIn("PROTOCOL SIGNAL SUMMARY", result_all)
+        result_filtered = render_v5(
+            data, protocol_results=protos,
+            sections=frozenset({"bd_inr_monitoring"}),
+        )
+        self.assertNotIn("PROTOCOL SIGNAL SUMMARY", result_filtered)
+
+    def test_ntds_included_when_in_sections(self):
+        """ntds_signal_summary renders when explicitly in sections allowlist."""
+        data = _minimal_features()
+        ntds = [{"event_id": "E01", "outcome": "YES", "label": "AKI"}]
+        result = render_v5(
+            data, ntds_results=ntds,
+            sections=frozenset({"ntds_signal_summary"}),
+        )
+        self.assertIn("NTDS SIGNAL SUMMARY", result)
 
 
 if __name__ == "__main__":

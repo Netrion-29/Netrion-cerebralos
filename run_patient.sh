@@ -96,6 +96,7 @@ fi
 # Render v5 (feature-layer clinical narrative — additive, does not replace v3/v4)
 # When CEREBRAL_NTDS=1, pass NTDS summary so v5 renders the NTDS SIGNAL SUMMARY section.
 # When CEREBRAL_PROTOCOLS=1, pass protocol results for PROTOCOL SIGNAL SUMMARY section.
+# When CEREBRAL_V5_SECTIONS is set, pass --sections to filter optional v5 sections.
 V5_NTDS_FLAG=""
 if [[ -n "$NTDS_SUMMARY" && -f "$NTDS_SUMMARY" ]]; then
   V5_NTDS_FLAG="--ntds $NTDS_SUMMARY"
@@ -104,11 +105,16 @@ V5_PROTOCOLS_FLAG=""
 if [[ -n "$PROTOCOL_RESULTS" && -f "$PROTOCOL_RESULTS" ]]; then
   V5_PROTOCOLS_FLAG="--protocols $PROTOCOL_RESULTS"
 fi
+V5_SECTIONS_ARGS=()
+if [[ -n "${CEREBRAL_V5_SECTIONS:-}" ]]; then
+  V5_SECTIONS_ARGS=(--sections "$CEREBRAL_V5_SECTIONS")
+fi
 python3 cerebralos/reporting/render_trauma_daily_notes_v5.py \
   --features "outputs/features/$SLUG/patient_features_v1.json" \
   --days "outputs/timeline/$SLUG/patient_days_v1.json" \
   $V5_NTDS_FLAG \
   $V5_PROTOCOLS_FLAG \
+  ${V5_SECTIONS_ARGS[@]+"${V5_SECTIONS_ARGS[@]}"} \
   --out "outputs/reporting/$SLUG/TRAUMA_DAILY_NOTES_v5.txt"
 
 echo "---- sanity checks ----"
