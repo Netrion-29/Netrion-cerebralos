@@ -127,6 +127,11 @@ python3 cerebralos/reporting/build_patient_bundle_v1.py \
 python3 cerebralos/validation/validate_patient_bundle_contract_v1.py \
   --in "outputs/casefile/$SLUG/patient_bundle_v1.json"
 
+# Casefile v1 (PI RN single-patient HTML — renders from bundle)
+python3 cerebralos/reporting/render_pi_rn_casefile_v1.py \
+  --bundle "outputs/casefile/$SLUG/patient_bundle_v1.json" \
+  --out "outputs/casefile/$SLUG/casefile_v1.html"
+
 echo "---- sanity checks ----"
 echo -n "noise(ADS/OMNICELL): "
 grep -ciE "ADS Dispense|OMNICELL" "outputs/reporting/$SLUG/TRAUMA_DAILY_NOTES_v3.txt" || true
