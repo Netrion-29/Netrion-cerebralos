@@ -32,12 +32,17 @@ See: [PI_RN_CASEFILE_V1.md](roadmaps/PI_RN_CASEFILE_V1.md)
 | Above-the-fold clinical snapshot | #290 | Merged |
 | Bundle daily mapping fix (nested-days wiring) | #291 | Merged |
 | Day-card renderer refinement (real-shape alignment) | #292 | Merged |
+| Clinical content expansion (injuries, imaging, procedures) | #293 | Merged |
 
 ### What the Casefile Currently Renders
 
 **Above the fold:** Patient name, DOB, age, LOS, activation category,
 admitting physician, anticoagulation status, MOI + body regions, PMH,
 consultants, admission/discharge dates.
+
+**Clinical detail sections:** Primary injuries (structured findings from
+radiology), imaging studies (evidence trail), procedures (chronological
+event timeline with category badges).
 
 **Per hospital day (day cards):** Vitals snapshot, GCS (arrival/best/worst
 with severity), structured labs (flagged H/L values), consultant plans
@@ -74,10 +79,9 @@ casefile, not building new extraction logic.
 
 | # | Theme | Vision Items | Key Modules |
 |---|-------|-------------|-------------|
-| 1 | **Injury inventory + imaging results** | Injury list (#12), imaging highlights (#17) | `radiology_findings_v1`, `mechanism_region_v1` |
-| 2 | **Procedure / operative timeline** | Procedures (#13), time-to-OR (#30) | `procedure_operatives_v1` |
-| 3 | **Resuscitation / hemodynamic summary** | (new section) | `base_deficit_monitoring_v1`, `transfusion_blood_products_v1` |
-| 4 | **Device duration + prophylaxis grid** | LDAs (#14), PT/OT/disposition (#22) | `lda_events_v1`, `dvt_prophylaxis_v1`, `non_trauma_team_day_plans_v1` |
+| 1 | **Resuscitation / hemodynamic summary** | (new section) | `base_deficit_monitoring_v1`, `transfusion_blood_products_v1` |
+| 2 | **Device duration + prophylaxis grid** | LDAs (#14), PT/OT/disposition (#22) | `lda_events_v1`, `dvt_prophylaxis_v1`, `non_trauma_team_day_plans_v1` |
+| 3 | **Daily narrative investigation** | Daily notes (#20) | `trauma_daily_plan_by_day_v1` — upstream extraction gap |
 | 5 | **Daily narrative investigation** | Daily notes (#20) | `trauma_daily_plan_by_day_v1` — upstream extraction gap |
 
 ---
@@ -86,7 +90,7 @@ casefile, not building new extraction logic.
 
 | Gap | Type | Impact |
 |-----|------|--------|
-| 8 daily clinical sections extracted but not rendered | Renderer | Casefile shows ~60% of available data |
+| 5 daily clinical sections extracted but not rendered | Renderer | Casefile shows ~70% of available data |
 | `trauma_daily_plan_by_day_v1` returns empty for gate patients | Upstream feature | Daily narrative section appears blank |
 | Potential PI tagging not designed | Missing | No PI risk flagging capability |
 | BMAT scoring stub missing | Extraction | Transfusion data exists but no composite score |
@@ -113,3 +117,4 @@ casefile, not building new extraction logic.
 | Date | Change |
 |------|--------|
 | 2026-03-22 | Initial version — baseline at PR #292 (`b8ac647`). |
+| 2026-03-22 | PR #293: Clinical content expansion — injuries, imaging, procedures surfaced in casefile. Coverage matrix items #12, #13, #17 → Implemented. |

@@ -351,6 +351,27 @@ details.day-card[open] > summary.day-summary::before { transform: rotate(90deg);
     details.day-card[open] { break-inside: auto; }
     .toggle-btn { display: none; }
 }
+
+/* Injury / Imaging / Procedure tables */
+.clinical-tbl { width: 100%; border-collapse: collapse; font-size: 0.85em; }
+.clinical-tbl th {
+    text-align: left; padding: 6px 10px; background: var(--slate-100);
+    font-size: 0.78em; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--slate-500); border-bottom: 2px solid var(--slate-200);
+}
+.clinical-tbl td { padding: 6px 10px; border-bottom: 1px solid var(--slate-100); vertical-align: top; }
+.clinical-tbl tr:last-child td { border-bottom: none; }
+.finding-label { font-weight: 600; color: var(--slate-700); }
+.finding-detail { font-size: 0.88em; color: var(--slate-500); }
+.proc-ts { font-size: 0.82em; color: var(--slate-500); white-space: nowrap; }
+.proc-label { font-weight: 600; }
+.proc-cat { font-size: 0.75em; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.03em; padding: 2px 6px; border-radius: 3px;
+    display: inline-block; }
+.proc-cat-operative { background: var(--blue-100); color: var(--blue-700); }
+.proc-cat-anesthesia { background: var(--amber-100); color: var(--amber-600); }
+.proc-cat-pre-op { background: var(--slate-100); color: var(--slate-600); }
+.proc-cat-significant { background: var(--red-100); color: var(--red-600); }
 """
 
 # ── JS ─────────────────────────────────────────────────────────────
@@ -727,6 +748,234 @@ def _render_moi(bundle: Dict[str, Any]) -> str:
         '<div class="card">'
         '<div class="card-title">Mechanism of Injury</div>'
         f'<div class="card-body"><ul class="summary-list">{items}</ul></div>'
+        "</div>"
+    )
+
+
+def _render_primary_injuries(bundle: Dict[str, Any]) -> str:
+    """Render structured injury findings from radiology_findings_v1.
+
+    Groups findings by type (fractures, hemorrhage, organ injuries).
+    Fail-closed: returns empty string when data absent.
+    """
+    injuries = bundle.get("summary", {}).get("injuries")
+    if not injuries or not isinstance(injuries, dict):
+        return ""
+    if injuries.get("findings_present") != "yes":
+        return ""
+
+    rows = ""
+
+    # ── Singular findings (object|null) ──
+    _SINGULAR = [
+        ("pelvic_fracture", "Pelvic Fracture"),
+        ("spinal_fracture", "Spinal Fracture"),
+        ("rib_fracture", "Rib Fracture"),
+        ("flail_chest", "Flail Chest"),
+        ("pneumothorax", "Pneumothorax"),
+        ("hemothorax", "Hemothorax"),
+    ]
+    for key, display in _SINGULAR:
+        obj = injuries.get(key)
+        if not isinstance(obj, dict) or not obj.get("present"):
+            continue
+        details: List[str] = []
+        if key == "spinal_fracture" and obj.get("level"):
+            details.append(f"Level: {_e(str(obj['level']))}")
+        if key == "rib_fracture":
+            if obj.get("count"):
+                details.append(f"Count: {_e(str(obj['count']))}")
+            if obj.get("rib_numbers"):
+                details.append(f"Ribs: {_e(', '.join(str(r) for r in obj['rib_numbers']))}")
+        if key == "pneumothorax" and obj.get("subtype"):
+            details.append(f"Subtype: {_e(str(obj['subtype']))}")
+        if key == "hemothorax" and obj.get("qualifier"):
+            details.append(f"Qualifier: {_e(str(obj['qualifier']))}")
+        if obj.get("laterality"):
+            details.append(f"Laterality: {_e(str(obj['laterality']))}")
+        detail_str = f'<div class="finding-detail">{"; ".join(details)}</div>' if details else ""
+        rows += f'<tr><td class="finding-label">{_e(display)}</td><td>{detail_str}</td></tr>'
+
+    # ── List findings (list[object]) ──
+    for ich in injuries.get("intracranial_hemorrhage", []):
+        if isinstance(ich, dict) and ich.get("present"):
+            subtype = ich.get("subtype", "unspecified")
+            rows += f'<tr><td class="finding-label">Intracranial Hemorrhage</td><td><div class="finding-detail">Subtype: {_e(str(subtype).upper())}</div></td></tr>'
+
+    for soi in injuries.get("solid_organ_injuries", []):
+        if isinstance(soi, dict) and soi.get("present"):
+            organ = soi.get("organ", "unknown")
+            grade = soi.get("grade")
+            detail = f"Organ: {_e(str(organ).title())}"
+            if grade:
+                detail += f"; AAST Grade {_e(str(grade))}"
+            lat = soi.get("laterality")
+            if lat:
+                detail += f"; {_e(str(lat))}"
+            rows += f'<tr><td class="finding-label">Solid Organ Injury</td><td><div class="finding-detail">{detail}</div></td></tr>'
+
+    for ef in injuries.get("extremity_fracture", []):
+        if isinstance(ef, dict) and ef.get("present"):
+            bone = ef.get("bone", "unknown")
+            parts: List[str] = []
+            if ef.get("laterality"):
+                parts.append(f"{_e(str(ef['laterality']))}")
+            if ef.get("pathologic"):
+                parts.append("pathologic")
+            detail = _e(str(bone).title())
+            if parts:
+                detail += f' ({", ".join(parts)})'
+            rows += f'<tr><td class="finding-label">Extremity Fracture</td><td><div class="finding-detail">{detail}</div></td></tr>'
+
+    if not rows:
+        return ""
+
+    table = (
+        '<table class="clinical-tbl">'
+        "<thead><tr><th>Finding</th><th>Details</th></tr></thead>"
+        f"<tbody>{rows}</tbody></table>"
+    )
+    return (
+        '<div class="card">'
+        '<div class="card-title">Primary Injuries</div>'
+        f'<div class="card-body">{table}</div>'
+        "</div>"
+    )
+
+
+def _render_imaging_studies(bundle: Dict[str, Any]) -> str:
+    """Render imaging evidence trail from radiology_findings_v1.
+
+    Shows study source, timestamp, and finding snippet from evidence items.
+    Fail-closed: returns empty string when data absent.
+    """
+    imaging = bundle.get("summary", {}).get("imaging")
+    if not imaging or not isinstance(imaging, dict):
+        return ""
+    evidence = imaging.get("evidence", [])
+    if not isinstance(evidence, list) or not evidence:
+        return ""
+
+    rows = ""
+    for ev in evidence:
+        if not isinstance(ev, dict):
+            continue
+        source = ev.get("source", "")
+        ts = ev.get("ts", "")
+        label = ev.get("label", "")
+        snippet = ev.get("snippet", "")
+        # Truncate long snippets for display
+        if len(snippet) > 150:
+            snippet = snippet[:147] + "..."
+        rows += (
+            f"<tr>"
+            f'<td class="proc-ts">{_e(ts)}</td>'
+            f"<td>{_e(source)}</td>"
+            f'<td class="finding-label">{_e(str(label).replace("_", " ").title())}</td>'
+            f"<td>{_e(snippet)}</td>"
+            f"</tr>"
+        )
+
+    if not rows:
+        return ""
+
+    table = (
+        '<table class="clinical-tbl">'
+        "<thead><tr><th>Timestamp</th><th>Source</th><th>Finding</th><th>Excerpt</th></tr></thead>"
+        f"<tbody>{rows}</tbody></table>"
+    )
+    return (
+        '<div class="card">'
+        '<div class="card-title">Imaging Studies</div>'
+        f'<div class="card-body">{table}</div>'
+        "</div>"
+    )
+
+
+def _render_procedures(bundle: Dict[str, Any]) -> str:
+    """Render operative / procedural timeline from procedure_operatives_v1.
+
+    Chronological list of procedure events with category badges.
+    Fail-closed: returns empty string when data absent.
+    """
+    procs = bundle.get("summary", {}).get("procedures")
+    if not procs or not isinstance(procs, dict):
+        return ""
+    events = procs.get("events", [])
+    if not isinstance(events, list) or not events:
+        return ""
+
+    _CAT_CLS = {
+        "operative": "proc-cat-operative",
+        "anesthesia": "proc-cat-anesthesia",
+        "pre-op": "proc-cat-pre-op",
+        "significant_event": "proc-cat-significant",
+    }
+
+    rows = ""
+    for ev in events:
+        if not isinstance(ev, dict):
+            continue
+        ts = ev.get("ts", "")
+        category = ev.get("category", "")
+        label = ev.get("label") or ""
+        # Truncate very long auto-extracted labels
+        if len(label) > 120:
+            label = label[:117] + "..."
+        preop_dx = ev.get("preop_dx", "")
+        status = ev.get("status", "")
+
+        cat_cls = _CAT_CLS.get(category, "proc-cat-operative")
+        cat_badge = f'<span class="proc-cat {cat_cls}">{_e(category)}</span>' if category else ""
+
+        detail_parts: List[str] = []
+        if preop_dx:
+            dx_display = preop_dx if len(preop_dx) <= 100 else preop_dx[:97] + "..."
+            detail_parts.append(f"Dx: {_e(dx_display)}")
+        if status:
+            detail_parts.append(f"Status: {_e(status)}")
+        cpt = ev.get("cpt_codes", [])
+        if cpt:
+            detail_parts.append(f"CPT: {_e(', '.join(str(c) for c in cpt))}")
+        detail_str = f'<div class="finding-detail">{"; ".join(detail_parts)}</div>' if detail_parts else ""
+
+        rows += (
+            f"<tr>"
+            f'<td class="proc-ts">{_e(ts)}</td>'
+            f"<td>{cat_badge}</td>"
+            f'<td class="proc-label">{_e(label)}{detail_str}</td>'
+            f"</tr>"
+        )
+
+    if not rows:
+        return ""
+
+    # Summary counts
+    proc_ct = procs.get("procedure_event_count", 0)
+    op_ct = procs.get("operative_event_count", 0)
+    anes_ct = procs.get("anesthesia_event_count", 0)
+    total = len(events)
+    summary_line = f"{total} event{'s' if total != 1 else ''}"
+    if proc_ct or op_ct or anes_ct:
+        parts = []
+        if proc_ct:
+            parts.append(f"{proc_ct} procedure")
+        if op_ct:
+            parts.append(f"{op_ct} operative")
+        if anes_ct:
+            parts.append(f"{anes_ct} anesthesia")
+        summary_line += f" ({', '.join(parts)})"
+    summary_html = f'<div style="font-size:0.82em;color:var(--slate-500);margin-bottom:8px;">{_e(summary_line)}</div>'
+
+    table = (
+        '<table class="clinical-tbl">'
+        "<thead><tr><th>Timestamp</th><th>Category</th><th>Procedure / Event</th></tr></thead>"
+        f"<tbody>{rows}</tbody></table>"
+    )
+    return (
+        '<div class="card">'
+        '<div class="card-title">Operative / Procedural Timeline</div>'
+        f'<div class="card-body">{summary_html}{table}</div>'
         "</div>"
     )
 
@@ -1351,6 +1600,9 @@ def render_casefile(bundle: Dict[str, Any]) -> str:
         # ── Detail sections ───────────────────────────
         _render_patient_card(bundle),
         _render_moi(bundle),
+        _render_primary_injuries(bundle),
+        _render_imaging_studies(bundle),
+        _render_procedures(bundle),
         _render_pmh(bundle),
         _render_consultants(bundle),
         _render_ntds_summary(bundle),

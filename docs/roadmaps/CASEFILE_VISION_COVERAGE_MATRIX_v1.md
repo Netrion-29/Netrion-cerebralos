@@ -54,19 +54,19 @@ in the above-the-fold clinical snapshot (PR #290) and patient card.
 
 | # | Vision Item | Status | Gap Type | Notes | Next Action |
 |---|-------------|--------|----------|-------|-------------|
-| 12 | Injury list by region | **Partial** | Renderer | Extraction complete (`radiology_findings_v1` + `mechanism_region_v1` extract body regions + specific injuries). MOI card shows mechanism + regions. No dedicated structured injury section in casefile. | Add "Primary Injuries" casefile section rendering structured findings from existing feature modules. |
-| 13 | Procedures & operations | **Partial** | Bundle + renderer | Extraction complete (`procedure_operatives_v1` — CPT, anesthesia, preop dx, status, surgeon). Not wired into bundle daily sections or casefile renderer. | Wire `procedure_operatives_v1` → bundle; add casefile per-day procedure table. |
+| 12 | Injury list by region | **Implemented** | — | `radiology_findings_v1` → bundle `summary.injuries` → casefile "Primary Injuries" section. Grouped by finding type (singular/list), shows level, count, laterality, grade. Fail-closed when absent. | — |
+| 13 | Procedures & operations | **Implemented** | — | `procedure_operatives_v1` → bundle `summary.procedures` → casefile "Procedures" section. Chronological event list with color-coded category badges, preop dx, CPT codes, summary counts. Fail-closed when absent. | — |
 | 14 | Lines / drains / airways | **Partial** | Renderer | Extraction complete (`lda_events_v1` — device lifecycle: placement, removal, duration, category, assessment). Not rendered in casefile. | Add casefile device timeline sub-section. |
 | 15 | Consultations | **Implemented** | — | `consultant_events_v1` → bundle → casefile consultants section in header | — |
 | 16 | Consultant plans | **Implemented** | — | `consultant_day_plans_by_day_v1` → bundle daily → day-card renderer (PR #292). Renders per-service plan items. | Consider structured recommendation extraction (future refinement). |
-| 17 | Imaging highlights | **Partial** | Renderer | Extraction complete (`radiology_findings_v1` — pneumothorax, solid organ injuries, ICH subtypes, fractures). Not rendered as a distinct casefile section. | Add per-study imaging findings table to casefile. |
+| 17 | Imaging highlights | **Implemented** | — | `radiology_findings_v1` → bundle `summary.imaging` → casefile "Imaging Studies" section. Evidence trail table with timestamp, source, finding label, snippet. Fail-closed when absent. | — |
 | 18 | Admission-day imaging inventory | **Partial** | Renderer | Extraction exists in `trauma_doc_extractor._extract_admission_imaging()` for v5 report. Not integrated into casefile renderer. | Add admission imaging inventory to first-day snapshot. |
 | 19 | Admission labs | **Implemented** | — | `structured_labs_v1` (CBC, BMP, coag, ABG, cardiac, sepsis panels) → bundle daily → day-card lab renderer (PR #292). Renders flagged values with H/L highlighting. | — |
 | 20 | Daily narrative / notes | **Partial** | Upstream feature gap | Feature module exists (`trauma_daily_plan_by_day_v1`). Bundle wiring and renderer exist (PR #291 + #292). However, the feature module returns null/empty for most gate patients — this is an **upstream extraction gap**, not a bundle or renderer bug. | Investigate why `trauma_daily_plan_by_day_v1` produces empty results for gate patients. Fix extraction or document limitation. |
 | 21 | Respiratory support / ventilator | **Partial** | Renderer (deferred) | Extraction complete (`ventilator_settings_v1` — mode, FiO2, PEEP, Vt, RR, NIV). Bundle wiring exists. Renderer stub exists (`_render_ventilator`). Rendering intentionally deferred — ventilator display not yet enabled in casefile output. | Enable ventilator rendering when product decision is made. |
 | 22 | PT / OT / disposition | **Partial** | Bundle + renderer | Extraction complete (`non_trauma_team_day_plans_v1` — PT, OT, speech therapy, case management, social work). Discharge disposition in `patient_movement_v1`. Neither wired into bundle daily nor rendered in casefile. | Wire `non_trauma_team_day_plans_v1` → bundle; add casefile rendering. |
 
-**Summary: 3/11 Implemented, 8/11 Partial (extraction exists but rendering gap).**
+**Summary: 6/11 Implemented, 5/11 Partial (extraction exists but rendering gap).**
 
 ---
 
