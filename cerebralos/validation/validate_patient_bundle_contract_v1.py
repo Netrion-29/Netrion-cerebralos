@@ -101,6 +101,13 @@ def validate_contract(data: Any) -> List[str]:
             f"SUMMARY_TYPE_ERROR: 'summary' must be dict, "
             f"got {type(summary_val).__name__}"
         )
+    else:
+        # Validate required summary sub-keys exist (value may be dict or null)
+        for skey in ("injuries", "imaging", "procedures"):
+            if skey not in summary_val:
+                errors.append(
+                    f"SUMMARY_MISSING_KEY: summary.{skey} is missing"
+                )
 
     # 6. compliance must be a dict
     compliance_val = data.get("compliance")

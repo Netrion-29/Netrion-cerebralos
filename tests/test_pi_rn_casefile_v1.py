@@ -32,6 +32,9 @@ from cerebralos.reporting.render_pi_rn_casefile_v1 import (
     _render_compliance_snapshot,
     _render_admission_snapshot,
     _render_first_day_snapshot,
+    _render_primary_injuries,
+    _render_imaging_studies,
+    _render_procedures,
 )
 
 
@@ -77,6 +80,75 @@ _FULL_BUNDLE = {
         "activation": {"category": "Level II"},
         "shock_trigger": {"shock_triggered": False},
         "age": {"age": 71},
+        "injuries": {
+            "findings_present": "yes",
+            "findings_labels": ["rib_fracture", "spinal_fracture"],
+            "pneumothorax": None,
+            "hemothorax": None,
+            "rib_fracture": {
+                "present": True,
+                "count": 5,
+                "rib_numbers": ["5", "6", "7", "9", "10"],
+                "laterality": "right",
+                "raw_line_id": "rib001",
+            },
+            "flail_chest": None,
+            "solid_organ_injuries": [],
+            "intracranial_hemorrhage": [
+                {"subtype": "sdh", "present": True, "raw_line_id": "ich001"},
+            ],
+            "pelvic_fracture": None,
+            "spinal_fracture": {"present": True, "level": "T12", "raw_line_id": "sp001"},
+            "extremity_fracture": [
+                {"bone": "femur", "present": True, "laterality": "left", "pathologic": False, "raw_line_id": "ef001"},
+            ],
+            "source_rule_id": "radiology_findings",
+            "evidence": [
+                {"raw_line_id": "rib001", "source": "RADIOLOGY", "ts": "2026-01-01T13:00:00", "snippet": "5 right-sided rib fractures", "role": "finding", "label": "rib_fracture"},
+                {"raw_line_id": "sp001", "source": "RADIOLOGY", "ts": "2026-01-01T14:00:00", "snippet": "T12 compression fracture", "role": "finding", "label": "spinal_fracture"},
+            ],
+            "notes": [],
+            "warnings": [],
+        },
+        "imaging": {
+            "findings_present": "yes",
+            "findings_labels": ["rib_fracture", "spinal_fracture"],
+            "evidence": [
+                {"raw_line_id": "rib001", "source": "RADIOLOGY", "ts": "2026-01-01T13:00:00", "snippet": "5 right-sided rib fractures", "role": "finding", "label": "rib_fracture"},
+                {"raw_line_id": "sp001", "source": "RADIOLOGY", "ts": "2026-01-01T14:00:00", "snippet": "T12 compression fracture", "role": "finding", "label": "spinal_fracture"},
+            ],
+            "notes": [],
+            "warnings": [],
+        },
+        "procedures": {
+            "events": [
+                {
+                    "ts": "2026-01-02T12:32:00",
+                    "source_kind": "PROCEDURE",
+                    "category": "operative",
+                    "label": "Endotracheal intubation",
+                    "raw_line_id": "proc001",
+                    "evidence": [{"role": "procedure_event", "snippet": "intubation", "raw_line_id": "proc001"}],
+                },
+                {
+                    "ts": "2026-01-03T09:15:00",
+                    "source_kind": "OP_NOTE",
+                    "category": "operative",
+                    "label": "Percutaneous tracheostomy",
+                    "raw_line_id": "proc002",
+                    "preop_dx": "rib fractures",
+                    "evidence": [{"role": "procedure_event", "snippet": "tracheostomy", "raw_line_id": "proc002"}],
+                },
+            ],
+            "procedure_event_count": 0,
+            "operative_event_count": 2,
+            "anesthesia_event_count": 0,
+            "categories_present": ["operative"],
+            "evidence": [],
+            "warnings": [],
+            "notes": [],
+            "source_rule_id": "procedure_operatives_v1",
+        },
     },
     "compliance": {
         "ntds_summary": [{"events": 21}],
@@ -201,6 +273,9 @@ _MINIMAL_BUNDLE = {
         "activation": None,
         "shock_trigger": None,
         "age": None,
+        "injuries": None,
+        "imaging": None,
+        "procedures": None,
     },
     "compliance": {
         "ntds_summary": None,
@@ -922,3 +997,226 @@ class TestDayCardSectionOrdering:
         assert vitals_pos < gcs_pos
         assert gcs_pos < labs_pos
         assert labs_pos < consult_pos
+
+
+# ── Primary Injuries tests ──────────────────────────────────────────
+
+class TestPrimaryInjuries:
+    def test_injuries_section_present_full_bundle(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert "Primary Injuries" in html
+
+    def test_rib_fracture_rendered(self):
+        out = _render_primary_injuries(_FULL_BUNDLE)
+        assert "Rib Fracture" in out
+        assert "Count: 5" in out
+        assert "right" in out.lower()
+
+    def test_spinal_fracture_level_shown(self):
+        out = _render_primary_injuries(_FULL_BUNDLE)
+        assert "Spinal Fracture" in out
+        assert "T12" in out
+
+    def test_intracranial_hemorrhage_shown(self):
+        out = _render_primary_injuries(_FULL_BUNDLE)
+        assert "Intracranial Hemorrhage" in out
+        assert "SDH" in out
+
+    def test_solid_organ_injury_grade(self):
+        bundle = {"summary": {"injuries": {
+            "findings_present": "yes",
+            "findings_labels": ["solid_organ"],
+            "solid_organ_injuries": [
+                {"organ": "liver", "present": True, "grade": "3", "raw_line_id": "soi1"},
+            ],
+            "intracranial_hemorrhage": [],
+            "extremity_fracture": [],
+        }}}
+        out = _render_primary_injuries(bundle)
+        assert "Solid Organ Injury" in out
+        assert "Liver" in out
+        assert "AAST Grade 3" in out
+
+    def test_extremity_fracture_shown(self):
+        out = _render_primary_injuries(_FULL_BUNDLE)
+        assert "Extremity Fracture" in out
+        assert "Femur" in out
+        assert "left" in out.lower()
+
+    def test_absent_injuries_omits_section(self):
+        out = _render_primary_injuries(_MINIMAL_BUNDLE)
+        assert out == ""
+
+    def test_no_findings_omits_section(self):
+        bundle = {"summary": {"injuries": {
+            "findings_present": "no",
+            "findings_labels": [],
+        }}}
+        out = _render_primary_injuries(bundle)
+        assert out == ""
+
+    def test_deterministic(self):
+        out1 = _render_primary_injuries(_FULL_BUNDLE)
+        out2 = _render_primary_injuries(_FULL_BUNDLE)
+        assert out1 == out2
+
+    def test_section_ordering_after_moi(self):
+        html = render_casefile(_FULL_BUNDLE)
+        moi_pos = html.index("Mechanism of Injury")
+        injuries_pos = html.index("Primary Injuries")
+        pmh_pos = html.index("PMH / Anticoagulants")
+        assert moi_pos < injuries_pos < pmh_pos
+
+
+# ── Imaging Studies tests ────────────────────────────────────────────
+
+class TestImagingStudies:
+    def test_imaging_section_present_full_bundle(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert "Imaging Studies" in html
+
+    def test_evidence_items_shown(self):
+        out = _render_imaging_studies(_FULL_BUNDLE)
+        assert "RADIOLOGY" in out
+        assert "rib_fracture" in out.lower() or "Rib Fracture" in out
+        assert "2026-01-01" in out
+
+    def test_snippet_shown(self):
+        out = _render_imaging_studies(_FULL_BUNDLE)
+        assert "right-sided rib fractures" in out
+
+    def test_absent_imaging_omits_section(self):
+        out = _render_imaging_studies(_MINIMAL_BUNDLE)
+        assert out == ""
+
+    def test_no_evidence_omits_section(self):
+        bundle = {"summary": {"imaging": {
+            "findings_present": "yes",
+            "evidence": [],
+        }}}
+        out = _render_imaging_studies(bundle)
+        assert out == ""
+
+    def test_deterministic(self):
+        out1 = _render_imaging_studies(_FULL_BUNDLE)
+        out2 = _render_imaging_studies(_FULL_BUNDLE)
+        assert out1 == out2
+
+
+# ── Procedures tests ────────────────────────────────────────────────
+
+class TestProcedures:
+    def test_procedures_section_present_full_bundle(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert "Operative / Procedural Timeline" in html
+
+    def test_event_label_shown(self):
+        out = _render_procedures(_FULL_BUNDLE)
+        assert "Endotracheal intubation" in out
+        assert "Percutaneous tracheostomy" in out
+
+    def test_category_badge_shown(self):
+        out = _render_procedures(_FULL_BUNDLE)
+        assert "proc-cat-operative" in out
+
+    def test_timestamp_shown(self):
+        out = _render_procedures(_FULL_BUNDLE)
+        assert "2026-01-02" in out
+
+    def test_preop_dx_shown(self):
+        out = _render_procedures(_FULL_BUNDLE)
+        assert "rib fractures" in out
+
+    def test_summary_counts(self):
+        out = _render_procedures(_FULL_BUNDLE)
+        assert "2 events" in out
+        assert "2 operatives" in out
+
+    def test_absent_procedures_omits_section(self):
+        out = _render_procedures(_MINIMAL_BUNDLE)
+        assert out == ""
+
+    def test_no_events_omits_section(self):
+        bundle = {"summary": {"procedures": {
+            "events": [],
+            "procedure_event_count": 0,
+        }}}
+        out = _render_procedures(bundle)
+        assert out == ""
+
+    def test_deterministic(self):
+        out1 = _render_procedures(_FULL_BUNDLE)
+        out2 = _render_procedures(_FULL_BUNDLE)
+        assert out1 == out2
+
+    def test_anesthesia_category_badge(self):
+        bundle = {"summary": {"procedures": {
+            "events": [
+                {"ts": "2026-01-01T10:00:00", "source_kind": "ANESTHESIA_CONSULT",
+                 "category": "anesthesia", "label": "Peripheral Nerve Block",
+                 "raw_line_id": "a1", "evidence": []},
+            ],
+            "procedure_event_count": 0,
+            "operative_event_count": 0,
+            "anesthesia_event_count": 1,
+            "categories_present": ["anesthesia"],
+            "evidence": [], "warnings": [], "notes": [],
+            "source_rule_id": "procedure_operatives_v1",
+        }}}
+        out = _render_procedures(bundle)
+        assert "proc-cat-anesthesia" in out
+        assert "Peripheral Nerve Block" in out
+
+    def test_cpt_codes_shown(self):
+        bundle = {"summary": {"procedures": {
+            "events": [
+                {"ts": "2026-01-01T10:00:00", "source_kind": "PROCEDURE",
+                 "category": "operative", "label": "Test Proc",
+                 "raw_line_id": "c1", "cpt_codes": ["31600", "99213"],
+                 "evidence": []},
+            ],
+            "procedure_event_count": 1,
+            "operative_event_count": 0,
+            "anesthesia_event_count": 0,
+            "categories_present": ["operative"],
+            "evidence": [], "warnings": [], "notes": [],
+            "source_rule_id": "procedure_operatives_v1",
+        }}}
+        out = _render_procedures(bundle)
+        assert "31600" in out
+        assert "99213" in out
+
+    def test_long_label_truncated(self):
+        long_label = "A" * 200
+        bundle = {"summary": {"procedures": {
+            "events": [
+                {"ts": "2026-01-01T10:00:00", "source_kind": "PROCEDURE",
+                 "category": "operative", "label": long_label,
+                 "raw_line_id": "t1", "evidence": []},
+            ],
+            "procedure_event_count": 1,
+            "operative_event_count": 0,
+            "anesthesia_event_count": 0,
+            "categories_present": ["operative"],
+            "evidence": [], "warnings": [], "notes": [],
+            "source_rule_id": "procedure_operatives_v1",
+        }}}
+        out = _render_procedures(bundle)
+        assert "..." in out
+        assert long_label not in out
+
+
+# ── Fail-closed: new clinical sections ──────────────────────────────
+
+class TestFailClosedClinicalSections:
+    def test_absent_injuries_no_section(self):
+        html = render_casefile(_MINIMAL_BUNDLE)
+        assert "Primary Injuries" not in html
+
+    def test_absent_imaging_no_section(self):
+        html = render_casefile(_MINIMAL_BUNDLE)
+        assert "Imaging Studies" not in html
+
+    def test_absent_procedures_no_section(self):
+        html = render_casefile(_MINIMAL_BUNDLE)
+        assert "Operative / Procedural Timeline" not in html

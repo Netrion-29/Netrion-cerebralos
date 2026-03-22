@@ -74,6 +74,45 @@ _MINIMAL_FEATURES = {
             "summary": {"total_events": 0},
         },
         "consultant_events_v1": {"services": ["Ortho"]},
+        "radiology_findings_v1": {
+            "findings_present": "yes",
+            "findings_labels": ["pelvic_fracture", "spinal_fracture"],
+            "pneumothorax": None,
+            "hemothorax": None,
+            "rib_fracture": None,
+            "flail_chest": None,
+            "solid_organ_injuries": [],
+            "intracranial_hemorrhage": [],
+            "pelvic_fracture": {"present": True, "raw_line_id": "abc123"},
+            "spinal_fracture": {"present": True, "level": "T12", "raw_line_id": "def456"},
+            "extremity_fracture": [],
+            "source_rule_id": "radiology_findings",
+            "evidence": [
+                {"raw_line_id": "abc123", "source": "RADIOLOGY", "ts": "2025-01-01T13:51:00", "snippet": "pelvic fracture noted", "role": "finding", "label": "pelvic_fracture"},
+            ],
+            "notes": [],
+            "warnings": [],
+        },
+        "procedure_operatives_v1": {
+            "events": [
+                {
+                    "ts": "2025-01-02T12:32:00",
+                    "source_kind": "PROCEDURE",
+                    "category": "operative",
+                    "label": "Endotracheal intubation",
+                    "raw_line_id": "proc001",
+                    "evidence": [{"role": "procedure_event", "snippet": "intubation performed", "raw_line_id": "proc001"}],
+                },
+            ],
+            "procedure_event_count": 1,
+            "operative_event_count": 0,
+            "anesthesia_event_count": 0,
+            "categories_present": ["operative"],
+            "evidence": [],
+            "warnings": [],
+            "notes": [],
+            "source_rule_id": "procedure_operatives_v1",
+        },
     },
     "warnings": ["test warning"],
     "warnings_summary": {},
@@ -179,6 +218,51 @@ class TestAssembleBundle:
         assert bundle["summary"]["mechanism"] == {"mechanism": "MVC"}
         assert bundle["summary"]["demographics"] == {"sex": "M"}
 
+    def test_summary_injuries_populated(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        injuries = bundle["summary"]["injuries"]
+        assert injuries is not None
+        assert injuries["findings_present"] == "yes"
+        assert "pelvic_fracture" in injuries["findings_labels"]
+        assert injuries["pelvic_fracture"]["present"] is True
+
+    def test_summary_imaging_populated(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        imaging = bundle["summary"]["imaging"]
+        assert imaging is not None
+        assert imaging["findings_present"] == "yes"
+        assert isinstance(imaging["evidence"], list)
+
+    def test_summary_procedures_populated(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        procs = bundle["summary"]["procedures"]
+        assert procs is not None
+        assert procs["procedure_event_count"] == 1
+        assert len(procs["events"]) == 1
+        assert procs["events"][0]["label"] == "Endotracheal intubation"
+
+    def test_summary_injuries_null_when_absent(self, tmp_path):
+        slug = "Bare_Test"
+        _write_artifact(tmp_path, f"evidence/{slug}/patient_evidence_v1.json", _MINIMAL_EVIDENCE)
+        bare_features = {
+            "build": {"version": "1.0"},
+            "patient_id": "12345",
+            "days": {"2025-01-01": {}},
+            "evidence_gaps": [],
+            "features": {},
+            "warnings": [],
+            "warnings_summary": {},
+        }
+        _write_artifact(tmp_path, f"features/{slug}/patient_features_v1.json", bare_features)
+        _write_artifact(tmp_path, f"timeline/{slug}/patient_days_v1.json", _MINIMAL_TIMELINE)
+        bundle = assemble_bundle(slug, outputs_root=tmp_path)
+        assert bundle["summary"]["injuries"] is None
+        assert bundle["summary"]["imaging"] is None
+        assert bundle["summary"]["procedures"] is None
+
     def test_consultants_section(self, full_outputs):
         root, slug = full_outputs
         bundle = assemble_bundle(slug, outputs_root=root)
@@ -262,6 +346,32 @@ class TestValidateContract:
         data["consultants"] = None
         errors = validate_contract(data)
         assert not any("CONSULTANTS" in e for e in errors)
+
+    def test_summary_missing_injuries_key_fails(self):
+        data = {k: {} for k in ALLOWED_TOP_LEVEL_KEYS}
+        data["build"] = {"bundle_version": "1.0"}
+        data["patient"] = {"slug": "Test"}
+        data["warnings"] = []
+        data["summary"] = {"mechanism": None}
+        errors = validate_contract(data)
+        assert any("SUMMARY_MISSING_KEY" in e and "injuries" in e for e in errors)
+        assert any("SUMMARY_MISSING_KEY" in e and "imaging" in e for e in errors)
+        assert any("SUMMARY_MISSING_KEY" in e and "procedures" in e for e in errors)
+
+    def test_summary_with_clinical_keys_null_passes(self):
+        data = {k: {} for k in ALLOWED_TOP_LEVEL_KEYS}
+        data["build"] = {"bundle_version": "1.0"}
+        data["patient"] = {"slug": "Test"}
+        data["warnings"] = []
+        data["summary"] = {"injuries": None, "imaging": None, "procedures": None}
+        errors = validate_contract(data)
+        assert not any("SUMMARY_MISSING_KEY" in e for e in errors)
+
+    def test_assembled_bundle_passes_validator_with_new_keys(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        errors = validate_contract(bundle)
+        assert errors == []
 
 
 class TestV5MissingWarning:

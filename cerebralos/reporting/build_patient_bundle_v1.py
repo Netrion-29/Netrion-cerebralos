@@ -39,6 +39,9 @@ _SUMMARY_FEATURE_MAP: Dict[str, str] = {
     "activation": "category_activation_v1",
     "shock_trigger": "shock_trigger_v1",
     "age": "age_extraction_v1",
+    "injuries": "radiology_findings_v1",
+    "imaging": "radiology_findings_v1",
+    "procedures": "procedure_operatives_v1",
 }
 
 # Per-day feature keys extracted from the features dict (keyed by day).
