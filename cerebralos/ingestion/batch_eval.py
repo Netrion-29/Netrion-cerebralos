@@ -366,6 +366,7 @@ def _generate_v5_report(
     ntds_results: Optional[List[Dict[str, Any]]],
     output_path: Optional[Path] = None,
     protocol_results: Optional[List[Dict[str, Any]]] = None,
+    sections: Optional[Any] = None,
 ) -> str:
     """
     Generate TRAUMA_DAILY_NOTES_v5 report for a patient.
@@ -382,6 +383,7 @@ def _generate_v5_report(
         protocol_results: Protocol evaluation results list (may be empty).
             Non-empty list → PROTOCOL SIGNAL SUMMARY section rendered.
             Empty list or None → section omitted.
+        sections: Optional frozenset of v5 section keys to render (None = all).
 
     Returns:
         The rendered v5 text.
@@ -401,7 +403,7 @@ def _generate_v5_report(
     effective_proto = protocol_results if protocol_results else None
 
     text = render_v5(features_data, days_data, ntds_results=effective_ntds,
-                     protocol_results=effective_proto)
+                     protocol_results=effective_proto, sections=sections)
 
     if output_path:
         output_path.parent.mkdir(parents=True, exist_ok=True)

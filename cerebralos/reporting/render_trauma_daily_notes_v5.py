@@ -34,10 +34,38 @@ import json
 import re
 from datetime import date
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, FrozenSet, List, Optional
 
 # ── Constants ───────────────────────────────────────────────────────
 _DNA = "DATA NOT AVAILABLE"
+
+# ── Section Filtering (v1) ──────────────────────────────────────────
+# Optional/additive sections that can be requested via --sections.
+# Key matching is exact, lowercase, alias-free.
+V5_FILTERABLE_SECTIONS: FrozenSet[str] = frozenset({
+    "lda_summary",
+    "urine_output",
+    "structured_labs_overview",
+    "bd_inr_monitoring",
+    "impression_drift",
+    "spine_clearance",
+    "incentive_spirometry",
+    "note_sections",
+    "ntds_signal_summary",
+    "protocol_signal_summary",
+})
+
+# Always-on sections (not filterable in v1).
+V5_ALWAYS_ON_SECTIONS: FrozenSet[str] = frozenset({
+    "patient_summary",
+    "injury_catalog",
+    "movement_summary",
+    "procedure_summary",
+    "consultant_summary",
+    "prophylaxis",
+    "trigger_hemodynamic",
+    "per_day_clinical",
+})
 
 _DEVICE_LABELS = {
     "foley": "Foley catheter",
@@ -2223,11 +2251,36 @@ def _render_day_narrative(
 # MAIN RENDER FUNCTION
 # ════════════════════════════════════════════════════════════════════
 
+def _validate_sections(sections: Optional[FrozenSet[str]]) -> None:
+    """Validate section keys. Raises ValueError on unknown or empty allowlist."""
+    if sections is None:
+        return
+    if not sections:
+        raise ValueError(
+            "--sections allowlist is empty; provide at least one valid section key. "
+            f"Valid keys: {sorted(V5_FILTERABLE_SECTIONS)}"
+        )
+    unknown = sections - V5_FILTERABLE_SECTIONS
+    if unknown:
+        raise ValueError(
+            f"Unknown v5 section key(s): {sorted(unknown)}. "
+            f"Valid keys: {sorted(V5_FILTERABLE_SECTIONS)}"
+        )
+
+
+def _section_enabled(key: str, sections: Optional[FrozenSet[str]]) -> bool:
+    """Return True if *key* should be rendered given the optional allowlist."""
+    if sections is None:
+        return True
+    return key in sections
+
+
 def render_v5(
     features_data: Dict[str, Any],
     days_data: Optional[Dict[str, Any]] = None,
     ntds_results: Optional[List[Dict[str, Any]]] = None,
     protocol_results: Optional[List[Dict[str, Any]]] = None,
+    sections: Optional[FrozenSet[str]] = None,
 ) -> str:
     """
     Render Daily Notes v5 text.
@@ -2238,7 +2291,9 @@ def render_v5(
     days_data        : loaded patient_days_v1.json (optional, for metadata)
     ntds_results     : list of NTDS event result dicts (optional, from batch_eval)
     protocol_results : list of protocol result dicts (optional, from batch_eval)
+    sections         : optional frozenset of section keys to render (None = all)
     """
+    _validate_sections(sections)
     patient_id = features_data.get("patient_id", _DNA)
     feats = features_data.get("features", {})
     feature_days = features_data.get("days", {})
@@ -2267,23 +2322,39 @@ def render_v5(
     out.append("")
 
     # ── Patient-level Sections ──
+    # Always-on sections (not filterable)
     out.extend(_render_patient_summary(feats, feature_days=feature_days))
     out.extend(_render_injury_catalog(feats))
     out.extend(_render_movement_summary(feats))
     out.extend(_render_procedure_summary(feats))
-    out.extend(_render_lda_summary(feats))
-    out.extend(_render_urine_output(feats))
+    # Filterable optional sections — canonical order preserved
+    if _section_enabled("lda_summary", sections):
+        out.extend(_render_lda_summary(feats))
+    if _section_enabled("urine_output", sections):
+        out.extend(_render_urine_output(feats))
+    # Always-on
     out.extend(_render_consultant_summary(feats))
     out.extend(_render_prophylaxis(feats))
-    out.extend(_render_structured_labs_overview(feats))
+    # Filterable
+    if _section_enabled("structured_labs_overview", sections):
+        out.extend(_render_structured_labs_overview(feats))
+    # Always-on
     out.extend(_render_trigger_hemodynamic(feats))
-    out.extend(_render_bd_inr_trend(feats))
-    out.extend(_render_impression_drift(feats))
-    out.extend(_render_spine_clearance(feats))
-    out.extend(_render_incentive_spirometry(feats))
-    out.extend(_render_note_sections(feats))
-    out.extend(_render_ntds_signal_summary(ntds_results))
-    out.extend(_render_protocol_signal_summary(protocol_results))
+    # Filterable
+    if _section_enabled("bd_inr_monitoring", sections):
+        out.extend(_render_bd_inr_trend(feats))
+    if _section_enabled("impression_drift", sections):
+        out.extend(_render_impression_drift(feats))
+    if _section_enabled("spine_clearance", sections):
+        out.extend(_render_spine_clearance(feats))
+    if _section_enabled("incentive_spirometry", sections):
+        out.extend(_render_incentive_spirometry(feats))
+    if _section_enabled("note_sections", sections):
+        out.extend(_render_note_sections(feats))
+    if _section_enabled("ntds_signal_summary", sections):
+        out.extend(_render_ntds_signal_summary(ntds_results))
+    if _section_enabled("protocol_signal_summary", sections):
+        out.extend(_render_protocol_signal_summary(protocol_results))
 
     # ── Per-Day Clinical Status ──
     out.append("=" * 60)
@@ -2388,6 +2459,10 @@ def main() -> int:
                     help="Path to evaluation JSON containing ntds_results (optional)")
     ap.add_argument("--protocols", dest="protocols_path", required=False, default=None,
                     help="Path to evaluation JSON containing protocol results (optional)")
+    ap.add_argument("--sections", dest="sections", required=False, default=None,
+                    help="Comma-separated allowlist of optional v5 section keys to render. "
+                         "Omit to render all sections (default). "
+                         f"Valid keys: {sorted(V5_FILTERABLE_SECTIONS)}")
     ap.add_argument("--out", dest="out_path", required=True,
                     help="Path for output TRAUMA_DAILY_NOTES_v5.txt")
     args = ap.parse_args()
@@ -2433,8 +2508,25 @@ def main() -> int:
             else:
                 protocol_results = proto_data.get("results")
 
+    # Parse --sections into a frozenset (None = all)
+    sections_filter: Optional[FrozenSet[str]] = None
+    if args.sections is not None:
+        raw = args.sections.strip()
+        if not raw:
+            print(f"FAIL: --sections value is empty. Valid keys: {sorted(V5_FILTERABLE_SECTIONS)}")
+            return 1
+        sections_filter = frozenset(k.strip() for k in raw.split(",") if k.strip())
+        if not sections_filter:
+            print(f"FAIL: --sections value is empty after parsing. Valid keys: {sorted(V5_FILTERABLE_SECTIONS)}")
+            return 1
+        unknown = sections_filter - V5_FILTERABLE_SECTIONS
+        if unknown:
+            print(f"FAIL: Unknown v5 section key(s): {sorted(unknown)}. "
+                  f"Valid keys: {sorted(V5_FILTERABLE_SECTIONS)}")
+            return 1
+
     text = render_v5(features_data, days_data, ntds_results=ntds_results,
-                     protocol_results=protocol_results)
+                     protocol_results=protocol_results, sections=sections_filter)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(text, encoding="utf-8")

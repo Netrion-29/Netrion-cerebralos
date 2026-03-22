@@ -70,13 +70,48 @@ def _open_file(path: Path) -> None:
 
 def cmd_run(args: list) -> int:
     """Run evaluation on a single patient."""
-    # Consume --protocols and --ntds flags before positional args
+    # Consume --protocols, --ntds, and --sections flags before positional args
     protocols_flag = "--protocols" in args
     ntds_flag = "--ntds" in args
-    args = [a for a in args if a not in ("--protocols", "--ntds")]
+    sections_raw = None
+    filtered_args = []
+    skip_next = False
+    for i, a in enumerate(args):
+        if skip_next:
+            skip_next = False
+            continue
+        if a == "--sections" and i + 1 < len(args):
+            sections_raw = args[i + 1]
+            skip_next = True
+            continue
+        if a.startswith("--sections="):
+            sections_raw = a[len("--sections="):]
+            continue
+        if a in ("--protocols", "--ntds"):
+            continue
+        filtered_args.append(a)
+    args = filtered_args
+
+    # Parse --sections into a frozenset (None = all, fail-closed on bad keys)
+    sections_filter = None
+    if sections_raw is not None:
+        from cerebralos.reporting.render_trauma_daily_notes_v5 import V5_FILTERABLE_SECTIONS
+        raw = sections_raw.strip()
+        if not raw:
+            print(f"Error: --sections value is empty. Valid keys: {sorted(V5_FILTERABLE_SECTIONS)}")
+            return 1
+        sections_filter = frozenset(k.strip() for k in raw.split(",") if k.strip())
+        if not sections_filter:
+            print(f"Error: --sections value is empty after parsing. Valid keys: {sorted(V5_FILTERABLE_SECTIONS)}")
+            return 1
+        unknown = sections_filter - V5_FILTERABLE_SECTIONS
+        if unknown:
+            print(f"Error: Unknown v5 section key(s): {sorted(unknown)}. "
+                  f"Valid keys: {sorted(V5_FILTERABLE_SECTIONS)}")
+            return 1
 
     if not args:
-        print("Usage: python -m cerebralos run <patient_file> [--protocols] [--ntds]")
+        print("Usage: python -m cerebralos run <patient_file> [--protocols] [--ntds] [--sections <keys>]")
         return 1
 
     patient_path = _resolve_patient_file(args[0])
@@ -158,6 +193,7 @@ def cmd_run(args: list) -> int:
             _ntds_results,
             v5_path,
             protocol_results=_proto_results,
+            sections=sections_filter,
         )
         print(f"  V5:    {v5_path}")
     except Exception as exc:
@@ -273,10 +309,11 @@ def cmd_help(args: list) -> int:
     print("Usage: python -m cerebralos <command> [args]")
     print()
     print("Commands:")
-    print("  run <patient.txt> [--protocols] [--ntds]")
+    print("  run <patient.txt> [--protocols] [--ntds] [--sections <keys>]")
     print("                       Evaluate a single patient (generates all reports)")
     print("                       --protocols: include PROTOCOL SIGNAL SUMMARY in v5")
     print("                       --ntds:      include NTDS SIGNAL SUMMARY in v5")
+    print("                       --sections:  comma-separated v5 optional section keys")
     print("  run-all              Evaluate all patients in data_raw/")
     print("  live <patient.txt>   Evaluate an in-hospital patient (provisional mode)")
     print("  excel                Regenerate Excel dashboard from all patients")
