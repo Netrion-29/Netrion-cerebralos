@@ -148,7 +148,7 @@
 | #257 | `1f90b8b` | fix(vitals): handle Epic bang-prefix in Visit Vitals parser |
 | #258 | `71a3990` | docs(sync): update roadmap/startup/boot + prompt templates for post-PR #257 state |
 | #266 | `ef18faf` | fix(ntds): harden E15/E21 precision — add noise patterns for BPA template headers and non-pneumonia CXR attributions |
-| #271 | — | fix(gate): add v3 output baseline to gate_pr.sh (AUD-015) |
+| #271 | `c14cb03` | feat(gate): add v3 rendered-output drift protection (AUD-015) |
 | #283 | `13aabe6` | feat(v5): add STRUCTURED LABS OVERVIEW patient-level section |
 | #284 | `2212eaf` | feat(v5): add --sections control surface for optional section filtering |
 | #285 | `8e799ff` | docs: establish PI RN Casefile v1 product direction + soft-archive dashboard |

@@ -91,9 +91,9 @@ in the above-the-fold clinical snapshot (PR #290) and patient card.
 | 28 | Visual / emotional design | **Partial** | CSS refinement | Foundation in place: CSS design tokens, color palette, cards, badges, typography in casefile renderer. Professional HTML output. "Emotional design" concept not yet formally specified. | Polish pass after content completeness. |
 | 29 | BMAT (blood management) | **Partial** | Extraction gap | Transfusion data extracted (`transfusion_blood_products_v1` — pRBC, FFP, platelets, TXA, MTP). Referenced in protocol rules. Explicit BMAT scoring feature stub does not exist. | Define BMAT scoring criteria; build on existing transfusion extraction. |
 | 30 | Time to OR | **Missing** | Derivation gap | Data exists (procedures via `procedure_operatives_v1`, admission time via evidence). No computed time-delta feature module yet. ~5-line derivation once procedures are bundled. | Implement after procedure timeline is wired (depends on #13 above). |
-| 31 | SBIRT surfacing | **Implemented** | — | Extraction complete (`sbirt_screening_v1` — AUDIT-C, DAST-10, CAGE scores + question-level responses). Contract doc exists. Not yet rendered in casefile but fully extracted and available. | Wire into casefile when rendering scope expands. |
+| 31 | SBIRT surfacing | **Partial** | Renderer | Extraction complete (`sbirt_screening_v1` — AUDIT-C, DAST-10, CAGE scores + question-level responses). Contract doc exists. Not yet rendered in casefile but fully extracted and available. | Wire into casefile when rendering scope expands. |
 
-**Summary: 1/6 Implemented, 2/6 Partial, 1/6 Missing, 2/6 Deferred.**
+**Summary: 0/6 Implemented, 3/6 Partial, 1/6 Missing, 2/6 Deferred.**
 
 ---
 
@@ -104,8 +104,8 @@ in the above-the-fold clinical snapshot (PR #290) and patient card.
 | Trauma Summary Header (1–11) | 11 | 0 | 0 | 0 | 11 |
 | Daily Clinical Detail (12–22) | 3 | 8 | 0 | 0 | 11 |
 | Compliance / Governance (23–25) | 2 | 0 | 1 | 0 | 3 |
-| Nice-to-Have / Future (26–31) | 1 | 2 | 1 | 2 | 6 |
-| **TOTAL** | **17** | **10** | **2** | **2** | **31** |
+| Nice-to-Have / Future (26–31) | 0 | 3 | 1 | 2 | 6 |
+| **TOTAL** | **16** | **11** | **2** | **2** | **31** |
 
 **Key insight:** The extraction layer is substantially more complete than the
 rendering layer. 10 of the 31 vision items have working feature modules but
