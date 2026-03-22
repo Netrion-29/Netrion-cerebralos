@@ -41,6 +41,26 @@ cat > docs/build_plan_locked_v1.json << 'EOF'
 }
 EOF
 
+## PI RN Casefile — Quick Start
+
+Generate a single-patient HTML casefile (the primary PI RN review artifact):
+
+```bash
+# One command — runs full pipeline + opens casefile in browser
+./scripts/run_casefile_v1.sh "Betty Roll"
+```
+
+Or run interactively (prompts for patient name):
+
+```bash
+./scripts/run_casefile_v1.sh
+```
+
+**VS Code**: Run the task `PI RN Casefile — Run Patient` (Ctrl+Shift+P → Tasks: Run Task).
+
+The casefile is written to `outputs/casefile/<Slug>/casefile_v1.html` and opens
+automatically in the default browser. Set `CEREBRAL_NO_OPEN=1` to suppress auto-open.
+
 ## Local Scratch Policy
 
 To keep PRs auditable and deterministic:

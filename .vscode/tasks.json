@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "PI RN Casefile — Run Patient",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "scripts/run_casefile_v1.sh",
+        "${input:patientName}"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "PI RN Casefile — Open Last",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "LATEST=$(ls -t outputs/casefile/*/casefile_v1.html 2>/dev/null | head -1); if [ -n \"$LATEST\" ]; then if command -v open >/dev/null 2>&1; then open \"$LATEST\"; elif command -v xdg-open >/dev/null 2>&1; then xdg-open \"$LATEST\"; else echo \"Open manually: $LATEST\"; fi; echo \"Opened: $LATEST\"; else echo 'No casefile found.'; fi"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "patientName",
+      "type": "promptString",
+      "description": "Patient name (e.g. Betty Roll, David_Gross)"
+    }
+  ]
+}
