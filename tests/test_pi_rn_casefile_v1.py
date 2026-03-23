@@ -37,6 +37,7 @@ from cerebralos.reporting.render_pi_rn_casefile_v1 import (
     _render_procedures,
     _render_devices,
     _render_prophylaxis,
+    _render_resuscitation,
 )
 
 
@@ -226,6 +227,67 @@ _FULL_BUNDLE = {
             "mention_evidence_count": 1,
             "evidence": {"admin": [], "mention": [], "discontinued": []},
         },
+        "base_deficit": {
+            "initial_bd_ts": "2026-01-01T08:30:00",
+            "initial_bd_value": 4.3,
+            "initial_bd_source": "unknown",
+            "initial_bd_raw_line_id": "bd001",
+            "category1_bd_validated": False,
+            "validation_failure_reason": "specimen source not confirmed arterial",
+            "trigger_bd_gt4": True,
+            "first_trigger_ts": "2026-01-01T08:30:00",
+            "bd_series": [
+                {"ts": "2026-01-01T08:30:00", "value": 4.3, "specimen": "unknown", "raw_line_id": "bd001", "snippet": "BD 4.3"},
+                {"ts": "2026-01-01T14:00:00", "value": 2.1, "specimen": "unknown", "raw_line_id": "bd002", "snippet": "BD 2.1"},
+            ],
+            "monitoring_windows": [],
+            "overall_compliant": False,
+            "noncompliance_reasons": ["q2h_until_improving: gap 5.5h"],
+            "notes": [],
+        },
+        "transfusions": {
+            "status": "DATA NOT AVAILABLE",
+            "products_detected": [],
+            "mtp_activated": False,
+            "txa_administered": False,
+            "prbc_events": 0,
+            "ffp_events": 0,
+            "platelet_events": 0,
+            "cryo_events": 0,
+            "total_events": 0,
+            "evidence": [],
+        },
+        "hemodynamic_instability": {
+            "pattern_present": "yes",
+            "hypotension_pattern": {
+                "detected": True,
+                "reading_count": 3,
+                "days_affected": 2,
+                "threshold": "SBP < 90",
+                "source_rule_id": "hemo_sbp_lt90",
+            },
+            "map_low_pattern": {
+                "detected": True,
+                "reading_count": 6,
+                "days_affected": 5,
+                "threshold": "MAP < 65",
+                "source_rule_id": "hemo_map_lt65",
+            },
+            "tachycardia_pattern": {
+                "detected": False,
+                "reading_count": 0,
+                "days_affected": 0,
+                "threshold": "HR > 120",
+                "source_rule_id": "hemo_hr_gt120",
+            },
+            "patterns_detected": ["hypotension", "map_low"],
+            "total_abnormal_readings": 9,
+            "total_vitals_readings": 245,
+            "source_rule_id": "hemodynamic_instability_pattern_canonical_vitals",
+            "evidence": [],
+            "notes": [],
+            "warnings": [],
+        },
     },
     "compliance": {
         "ntds_summary": [{"events": 21}],
@@ -357,6 +419,9 @@ _MINIMAL_BUNDLE = {
         "dvt_prophylaxis": None,
         "gi_prophylaxis": None,
         "seizure_prophylaxis": None,
+        "base_deficit": None,
+        "transfusions": None,
+        "hemodynamic_instability": None,
     },
     "compliance": {
         "ntds_summary": None,
@@ -1475,3 +1540,156 @@ class TestFailClosedClinicalSections:
     def test_absent_prophylaxis_no_section(self):
         html = render_casefile(_MINIMAL_BUNDLE)
         assert "Prophylaxis Summary" not in html
+
+
+# ── Resuscitation / Hemodynamic Summary tests ───────────────────────
+
+class TestResuscitationRendering:
+    """Tests for the Resuscitation / Hemodynamic Summary card."""
+
+    def test_section_present_in_full_bundle(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert "Resuscitation / Hemodynamic Summary" in html
+
+    def test_section_absent_when_all_null(self):
+        html = render_casefile(_MINIMAL_BUNDLE)
+        assert "Resuscitation / Hemodynamic Summary" not in html
+
+    def test_hemodynamic_instability_detected(self):
+        html = _render_resuscitation(_FULL_BUNDLE)
+        assert "Instability detected" in html
+        assert "Hemodynamic Instability" in html
+
+    def test_hemodynamic_instability_pattern_details(self):
+        html = _render_resuscitation(_FULL_BUNDLE)
+        assert "Hypotension" in html
+        assert "SBP &lt; 90" in html or "SBP < 90" in html
+        assert "Map Low" in html
+        assert "MAP &lt; 65" in html or "MAP < 65" in html
+
+    def test_hemodynamic_no_instability(self):
+        bundle = _make_bundle_with_resus(
+            hemodynamic_instability={
+                "pattern_present": "no",
+                "hypotension_pattern": {"detected": False, "reading_count": 0, "days_affected": 0, "threshold": "SBP < 90", "source_rule_id": "x"},
+                "map_low_pattern": {"detected": False, "reading_count": 0, "days_affected": 0, "threshold": "MAP < 65", "source_rule_id": "x"},
+                "tachycardia_pattern": {"detected": False, "reading_count": 0, "days_affected": 0, "threshold": "HR > 120", "source_rule_id": "x"},
+                "patterns_detected": [],
+                "total_abnormal_readings": 0,
+                "total_vitals_readings": 100,
+                "source_rule_id": "x",
+                "evidence": [], "notes": [], "warnings": [],
+            },
+        )
+        html = _render_resuscitation(bundle)
+        assert "No instability detected" in html
+
+    def test_blood_products_no_data(self):
+        html = _render_resuscitation(_FULL_BUNDLE)
+        assert "No blood products documented" in html
+
+    def test_blood_products_with_events(self):
+        bundle = _make_bundle_with_resus(
+            transfusions={
+                "status": "DETECTED",
+                "products_detected": ["pRBC", "FFP"],
+                "mtp_activated": True,
+                "txa_administered": True,
+                "prbc_events": 4,
+                "ffp_events": 2,
+                "platelet_events": 0,
+                "cryo_events": 0,
+                "total_events": 6,
+                "evidence": [],
+            },
+        )
+        html = _render_resuscitation(bundle)
+        assert "6 transfusion events" in html
+        assert "pRBC: 4" in html
+        assert "FFP: 2" in html
+        assert "MTP activated" in html
+        assert "TXA administered" in html
+
+    def test_base_deficit_trigger(self):
+        html = _render_resuscitation(_FULL_BUNDLE)
+        assert "BD trigger" in html
+        assert "non-compliant" in html.lower()
+        assert "Initial BD: 4.3" in html
+
+    def test_base_deficit_no_data(self):
+        bundle = _make_bundle_with_resus(
+            base_deficit={
+                "initial_bd_ts": None,
+                "initial_bd_value": None,
+                "initial_bd_source": "unknown",
+                "initial_bd_raw_line_id": None,
+                "category1_bd_validated": False,
+                "validation_failure_reason": "DATA NOT AVAILABLE: no BD values found",
+                "trigger_bd_gt4": None,
+                "first_trigger_ts": None,
+                "bd_series": [],
+                "monitoring_windows": [],
+                "overall_compliant": None,
+                "noncompliance_reasons": [],
+                "notes": ["DATA NOT AVAILABLE: no BD values found"],
+            },
+        )
+        html = _render_resuscitation(bundle)
+        assert "No base deficit data" in html
+
+    def test_base_deficit_within_range(self):
+        bundle = _make_bundle_with_resus(
+            base_deficit={
+                "initial_bd_ts": "2026-01-01T08:00:00",
+                "initial_bd_value": 2.0,
+                "initial_bd_source": "unknown",
+                "initial_bd_raw_line_id": "x",
+                "category1_bd_validated": False,
+                "validation_failure_reason": None,
+                "trigger_bd_gt4": False,
+                "first_trigger_ts": None,
+                "bd_series": [{"ts": "2026-01-01T08:00:00", "value": 2.0, "specimen": "unknown", "raw_line_id": "x", "snippet": "BD 2.0"}],
+                "monitoring_windows": [],
+                "overall_compliant": None,
+                "noncompliance_reasons": [],
+                "notes": [],
+            },
+        )
+        html = _render_resuscitation(bundle)
+        assert "BD within range" in html
+
+    def test_deterministic_output(self):
+        html1 = _render_resuscitation(_FULL_BUNDLE)
+        html2 = _render_resuscitation(_FULL_BUNDLE)
+        assert html1 == html2
+
+    def test_fail_closed_empty_string_when_no_data(self):
+        bundle = {"summary": {}}
+        assert _render_resuscitation(bundle) == ""
+
+    def test_fail_closed_non_dict_values(self):
+        bundle = {
+            "summary": {
+                "base_deficit": "not a dict",
+                "transfusions": 42,
+                "hemodynamic_instability": [],
+            },
+        }
+        assert _render_resuscitation(bundle) == ""
+
+
+def _make_bundle_with_resus(
+    base_deficit=None,
+    transfusions=None,
+    hemodynamic_instability=None,
+):
+    """Create a bundle with specific resuscitation data for targeted testing."""
+    import copy
+    bundle = copy.deepcopy(_MINIMAL_BUNDLE)
+    if base_deficit is not None:
+        bundle["summary"]["base_deficit"] = base_deficit
+    if transfusions is not None:
+        bundle["summary"]["transfusions"] = transfusions
+    if hemodynamic_instability is not None:
+        bundle["summary"]["hemodynamic_instability"] = hemodynamic_instability
+    return bundle
