@@ -1154,5 +1154,324 @@ class TestAssessmentPlanExtraction(unittest.TestCase):
         self.assertEqual(len(result["warnings"]), 0)
 
 
+# ═══════════════════════════════════════════════════════════════════
+# Specialty Classifier Expansion Tests
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Sample specialty notes (real header patterns from chart data) ──
+
+SAMPLE_NEUROSURGERY_NOTE = """\
+Signed
+
+Neurosurgery - tSAH s/p falls (Troffkin)
+
+S: Sitting in chair. Speech improving. Worked with therapy. MWFT in place.
+
+O:
+Visit Vitals
+BP      119/61
+Pulse   82
+Temp    98.0 °F (36.7 °C) (Oral)
+SpO2    95%
+
+Neurological/Musculoskeletal:
+A&O x3. Conversant with mild dysarthria. Following commands.
+Strength 5/5 all extremities. PERRL.
+
+Radiology:
+CT HEAD WO CONTRAST
+Result Date: 12/15/2025
+IMPRESSION: Stable bilateral tSAH. No midline shift.
+
+A/P: This is a 83 y.o. male admitted after multiple falls. Films reviewed with \
+Dr. Troffkin. CT scan of the head does show some traumatic subarachnoid blood \
+bilaterally. CTA does not reveal any underlying vascular abnormalities. \
+Would not recommend surgery for above findings.
+- Ok for transfer out of ICU from NS standpoint
+- Q4h neuro checks
+- HOB >/=30
+- Mechanical DVT ppx. Ok for pharmacologic DVT ppx.
+- SBP < 150
+- Advance diet/activity
+- PT/OT
+- F/u prn
+
+Discussed with/ answered all of the patient/family's questions, agreeable to plan
+
+Trevor Troffkin, MD
+"""
+
+SAMPLE_NEUROSURGERY_NOTE_NO_PLAN = """\
+Signed
+
+Neurosurgery- L5 compression fx (Cannon)
+
+Kyphoplasty now scheduled for 12/15. Continue current recommendations \
+with brace and activity as tolerated.
+
+Travis Cannon, MD
+"""
+
+SAMPLE_NEPHROLOGY_NOTE = """\
+[PHYSICIAN_NOTE] 2025-12-29 07:24:00
+Signed
+
+Expand All Collapse All
+
+PROGRESS NOTE
+DEACONESS CLINIC NEPHROLOGY
+
+Service date: 7:24 AM 12/29/2025
+DEMOGRAPHICS:
+Name: Floy Geary
+Age: 81 y.o.    DOB: 6/10/1944    Sex: female    MRN: 2164162
+
+SUBJECTIVE and Interval history:
+No new complaints. Clinical events noted. Labs reviewed.
+
+OBJECTIVE:
+Vitals:
+BP      154/62
+Pulse   68
+Temp    98.1 °F (36.7 °C) (Oral)
+
+Assessment and Plan:
+
+Hyponatremia 123-127-129-132
+-renal function intact with baseline Cr 0.8-0.9
+-AKI with Cr up to
+-UA with proteinuria and hematuria
+-Recommend bladder scan
+-Electrolytes noted-- bicarbonate 22, K 4.4
+-Volume status noted
+-No acute indications for RRT
+-Renally dose abx, renal diet
+-Will continue monitoring
+
+We will continue to follow the patient.
+"""
+
+SAMPLE_RENAL_BRIEF_NOTE = """\
+[PHYSICIAN_NOTE] 2025-12-25 17:47:00
+Signed
+
+Renal brief note - contacted for consult, chart/OSH documents reviewed, \
+had sodium 123 at 1038 AM and presented with fall. Repeat Na 125 here. \
+Serial sodiums ordered called to nephrology. Full consultation to follow.
+"""
+
+SAMPLE_HEME_ONC_NOTE = """\
+[PHYSICIAN_NOTE] 2025-12-27 14:04:00
+Addendum
+
+DEACONESS HEMATOLOGY/ONCOLOGY
+Inpatient follow up note
+
+Patient: Valerie Parker    MRN: 123456
+
+Assessment:
+Known CLL, leukocytosis improving.
+
+Plan:
+- Continue monitoring WBC trend
+- Hold chemo during acute admission
+- Hematology to follow daily
+- Transfuse for Hgb < 7
+
+John Doe, MD
+"""
+
+SAMPLE_PLASTICS_NOTE = """\
+Signed
+
+Full consult note to follow
+
+Plastics consulted 1/23 for bilateral nasal bone fracture
+
+CT reviewed, displaced, would benefit from closed reduction
+
+Impression: Displaced bilateral nasal bone fracture
+
+Plan:
+- Closed reduction under sedation
+- Schedule for tomorrow AM
+- Pre-op labs
+
+Jane Smith, MD
+"""
+
+
+class TestClassifyGeneralNoteTypeExpanded(unittest.TestCase):
+    """Tests for new specialty classifier patterns."""
+
+    def test_neurosurgery(self):
+        text = "Signed\n\nNeurosurgery - tSAH s/p falls (Troffkin)\n\nS: Sitting"
+        self.assertEqual(_classify_general_note_type(text), "Neurosurgery Progress Note")
+
+    def test_neurosurgery_no_space_before_dash(self):
+        text = "Signed\n\nNeurosurgery- L5 compression fx (Cannon)\n"
+        self.assertEqual(_classify_general_note_type(text), "Neurosurgery Progress Note")
+
+    def test_neurosurgery_en_dash(self):
+        text = "Signed\n\nNeurosurgery \u2013 ICH with IVH (Troffkin)\n"
+        self.assertEqual(_classify_general_note_type(text), "Neurosurgery Progress Note")
+
+    def test_nephrology_deaconess_clinic(self):
+        text = "Signed\n\nPROGRESS NOTE\nDEACONESS CLINIC NEPHROLOGY\n"
+        self.assertEqual(_classify_general_note_type(text), "Nephrology Progress Note")
+
+    def test_nephrology_standalone(self):
+        text = "Signed\n\nNEPHROLOGY CONSULT\n"
+        self.assertEqual(_classify_general_note_type(text), "Nephrology Progress Note")
+
+    def test_renal_brief_note(self):
+        text = "Signed\n\nRenal brief note - contacted for consult\n"
+        self.assertEqual(_classify_general_note_type(text), "Nephrology Progress Note")
+
+    def test_heme_onc(self):
+        text = "Signed\n\nDEACONESS HEMATOLOGY/ONCOLOGY\nInpatient follow up note\n"
+        self.assertEqual(
+            _classify_general_note_type(text), "Hematology/Oncology Progress Note"
+        )
+
+    def test_heme_onc_dot_separator(self):
+        text = "Signed\n\nHEMATOLOGY.ONCOLOGY\nFollow up\n"
+        self.assertEqual(
+            _classify_general_note_type(text), "Hematology/Oncology Progress Note"
+        )
+
+    def test_plastics(self):
+        text = "Signed\n\nPlastics consulted 1/23 for bilateral nasal bone fracture\n"
+        self.assertEqual(_classify_general_note_type(text), "Plastics Progress Note")
+
+    def test_plastic_singular(self):
+        text = "Signed\n\nPlastic consult for wound closure\n"
+        self.assertEqual(_classify_general_note_type(text), "Plastics Progress Note")
+
+    def test_ortho_not_classified(self):
+        """Orthopedics does not arrive as PHYSICIAN_NOTE; should not classify."""
+        text = "Signed\n\nOrthopedic Surgery Consult\n"
+        self.assertIsNone(_classify_general_note_type(text))
+
+
+class TestAPSlashExtraction(unittest.TestCase):
+    """Tests for A/P: (abbreviated Assessment/Plan) section extraction."""
+
+    def test_ap_slash_plan_extracted(self):
+        lines = _extract_plan(SAMPLE_NEUROSURGERY_NOTE)
+        self.assertGreater(len(lines), 0)
+        combined = " ".join(lines)
+        self.assertIn("transfer out of ICU", combined)
+        self.assertIn("Q4h neuro checks", combined)
+
+    def test_ap_slash_terminates_at_signature(self):
+        lines = _extract_plan(SAMPLE_NEUROSURGERY_NOTE)
+        combined = " ".join(lines)
+        self.assertNotIn("Trevor Troffkin", combined)
+
+    def test_ap_slash_no_separate_impression(self):
+        """A/P: is a combined section; _extract_impression must return empty."""
+        lines = _extract_impression(SAMPLE_NEUROSURGERY_NOTE)
+        self.assertEqual(lines, [])
+
+    def test_neurosurgery_no_plan_silently_skipped(self):
+        """Neurosurgery note without Plan/A-P section is silently skipped."""
+        items = [_make_physician_note_item(SAMPLE_NEUROSURGERY_NOTE_NO_PLAN)]
+        days_data = _make_days_data({"2025-12-11": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+        self.assertEqual(result["total_notes"], 0)
+        # Non-trauma notes without plan → no warning (fail-closed, silent)
+        self.assertEqual(len(result["warnings"]), 0)
+
+
+class TestSpecialtyIntegration(unittest.TestCase):
+    """Integration tests for new specialty note extraction."""
+
+    def test_neurosurgery_full_extraction(self):
+        items = [_make_physician_note_item(SAMPLE_NEUROSURGERY_NOTE)]
+        days_data = _make_days_data({"2025-12-15": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 1)
+        note = result["days"]["2025-12-15"]["notes"][0]
+        self.assertEqual(note["note_type"], "Neurosurgery Progress Note")
+        combined = " ".join(note["plan_lines"])
+        self.assertIn("transfer out of ICU", combined)
+        self.assertTrue(note["raw_line_id"])
+
+    def test_nephrology_full_extraction(self):
+        items = [_make_physician_note_item(SAMPLE_NEPHROLOGY_NOTE)]
+        days_data = _make_days_data({"2025-12-29": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 1)
+        note = result["days"]["2025-12-29"]["notes"][0]
+        self.assertEqual(note["note_type"], "Nephrology Progress Note")
+        combined = " ".join(note["plan_lines"])
+        self.assertIn("Hyponatremia", combined)
+
+    def test_renal_brief_note_no_plan_skipped(self):
+        """Renal brief note without Plan section is silently skipped."""
+        items = [_make_physician_note_item(SAMPLE_RENAL_BRIEF_NOTE)]
+        days_data = _make_days_data({"2025-12-25": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+        self.assertEqual(result["total_notes"], 0)
+        self.assertEqual(len(result["warnings"]), 0)
+
+    def test_heme_onc_full_extraction(self):
+        items = [_make_physician_note_item(SAMPLE_HEME_ONC_NOTE)]
+        days_data = _make_days_data({"2025-12-27": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 1)
+        note = result["days"]["2025-12-27"]["notes"][0]
+        self.assertEqual(note["note_type"], "Hematology/Oncology Progress Note")
+        combined = " ".join(note["plan_lines"])
+        self.assertIn("monitoring WBC", combined)
+
+    def test_plastics_full_extraction(self):
+        items = [_make_physician_note_item(SAMPLE_PLASTICS_NOTE)]
+        days_data = _make_days_data({"2026-01-25": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 1)
+        note = result["days"]["2026-01-25"]["notes"][0]
+        self.assertEqual(note["note_type"], "Plastics Progress Note")
+        combined = " ".join(note["plan_lines"])
+        self.assertIn("Closed reduction", combined)
+
+    def test_mixed_specialty_and_trauma(self):
+        """Trauma and specialty notes on same day both extracted."""
+        items = [
+            _make_physician_note_item(
+                SAMPLE_TRAUMA_PROGRESS_NOTE, source_id="61",
+                dt="2026-01-03T06:56:00",
+            ),
+            _make_physician_note_item(
+                SAMPLE_NEUROSURGERY_NOTE, source_id="62",
+                dt="2026-01-03T10:00:00",
+            ),
+        ]
+        days_data = _make_days_data({"2026-01-03": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 2)
+        note_types = {n["note_type"] for n in result["days"]["2026-01-03"]["notes"]}
+        self.assertIn("Trauma Progress Note", note_types)
+        self.assertIn("Neurosurgery Progress Note", note_types)
+
+    def test_consult_note_type_excluded(self):
+        """CONSULT_NOTE items are not processed, even with matching text."""
+        items = [{
+            "type": "CONSULT_NOTE",
+            "dt": "2025-12-15T09:00:00",
+            "source_id": "99",
+            "payload": {"text": SAMPLE_NEUROSURGERY_NOTE},
+        }]
+        days_data = _make_days_data({"2025-12-15": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+        self.assertEqual(result["total_notes"], 0)
+
+
 if __name__ == "__main__":
     unittest.main()

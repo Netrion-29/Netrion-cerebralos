@@ -9,9 +9,10 @@
 
 ## Purpose
 
-Extract per-day plan text from trauma-team progress notes and organise
-it by calendar day.  Provides structured daily plan data so v5 per-day
-blocks can show the evolving trauma plan over the hospital stay.
+Extract per-day plan text from physician progress notes (trauma and
+medical/surgical specialties) and organise it by calendar day.  Provides
+structured daily plan data so v5 per-day blocks can show the evolving
+plan over the hospital stay.
 
 ## Qualifying Note Types (Allowlist)
 
@@ -30,6 +31,27 @@ Only these note headers qualify for extraction:
 | `ESA Quick Update Note`           | `PHYSICIAN_NOTE` | Brief (no Plan)      | — (warn+skip)   |
 | `ESA TRAUMA BRIEF NOTE`           | `PHYSICIAN_NOTE` | Brief (no Plan)      | — (warn+skip)   |
 
+### General Physician / Specialty Note Patterns
+
+Non-trauma `PHYSICIAN_NOTE` items are classified by header text
+(first 500 chars). Each pattern maps to a descriptive `note_type` label:
+
+| Pattern (header text)              | `note_type` label                   |
+|-----------------------------------|-------------------------------------|
+| Hospital Progress Note / Deaconess Care Group | Hospital Progress Note    |
+| Pulmonary/Critical Care / PCCM    | Critical Care Progress Note         |
+| Neurology (Inpatient) Consult/Progress | Neurology Progress Note        |
+| Heart Group Daily Progress         | Cardiology Progress Note            |
+| Electrophysiology (Daily) Progress / Brief EP | Electrophysiology Progress Note |
+| Cardiology                         | Cardiology Progress Note            |
+| Palliative Care                    | Palliative Care Progress Note       |
+| Speech Language Pathology          | Speech Language Pathology           |
+| Infectious Disease                 | Infectious Disease Progress Note    |
+| Neurosurgery - {dx} ({surgeon})    | Neurosurgery Progress Note          |
+| DEACONESS CLINIC NEPHROLOGY / Renal brief note | Nephrology Progress Note |
+| HEMATOLOGY/ONCOLOGY                | Hematology/Oncology Progress Note   |
+| Plastics consult                   | Plastics Progress Note              |
+
 Notes:
 - `Daily Progress Note` is only matched when the note body contains
   "Evansville Surgical Associates" (ESA gate) to avoid false-matching
@@ -38,12 +60,17 @@ Notes:
   skipped (fail-closed).  They are counted for audit visibility.
 - `Assessment:` is accepted as an alternate section label for
   `Impression:` (used by ESA Daily Progress Note format).
+- `A/P:` is accepted as an alternate section label for `Assessment/Plan:`
+  (used by Neurosurgery SOAP format).
+- Non-trauma notes without a Plan/Assessment-Plan/A-P section are
+  silently skipped (fail-closed).
 
 Excluded:
-- Consultant notes → separate feature (`consultant_plan_items_v1`)
-- Hospitalist / Geriatric Protocol notes → different plan format
+- `CONSULT_NOTE` items (initial consults — separate feature)
 - Radiology reads typed as `PHYSICIAN_NOTE` → filtered by heuristic
+- Unclassifiable `PHYSICIAN_NOTE` items (medication orders, etc.)
 - ED notes, nursing notes, discharge summaries
+- Orthopedics, CT Surgery, Wound Care, Anesthesia (not `PHYSICIAN_NOTE`)
 
 ## Extraction Strategy
 

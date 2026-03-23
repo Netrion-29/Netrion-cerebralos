@@ -23,9 +23,11 @@ Note selection:
      "Trauma Overnight Progress Note",
      "Daily Progress Note" (ESA-gated), ESA brief variants.
   B. General physician notes: any PHYSICIAN_NOTE with an extractable
-     "Plan:" or "Assessment/Plan:" section from a classifiable service
-     (hospitalist, critical care, neurology, cardiology, palliative
-     care, electrophysiology, speech language pathology).
+     "Plan:", "Assessment/Plan:", or "A/P:" section from a classifiable
+     service (hospitalist, critical care, neurology, cardiology,
+     palliative care, electrophysiology, speech language pathology,
+     infectious disease, neurosurgery, nephrology, hematology/oncology,
+     plastics).
 
 Excluded:
   - Radiology reads ("Narrative & Impression" pattern)
@@ -138,9 +140,9 @@ _RE_PLAN_START = re.compile(
 )
 
 # Combined Assessment/Plan section (hospitalist, cardiology, neurology, etc.)
-# Matches both "Assessment/Plan:" and "Assessment and Plan:" formats
+# Matches "Assessment/Plan:", "Assessment and Plan:", and abbreviated "A/P:"
 _RE_ASSESSMENT_PLAN_START = re.compile(
-    r"^\s*Assessment\s*(?:/|and)\s*Plan\s*:",
+    r"^\s*(?:Assessment\s*(?:/|and)\s*Plan|A/P)\s*:",
     re.IGNORECASE | re.MULTILINE,
 )
 
@@ -249,6 +251,10 @@ _GENERAL_NOTE_PATTERNS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r"Palliative\s+Care", re.I), "Palliative Care Progress Note"),
     (re.compile(r"Speech\s+Language\s+Pathology", re.I), "Speech Language Pathology"),
     (re.compile(r"Infectious\s+Disease", re.I), "Infectious Disease Progress Note"),
+    (re.compile(r"Neurosurgery\s*[-\u2013\u2014]", re.I), "Neurosurgery Progress Note"),
+    (re.compile(r"(?:DEACONESS\s+CLINIC\s+)?NEPHROLOGY|Renal\s+brief\s+note", re.I), "Nephrology Progress Note"),
+    (re.compile(r"HEMATOLOGY[/.]ONCOLOGY", re.I), "Hematology/Oncology Progress Note"),
+    (re.compile(r"Plastics?\s+consult", re.I), "Plastics Progress Note"),
 ]
 
 
