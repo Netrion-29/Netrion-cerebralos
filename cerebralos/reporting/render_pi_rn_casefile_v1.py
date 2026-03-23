@@ -1537,6 +1537,82 @@ def _render_pmh(bundle: Dict[str, Any]) -> str:
     )
 
 
+def _render_sbirt_screening(bundle: Dict[str, Any]) -> str:
+    """Render the SBIRT Screening card from summary.sbirt_screening."""
+    sbirt = bundle.get("summary", {}).get("sbirt_screening")
+    if not sbirt or not isinstance(sbirt, dict):
+        return ""
+    status = sbirt.get("sbirt_screening_present", "")
+    if not status or status == "DATA NOT AVAILABLE":
+        return ""
+
+    parts: List[str] = []
+
+    # Screening status
+    parts.append(
+        f'<li><span class="sl-label">Status:</span> {_e(status)}</li>'
+    )
+
+    # Instruments detected
+    instruments = sbirt.get("instruments_detected", [])
+    if instruments:
+        parts.append(
+            f'<li><span class="sl-label">Instruments:</span> '
+            f'{_e(", ".join(str(i) for i in instruments))}</li>'
+        )
+
+    # Explicit scores (AUDIT-C, DAST-10, CAGE)
+    for instrument_key, label in (
+        ("audit_c", "AUDIT-C"),
+        ("dast_10", "DAST-10"),
+        ("cage", "CAGE"),
+    ):
+        inst = sbirt.get(instrument_key)
+        if not isinstance(inst, dict):
+            continue
+        score_obj = inst.get("explicit_score")
+        completion = inst.get("completion_status", "")
+        if isinstance(score_obj, dict) and score_obj.get("value") is not None:
+            parts.append(
+                f'<li><span class="sl-label">{_e(label)} Score:</span> '
+                f'{_e(score_obj["value"])}</li>'
+            )
+        elif completion and completion != "not_performed":
+            parts.append(
+                f'<li><span class="sl-label">{_e(label)}:</span> '
+                f'{_e(completion)}</li>'
+            )
+
+    # Flowsheet responses count
+    flowsheet = sbirt.get("flowsheet_responses", [])
+    if flowsheet:
+        parts.append(
+            f'<li><span class="sl-label">Flowsheet Responses:</span> '
+            f'{_e(len(flowsheet))}</li>'
+        )
+
+    # Refusal
+    if sbirt.get("refusal_documented"):
+        parts.append(
+            '<li><span class="sl-label">Refusal Documented:</span> Yes</li>'
+        )
+
+    # Substance use admission
+    if sbirt.get("substance_use_admission_documented"):
+        parts.append(
+            '<li><span class="sl-label">Substance Use Admission:</span> Yes</li>'
+        )
+
+    if not parts:
+        return ""
+    return (
+        '<div class="card">'
+        '<div class="card-title">SBIRT Screening</div>'
+        f'<div class="card-body"><ul class="summary-list">{"".join(parts)}</ul></div>'
+        "</div>"
+    )
+
+
 def _render_consultants(bundle: Dict[str, Any]) -> str:
     cons = bundle.get("consultants")
     if not cons or not isinstance(cons, dict):
@@ -2200,6 +2276,7 @@ def render_casefile(bundle: Dict[str, Any]) -> str:
         _render_resuscitation(bundle),
         _render_disposition_planning(bundle),
         _render_pmh(bundle),
+        _render_sbirt_screening(bundle),
         _render_consultants(bundle),
         _render_ntds_summary(bundle),
         _render_protocol_summary(bundle),

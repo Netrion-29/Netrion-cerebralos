@@ -40,6 +40,7 @@ from cerebralos.reporting.render_pi_rn_casefile_v1 import (
     _render_resuscitation,
     _render_disposition_planning,
     _render_non_trauma_team_plans,
+    _render_sbirt_screening,
 )
 
 
@@ -364,6 +365,36 @@ _FULL_BUNDLE = {
             "warnings": [],
             "notes": ["source=raw_file, section_lines=20, entries_parsed=3"],
         },
+        "sbirt_screening": {
+            "sbirt_screening_present": "yes",
+            "instruments_detected": ["audit_c", "dast_10"],
+            "audit_c": {
+                "explicit_score": {"value": 4, "ts": "2026-01-01T10:00:00", "source_rule_id": "sbirt_section_audit_c", "evidence": []},
+                "responses_present": True,
+                "responses": [],
+                "completion_status": "score_documented",
+            },
+            "dast_10": {
+                "explicit_score": None,
+                "responses_present": True,
+                "responses": [],
+                "completion_status": "responses_only",
+            },
+            "cage": {
+                "explicit_score": None,
+                "responses_present": False,
+                "responses": [],
+                "completion_status": "not_performed",
+            },
+            "flowsheet_responses": [],
+            "refusal_documented": False,
+            "refusal_evidence": [],
+            "substance_use_admission_documented": False,
+            "substance_use_admission_evidence": [],
+            "evidence": [],
+            "notes": [],
+            "warnings": [],
+        },
     },
     "compliance": {
         "ntds_summary": [{"events": 21}],
@@ -544,6 +575,7 @@ _MINIMAL_BUNDLE = {
         "transfusions": None,
         "hemodynamic_instability": None,
         "patient_movement": None,
+        "sbirt_screening": None,
     },
     "compliance": {
         "ntds_summary": None,
@@ -630,6 +662,15 @@ class TestRenderCasefile:
         assert "Non-operative management of L2 fracture" in html
         assert "Ortho" in html
 
+    def test_sbirt_screening_rendered(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert "SBIRT Screening" in html
+        assert "audit_c" in html
+        assert "AUDIT-C Score" in html
+        assert "4" in html
+        assert "DAST-10" in html
+        assert "responses_only" in html
+
     def test_warnings_rendered(self):
         html = render_casefile(_FULL_BUNDLE)
         assert "Warnings" in html
@@ -668,6 +709,10 @@ class TestFailClosed:
         html = render_casefile(_MINIMAL_BUNDLE)
         # Detail card should not appear when consultants are null
         assert 'card-title">Consultants</div>' not in html
+
+    def test_absent_sbirt_omits_section(self):
+        html = render_casefile(_MINIMAL_BUNDLE)
+        assert "SBIRT Screening" not in html
 
     def test_empty_daily_shows_no_day_cards(self):
         html = render_casefile(_MINIMAL_BUNDLE)
@@ -1987,3 +2032,115 @@ class TestFailClosedDispositionNTP:
     def test_absent_ntp_no_section(self):
         html = render_casefile(_MINIMAL_BUNDLE)
         assert "Non-Trauma Team Plans" not in html
+
+
+# ── SBIRT renderer unit tests ───────────────────────────────────────
+
+class TestRenderSbirtScreening:
+    def _bundle_with_sbirt(self, sbirt_data):
+        """Return a minimal bundle with the given sbirt_screening summary."""
+        import copy
+        b = copy.deepcopy(_MINIMAL_BUNDLE)
+        b["summary"]["sbirt_screening"] = sbirt_data
+        return b
+
+    def test_sbirt_with_score_shows_score(self):
+        sbirt = {
+            "sbirt_screening_present": "yes",
+            "instruments_detected": ["audit_c"],
+            "audit_c": {
+                "explicit_score": {"value": 4, "ts": "2026-01-01T10:00:00"},
+                "responses_present": True,
+                "responses": [],
+                "completion_status": "score_documented",
+            },
+            "dast_10": {"explicit_score": None, "responses_present": False, "responses": [], "completion_status": "not_performed"},
+            "cage": {"explicit_score": None, "responses_present": False, "responses": [], "completion_status": "not_performed"},
+            "flowsheet_responses": [],
+            "refusal_documented": False,
+            "substance_use_admission_documented": False,
+            "evidence": [],
+            "notes": [],
+            "warnings": [],
+        }
+        html = _render_sbirt_screening(self._bundle_with_sbirt(sbirt))
+        assert "SBIRT Screening" in html
+        assert "AUDIT-C Score" in html
+        assert "4" in html
+
+    def test_sbirt_refusal(self):
+        sbirt = {
+            "sbirt_screening_present": "refused",
+            "instruments_detected": [],
+            "audit_c": {"explicit_score": None, "responses_present": False, "responses": [], "completion_status": "not_performed"},
+            "dast_10": {"explicit_score": None, "responses_present": False, "responses": [], "completion_status": "not_performed"},
+            "cage": {"explicit_score": None, "responses_present": False, "responses": [], "completion_status": "not_performed"},
+            "flowsheet_responses": [],
+            "refusal_documented": True,
+            "substance_use_admission_documented": False,
+            "evidence": [],
+            "notes": [],
+            "warnings": [],
+        }
+        html = _render_sbirt_screening(self._bundle_with_sbirt(sbirt))
+        assert "SBIRT Screening" in html
+        assert "refused" in html
+        assert "Refusal Documented" in html
+
+    def test_sbirt_dna_omits_card(self):
+        sbirt = {
+            "sbirt_screening_present": "DATA NOT AVAILABLE",
+            "instruments_detected": [],
+            "flowsheet_responses": [],
+            "refusal_documented": False,
+            "substance_use_admission_documented": False,
+            "evidence": [],
+            "notes": [],
+            "warnings": [],
+        }
+        html = _render_sbirt_screening(self._bundle_with_sbirt(sbirt))
+        assert html == ""
+
+    def test_sbirt_null_omits_card(self):
+        html = _render_sbirt_screening(self._bundle_with_sbirt(None))
+        assert html == ""
+
+    def test_sbirt_flowsheet_only(self):
+        sbirt = {
+            "sbirt_screening_present": "yes",
+            "instruments_detected": ["sbirt_flowsheet"],
+            "audit_c": {"explicit_score": None, "responses_present": False, "responses": [], "completion_status": "not_performed"},
+            "dast_10": {"explicit_score": None, "responses_present": False, "responses": [], "completion_status": "not_performed"},
+            "cage": {"explicit_score": None, "responses_present": False, "responses": [], "completion_status": "not_performed"},
+            "flowsheet_responses": [
+                {"question": "injury", "answer": "Yes"},
+                {"question": "drug_use", "answer": "No"},
+            ],
+            "refusal_documented": False,
+            "substance_use_admission_documented": False,
+            "evidence": [],
+            "notes": [],
+            "warnings": [],
+        }
+        html = _render_sbirt_screening(self._bundle_with_sbirt(sbirt))
+        assert "SBIRT Screening" in html
+        assert "sbirt_flowsheet" in html
+        assert "Flowsheet Responses" in html
+        assert "2" in html
+
+    def test_sbirt_substance_use_admission(self):
+        sbirt = {
+            "sbirt_screening_present": "yes",
+            "instruments_detected": [],
+            "audit_c": {"explicit_score": None, "responses_present": False, "responses": [], "completion_status": "not_performed"},
+            "dast_10": {"explicit_score": None, "responses_present": False, "responses": [], "completion_status": "not_performed"},
+            "cage": {"explicit_score": None, "responses_present": False, "responses": [], "completion_status": "not_performed"},
+            "flowsheet_responses": [],
+            "refusal_documented": False,
+            "substance_use_admission_documented": True,
+            "evidence": [],
+            "notes": [],
+            "warnings": [],
+        }
+        html = _render_sbirt_screening(self._bundle_with_sbirt(sbirt))
+        assert "Substance Use Admission" in html

@@ -97,6 +97,7 @@ Each key is copied from `patient_features_v1.json → features.*`.
 | `transfusions` | `features.transfusion_blood_products_v1` | `null` if absent |
 | `hemodynamic_instability` | `features.hemodynamic_instability_pattern_v1` | `null` if absent |
 | `patient_movement` | `features.patient_movement_v1` | `null` if absent |
+| `sbirt_screening` | `features.sbirt_screening_v1` | `null` if absent |
 
 ### `compliance` (required, dict)
 
@@ -169,6 +170,7 @@ Bundle-level warnings. Includes:
 | `summary.transfusions` | `patient_features_v1.json → features.transfusion_blood_products_v1` |
 | `summary.hemodynamic_instability` | `patient_features_v1.json → features.hemodynamic_instability_pattern_v1` |
 | `summary.patient_movement` | `patient_features_v1.json → features.patient_movement_v1` |
+| `summary.sbirt_screening` | `patient_features_v1.json → features.sbirt_screening_v1` |
 | `compliance.ntds_*` | `outputs/ntds/$SLUG/ntds_summary_2026_v1.json` + per-event files |
 | `compliance.protocol_results` | `outputs/protocols/$SLUG/protocol_results_v1.json` |
 | `daily` | `patient_features_v1.json → days.*` + `features.*` |
@@ -222,6 +224,12 @@ Bundle-level warnings. Includes:
 > is now carried in `summary.patient_movement`. Non-trauma team day
 > plans (PT, OT, case management, SLP) are now carried in
 > `daily[date].non_trauma_team_plans`.
+
+> **NOTE (PR #301, 2026-03-23):** SBIRT screening data is now carried
+> in `summary.sbirt_screening`, sourced from
+> `features.sbirt_screening_v1`. Casefile renders an "SBIRT Screening"
+> card showing status, instruments, scores, refusal flag, and substance
+> use admission flag.
 
 ---
 

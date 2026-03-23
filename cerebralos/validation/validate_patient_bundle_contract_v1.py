@@ -108,7 +108,8 @@ def validate_contract(data: Any) -> List[str]:
                      "seizure_prophylaxis",
                      "base_deficit", "transfusions",
                      "hemodynamic_instability",
-                     "patient_movement"):
+                     "patient_movement",
+                     "sbirt_screening"):
             if skey not in summary_val:
                 errors.append(
                     f"SUMMARY_MISSING_KEY: summary.{skey} is missing"
