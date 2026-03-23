@@ -98,6 +98,45 @@ Each key is copied from `patient_features_v1.json → features.*`.
 | `hemodynamic_instability` | `features.hemodynamic_instability_pattern_v1` | `null` if absent |
 | `patient_movement` | `features.patient_movement_v1` | `null` if absent |
 | `sbirt_screening` | `features.sbirt_screening_v1` | `null` if absent |
+| `trauma_summary` | `build_trauma_summary()` assembler | `null` if no TRAUMA_HP evidence |
+
+#### `summary.trauma_summary` (dict or null)
+
+Assembled from `note_sections_v1`, `category_activation_v1`,
+`mechanism_region_v1`, and raw TRAUMA_HP evidence items.
+
+Present (dict) when at least one TRAUMA_HP evidence item exists.
+`null` when no TRAUMA_HP evidence item exists.
+
+When present, **all fields are included** even if their value is `null`
+(partial emit — fail-closed per-subfield, never drop the dict).
+
+| Field | Type | Source | Fail-closed |
+|-------|------|--------|-------------|
+| `present` | bool | always `true` when dict exists | — |
+| `source_note_type` | string | always `"TRAUMA_HP"` | — |
+| `source_note_datetime` | string or null | `note_sections_v1.source_ts` or evidence datetime | `null` if missing |
+| `source_doc_title` | string or null | title line from TRAUMA_HP text | fallback `"Trauma H & P"` |
+| `activation_category` | string or null | `category_activation_v1.category` | `null` if absent |
+| `mechanism_summary` | string or null | `mechanism_region_v1.mechanism_primary` | `null` if absent |
+| `hpi_summary` | string or null | `note_sections_v1.hpi.text` (truncated) | `null` if absent |
+| `primary_survey` | dict | six keys from `note_sections_v1.primary_survey.fields` | each key `null` if absent |
+| `primary_survey.airway` | string or null | raw passthrough | `null` |
+| `primary_survey.breathing` | string or null | raw passthrough | `null` |
+| `primary_survey.circulation` | string or null | raw passthrough | `null` |
+| `primary_survey.disability` | string or null | raw passthrough | `null` |
+| `primary_survey.exposure` | string or null | raw passthrough | `null` |
+| `primary_survey.fast` | string or null | raw passthrough, no normalization | `null` |
+| `gcs` | string or null | extracted from disability field (e.g. `"15"`, `"3T"`) | `null` |
+| `impression_text` | string or null | `note_sections_v1.impression.text` | `null` |
+| `impression_items` | list or null | split from impression text | `null` |
+| `plan_text` | string or null | `note_sections_v1.plan.text` | `null` |
+| `plan_items` | list or null | split from plan text | `null` |
+| `consult_services` | list or null | explicit service names from plan items | `null` (or `[]`) |
+| `intubated` | bool or null | strict: ETT, "intubated", GCS T only | `null` if no input text |
+| `admission_disposition_text` | string or null | "Admit to ..." from plan text | `null` |
+| `attending` | string or null | attestation-associated MD name | `null` |
+| `app_author` | string or null | name line after doc title in TRAUMA_HP text | `null` |
 
 ### `compliance` (required, dict)
 
@@ -171,6 +210,7 @@ Bundle-level warnings. Includes:
 | `summary.hemodynamic_instability` | `patient_features_v1.json → features.hemodynamic_instability_pattern_v1` |
 | `summary.patient_movement` | `patient_features_v1.json → features.patient_movement_v1` |
 | `summary.sbirt_screening` | `patient_features_v1.json → features.sbirt_screening_v1` |
+| `summary.trauma_summary` | `build_trauma_summary()` from note_sections_v1, category_activation_v1, mechanism_region_v1, and evidence items |
 | `compliance.ntds_*` | `outputs/ntds/$SLUG/ntds_summary_2026_v1.json` + per-event files |
 | `compliance.protocol_results` | `outputs/protocols/$SLUG/protocol_results_v1.json` |
 | `daily` | `patient_features_v1.json → days.*` + `features.*` |
