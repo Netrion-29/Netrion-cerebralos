@@ -1346,14 +1346,8 @@ def _render_resuscitation(bundle: Dict[str, Any]) -> str:
         has_data = initial_val is not None or (isinstance(series, list) and len(series) > 0)
 
         if not has_data:
-            # No BD values found — check notes for explicit DATA NOT AVAILABLE
-            dna_notes = [n for n in notes if isinstance(n, str) and "DATA NOT AVAILABLE" in n]
-            if dna_notes:
-                badge_cls = "resus-neutral"
-                badge_text = "No base deficit data"
-            else:
-                badge_cls = "resus-neutral"
-                badge_text = "No base deficit data"
+            badge_cls = "resus-neutral"
+            badge_text = "No base deficit data"
         elif trigger:
             if compliant is False:
                 badge_cls = "resus-warn"
@@ -1392,7 +1386,7 @@ def _render_resuscitation(bundle: Dict[str, Any]) -> str:
     table = (
         '<table class="clinical-tbl">'
         "<thead><tr><th>Indicator</th><th>Status</th></tr></thead>"
-        f'<tbody>{"" .join(sections)}</tbody></table>'
+        f'<tbody>{"".join(sections)}</tbody></table>'
     )
     return (
         '<div class="card">'
