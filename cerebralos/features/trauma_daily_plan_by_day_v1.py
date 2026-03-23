@@ -28,6 +28,11 @@ Note selection:
      palliative care, electrophysiology, speech language pathology,
      infectious disease, neurosurgery, nephrology, hematology/oncology,
      plastics).
+  C. Trauma H&P notes: TRAUMA_HP items with an extractable
+     Impression/Plan section.  These are admission-day H&Ps from
+     the trauma team.  For composite TRAUMA_HP payloads that embed
+     multiple notes, the *first* Plan: section is used (it belongs
+     to the H&P itself).
 
 Excluded:
   - Radiology reads ("Narrative & Impression" pattern)
@@ -77,6 +82,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 # ── Constants ──────────────────────────────────────────────────────
 _DNA = "DATA NOT AVAILABLE"
+
+# Allowed item types for extraction.
+_ALLOWED_ITEM_TYPES = frozenset({"PHYSICIAN_NOTE", "TRAUMA_HP"})
 
 # Note-type allowlist: only these header patterns qualify.
 # Matched case-insensitively against lines at the top of the note.
@@ -314,13 +322,21 @@ def _extract_section_text(
     return result
 
 
-def _find_clinical_impression_and_plan(text: str) -> Tuple[int, int, int]:
+def _find_clinical_impression_and_plan(
+    text: str,
+    *,
+    prefer_first: bool = False,
+) -> Tuple[int, int, int]:
     """
     Find the clinical Impression and Plan section boundaries.
 
     Strategy: find the Plan: section first, then search backwards for the
     nearest Impression: that appears AFTER the Prophylaxis or Labs section
     (to skip radiology read IMPRESSION: lines embedded earlier in the note).
+
+    When *prefer_first* is True the **first** Plan: match is used instead
+    of the last.  This is needed for composite TRAUMA_HP payloads whose
+    H&P Plan appears first, with embedded consult notes following later.
 
     Returns (impression_start, plan_start, plan_end) character positions.
     If impression not found, impression_start == plan_start.
@@ -329,6 +345,9 @@ def _find_clinical_impression_and_plan(text: str) -> Tuple[int, int, int]:
     # Find Plan: section
     plan_match = None
     for m in _RE_PLAN_START.finditer(text):
+        if prefer_first and plan_match is None:
+            plan_match = m  # Take the first Plan: match
+            break
         plan_match = m  # Take the last Plan: match
 
     if not plan_match:
@@ -400,9 +419,15 @@ def _find_clinical_impression_and_plan(text: str) -> Tuple[int, int, int]:
     return impression_start, plan_start, plan_end
 
 
-def _extract_impression(text: str) -> List[str]:
+def _extract_impression(
+    text: str,
+    *,
+    prefer_first: bool = False,
+) -> List[str]:
     """Extract impression section lines from a physician note."""
-    imp_start, plan_start, _ = _find_clinical_impression_and_plan(text)
+    imp_start, plan_start, _ = _find_clinical_impression_and_plan(
+        text, prefer_first=prefer_first,
+    )
     if imp_start < 0 or imp_start == plan_start:
         return []
 
@@ -446,9 +471,15 @@ def _extract_impression(text: str) -> List[str]:
     return result
 
 
-def _extract_plan(text: str) -> List[str]:
+def _extract_plan(
+    text: str,
+    *,
+    prefer_first: bool = False,
+) -> List[str]:
     """Extract plan section lines from a physician note."""
-    _, plan_start, plan_end = _find_clinical_impression_and_plan(text)
+    _, plan_start, plan_end = _find_clinical_impression_and_plan(
+        text, prefer_first=prefer_first,
+    )
     if plan_start < 0:
         return []
 
@@ -520,32 +551,48 @@ def extract_trauma_daily_plan_by_day(
         for item in day_data.get("items") or []:
             item_type = item.get("type", "")
 
-            # Only PHYSICIAN_NOTE items
-            if item_type != "PHYSICIAN_NOTE":
+            # Only allowed item types
+            if item_type not in _ALLOWED_ITEM_TYPES:
                 continue
 
             text = (item.get("payload") or {}).get("text", "")
             if not text:
                 continue
 
-            # Skip radiology reads
-            if _is_radiology_read(text):
-                continue
-
-            # Classify: trauma headers first, then general
-            note_type = _detect_note_type(text)
-            is_trauma_note = note_type is not None
-            if not note_type:
-                note_type = _classify_general_note_type(text)
-                if not note_type:
+            # ── TRAUMA_HP fast path ────────────────────────────
+            is_trauma_hp = item_type == "TRAUMA_HP"
+            if is_trauma_hp:
+                note_type = "Trauma H&P"
+                is_trauma_note = True
+                author = _extract_author(text)
+                # Use first Plan: match — composite payloads embed
+                # consult notes after the H&P itself.
+                impression_lines = _extract_impression(
+                    text, prefer_first=True,
+                )
+                plan_lines = _extract_plan(
+                    text, prefer_first=True,
+                )
+            else:
+                # ── PHYSICIAN_NOTE path (unchanged) ───────────
+                # Skip radiology reads
+                if _is_radiology_read(text):
                     continue
 
-            # Extract author
-            author = _extract_author(text)
+                # Classify: trauma headers first, then general
+                note_type = _detect_note_type(text)
+                is_trauma_note = note_type is not None
+                if not note_type:
+                    note_type = _classify_general_note_type(text)
+                    if not note_type:
+                        continue
 
-            # Extract impression + plan
-            impression_lines = _extract_impression(text)
-            plan_lines = _extract_plan(text)
+                # Extract author
+                author = _extract_author(text)
+
+                # Extract impression + plan
+                impression_lines = _extract_impression(text)
+                plan_lines = _extract_plan(text)
 
             if not plan_lines:
                 if is_trauma_note:
