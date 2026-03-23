@@ -346,6 +346,36 @@ _MINIMAL_FEATURES = {
             "warnings": [],
             "notes": [],
         },
+        "sbirt_screening_v1": {
+            "sbirt_screening_present": "yes",
+            "instruments_detected": ["audit_c", "dast_10"],
+            "audit_c": {
+                "explicit_score": {"value": 4, "ts": "2025-01-01T10:00:00", "source_rule_id": "sbirt_section_audit_c", "evidence": []},
+                "responses_present": True,
+                "responses": [{"question_id": "audit_c_q1", "question_text": "How often?", "answer": "Weekly", "instrument": "audit_c", "raw_line_id": "sbirt001"}],
+                "completion_status": "score_documented",
+            },
+            "dast_10": {
+                "explicit_score": None,
+                "responses_present": True,
+                "responses": [{"question_id": "dast_10_q1", "question_text": "Used drugs?", "answer": "No", "instrument": "dast_10", "raw_line_id": "sbirt002"}],
+                "completion_status": "responses_only",
+            },
+            "cage": {
+                "explicit_score": None,
+                "responses_present": False,
+                "responses": [],
+                "completion_status": "not_performed",
+            },
+            "flowsheet_responses": [],
+            "refusal_documented": False,
+            "refusal_evidence": [],
+            "substance_use_admission_documented": False,
+            "substance_use_admission_evidence": [],
+            "evidence": [{"raw_line_id": "sbirt001", "source": "NURSING_NOTE", "ts": "2025-01-01T10:00:00", "snippet": "AUDIT-C Score: 4", "role": "score", "label": "audit_c"}],
+            "notes": [],
+            "warnings": [],
+        },
     },
     "warnings": ["test warning"],
     "warnings_summary": {},
@@ -543,6 +573,15 @@ class TestAssembleBundle:
         assert pm["summary"]["discharge_ts"] == "01/02 1741"
         assert len(pm["entries"]) == 2
 
+    def test_summary_sbirt_screening_populated(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        sbirt = bundle["summary"]["sbirt_screening"]
+        assert sbirt is not None
+        assert sbirt["sbirt_screening_present"] == "yes"
+        assert "audit_c" in sbirt["instruments_detected"]
+        assert sbirt["audit_c"]["explicit_score"]["value"] == 4
+
     def test_daily_non_trauma_team_plans_populated(self, full_outputs):
         root, slug = full_outputs
         bundle = assemble_bundle(slug, outputs_root=root)
@@ -587,6 +626,7 @@ class TestAssembleBundle:
         assert bundle["summary"]["transfusions"] is None
         assert bundle["summary"]["hemodynamic_instability"] is None
         assert bundle["summary"]["patient_movement"] is None
+        assert bundle["summary"]["sbirt_screening"] is None
 
     def test_consultants_section(self, full_outputs):
         root, slug = full_outputs
@@ -690,6 +730,7 @@ class TestValidateContract:
         assert any("SUMMARY_MISSING_KEY" in e and "transfusions" in e for e in errors)
         assert any("SUMMARY_MISSING_KEY" in e and "hemodynamic_instability" in e for e in errors)
         assert any("SUMMARY_MISSING_KEY" in e and "patient_movement" in e for e in errors)
+        assert any("SUMMARY_MISSING_KEY" in e and "sbirt_screening" in e for e in errors)
 
     def test_summary_with_clinical_keys_null_passes(self):
         data = {k: {} for k in ALLOWED_TOP_LEVEL_KEYS}
@@ -703,6 +744,7 @@ class TestValidateContract:
             "base_deficit": None, "transfusions": None,
             "hemodynamic_instability": None,
             "patient_movement": None,
+            "sbirt_screening": None,
         }
         errors = validate_contract(data)
         assert not any("SUMMARY_MISSING_KEY" in e for e in errors)

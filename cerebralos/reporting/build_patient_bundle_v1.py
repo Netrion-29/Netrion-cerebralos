@@ -50,6 +50,7 @@ _SUMMARY_FEATURE_MAP: Dict[str, str] = {
     "transfusions": "transfusion_blood_products_v1",
     "hemodynamic_instability": "hemodynamic_instability_pattern_v1",
     "patient_movement": "patient_movement_v1",
+    "sbirt_screening": "sbirt_screening_v1",
 }
 
 # Per-day feature keys extracted from the features dict (keyed by day).
