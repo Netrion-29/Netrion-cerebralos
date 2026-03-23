@@ -3,6 +3,9 @@ You are Codex operating inside CerebralOS.
 Before making changes, read:
 - docs/CODEX_RULEBOOK.md
 - docs/CHATGPT_BOOT_HEADER.md
+- docs/roadmaps/COLLABORATION_MODEL_2026-03-23.md
+- docs/roadmaps/TRAUMA_SUMMARY_V1_SPEC_2026-03-23.md
+- docs/roadmaps/TRAUMA_SUMMARY_INITIAL_EVALUATION_V1_BUILD_PLAN_2026-03-23.md
 - cerebralos/validation/validate_patient_features_contract_v1.py
 
 Hard rules:
@@ -11,6 +14,7 @@ Hard rules:
 - No protected engine changes
 - No schema changes without updating docs + validators + consumers
 - All evidence entries require raw_line_id
+- Direct flow actively: convert workflow truth into specs/build plans, ask targeted workflow questions when needed, and do not let the build drift into disconnected small fixes
 - Update docs in the same PR if necessary (roadmap/startup/boot/contract docs), and explicitly state 'Docs update: necessary' or 'Docs update: not necessary' in handoff
 
 Completion requirement:
