@@ -81,7 +81,7 @@ _FULL_BUNDLE = {
         "demographics": {"sex": "F"},
         "activation": {"category": "Level II"},
         "shock_trigger": {"shock_triggered": False},
-        "age": {"age": 71},
+        "age": {"age_years": 71, "age": 71},
         "injuries": {
             "findings_present": "yes",
             "findings_labels": ["rib_fracture", "spinal_fracture"],

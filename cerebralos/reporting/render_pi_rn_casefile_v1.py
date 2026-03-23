@@ -1084,6 +1084,12 @@ def _render_prophylaxis(bundle: Dict[str, Any]) -> str:
     if not any(isinstance(x, dict) for x in (dvt, gi, szr)):
         return ""
 
+    # Sentinel values that mean "no evidence found" — not a real clinical exclusion
+    _NO_EVIDENCE_SENTINELS = frozenset({
+        "NO_CHEMICAL_PROPHYLAXIS_EVIDENCE",
+        "NO_GI_PROPHYLAXIS_EVIDENCE",
+    })
+
     rows = ""
 
     # DVT prophylaxis
@@ -1094,7 +1100,7 @@ def _render_prophylaxis(bundle: Dict[str, Any]) -> str:
         delay_h = dvt.get("delay_hours")
         delay_flag = dvt.get("delay_flag_24h")
 
-        if excluded:
+        if excluded and excluded not in _NO_EVIDENCE_SENTINELS:
             status_cls = "proph-excluded"
             status_text = f"Excluded: {excluded}"
         elif pharm_ts:
@@ -1134,7 +1140,7 @@ def _render_prophylaxis(bundle: Dict[str, Any]) -> str:
         delay_h = gi.get("delay_hours")
         delay_flag = gi.get("delay_flag_48h")
 
-        if excluded:
+        if excluded and excluded not in _NO_EVIDENCE_SENTINELS:
             status_cls = "proph-excluded"
             status_text = f"Excluded: {excluded}"
         elif pharm_ts:
