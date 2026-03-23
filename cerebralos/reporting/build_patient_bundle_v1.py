@@ -42,6 +42,10 @@ _SUMMARY_FEATURE_MAP: Dict[str, str] = {
     "injuries": "radiology_findings_v1",
     "imaging": "radiology_findings_v1",
     "procedures": "procedure_operatives_v1",
+    "devices": "lda_events_v1",
+    "dvt_prophylaxis": "dvt_prophylaxis_v1",
+    "gi_prophylaxis": "gi_prophylaxis_v1",
+    "seizure_prophylaxis": "seizure_prophylaxis_v1",
 }
 
 # Per-day feature keys extracted from the features dict (keyed by day).

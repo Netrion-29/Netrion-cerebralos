@@ -56,7 +56,7 @@ in the above-the-fold clinical snapshot (PR #290) and patient card.
 |---|-------------|--------|----------|-------|-------------|
 | 12 | Injury list by region | **Implemented** | — | `radiology_findings_v1` → bundle `summary.injuries` → casefile "Primary Injuries" section. Grouped by finding type (singular/list), shows level, count, laterality, grade. Fail-closed when absent. | — |
 | 13 | Procedures & operations | **Implemented** | — | `procedure_operatives_v1` → bundle `summary.procedures` → casefile "Procedures" section. Chronological event list with color-coded category badges, preop dx, CPT codes, summary counts. Fail-closed when absent. | — |
-| 14 | Lines / drains / airways | **Partial** | Renderer | Extraction complete (`lda_events_v1` — device lifecycle: placement, removal, duration, category, assessment). Not rendered in casefile. | Add casefile device timeline sub-section. |
+| 14 | Lines / drains / airways | **Implemented** | — | `lda_events_v1` → bundle `summary.devices` → casefile "Lines / Drains / Airways" section. Device table with category, type, placement/removal, duration, site, active/removed status. Fail-closed when absent. | — |
 | 15 | Consultations | **Implemented** | — | `consultant_events_v1` → bundle → casefile consultants section in header | — |
 | 16 | Consultant plans | **Implemented** | — | `consultant_day_plans_by_day_v1` → bundle daily → day-card renderer (PR #292). Renders per-service plan items. | Consider structured recommendation extraction (future refinement). |
 | 17 | Imaging highlights | **Implemented** | — | `radiology_findings_v1` → bundle `summary.imaging` → casefile "Imaging Studies" section. Evidence trail table with timestamp, source, finding label, snippet. Fail-closed when absent. | — |
@@ -136,7 +136,7 @@ Based on current coverage gaps, ranked by PI RN workflow value:
 | 1 | **Injury inventory + imaging results** | #12, #17 | Closes biggest content gap. PI RN's first question is "what was injured?" Data exists in `radiology_findings_v1` + `mechanism_region_v1`. |
 | 2 | **Procedure/operative timeline** | #13, #30 | Unblocks return-to-OR, delay-to-definitive-care metrics. `procedure_operatives_v1` extraction is high-confidence. Time-to-OR is ~5-line derivation. |
 | 3 | **Resuscitation / hemodynamic summary** | (new section) | Category I metric. Wire `base_deficit_monitoring_v1` + `transfusion_blood_products_v1` + `hemodynamic_instability_pattern_v1`. |
-| 4 | **Device duration + prophylaxis grid** | #14, #22 | Enables CLABSI/VAP/PE prevention audits. Wire `lda_events_v1` + `dvt_prophylaxis_v1` per day. |
+| 4 | **Device duration + prophylaxis grid** | #14, #22 | **Partially addressed** — PR #295 wired `lda_events_v1` device summary + `dvt_prophylaxis_v1` + `gi_prophylaxis_v1` + `seizure_prophylaxis_v1` into casefile. Per-day device grid and PT/OT (#22) remain. |
 | 5 | **Daily narrative investigation** | #20 | Investigate `trauma_daily_plan_by_day_v1` upstream extraction gap for gate patients. |
 
 See [STATUS_DASHBOARD_v1.md](../STATUS_DASHBOARD_v1.md) for the current
@@ -149,3 +149,4 @@ one-page overview of recommended next work.
 | Date | Change |
 |------|--------|
 | 2026-03-22 | Initial version — baseline at PR #292 (`b8ac647`) on main. |
+| 2026-03-22 | PR #295 — Device + prophylaxis visibility v1. Item #14 → Implemented. Prophylaxis summary (DVT, GI, seizure) added. |

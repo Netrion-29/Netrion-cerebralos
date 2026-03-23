@@ -113,6 +113,68 @@ _MINIMAL_FEATURES = {
             "notes": [],
             "source_rule_id": "procedure_operatives_v1",
         },
+        "lda_events_v1": {
+            "devices": [
+                {
+                    "device_type": "Peripheral IV",
+                    "device_label": "PIV #1",
+                    "category": "PIV",
+                    "placed_ts": "01/01/25 0830",
+                    "removed_ts": "01/03/25 1200",
+                    "duration_text": "2 days",
+                    "site": "Left hand",
+                    "source_format": "LDA",
+                    "assessment_count": 3,
+                    "event_rows": 5,
+                    "evidence": [{"raw_line_id": "lda001"}],
+                },
+            ],
+            "lda_device_count": 1,
+            "active_devices_count": 0,
+            "categories_present": ["PIV"],
+            "devices_with_placement": ["PIV #1"],
+            "devices_with_removal": ["PIV #1"],
+            "source_file": "test.txt",
+            "source_rule_id": "lda_events_raw_file",
+            "warnings": [],
+            "notes": [],
+        },
+        "dvt_prophylaxis_v1": {
+            "pharm_first_ts": "2025-01-01T18:00:00",
+            "mech_first_ts": None,
+            "first_ts": "2025-01-01T18:00:00",
+            "delay_hours": 10.0,
+            "delay_flag_24h": False,
+            "excluded_reason": None,
+            "orders_only_count": 0,
+            "pharm_admin_evidence_count": 1,
+            "pharm_ambiguous_mention_count": 0,
+            "mech_admin_evidence_count": 0,
+            "evidence": {"pharm": [{"ts": "2025-01-01T18:00:00", "raw_line_id": "dvt001", "snippet": "enoxaparin 40mg"}], "mech": [], "exclusion": []},
+        },
+        "gi_prophylaxis_v1": {
+            "pharm_first_ts": "2025-01-01T18:00:00",
+            "delay_hours": 10.0,
+            "delay_flag_48h": False,
+            "excluded_reason": None,
+            "pharm_admin_evidence_count": 1,
+            "pharm_ambiguous_mention_count": 0,
+            "orders_only_count": 0,
+            "evidence": {"pharm": [{"ts": "2025-01-01T18:00:00", "raw_line_id": "gi001", "snippet": "famotidine 20mg"}], "exclusion": []},
+        },
+        "seizure_prophylaxis_v1": {
+            "detected": False,
+            "agents": [],
+            "home_med_present": False,
+            "first_mention_ts": None,
+            "first_admin_ts": None,
+            "discontinued": False,
+            "discontinued_ts": None,
+            "dose_entries": [],
+            "admin_evidence_count": 0,
+            "mention_evidence_count": 0,
+            "evidence": {"admin": [], "mention": [], "discontinued": []},
+        },
     },
     "warnings": ["test warning"],
     "warnings_summary": {},
@@ -244,6 +306,37 @@ class TestAssembleBundle:
         assert len(procs["events"]) == 1
         assert procs["events"][0]["label"] == "Endotracheal intubation"
 
+    def test_summary_devices_populated(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        devs = bundle["summary"]["devices"]
+        assert devs is not None
+        assert devs["lda_device_count"] == 1
+        assert len(devs["devices"]) == 1
+        assert devs["devices"][0]["category"] == "PIV"
+
+    def test_summary_dvt_prophylaxis_populated(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        dvt = bundle["summary"]["dvt_prophylaxis"]
+        assert dvt is not None
+        assert dvt["delay_hours"] == 10.0
+        assert dvt["delay_flag_24h"] is False
+
+    def test_summary_gi_prophylaxis_populated(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        gi = bundle["summary"]["gi_prophylaxis"]
+        assert gi is not None
+        assert gi["pharm_first_ts"] == "2025-01-01T18:00:00"
+
+    def test_summary_seizure_prophylaxis_populated(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        szr = bundle["summary"]["seizure_prophylaxis"]
+        assert szr is not None
+        assert szr["detected"] is False
+
     def test_summary_injuries_null_when_absent(self, tmp_path):
         slug = "Bare_Test"
         _write_artifact(tmp_path, f"evidence/{slug}/patient_evidence_v1.json", _MINIMAL_EVIDENCE)
@@ -262,6 +355,10 @@ class TestAssembleBundle:
         assert bundle["summary"]["injuries"] is None
         assert bundle["summary"]["imaging"] is None
         assert bundle["summary"]["procedures"] is None
+        assert bundle["summary"]["devices"] is None
+        assert bundle["summary"]["dvt_prophylaxis"] is None
+        assert bundle["summary"]["gi_prophylaxis"] is None
+        assert bundle["summary"]["seizure_prophylaxis"] is None
 
     def test_consultants_section(self, full_outputs):
         root, slug = full_outputs
@@ -357,13 +454,21 @@ class TestValidateContract:
         assert any("SUMMARY_MISSING_KEY" in e and "injuries" in e for e in errors)
         assert any("SUMMARY_MISSING_KEY" in e and "imaging" in e for e in errors)
         assert any("SUMMARY_MISSING_KEY" in e and "procedures" in e for e in errors)
+        assert any("SUMMARY_MISSING_KEY" in e and "devices" in e for e in errors)
+        assert any("SUMMARY_MISSING_KEY" in e and "dvt_prophylaxis" in e for e in errors)
+        assert any("SUMMARY_MISSING_KEY" in e and "gi_prophylaxis" in e for e in errors)
+        assert any("SUMMARY_MISSING_KEY" in e and "seizure_prophylaxis" in e for e in errors)
 
     def test_summary_with_clinical_keys_null_passes(self):
         data = {k: {} for k in ALLOWED_TOP_LEVEL_KEYS}
         data["build"] = {"bundle_version": "1.0"}
         data["patient"] = {"slug": "Test"}
         data["warnings"] = []
-        data["summary"] = {"injuries": None, "imaging": None, "procedures": None}
+        data["summary"] = {
+            "injuries": None, "imaging": None, "procedures": None,
+            "devices": None, "dvt_prophylaxis": None,
+            "gi_prophylaxis": None, "seizure_prophylaxis": None,
+        }
         errors = validate_contract(data)
         assert not any("SUMMARY_MISSING_KEY" in e for e in errors)
 

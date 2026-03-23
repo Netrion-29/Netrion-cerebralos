@@ -372,6 +372,25 @@ details.day-card[open] > summary.day-summary::before { transform: rotate(90deg);
 .proc-cat-anesthesia { background: var(--amber-100); color: var(--amber-600); }
 .proc-cat-pre-op { background: var(--slate-100); color: var(--slate-600); }
 .proc-cat-significant { background: var(--red-100); color: var(--red-600); }
+
+/* Device (LDA) table */
+.dev-status { font-size: 0.75em; font-weight: 700; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 3px; display: inline-block; letter-spacing: 0.03em; }
+.dev-active { background: var(--green-100); color: var(--green-700); }
+.dev-removed { background: var(--slate-100); color: var(--slate-500); }
+.dev-cat { font-size: 0.75em; font-weight: 700; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 3px; display: inline-block;
+    letter-spacing: 0.03em; background: var(--blue-100); color: var(--blue-700); }
+
+/* Prophylaxis table */
+.proph-status { font-size: 0.75em; font-weight: 700; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 3px; display: inline-block; letter-spacing: 0.03em; }
+.proph-ok { background: var(--green-100); color: var(--green-700); }
+.proph-delay { background: var(--amber-100); color: var(--amber-600); }
+.proph-excluded { background: var(--slate-100); color: var(--slate-500); }
+.proph-none { background: var(--red-50); color: var(--red-600); }
+.proph-detected { background: var(--blue-100); color: var(--blue-700); }
+.proph-not-detected { background: var(--slate-100); color: var(--slate-500); }
 """
 
 # ── JS ─────────────────────────────────────────────────────────────
@@ -976,6 +995,224 @@ def _render_procedures(bundle: Dict[str, Any]) -> str:
         '<div class="card">'
         '<div class="card-title">Operative / Procedural Timeline</div>'
         f'<div class="card-body">{summary_html}{table}</div>'
+        "</div>"
+    )
+
+
+def _render_devices(bundle: Dict[str, Any]) -> str:
+    """Render LDA device inventory from lda_events_v1.
+
+    Shows device table with category, type, placement/removal, duration, status.
+    Fail-closed: returns empty string when data absent.
+    """
+    devs = bundle.get("summary", {}).get("devices")
+    if not devs or not isinstance(devs, dict):
+        return ""
+    devices = devs.get("devices", [])
+    if not isinstance(devices, list) or not devices:
+        return ""
+
+    rows = ""
+    for d in devices:
+        if not isinstance(d, dict):
+            continue
+        category = d.get("category", "")
+        dtype = d.get("device_type", "")
+        placed = d.get("placed_ts", "")
+        removed = d.get("removed_ts", "")
+        duration = d.get("duration_text", "")
+        site = d.get("site", "")
+
+        is_active = bool(placed and not removed)
+        status_cls = "dev-active" if is_active else "dev-removed"
+        status_text = "Active" if is_active else ("Removed" if removed else "\u2014")
+        status_badge = f'<span class="dev-status {status_cls}">{status_text}</span>'
+        cat_badge = f'<span class="dev-cat">{_e(category)}</span>' if category else ""
+
+        rows += (
+            "<tr>"
+            f"<td>{cat_badge}</td>"
+            f"<td>{_e(dtype)}</td>"
+            f'<td class="proc-ts">{_na(placed)}</td>'
+            f'<td class="proc-ts">{_na(removed)}</td>'
+            f"<td>{_na(duration)}</td>"
+            f"<td>{_na(site)}</td>"
+            f"<td>{status_badge}</td>"
+            "</tr>"
+        )
+
+    if not rows:
+        return ""
+
+    total = devs.get("lda_device_count", len(devices))
+    active = devs.get("active_devices_count", 0)
+    cats = devs.get("categories_present", [])
+    summary_parts = [f"{total} device{'s' if total != 1 else ''}"]
+    if active:
+        summary_parts.append(f"{active} active")
+    if cats:
+        summary_parts.append(", ".join(str(c) for c in cats))
+    summary_line = " \u2014 ".join(summary_parts)
+    summary_html = f'<div style="font-size:0.82em;color:var(--slate-500);margin-bottom:8px;">{_e(summary_line)}</div>'
+
+    table = (
+        '<table class="clinical-tbl">'
+        "<thead><tr>"
+        "<th>Category</th><th>Device</th><th>Placed</th><th>Removed</th>"
+        "<th>Duration</th><th>Site</th><th>Status</th>"
+        "</tr></thead>"
+        f"<tbody>{rows}</tbody></table>"
+    )
+    return (
+        '<div class="card">'
+        '<div class="card-title">Lines / Drains / Airways</div>'
+        f'<div class="card-body">{summary_html}{table}</div>'
+        "</div>"
+    )
+
+
+def _render_prophylaxis(bundle: Dict[str, Any]) -> str:
+    """Render prophylaxis summary (DVT, GI, seizure).
+
+    Shows status, timing, delay flags, and exclusion reasons.
+    Fail-closed: returns empty string when all prophylaxis data absent.
+    """
+    summary = bundle.get("summary", {})
+    dvt = summary.get("dvt_prophylaxis")
+    gi = summary.get("gi_prophylaxis")
+    szr = summary.get("seizure_prophylaxis")
+    if not any(isinstance(x, dict) for x in (dvt, gi, szr)):
+        return ""
+
+    # Sentinel values that mean "no evidence found" — not a real clinical exclusion
+    _NO_EVIDENCE_SENTINELS = frozenset({
+        "NO_CHEMICAL_PROPHYLAXIS_EVIDENCE",
+        "NO_GI_PROPHYLAXIS_EVIDENCE",
+    })
+
+    rows = ""
+
+    # DVT prophylaxis
+    if isinstance(dvt, dict):
+        excluded = dvt.get("excluded_reason")
+        pharm_ts = dvt.get("pharm_first_ts")
+        mech_ts = dvt.get("mech_first_ts")
+        delay_h = dvt.get("delay_hours")
+        delay_flag = dvt.get("delay_flag_24h")
+
+        if excluded and excluded not in _NO_EVIDENCE_SENTINELS:
+            status_cls = "proph-excluded"
+            status_text = f"Excluded: {excluded}"
+        elif pharm_ts:
+            if delay_flag:
+                status_cls = "proph-delay"
+                status_text = "Pharmacologic started (delayed >24h)"
+            else:
+                status_cls = "proph-ok"
+                status_text = "Pharmacologic started"
+        elif mech_ts:
+            status_cls = "proph-ok"
+            status_text = "Mechanical only"
+        else:
+            status_cls = "proph-none"
+            status_text = "No evidence"
+
+        detail_parts: List[str] = []
+        if pharm_ts:
+            detail_parts.append(f"Pharm: {_e(str(pharm_ts))}")
+        if mech_ts:
+            detail_parts.append(f"Mech: {_e(str(mech_ts))}")
+        if delay_h is not None:
+            detail_parts.append(f"Delay: {delay_h:.1f}h")
+        detail = f'<div class="finding-detail">{"; ".join(detail_parts)}</div>' if detail_parts else ""
+
+        rows += (
+            "<tr>"
+            '<td class="finding-label">DVT Prophylaxis</td>'
+            f'<td><span class="proph-status {status_cls}">{_e(status_text)}</span>{detail}</td>'
+            "</tr>"
+        )
+
+    # GI prophylaxis
+    if isinstance(gi, dict):
+        excluded = gi.get("excluded_reason")
+        pharm_ts = gi.get("pharm_first_ts")
+        delay_h = gi.get("delay_hours")
+        delay_flag = gi.get("delay_flag_48h")
+
+        if excluded and excluded not in _NO_EVIDENCE_SENTINELS:
+            status_cls = "proph-excluded"
+            status_text = f"Excluded: {excluded}"
+        elif pharm_ts:
+            if delay_flag:
+                status_cls = "proph-delay"
+                status_text = "Started (delayed >48h)"
+            else:
+                status_cls = "proph-ok"
+                status_text = "Started"
+        else:
+            status_cls = "proph-none"
+            status_text = "No evidence"
+
+        detail_parts_gi: List[str] = []
+        if pharm_ts:
+            detail_parts_gi.append(f"First: {_e(str(pharm_ts))}")
+        if delay_h is not None:
+            detail_parts_gi.append(f"Delay: {delay_h:.1f}h")
+        detail = f'<div class="finding-detail">{"; ".join(detail_parts_gi)}</div>' if detail_parts_gi else ""
+
+        rows += (
+            "<tr>"
+            '<td class="finding-label">GI Prophylaxis</td>'
+            f'<td><span class="proph-status {status_cls}">{_e(status_text)}</span>{detail}</td>'
+            "</tr>"
+        )
+
+    # Seizure prophylaxis
+    if isinstance(szr, dict):
+        detected = szr.get("detected", False)
+        agents = szr.get("agents", [])
+        admin_ts = szr.get("first_admin_ts")
+        discontinued = szr.get("discontinued", False)
+
+        if detected:
+            status_cls = "proph-detected"
+            agent_str = ", ".join(str(a) for a in agents) if agents else "detected"
+            status_text = agent_str
+        else:
+            status_cls = "proph-not-detected"
+            status_text = "Not detected"
+
+        detail_parts_szr: List[str] = []
+        if admin_ts:
+            detail_parts_szr.append(f"First admin: {_e(str(admin_ts))}")
+        if discontinued:
+            disc_ts = szr.get("discontinued_ts")
+            if disc_ts:
+                detail_parts_szr.append(f"D/C: {_e(str(disc_ts))}")
+            else:
+                detail_parts_szr.append("Discontinued")
+        detail = f'<div class="finding-detail">{"; ".join(detail_parts_szr)}</div>' if detail_parts_szr else ""
+
+        rows += (
+            "<tr>"
+            '<td class="finding-label">Seizure Prophylaxis</td>'
+            f'<td><span class="proph-status {status_cls}">{_e(status_text)}</span>{detail}</td>'
+            "</tr>"
+        )
+
+    if not rows:
+        return ""
+
+    table = (
+        '<table class="clinical-tbl">'
+        "<thead><tr><th>Measure</th><th>Status / Detail</th></tr></thead>"
+        f"<tbody>{rows}</tbody></table>"
+    )
+    return (
+        '<div class="card">'
+        '<div class="card-title">Prophylaxis Summary</div>'
+        f'<div class="card-body">{table}</div>'
         "</div>"
     )
 
@@ -1603,6 +1840,8 @@ def render_casefile(bundle: Dict[str, Any]) -> str:
         _render_primary_injuries(bundle),
         _render_imaging_studies(bundle),
         _render_procedures(bundle),
+        _render_devices(bundle),
+        _render_prophylaxis(bundle),
         _render_pmh(bundle),
         _render_consultants(bundle),
         _render_ntds_summary(bundle),
