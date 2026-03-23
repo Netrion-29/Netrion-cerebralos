@@ -1052,6 +1052,10 @@ class TestClassifyGeneralNoteType(unittest.TestCase):
         text = "Signed\n\nPHYSICAL THERAPY\nPatient: Test\n"
         self.assertIsNone(_classify_general_note_type(text))
 
+    def test_infectious_disease(self):
+        text = "Signed\n\nInfectious Disease Consult Progress Note\nDr. Smith\n"
+        self.assertEqual(_classify_general_note_type(text), "Infectious Disease Progress Note")
+
     def test_medication_order_returns_none(self):
         text = "[PHYSICIAN_NOTE] 2025-12-17\nDEA #: FV5998919\n"
         self.assertIsNone(_classify_general_note_type(text))
@@ -1134,7 +1138,14 @@ class TestAssessmentPlanExtraction(unittest.TestCase):
 
     def test_no_plan_general_note_silently_skipped(self):
         """General note without plan markers is silently skipped (no warning)."""
-        text = "Signed\\n\\nDeaconess Care Group\\nHospital Progress Note\\n\\nSubjective: No complaints\\n"
+        text = (
+            "Signed\n"
+            "\n"
+            "Deaconess Care Group\n"
+            "Hospital Progress Note\n"
+            "\n"
+            "Subjective: No complaints\n"
+        )
         items = [_make_physician_note_item(text)]
         days_data = _make_days_data({"2026-01-05": items})
         result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)

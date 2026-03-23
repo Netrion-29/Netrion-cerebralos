@@ -139,6 +139,7 @@ Rendering caps: 15 impression lines, 40 plan lines per note.
 ## Boundaries
 
 - Does NOT extract consultant day-plans (separate feature)
-- Does NOT extract hospitalist/geriatric protocol plans
 - Does NOT modify `note_sections_v1` semantics
 - Does NOT change v3 or v4 renderers
+- Overlap with `non_trauma_team_day_plans_v1` is intentional: that
+  feature captures brief updates; this captures full A/P sections
