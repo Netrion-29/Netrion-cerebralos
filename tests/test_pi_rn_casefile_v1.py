@@ -38,6 +38,8 @@ from cerebralos.reporting.render_pi_rn_casefile_v1 import (
     _render_devices,
     _render_prophylaxis,
     _render_resuscitation,
+    _render_disposition_planning,
+    _render_non_trauma_team_plans,
 )
 
 
@@ -288,6 +290,80 @@ _FULL_BUNDLE = {
             "notes": [],
             "warnings": [],
         },
+        "patient_movement": {
+            "entries": [
+                {
+                    "unit": "Ortho Neuro Trauma Care Center",
+                    "date_raw": "01/01",
+                    "time_raw": "1005",
+                    "event_type": "Admission",
+                    "room": "T301",
+                    "bed": "T301-01",
+                    "patient_class": "Inpatient",
+                    "level_of_care": "Critical",
+                    "service": "Trauma",
+                    "providers": {"admitting": "Adams, John"},
+                    "discharge_disposition": None,
+                    "raw_line_id": "pm001",
+                },
+                {
+                    "unit": "3N",
+                    "date_raw": "01/03",
+                    "time_raw": "1400",
+                    "event_type": "Transfer In",
+                    "room": "301",
+                    "bed": "301-B",
+                    "patient_class": "Inpatient",
+                    "level_of_care": "Acute",
+                    "service": "Trauma",
+                    "providers": {},
+                    "discharge_disposition": None,
+                    "raw_line_id": "pm002",
+                },
+                {
+                    "unit": "3N",
+                    "date_raw": "01/05",
+                    "time_raw": "1741",
+                    "event_type": "Discharge",
+                    "room": "301",
+                    "bed": "301-B",
+                    "patient_class": "Inpatient",
+                    "level_of_care": "Acute",
+                    "service": "Trauma",
+                    "providers": {"discharge": "Adams, John"},
+                    "discharge_disposition": "Home",
+                    "raw_line_id": "pm003",
+                },
+            ],
+            "summary": {
+                "movement_event_count": 3,
+                # Real data uses raw "MM/DD HHMM" timestamps; renderer
+                # only calls _e() so format is pass-through.  We keep
+                # the raw format here to match production shape.
+                "first_movement_ts": "01/01 1005",
+                "admission_ts": "01/01 1005",
+                "discharge_ts": "01/05 1741",
+                "discharge_disposition_final": "Home",
+                "transfer_count": 1,
+                "units_visited": ["Ortho Neuro Trauma Care Center", "3N"],
+                "levels_of_care": ["Critical", "Acute"],
+                "services_seen": ["Trauma"],
+                "rooms_visited": ["T301", "301"],
+                "event_type_counts": {"Admission": 1, "Transfer In": 1, "Discharge": 1},
+                # ICU fields: non-null here to exercise the renderer
+                # code path (real Betty_Roll has null/0 for these).
+                "icu_los_hours": 51.9,
+                "icu_los_days": 2,
+                "icu_admission_count": 1,
+            },
+            "evidence": [
+                {"role": "patient_movement_entry", "snippet": "Ortho Neuro Trauma Care Center 01/01 1005 Admission", "raw_line_id": "pm001"},
+            ],
+            "source_file": "test.txt",
+            "source_rule_id": "patient_movement_raw_file",
+            "warnings": [],
+            "notes": ["source=raw_file, section_lines=20, entries_parsed=3"],
+        },
     },
     "compliance": {
         "ntds_summary": [{"events": 21}],
@@ -356,6 +432,50 @@ _FULL_BUNDLE = {
                 "service_count": 1,
                 "item_count": 1,
             },
+            "non_trauma_team_plans": {
+                "services": {
+                    "Physical Therapy": {
+                        "notes": [
+                            {
+                                "dt": "2026-01-01T14:30:00",
+                                "source_id": "pt001",
+                                "author": "J. Smith, PT",
+                                "service": "Physical Therapy",
+                                "note_header": "PT Eval",
+                                "brief_lines": [
+                                    "Eval for mobility",
+                                    "Pt requires max assist for transfers",
+                                    "Fall risk: HIGH",
+                                    "Plan: OOB to chair TID",
+                                ],
+                                "brief_line_count": 4,
+                                "raw_line_id": "ntp001",
+                            }
+                        ],
+                        "note_count": 1,
+                    },
+                    "Case Management": {
+                        "notes": [
+                            {
+                                "dt": "2026-01-01T16:00:00",
+                                "source_id": "cm001",
+                                "author": "A. Brown, MSW",
+                                "service": "Case Management",
+                                "note_header": "CM Note",
+                                "brief_lines": [
+                                    "Discussed discharge plan with family",
+                                    "Home with home health services pending PT eval",
+                                ],
+                                "brief_line_count": 2,
+                                "raw_line_id": "ntp002",
+                            }
+                        ],
+                        "note_count": 1,
+                    },
+                },
+                "service_count": 2,
+                "note_count": 2,
+            },
         },
         "2026-01-02": {
             "vitals": {
@@ -368,6 +488,7 @@ _FULL_BUNDLE = {
             "ventilator": None,
             "plans": None,
             "consultant_plans": None,
+            "non_trauma_team_plans": None,
         },
     },
     "consultants": {
@@ -422,6 +543,7 @@ _MINIMAL_BUNDLE = {
         "base_deficit": None,
         "transfusions": None,
         "hemodynamic_instability": None,
+        "patient_movement": None,
     },
     "compliance": {
         "ntds_summary": None,
@@ -1693,3 +1815,175 @@ def _make_bundle_with_resus(
     if hemodynamic_instability is not None:
         bundle["summary"]["hemodynamic_instability"] = hemodynamic_instability
     return bundle
+
+
+# ── Disposition Planning tests ──────────────────────────────────────
+
+class TestDispositionPlanningRendering:
+    """Tests for the Disposition Planning patient-level card."""
+
+    def test_section_present_in_full_bundle(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert "Disposition Planning" in html
+
+    def test_final_disposition_shown(self):
+        out = _render_disposition_planning(_FULL_BUNDLE)
+        assert "Final Disposition" in out
+        assert "Home" in out
+
+    def test_discharge_ts_shown(self):
+        out = _render_disposition_planning(_FULL_BUNDLE)
+        assert "Discharge Timestamp" in out
+        assert "01/05 1741" in out
+
+    def test_icu_los_shown(self):
+        out = _render_disposition_planning(_FULL_BUNDLE)
+        assert "ICU Length of Stay" in out
+        assert "2 days" in out
+        assert "51.9 hrs" in out or "51.9" in out
+
+    def test_icu_admissions_shown(self):
+        out = _render_disposition_planning(_FULL_BUNDLE)
+        assert "ICU Admissions" in out
+
+    def test_levels_of_care_shown(self):
+        out = _render_disposition_planning(_FULL_BUNDLE)
+        assert "Levels of Care" in out
+        assert "Critical" in out
+        assert "Acute" in out
+
+    def test_units_visited_shown(self):
+        out = _render_disposition_planning(_FULL_BUNDLE)
+        assert "Units Visited" in out
+        assert "Ortho Neuro Trauma Care Center" in out
+        assert "3N" in out
+
+    def test_transfers_shown(self):
+        out = _render_disposition_planning(_FULL_BUNDLE)
+        assert "Transfers" in out
+
+    def test_absent_patient_movement_omits_section(self):
+        out = _render_disposition_planning(_MINIMAL_BUNDLE)
+        assert out == ""
+
+    def test_non_dict_patient_movement_omits_section(self):
+        bundle = {"summary": {"patient_movement": "not a dict"}}
+        assert _render_disposition_planning(bundle) == ""
+
+    def test_no_summary_key_omits_section(self):
+        bundle = {"summary": {"patient_movement": {"entries": []}}}
+        assert _render_disposition_planning(bundle) == ""
+
+    def test_deterministic(self):
+        out1 = _render_disposition_planning(_FULL_BUNDLE)
+        out2 = _render_disposition_planning(_FULL_BUNDLE)
+        assert out1 == out2
+
+    def test_section_ordering_after_resuscitation_before_pmh(self):
+        html = render_casefile(_FULL_BUNDLE)
+        resus_pos = html.index("Resuscitation / Hemodynamic Summary")
+        dispo_pos = html.index("Disposition Planning")
+        pmh_pos = html.index("PMH / Anticoagulants")
+        assert resus_pos < dispo_pos < pmh_pos
+
+
+# ── Non-Trauma Team Plans tests ─────────────────────────────────────
+
+class TestNonTraumaTeamPlansRendering:
+    """Tests for the per-day Non-Trauma Team Plans section."""
+
+    def test_section_present_in_full_bundle(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert "Non-Trauma Team Plans" in html
+
+    def test_pt_service_shown(self):
+        ntp = _FULL_BUNDLE["daily"]["2026-01-01"]["non_trauma_team_plans"]
+        out = _render_non_trauma_team_plans(ntp)
+        assert "Physical Therapy" in out
+
+    def test_case_management_shown(self):
+        ntp = _FULL_BUNDLE["daily"]["2026-01-01"]["non_trauma_team_plans"]
+        out = _render_non_trauma_team_plans(ntp)
+        assert "Case Management" in out
+
+    def test_brief_lines_rendered(self):
+        ntp = _FULL_BUNDLE["daily"]["2026-01-01"]["non_trauma_team_plans"]
+        out = _render_non_trauma_team_plans(ntp)
+        assert "Eval for mobility" in out
+        assert "Fall risk: HIGH" in out
+        assert "Discussed discharge plan with family" in out
+
+    def test_author_shown(self):
+        ntp = _FULL_BUNDLE["daily"]["2026-01-01"]["non_trauma_team_plans"]
+        out = _render_non_trauma_team_plans(ntp)
+        assert "J. Smith, PT" in out
+        assert "A. Brown, MSW" in out
+
+    def test_services_sorted_alphabetically(self):
+        ntp = _FULL_BUNDLE["daily"]["2026-01-01"]["non_trauma_team_plans"]
+        out = _render_non_trauma_team_plans(ntp)
+        # "Case Management" sorts before "Physical Therapy"
+        assert out.index("Case Management") < out.index("Physical Therapy")
+
+    def test_data_not_available_author_skipped(self):
+        ntp = {
+            "services": {
+                "OT": {
+                    "notes": [
+                        {
+                            "dt": "2026-01-01T10:00:00",
+                            "author": "DATA NOT AVAILABLE",
+                            "brief_lines": ["ADL training"],
+                            "brief_line_count": 1,
+                            "raw_line_id": "ot1",
+                        }
+                    ],
+                    "note_count": 1,
+                },
+            },
+            "service_count": 1,
+            "note_count": 1,
+        }
+        out = _render_non_trauma_team_plans(ntp)
+        assert "DATA NOT AVAILABLE" not in out
+        assert "ADL training" in out
+
+    def test_null_ntp_returns_empty(self):
+        assert _render_non_trauma_team_plans(None) == ""
+
+    def test_empty_dict_returns_empty(self):
+        assert _render_non_trauma_team_plans({}) == ""
+
+    def test_empty_services_returns_empty(self):
+        assert _render_non_trauma_team_plans({"services": {}}) == ""
+
+    def test_absent_ntp_in_day2_no_section(self):
+        """Day 2 has null NTP — Non-Trauma Team Plans should only appear once (day 1)."""
+        html = render_casefile(_FULL_BUNDLE)
+        assert html.count("Non-Trauma Team Plans") == 1
+
+    def test_deterministic(self):
+        ntp = _FULL_BUNDLE["daily"]["2026-01-01"]["non_trauma_team_plans"]
+        out1 = _render_non_trauma_team_plans(ntp)
+        out2 = _render_non_trauma_team_plans(ntp)
+        assert out1 == out2
+
+    def test_section_after_consultant_plans_in_day(self):
+        html = render_casefile(_FULL_BUNDLE)
+        # In the day-body for day 1, consultant plans should come before NTP
+        body_start = html.index("day-body")
+        consult_pos = html.index(">Consultant Plans<", body_start)
+        ntp_pos = html.index(">Non-Trauma Team Plans<", body_start)
+        assert consult_pos < ntp_pos
+
+
+# ── Fail-closed: disposition + NTP sections ─────────────────────────
+
+class TestFailClosedDispositionNTP:
+    def test_absent_disposition_no_section(self):
+        html = render_casefile(_MINIMAL_BUNDLE)
+        assert "Disposition Planning" not in html
+
+    def test_absent_ntp_no_section(self):
+        html = render_casefile(_MINIMAL_BUNDLE)
+        assert "Non-Trauma Team Plans" not in html

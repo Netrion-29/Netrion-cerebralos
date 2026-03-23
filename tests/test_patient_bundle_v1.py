@@ -236,6 +236,116 @@ _MINIMAL_FEATURES = {
             "notes": [],
             "warnings": [],
         },
+        "patient_movement_v1": {
+            "entries": [
+                {
+                    "unit": "Ortho Neuro Trauma Care Center",
+                    "date_raw": "01/02",
+                    "time_raw": "1741",
+                    "event_type": "Discharge",
+                    "room": "4630",
+                    "bed": "4630-01",
+                    "patient_class": "Inpatient",
+                    "level_of_care": "Med/Surg",
+                    "service": "Trauma",
+                    "providers": {"discharge": "Kuhlenschmidt, Kali Marie"},
+                    "discharge_disposition": "Home",
+                    "raw_line_id": "pm001",
+                },
+                {
+                    "unit": "Ortho Neuro Trauma Care Center",
+                    "date_raw": "01/01",
+                    "time_raw": "1511",
+                    "event_type": "Transfer In",
+                    "room": "4630",
+                    "bed": "4630-01",
+                    "patient_class": "Inpatient",
+                    "level_of_care": "Med/Surg",
+                    "service": "Trauma",
+                    "providers": {"admitting": "Smith, John"},
+                    "discharge_disposition": None,
+                    "raw_line_id": "pm002",
+                },
+            ],
+            "summary": {
+                "movement_event_count": 2,
+                "first_movement_ts": "01/01 1511",
+                "admission_ts": "01/01 1005",
+                "discharge_ts": "01/02 1741",
+                "discharge_disposition_final": "Home",
+                "transfer_count": 1,
+                "units_visited": ["Ortho Neuro Trauma Care Center"],
+                "levels_of_care": ["Med/Surg"],
+                "services_seen": ["Trauma"],
+                "rooms_visited": ["4630"],
+                "event_type_counts": {"Discharge": 1, "Transfer In": 1},
+                "icu_los_hours": None,
+                "icu_los_days": None,
+                "icu_admission_count": 0,
+            },
+            "evidence": [
+                {"role": "patient_movement_entry", "snippet": "Discharge 01/02 1741", "raw_line_id": "pm001"},
+            ],
+            "source_file": "test.txt",
+            "source_rule_id": "patient_movement_v1",
+            "warnings": [],
+            "notes": [],
+        },
+        "non_trauma_team_day_plans_v1": {
+            "days": {
+                "2025-01-01": {
+                    "services": {
+                        "Physical Therapy": {
+                            "notes": [
+                                {
+                                    "dt": "2025-01-01T10:21:00",
+                                    "source_id": "42",
+                                    "author": "DATA NOT AVAILABLE",
+                                    "service": "Physical Therapy",
+                                    "note_header": "PHYSICAL THERAPY",
+                                    "brief_lines": [
+                                        "PHYSICAL THERAPY",
+                                        "Patient: Test Patient",
+                                        "Assessment: Decreased mobility",
+                                        "Plan: PT 5x/week",
+                                    ],
+                                    "brief_line_count": 4,
+                                    "raw_line_id": "ntp001",
+                                },
+                            ],
+                            "note_count": 1,
+                        },
+                        "Case Management": {
+                            "notes": [
+                                {
+                                    "dt": "2025-01-01T09:32:00",
+                                    "source_id": "43",
+                                    "author": "DATA NOT AVAILABLE",
+                                    "service": "Case Management",
+                                    "note_header": "CASE MANAGEMENT",
+                                    "brief_lines": [
+                                        "ASSESSMENT: SW spoke with pt",
+                                        "PLAN: Discharge planning initiated",
+                                    ],
+                                    "brief_line_count": 2,
+                                    "raw_line_id": "ntp002",
+                                },
+                            ],
+                            "note_count": 1,
+                        },
+                    },
+                    "service_count": 2,
+                    "note_count": 2,
+                },
+            },
+            "total_days": 1,
+            "total_notes": 2,
+            "total_services": 2,
+            "services_seen": ["Case Management", "Physical Therapy"],
+            "source_rule_id": "non_trauma_team_day_plans_v1",
+            "warnings": [],
+            "notes": [],
+        },
     },
     "warnings": ["test warning"],
     "warnings_summary": {},
@@ -424,6 +534,33 @@ class TestAssembleBundle:
         assert "hypotension" in hemo["patterns_detected"]
         assert hemo["total_abnormal_readings"] == 2
 
+    def test_summary_patient_movement_populated(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        pm = bundle["summary"]["patient_movement"]
+        assert pm is not None
+        assert pm["summary"]["discharge_disposition_final"] == "Home"
+        assert pm["summary"]["discharge_ts"] == "01/02 1741"
+        assert len(pm["entries"]) == 2
+
+    def test_daily_non_trauma_team_plans_populated(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        day = bundle["daily"]["2025-01-01"]
+        ntp = day.get("non_trauma_team_plans")
+        assert ntp is not None
+        assert "Physical Therapy" in ntp["services"]
+        assert "Case Management" in ntp["services"]
+        pt_notes = ntp["services"]["Physical Therapy"]["notes"]
+        assert len(pt_notes) == 1
+        assert "Decreased mobility" in pt_notes[0]["brief_lines"][2]
+
+    def test_daily_non_trauma_team_plans_null_for_absent_day(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        day = bundle["daily"]["2025-01-02"]
+        assert day.get("non_trauma_team_plans") is None
+
     def test_summary_injuries_null_when_absent(self, tmp_path):
         slug = "Bare_Test"
         _write_artifact(tmp_path, f"evidence/{slug}/patient_evidence_v1.json", _MINIMAL_EVIDENCE)
@@ -449,6 +586,7 @@ class TestAssembleBundle:
         assert bundle["summary"]["base_deficit"] is None
         assert bundle["summary"]["transfusions"] is None
         assert bundle["summary"]["hemodynamic_instability"] is None
+        assert bundle["summary"]["patient_movement"] is None
 
     def test_consultants_section(self, full_outputs):
         root, slug = full_outputs
@@ -551,6 +689,7 @@ class TestValidateContract:
         assert any("SUMMARY_MISSING_KEY" in e and "base_deficit" in e for e in errors)
         assert any("SUMMARY_MISSING_KEY" in e and "transfusions" in e for e in errors)
         assert any("SUMMARY_MISSING_KEY" in e and "hemodynamic_instability" in e for e in errors)
+        assert any("SUMMARY_MISSING_KEY" in e and "patient_movement" in e for e in errors)
 
     def test_summary_with_clinical_keys_null_passes(self):
         data = {k: {} for k in ALLOWED_TOP_LEVEL_KEYS}
@@ -563,6 +702,7 @@ class TestValidateContract:
             "gi_prophylaxis": None, "seizure_prophylaxis": None,
             "base_deficit": None, "transfusions": None,
             "hemodynamic_instability": None,
+            "patient_movement": None,
         }
         errors = validate_contract(data)
         assert not any("SUMMARY_MISSING_KEY" in e for e in errors)
