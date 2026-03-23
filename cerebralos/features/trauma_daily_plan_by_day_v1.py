@@ -86,6 +86,13 @@ _DNA = "DATA NOT AVAILABLE"
 # Allowed item types for extraction.
 _ALLOWED_ITEM_TYPES = frozenset({"PHYSICIAN_NOTE", "TRAUMA_HP"})
 
+# Content gate for TRAUMA_HP items: payload must contain this header
+# in the first 500 chars to be accepted as a genuine Trauma H&P.
+_RE_TRAUMA_HP_HEADER = re.compile(
+    r"Trauma\s+H\s*&\s*P",
+    re.IGNORECASE,
+)
+
 # Note-type allowlist: only these header patterns qualify.
 # Matched case-insensitively against lines at the top of the note.
 _QUALIFYING_NOTE_HEADERS = (
@@ -562,6 +569,9 @@ def extract_trauma_daily_plan_by_day(
             # ── TRAUMA_HP fast path ────────────────────────────
             is_trauma_hp = item_type == "TRAUMA_HP"
             if is_trauma_hp:
+                # Content gate: payload must look like a real Trauma H&P
+                if not _RE_TRAUMA_HP_HEADER.search(text[:500]):
+                    continue
                 note_type = "Trauma H&P"
                 is_trauma_note = True
                 author = _extract_author(text)

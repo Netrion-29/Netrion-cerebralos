@@ -1696,6 +1696,22 @@ class TestTraumaHPIntegration(unittest.TestCase):
         result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
         self.assertEqual(result["total_notes"], 0)
 
+    def test_trauma_hp_without_hp_header_skipped(self):
+        """TRAUMA_HP container without 'Trauma H & P' header is skipped."""
+        generic_payload = (
+            "Signed\n\nExpand All Collapse All\n\n"
+            "Generic Consult Note\nSome Provider, MD\n\n"
+            "HPI: Patient seen for follow-up.\n\n"
+            "Impression: Stable.\n\n"
+            "Plan:\n- Continue current management\n- Follow up in 1 week\n\n"
+            "Some Provider, MD\n"
+        )
+        items = [_make_trauma_hp_item(generic_payload)]
+        days_data = _make_days_data({"2026-01-01": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+        self.assertEqual(result["total_notes"], 0,
+                         "TRAUMA_HP without Trauma H & P header must be skipped")
+
 
 class TestSpecialtyIntegration(unittest.TestCase):
     """Integration tests for new specialty note extraction."""
