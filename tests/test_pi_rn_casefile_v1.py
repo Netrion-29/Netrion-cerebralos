@@ -293,26 +293,26 @@ _FULL_BUNDLE = {
         "patient_movement": {
             "entries": [
                 {
-                    "unit": "TCU",
-                    "date_raw": "01/01/26",
-                    "time_raw": "10:05",
+                    "unit": "Ortho Neuro Trauma Care Center",
+                    "date_raw": "01/01",
+                    "time_raw": "1005",
                     "event_type": "Admission",
                     "room": "T301",
-                    "bed": "A",
+                    "bed": "T301-01",
                     "patient_class": "Inpatient",
                     "level_of_care": "Critical",
                     "service": "Trauma",
-                    "providers": {"admitting": "Dr. Adams"},
+                    "providers": {"admitting": "Adams, John"},
                     "discharge_disposition": None,
                     "raw_line_id": "pm001",
                 },
                 {
                     "unit": "3N",
-                    "date_raw": "01/03/26",
-                    "time_raw": "14:00",
+                    "date_raw": "01/03",
+                    "time_raw": "1400",
                     "event_type": "Transfer In",
                     "room": "301",
-                    "bed": "B",
+                    "bed": "301-B",
                     "patient_class": "Inpatient",
                     "level_of_care": "Acute",
                     "service": "Trauma",
@@ -322,42 +322,47 @@ _FULL_BUNDLE = {
                 },
                 {
                     "unit": "3N",
-                    "date_raw": "01/05/26",
-                    "time_raw": "17:41",
+                    "date_raw": "01/05",
+                    "time_raw": "1741",
                     "event_type": "Discharge",
                     "room": "301",
-                    "bed": "B",
+                    "bed": "301-B",
                     "patient_class": "Inpatient",
                     "level_of_care": "Acute",
                     "service": "Trauma",
-                    "providers": {"discharge": "Dr. Adams"},
+                    "providers": {"discharge": "Adams, John"},
                     "discharge_disposition": "Home",
                     "raw_line_id": "pm003",
                 },
             ],
             "summary": {
                 "movement_event_count": 3,
-                "first_movement_ts": "2026-01-01T10:05:00",
-                "admission_ts": "2026-01-01T10:05:00",
-                "discharge_ts": "2026-01-05T17:41:00",
+                # Real data uses raw "MM/DD HHMM" timestamps; renderer
+                # only calls _e() so format is pass-through.  We keep
+                # the raw format here to match production shape.
+                "first_movement_ts": "01/01 1005",
+                "admission_ts": "01/01 1005",
+                "discharge_ts": "01/05 1741",
                 "discharge_disposition_final": "Home",
                 "transfer_count": 1,
-                "units_visited": ["TCU", "3N"],
+                "units_visited": ["Ortho Neuro Trauma Care Center", "3N"],
                 "levels_of_care": ["Critical", "Acute"],
                 "services_seen": ["Trauma"],
                 "rooms_visited": ["T301", "301"],
                 "event_type_counts": {"Admission": 1, "Transfer In": 1, "Discharge": 1},
+                # ICU fields: non-null here to exercise the renderer
+                # code path (real Betty_Roll has null/0 for these).
                 "icu_los_hours": 51.9,
                 "icu_los_days": 2,
                 "icu_admission_count": 1,
             },
             "evidence": [
-                {"role": "movement_event", "snippet": "Admit to TCU", "raw_line_id": "pm001"},
+                {"role": "patient_movement_entry", "snippet": "Ortho Neuro Trauma Care Center 01/01 1005 Admission", "raw_line_id": "pm001"},
             ],
             "source_file": "test.txt",
-            "source_rule_id": "patient_movement_v1",
+            "source_rule_id": "patient_movement_raw_file",
             "warnings": [],
-            "notes": [],
+            "notes": ["source=raw_file, section_lines=20, entries_parsed=3"],
         },
     },
     "compliance": {
@@ -1829,7 +1834,7 @@ class TestDispositionPlanningRendering:
     def test_discharge_ts_shown(self):
         out = _render_disposition_planning(_FULL_BUNDLE)
         assert "Discharge Timestamp" in out
-        assert "2026-01-05T17:41:00" in out
+        assert "01/05 1741" in out
 
     def test_icu_los_shown(self):
         out = _render_disposition_planning(_FULL_BUNDLE)
@@ -1850,7 +1855,7 @@ class TestDispositionPlanningRendering:
     def test_units_visited_shown(self):
         out = _render_disposition_planning(_FULL_BUNDLE)
         assert "Units Visited" in out
-        assert "TCU" in out
+        assert "Ortho Neuro Trauma Care Center" in out
         assert "3N" in out
 
     def test_transfers_shown(self):
@@ -1953,13 +1958,9 @@ class TestNonTraumaTeamPlansRendering:
         assert _render_non_trauma_team_plans({"services": {}}) == ""
 
     def test_absent_ntp_in_day2_no_section(self):
-        """Day 2 has null NTP — Non-Trauma Team Plans should not appear for that day."""
+        """Day 2 has null NTP — Non-Trauma Team Plans should only appear once (day 1)."""
         html = render_casefile(_FULL_BUNDLE)
-        # Find day 2 card area and check NTP is not between day 2 and end
-        day2_pos = html.index("2026-01-02")
-        # NTP title should only appear once (for day 1)
-        count = html.count("Non-Trauma Team Plans")
-        assert count == 1
+        assert html.count("Non-Trauma Team Plans") == 1
 
     def test_deterministic(self):
         ntp = _FULL_BUNDLE["daily"]["2026-01-01"]["non_trauma_team_plans"]
