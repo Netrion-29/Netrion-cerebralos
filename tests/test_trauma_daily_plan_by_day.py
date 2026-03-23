@@ -1384,6 +1384,335 @@ class TestAPSlashExtraction(unittest.TestCase):
         self.assertEqual(len(result["warnings"]), 0)
 
 
+# ═══════════════════════════════════════════════════════════════════
+# TRAUMA_HP Source-Container Tests
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Sample TRAUMA_HP notes (real-pattern fixtures) ─────────────────
+
+SAMPLE_TRAUMA_HP_SIMPLE = """\
+Signed       
+
+Expand All Collapse All
+
+Trauma H & P
+Rachel N Bertram, NP
+ 
+ 
+Alert History: Category 2 alert at 1118.  I arrived in the ED to evaluate the patient at 1200 
+ 
+HPI: 84 yo male with PMH of HLD, HTN and seizures who presented after reportedly being found down in his garage.
+
+PE:
+General: Elderly male, C-collar in place
+Vitals: Blood pressure 155/82, pulse 74, SpO2 97%.
+
+Radiographs: CT C/T/L spine reviewed.
+
+Labs:
+Recent Labs
+WBC 5.5
+HGB 12.1
+
+ Impression: 84 yo male s/p fall with
+            - C2 type 3 dens fracture, nondisplaced
+            - L1 compression fracture, chronic vs acute
+            - Right parietal scalp laceration
+
+Plan:
+- NSGY consult, Ally made aware, bedrest
+- Hospitalist consult per geri trauma protocol
+- NPO
+- IVF
+- Pain control as needed
+- local wound care
+- Home meds resumed
+- Lovenox on hold pending NSGY consult
+- PT/OT once cleared by NSGY
+- SW/CM to see for dispo needs
+
+Rachel N Bertram, NP
+
+I have seen and examined patient on the above stated date.
+
+Roberto C Iglesias, MD
+
+Revision HistoryToggle Section Visibility
+"""
+
+SAMPLE_TRAUMA_HP_COMPOSITE = """\
+Signed       
+
+Expand All Collapse All
+
+Trauma H & P
+Sarah M Meehan, NP
+ 
+ 
+Alert History: Category II alert at 0143. Patient evaluated in the ED at 0215.
+ 
+HPI: Patient is a 72 yo male with PMH significant for PE, DM, and obesity.
+
+PE:
+General: 72 yo obese male, C-collar in place
+Vitals: Blood pressure 148/72, pulse 88, SpO2 91%.
+
+Labs:
+Recent Labs
+WBC 14.2
+HGB 14.0
+
+ Impression: 72 yo male s/p fall backwards while loading hay bales with
+            - Unstable T8 distraction fracture
+            - Right sided rib fractures 5-7, 9-10
+            - Acute hypoxic respiratory failure
+
+Plan:
+- Will admit to trauma ICU
+- NSGY consult
+            - Strict T&L precautions, logroll
+            - Bedrest
+- Hospitalist consult for geriatric protocol
+- Pain control
+- NPO
+- Hold DVT prophylaxis
+- Aggressive pulmonary toilet
+- PT/OT evaluation when appropriate
+- SW to follow for dispo needs
+
+Sarah M Meehan, NP
+
+I have seen and examined patient on the above stated date.
+
+Roberto C Iglesias, MD
+
+[embedded consult note follows]
+
+Neurosurgery Consult
+Another Provider, MD
+
+Impression: Same patient evaluated by neurosurgery.
+
+Plan :
+ 
+I reviewed past medical history and records.
+Repeat EEG
+Continue supportive care per critical care team
+
+Another Provider, MD
+"""
+
+SAMPLE_TRAUMA_HP_NO_PLAN = """\
+Signed       
+
+Expand All Collapse All
+
+Trauma H & P
+Test Provider, NP
+
+Alert History: Category 2 alert at 0900.
+
+HPI: 65 yo female s/p MVC.
+
+PE:
+General: Female in mild distress.
+
+Impression: 65 yo female s/p MVC with chest wall contusion.
+
+Test Provider, NP
+"""
+
+
+def _make_trauma_hp_item(text, dt="2026-01-01T02:20:00", source_id="0"):
+    """Build a minimal TRAUMA_HP timeline item."""
+    return {
+        "type": "TRAUMA_HP",
+        "dt": dt,
+        "source_id": source_id,
+        "payload": {"text": text},
+    }
+
+
+class TestTraumaHPExtraction(unittest.TestCase):
+    """Unit tests for TRAUMA_HP extraction via prefer_first logic."""
+
+    def test_simple_trauma_hp_plan(self):
+        """TRAUMA_HP with single Plan: section extracts correctly."""
+        lines = _extract_plan(SAMPLE_TRAUMA_HP_SIMPLE, prefer_first=True)
+        self.assertGreater(len(lines), 0)
+        combined = " ".join(lines)
+        self.assertIn("NSGY consult", combined)
+        self.assertIn("Hospitalist consult", combined)
+        self.assertIn("Pain control", combined)
+
+    def test_simple_trauma_hp_impression(self):
+        lines = _extract_impression(SAMPLE_TRAUMA_HP_SIMPLE, prefer_first=True)
+        self.assertGreater(len(lines), 0)
+        combined = " ".join(lines)
+        self.assertIn("C2 type 3 dens fracture", combined)
+
+    def test_composite_trauma_hp_uses_first_plan(self):
+        """Composite TRAUMA_HP with multiple Plan: sections uses the first."""
+        lines = _extract_plan(SAMPLE_TRAUMA_HP_COMPOSITE, prefer_first=True)
+        self.assertGreater(len(lines), 0)
+        combined = " ".join(lines)
+        # First Plan content (trauma H&P)
+        self.assertIn("Will admit to trauma ICU", combined)
+        self.assertIn("NSGY consult", combined)
+        # Should NOT contain embedded consult plan
+        self.assertNotIn("Repeat EEG", combined)
+        self.assertNotIn("reviewed past medical history", combined)
+
+    def test_composite_trauma_hp_impression_correct(self):
+        """Composite TRAUMA_HP impression comes from the H&P section."""
+        lines = _extract_impression(SAMPLE_TRAUMA_HP_COMPOSITE, prefer_first=True)
+        self.assertGreater(len(lines), 0)
+        combined = " ".join(lines)
+        self.assertIn("Unstable T8 distraction fracture", combined)
+        # Should NOT contain embedded consult impression
+        self.assertNotIn("evaluated by neurosurgery", combined)
+
+    def test_trauma_hp_no_plan_returns_empty(self):
+        """TRAUMA_HP without Plan: section returns empty list (fail-closed)."""
+        lines = _extract_plan(SAMPLE_TRAUMA_HP_NO_PLAN, prefer_first=True)
+        self.assertEqual(len(lines), 0)
+
+    def test_trauma_hp_plan_terminates_at_attestation(self):
+        """Plan extraction stops at attestation line."""
+        lines = _extract_plan(SAMPLE_TRAUMA_HP_SIMPLE, prefer_first=True)
+        combined = " ".join(lines)
+        self.assertNotIn("I have seen and examined", combined)
+        self.assertNotIn("Roberto C Iglesias", combined)
+
+    def test_prefer_first_false_unchanged_for_physician_note(self):
+        """Default prefer_first=False still works for PHYSICIAN_NOTE text."""
+        lines = _extract_plan(SAMPLE_TRAUMA_PROGRESS_NOTE, prefer_first=False)
+        self.assertGreater(len(lines), 0)
+        combined = " ".join(lines)
+        self.assertIn("NSGY consult", combined)
+
+
+class TestTraumaHPIntegration(unittest.TestCase):
+    """Integration tests for TRAUMA_HP source container."""
+
+    def test_trauma_hp_extracted_end_to_end(self):
+        """TRAUMA_HP item is extracted with note_type 'Trauma H&P'."""
+        items = [_make_trauma_hp_item(SAMPLE_TRAUMA_HP_SIMPLE)]
+        days_data = _make_days_data({"2026-01-01": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 1)
+        self.assertEqual(result["source_rule_id"], "trauma_daily_plan_from_progress_notes")
+        note = result["days"]["2026-01-01"]["notes"][0]
+        self.assertEqual(note["note_type"], "Trauma H&P")
+        self.assertEqual(note["author"], "Rachel N Bertram, NP")
+        self.assertGreater(len(note["plan_lines"]), 0)
+        self.assertGreater(len(note["impression_lines"]), 0)
+        self.assertEqual(len(note["raw_line_id"]), 16)
+
+    def test_trauma_hp_composite_correct_extraction(self):
+        """Composite TRAUMA_HP extracts first Plan, not embedded consult."""
+        items = [_make_trauma_hp_item(SAMPLE_TRAUMA_HP_COMPOSITE)]
+        days_data = _make_days_data({"2026-01-01": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 1)
+        note = result["days"]["2026-01-01"]["notes"][0]
+        combined = " ".join(note["plan_lines"])
+        self.assertIn("Will admit to trauma ICU", combined)
+        self.assertNotIn("Repeat EEG", combined)
+
+    def test_trauma_hp_no_plan_emits_warning(self):
+        """TRAUMA_HP without Plan: emits warning (it's a trauma note)."""
+        items = [_make_trauma_hp_item(SAMPLE_TRAUMA_HP_NO_PLAN)]
+        days_data = _make_days_data({"2026-01-01": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 0)
+        self.assertGreater(len(result["warnings"]), 0)
+        self.assertIn("Trauma H&P", result["warnings"][0])
+        self.assertIn("no extractable Plan", result["warnings"][0])
+
+    def test_trauma_hp_empty_text_skipped(self):
+        """TRAUMA_HP with empty text is silently skipped."""
+        items = [_make_trauma_hp_item("")]
+        days_data = _make_days_data({"2026-01-01": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+        self.assertEqual(result["total_notes"], 0)
+
+    def test_trauma_hp_and_physician_note_same_day(self):
+        """TRAUMA_HP and PHYSICIAN_NOTE on same day both extracted."""
+        items = [
+            _make_trauma_hp_item(SAMPLE_TRAUMA_HP_SIMPLE, dt="2026-01-01T02:20:00"),
+            _make_physician_note_item(
+                SAMPLE_TRAUMA_PROGRESS_NOTE, source_id="61",
+                dt="2026-01-01T12:00:00",
+            ),
+        ]
+        days_data = _make_days_data({"2026-01-01": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 2)
+        note_types = {n["note_type"] for n in result["days"]["2026-01-01"]["notes"]}
+        self.assertIn("Trauma H&P", note_types)
+        self.assertIn("Trauma Progress Note", note_types)
+
+    def test_trauma_hp_deterministic(self):
+        """Same input produces same output (deterministic)."""
+        items = [_make_trauma_hp_item(SAMPLE_TRAUMA_HP_SIMPLE)]
+        days_data = _make_days_data({"2026-01-01": items})
+        r1 = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+        r2 = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+        self.assertEqual(r1, r2)
+
+    def test_trauma_hp_in_qualifying_note_types(self):
+        """'Trauma H&P' appears in qualifying_note_types_found."""
+        items = [_make_trauma_hp_item(SAMPLE_TRAUMA_HP_SIMPLE)]
+        days_data = _make_days_data({"2026-01-01": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+        self.assertIn("Trauma H&P", result["qualifying_note_types_found"])
+
+    def test_consult_note_still_excluded(self):
+        """CONSULT_NOTE items remain excluded after TRAUMA_HP addition."""
+        items = [{
+            "type": "CONSULT_NOTE",
+            "dt": "2026-01-01T09:00:00",
+            "source_id": "99",
+            "payload": {"text": SAMPLE_TRAUMA_HP_SIMPLE},
+        }]
+        days_data = _make_days_data({"2026-01-01": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+        self.assertEqual(result["total_notes"], 0)
+
+    def test_ed_note_still_excluded(self):
+        """ED_NOTE items remain excluded."""
+        items = [{
+            "type": "ED_NOTE",
+            "dt": "2026-01-01T01:00:00",
+            "source_id": "88",
+            "payload": {"text": SAMPLE_TRAUMA_HP_SIMPLE},
+        }]
+        days_data = _make_days_data({"2026-01-01": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+        self.assertEqual(result["total_notes"], 0)
+
+    def test_trauma_hp_without_hp_header_skipped(self):
+        """TRAUMA_HP container without 'Trauma H & P' header is skipped."""
+        generic_payload = (
+            "Signed\n\nExpand All Collapse All\n\n"
+            "Generic Consult Note\nSome Provider, MD\n\n"
+            "HPI: Patient seen for follow-up.\n\n"
+            "Impression: Stable.\n\n"
+            "Plan:\n- Continue current management\n- Follow up in 1 week\n\n"
+            "Some Provider, MD\n"
+        )
+        items = [_make_trauma_hp_item(generic_payload)]
+        days_data = _make_days_data({"2026-01-01": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+        self.assertEqual(result["total_notes"], 0,
+                         "TRAUMA_HP without Trauma H & P header must be skipped")
+
+
 class TestSpecialtyIntegration(unittest.TestCase):
     """Integration tests for new specialty note extraction."""
 

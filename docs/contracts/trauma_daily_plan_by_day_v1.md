@@ -9,10 +9,10 @@
 
 ## Purpose
 
-Extract per-day plan text from physician progress notes (trauma and
-medical/surgical specialties) and organise it by calendar day.  Provides
-structured daily plan data so v5 per-day blocks can show the evolving
-plan over the hospital stay.
+Extract per-day plan text from physician progress notes and trauma H&P
+notes (trauma and medical/surgical specialties) and organise it by
+calendar day.  Provides structured daily plan data so v5 per-day blocks
+can show the evolving plan over the hospital stay.
 
 ## Qualifying Note Types (Allowlist)
 
@@ -20,6 +20,7 @@ Only these note headers qualify for extraction:
 
 | Note Header                        | Item type        | Section Format       | Gate            |
 |-----------------------------------|------------------|----------------------|-----------------|
+| `Trauma H&P`                      | `TRAUMA_HP`      | Impression + Plan    | prefer_first    |
 | `Trauma Progress Note`            | `PHYSICIAN_NOTE` | Impression + Plan    | —               |
 | `Trauma Tertiary Survey Note`     | `PHYSICIAN_NOTE` | Impression + Plan    | —               |
 | `Trauma Tertiary Note`            | `PHYSICIAN_NOTE` | Impression + Plan    | —               |
@@ -64,6 +65,11 @@ Notes:
   (used by Neurosurgery SOAP format).
 - Non-trauma notes without a Plan/Assessment-Plan/A-P section are
   silently skipped (fail-closed).
+- `TRAUMA_HP` payloads may be composite (H&P body + embedded consult
+  notes). `prefer_first=True` ensures the trauma H&P Plan is
+  extracted, not a later embedded consult's Plan.
+- `TRAUMA_HP` items whose payload does not contain a `Trauma H & P`
+  header in the first 500 chars are skipped (content gate, fail-closed).
 
 Excluded:
 - `CONSULT_NOTE` items (initial consults — separate feature)
@@ -75,15 +81,20 @@ Excluded:
 ## Extraction Strategy
 
 1. Iterate `patient_days_v1.json` days chronologically.
-2. For each `PHYSICIAN_NOTE` item, check for qualifying header.
-3. For `Daily Progress Note`, verify ESA affiliation in body text.
-4. Skip radiology reads (heuristic: `Narrative & Impression` or
+2. For each `PHYSICIAN_NOTE` or `TRAUMA_HP` item, check for qualifying header.
+3. For `TRAUMA_HP` items: verify the payload contains a `Trauma H & P`
+   header in the first 500 chars (content gate). If absent, skip the
+   item. If present, extract with `prefer_first=True` (takes the first
+   Plan: match — handles composite payloads where the H&P Plan appears
+   before embedded consult notes).
+4. For `Daily Progress Note`, verify ESA affiliation in body text.
+5. Skip radiology reads (heuristic: `Narrative & Impression` or
    `INDICATION` + `FINDINGS` without qualifying header).
-5. Extract `Impression:` or `Assessment:` section (bounded by `Plan:` start).
-6. Extract `Plan:` section (bounded by attestation/footer terminators).
+6. Extract `Impression:` or `Assessment:` section (bounded by `Plan:` start).
+7. Extract `Plan:` section (bounded by attestation/footer terminators).
    Plan may have inline content on the header line.
-7. Parse plan lines as bulleted items (dash-prefixed).
-8. Record author, timestamp, and raw_line_id for traceability.
+8. Parse plan lines as bulleted items (dash-prefixed).
+9. Record author, timestamp, and raw_line_id for traceability.
 
 ## Output Schema
 
@@ -108,7 +119,7 @@ Excluded:
     },
     "total_notes": 9,
     "total_days": 7,
-    "qualifying_note_types_found": ["Trauma Progress Note", "Trauma Tertiary Survey Note"],
+    "qualifying_note_types_found": ["Trauma H&P", "Trauma Progress Note", "Trauma Tertiary Survey Note"],
     "source_rule_id": "trauma_daily_plan_from_progress_notes",
     "warnings": [],
     "notes": []
