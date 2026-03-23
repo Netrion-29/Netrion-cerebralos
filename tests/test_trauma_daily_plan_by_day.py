@@ -1370,13 +1370,9 @@ class TestAPSlashExtraction(unittest.TestCase):
         self.assertNotIn("Trevor Troffkin", combined)
 
     def test_ap_slash_no_separate_impression(self):
-        """A/P: is combined; no separate Impression section to extract."""
+        """A/P: is a combined section; _extract_impression must return empty."""
         lines = _extract_impression(SAMPLE_NEUROSURGERY_NOTE)
-        # The radiology IMPRESSION is embedded earlier; the clinical
-        # A/P section is combined, so impression_lines may be empty
-        # or contain the radiology impression. Either way, plan_lines
-        # should contain the clinical plan items.
-        pass  # Verifying plan extraction is the key test above.
+        self.assertEqual(lines, [])
 
     def test_neurosurgery_no_plan_silently_skipped(self):
         """Neurosurgery note without Plan/A-P section is silently skipped."""
