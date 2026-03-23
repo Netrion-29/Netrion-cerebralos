@@ -1173,6 +1173,127 @@ class TestBuildTraumaSummary:
         errors = validate_contract(data)
         assert any("TRAUMA_SUMMARY_TYPE_ERROR" in e for e in errors)
 
+    # ── source_note_datetime fallback (fix) ─────────────────────
+
+    def test_datetime_fallback_when_source_ts_is_null(self):
+        """When note_sections_v1.source_ts is null, use evidence item datetime."""
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "source_ts": None,  # explicitly null
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor", "datetime": "2025-01-01T10:00:00"}]
+        result = build_trauma_summary(feat, items)
+        assert result["source_note_datetime"] == "2025-01-01T10:00:00"
+
+    def test_datetime_uses_source_ts_when_truthy(self):
+        """When note_sections_v1.source_ts is truthy, prefer it."""
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "source_ts": "2025-06-15T08:30:00",
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor", "datetime": "2025-06-15T00:00:00"}]
+        result = build_trauma_summary(feat, items)
+        assert result["source_note_datetime"] == "2025-06-15T08:30:00"
+
+    def test_datetime_falls_back_to_evidence_when_non_trauma_hp_source(self):
+        """When note_sections source is not TRAUMA_HP, use evidence datetime."""
+        feat = {
+            "note_sections_v1": {
+                "source_type": "ED_NOTE",
+                "source_ts": "2025-01-01T09:00:00",
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor", "datetime": "2025-01-01T10:00:00"}]
+        result = build_trauma_summary(feat, items)
+        assert result["source_note_datetime"] == "2025-01-01T10:00:00"
+
+    # ── doc_title regex variants (fix) ──────────────────────────
+
+    def test_title_matches_trauma_handp_no_space(self):
+        """'Trauma H&P' (no spaces) matches title regex."""
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H&P\nJane Doe, PA-C\nContent"}]
+        result = build_trauma_summary({}, items)
+        assert result["source_doc_title"] == "Trauma H&P"
+        assert result["app_author"] == "Jane Doe, PA-C"
+
+    def test_title_matches_uppercase_variant(self):
+        """'TRAUMA H & P' (uppercase) matches title regex."""
+        items = [{"kind": "TRAUMA_HP", "text": "TRAUMA H & P\nJane Doe, PA-C\nContent"}]
+        result = build_trauma_summary({}, items)
+        assert result["source_doc_title"] == "TRAUMA H & P"
+
+    def test_title_matches_slash_variant(self):
+        """'Trauma H/P' (slash) matches title regex."""
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H/P\nJane Doe, PA-C\nContent"}]
+        result = build_trauma_summary({}, items)
+        assert result["source_doc_title"] == "Trauma H/P"
+        assert result["app_author"] == "Jane Doe, PA-C"
+
+    # ── Attending found below attestation line (fix) ─────────────
+
+    def test_attending_found_below_attestation(self):
+        """MD signature below attestation line is correctly extracted."""
+        text = (
+            "Trauma H & P\n"
+            "Austin Mark Buettner, PA-C\n"
+            "HPI: Patient info here\n"
+            "\n"
+            "Plan: Pain control\n"
+            "\n"
+            "Austin Mark Buettner, PA-C\n"
+            "\n"
+            "I have seen and examined patient on the above stated date. "
+            "I have reviewed pertinent data.\n"
+            "\n"
+            "Kali Marie Kuhlenschmidt, MD\n"
+        )
+        items = [{"kind": "TRAUMA_HP", "text": text}]
+        result = build_trauma_summary({}, items)
+        assert result["attending"] == "Kali Marie Kuhlenschmidt, MD"
+
+    # ── Whitelist filtering of consult services (fix) ───────────
+
+    def test_consult_services_filters_non_whitelisted_service(self):
+        """Services not in the whitelist are silently dropped (fail-closed)."""
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "plan": {
+                    "present": True,
+                    "text": (
+                        "Neurosurgery consult\n"
+                        "UnknownService consult\n"
+                        "Hospitalist consult\n"
+                    ),
+                },
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        services_lower = [s.lower() for s in (result["consult_services"] or [])]
+        assert any("neurosurgery" in s for s in services_lower)
+        assert any("hospitalist" in s for s in services_lower)
+        assert not any("unknownservice" in s for s in services_lower)
+
+    def test_consult_services_whitelisted_abbreviations(self):
+        """Whitelist abbreviations (NSGY, ENT, GI) are accepted."""
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "plan": {"present": True, "text": "NSGY consult\nENT consult\nGI consult"},
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        services_lower = [s.lower() for s in (result["consult_services"] or [])]
+        assert any("nsgy" in s for s in services_lower)
+        assert any("ent" in s for s in services_lower)
+        assert any("gi" in s for s in services_lower)
+
 
 # ── Contamination hard tests (guardrail 7) ─────────────────────────
 

@@ -115,7 +115,7 @@ When present, **all fields are included** even if their value is `null`
 |-------|------|--------|-------------|
 | `present` | bool | always `true` when dict exists | — |
 | `source_note_type` | string | always `"TRAUMA_HP"` | — |
-| `source_note_datetime` | string or null | `note_sections_v1.source_ts` or evidence datetime | `null` if missing |
+| `source_note_datetime` | string or null | `note_sections_v1.source_ts` when source is TRAUMA_HP and non-null; else TRAUMA_HP evidence item datetime | `null` if TRAUMA_HP item has no datetime |
 | `source_doc_title` | string or null | title line from TRAUMA_HP text | fallback `"Trauma H & P"` |
 | `activation_category` | string or null | `category_activation_v1.category` | `null` if absent |
 | `mechanism_summary` | string or null | `mechanism_region_v1.mechanism_primary` | `null` if absent |

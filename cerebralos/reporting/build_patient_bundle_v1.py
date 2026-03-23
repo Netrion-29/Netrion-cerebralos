@@ -98,6 +98,13 @@ _RE_INTUBATED = re.compile(
     re.IGNORECASE,
 )
 
+# Regex matching known Trauma H&P title line variants (case-insensitive).
+# Covers: "Trauma H & P", "Trauma H&P", "TRAUMA H & P", "Trauma H/P", etc.
+_RE_TRAUMA_HP_TITLE = re.compile(
+    r"^trauma\s+h\s*[&/]\s*p$",
+    re.IGNORECASE,
+)
+
 # Known consult service patterns extracted from Plan text.
 # Conservative: explicit service name after consult-related keywords.
 _RE_CONSULT_SERVICE = re.compile(
@@ -120,7 +127,8 @@ _RE_ADMIT_DISPOSITION = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 
-# Known service name whitelist for validation.
+# Known service name whitelist for conservative filtering.
+# Only services whose lowercase form appears here will be emitted.
 _CONSULT_SERVICE_WHITELIST = frozenset({
     "Neurosurgery", "NSGY", "Ortho", "Orthopedics", "Hospitalist",
     "Urology", "ENT", "Cardiology", "Pulmonology", "PCCM",
@@ -132,6 +140,10 @@ _CONSULT_SERVICE_WHITELIST = frozenset({
     "Nephrology", "GI", "Gastroenterology", "Hematology",
     "Oncology", "Psychiatry", "Dermatology",
 })
+# Case-folded set for O(1) membership tests.
+_CONSULT_SERVICE_WHITELIST_FOLDED = frozenset(
+    s.lower() for s in _CONSULT_SERVICE_WHITELIST
+)
 
 
 def _extract_gcs_from_disability(disability_text: Optional[str]) -> Optional[str]:
@@ -196,17 +208,25 @@ def _extract_consult_services(plan_text: Optional[str]) -> Optional[List[str]]:
     # Pattern 1: "ServiceName consult"
     for m in _RE_SERVICE_CONSULT.finditer(plan_text):
         svc = m.group(1).strip().rstrip(".-")
-        svc_norm = svc.title()
-        if svc_norm and svc_norm not in seen and len(svc_norm) <= 60:
-            seen.add(svc_norm)
+        if not svc or len(svc) > 60:
+            continue
+        if svc.lower() not in _CONSULT_SERVICE_WHITELIST_FOLDED:
+            continue
+        svc_key = svc.lower()
+        if svc_key not in seen:
+            seen.add(svc_key)
             services.append(svc)
 
     # Pattern 2: "consult to/for ServiceName"
     for m in _RE_CONSULT_SERVICE.finditer(plan_text):
         svc = m.group(1).strip().rstrip(".-")
-        svc_norm = svc.title()
-        if svc_norm and svc_norm not in seen and len(svc_norm) <= 60:
-            seen.add(svc_norm)
+        if not svc or len(svc) > 60:
+            continue
+        if svc.lower() not in _CONSULT_SERVICE_WHITELIST_FOLDED:
+            continue
+        svc_key = svc.lower()
+        if svc_key not in seen:
+            seen.add(svc_key)
             services.append(svc)
 
     return services if services else []
@@ -243,32 +263,40 @@ def _extract_doc_title_and_author(
         app_author: Optional[str] = None
         attending: Optional[str] = None
 
-        # Find "Trauma H & P" or "Trauma H&P" line → next non-blank = author
+        # Find Trauma H&P title line (case-insensitive) → next non-blank = author.
+        # Covers: "Trauma H & P", "Trauma H&P", "TRAUMA H & P", "Trauma H/P", etc.
+        _SKIP_BOILERPLATE = frozenset({"Signed", "Expand All Collapse All", ""})
         for i, line in enumerate(lines):
             stripped = line.strip()
-            if stripped in ("Trauma H & P", "Trauma H&P"):
+            if _RE_TRAUMA_HP_TITLE.match(stripped):
                 doc_title = stripped
                 # Look for author on subsequent non-blank line
                 for j in range(i + 1, min(i + 4, len(lines))):
                     candidate = lines[j].strip()
-                    if candidate and candidate not in (
-                        "Signed", "Expand All Collapse All", "",
-                    ):
+                    if candidate and candidate not in _SKIP_BOILERPLATE:
                         app_author = candidate
                         break
                 break
 
-        # Find attending: "I have seen and examined patient" attestation
-        # or "Name, MD" pattern near end of note
+        # Find attending: look for MD signature in a local window around
+        # the attestation phrase.  Consistently appears 1-3 lines BELOW.
+        # Also check a small window above as a fallback.
         for i in range(len(lines) - 1, max(len(lines) - 50, -1), -1):
             stripped = lines[i].strip()
             if "I have seen and examined patient" in stripped:
-                # Attending is usually 2-5 lines before this
-                for j in range(i - 1, max(i - 6, -1), -1):
+                # Primary: search below attestation line
+                for j in range(i + 1, min(i + 8, len(lines))):
                     candidate = lines[j].strip()
                     if candidate and ", MD" in candidate:
                         attending = candidate
                         break
+                # Fallback: search above attestation line
+                if not attending:
+                    for j in range(i - 1, max(i - 6, -1), -1):
+                        candidate = lines[j].strip()
+                        if candidate and ", MD" in candidate:
+                            attending = candidate
+                            break
                 break
 
         if doc_title is None:
@@ -338,9 +366,9 @@ def build_trauma_summary(
             trauma_hp_item = item
             break
 
-    # Use note_sections_v1 source_ts if its source is TRAUMA_HP;
-    # otherwise fall back to the evidence item datetime.
-    if source_type == "TRAUMA_HP":
+    # Use note_sections_v1 source_ts when its source is TRAUMA_HP and non-null;
+    # always fall back to the evidence item datetime otherwise.
+    if source_type == "TRAUMA_HP" and source_ts:
         source_note_datetime = source_ts
     else:
         source_note_datetime = (
