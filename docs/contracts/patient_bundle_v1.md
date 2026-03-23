@@ -2,7 +2,7 @@
 
 | Field     | Value                                        |
 |-----------|----------------------------------------------|
-| Date      | 2026-03-22                                   |
+| Date      | 2026-03-23                                   |
 | Status    | **LOCKED** — enforced by validator            |
 | Version   | 1.0                                          |
 | Direction | See `docs/roadmaps/PI_RN_CASEFILE_V1.md`     |

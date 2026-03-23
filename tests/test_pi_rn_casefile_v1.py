@@ -2065,8 +2065,7 @@ class TestRenderSbirtScreening:
         }
         html = _render_sbirt_screening(self._bundle_with_sbirt(sbirt))
         assert "SBIRT Screening" in html
-        assert "AUDIT-C Score" in html
-        assert "4" in html
+        assert "AUDIT-C Score:</span> 4</" in html
 
     def test_sbirt_refusal(self):
         sbirt = {
@@ -2113,8 +2112,8 @@ class TestRenderSbirtScreening:
             "dast_10": {"explicit_score": None, "responses_present": False, "responses": [], "completion_status": "not_performed"},
             "cage": {"explicit_score": None, "responses_present": False, "responses": [], "completion_status": "not_performed"},
             "flowsheet_responses": [
-                {"question": "injury", "answer": "Yes"},
-                {"question": "drug_use", "answer": "No"},
+                {"question_id": "injury", "question_text": "Does the patient have an injury?", "answer": "Yes", "instrument": "sbirt_flowsheet", "flowsheet_row_ts": "01/01/26 2100", "raw_line_id": "fs001"},
+                {"question_id": "drug_use", "question_text": "Have you used drugs other than those required for medical reasons?", "answer": "No", "instrument": "sbirt_flowsheet", "flowsheet_row_ts": "01/01/26 2100", "raw_line_id": "fs002"},
             ],
             "refusal_documented": False,
             "substance_use_admission_documented": False,
