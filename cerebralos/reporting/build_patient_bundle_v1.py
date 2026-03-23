@@ -49,6 +49,7 @@ _SUMMARY_FEATURE_MAP: Dict[str, str] = {
     "base_deficit": "base_deficit_monitoring_v1",
     "transfusions": "transfusion_blood_products_v1",
     "hemodynamic_instability": "hemodynamic_instability_pattern_v1",
+    "patient_movement": "patient_movement_v1",
 }
 
 # Per-day feature keys extracted from the features dict (keyed by day).
@@ -57,6 +58,7 @@ _DAILY_FROM_FEATURES: Dict[str, str] = {
     "ventilator": "ventilator_settings_v1",
     "plans": "trauma_daily_plan_by_day_v1",
     "consultant_plans": "consultant_day_plans_by_day_v1",
+    "non_trauma_team_plans": "non_trauma_team_day_plans_v1",
 }
 
 # Per-day keys extracted from the days dict directly.

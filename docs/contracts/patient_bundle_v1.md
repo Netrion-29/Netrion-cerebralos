@@ -96,6 +96,7 @@ Each key is copied from `patient_features_v1.json → features.*`.
 | `base_deficit` | `features.base_deficit_monitoring_v1` | `null` if absent |
 | `transfusions` | `features.transfusion_blood_products_v1` | `null` if absent |
 | `hemodynamic_instability` | `features.hemodynamic_instability_pattern_v1` | `null` if absent |
+| `patient_movement` | `features.patient_movement_v1` | `null` if absent |
 
 ### `compliance` (required, dict)
 
@@ -122,6 +123,7 @@ fields from `patient_features_v1.json → days[date]` and
 | `ventilator` | `features.ventilator_settings_v1` per-day | `null` if absent |
 | `plans` | `features.trauma_daily_plan_by_day_v1` per-day | `null` if absent |
 | `consultant_plans` | `features.consultant_day_plans_by_day_v1` per-day | `null` if absent |
+| `non_trauma_team_plans` | `features.non_trauma_team_day_plans_v1` per-day | `null` if absent |
 
 ### `consultants` (required, dict or null)
 
@@ -166,6 +168,7 @@ Bundle-level warnings. Includes:
 | `summary.base_deficit` | `patient_features_v1.json → features.base_deficit_monitoring_v1` |
 | `summary.transfusions` | `patient_features_v1.json → features.transfusion_blood_products_v1` |
 | `summary.hemodynamic_instability` | `patient_features_v1.json → features.hemodynamic_instability_pattern_v1` |
+| `summary.patient_movement` | `patient_features_v1.json → features.patient_movement_v1` |
 | `compliance.ntds_*` | `outputs/ntds/$SLUG/ntds_summary_2026_v1.json` + per-event files |
 | `compliance.protocol_results` | `outputs/protocols/$SLUG/protocol_results_v1.json` |
 | `daily` | `patient_features_v1.json → days.*` + `features.*` |
@@ -214,6 +217,11 @@ Bundle-level warnings. Includes:
 > **NOTE (PR #296, 2026-03-22):** Resuscitation and hemodynamic data
 > are now carried in `summary.base_deficit`, `summary.transfusions`, and
 > `summary.hemodynamic_instability` respectively.
+
+> **NOTE (PR #297, 2026-03-23):** Patient movement / disposition data
+> is now carried in `summary.patient_movement`. Non-trauma team day
+> plans (PT, OT, case management, SLP) are now carried in
+> `daily[date].non_trauma_team_plans`.
 
 ---
 

@@ -1396,6 +1396,103 @@ def _render_resuscitation(bundle: Dict[str, Any]) -> str:
     )
 
 
+def _render_disposition_planning(bundle: Dict[str, Any]) -> str:
+    """Render patient-level Disposition Planning summary card.
+
+    Sources:
+      - summary.patient_movement.summary  (structured discharge/movement data)
+      - summary.patient_movement.entries   (individual movement events)
+    Fail-closed: returns "" if patient_movement is null/absent.
+    """
+    pm = bundle.get("summary", {}).get("patient_movement")
+    if not pm or not isinstance(pm, dict):
+        return ""
+
+    summary = pm.get("summary")
+    if not isinstance(summary, dict):
+        return ""
+
+    rows: list[str] = []
+
+    # Final disposition (structured truth from discharge event)
+    dispo_final = summary.get("discharge_disposition_final")
+    if dispo_final and isinstance(dispo_final, str):
+        rows.append(
+            f"<tr><td>Final Disposition</td>"
+            f'<td><strong>{_e(dispo_final)}</strong></td></tr>'
+        )
+
+    # Discharge timestamp
+    discharge_ts = summary.get("discharge_ts")
+    if discharge_ts and isinstance(discharge_ts, str):
+        rows.append(
+            f"<tr><td>Discharge Timestamp</td>"
+            f"<td>{_e(discharge_ts)}</td></tr>"
+        )
+
+    # ICU LOS
+    icu_days = summary.get("icu_los_days")
+    icu_hours = summary.get("icu_los_hours")
+    if icu_days is not None:
+        rows.append(
+            f"<tr><td>ICU Length of Stay</td>"
+            f"<td>{_e(str(icu_days))} day{'s' if icu_days != 1 else ''}"
+            f" ({_e(str(icu_hours))} hr{'s' if icu_hours != 1 else ''})</td></tr>"
+        )
+    elif icu_hours is not None:
+        rows.append(
+            f"<tr><td>ICU Length of Stay</td>"
+            f"<td>{_e(str(icu_hours))} hr{'s' if icu_hours != 1 else ''}</td></tr>"
+        )
+
+    # ICU admissions
+    icu_count = summary.get("icu_admission_count")
+    if isinstance(icu_count, int) and icu_count > 0:
+        rows.append(
+            f"<tr><td>ICU Admissions</td>"
+            f"<td>{icu_count}</td></tr>"
+        )
+
+    # Levels of care
+    loc = summary.get("levels_of_care")
+    if isinstance(loc, list) and loc:
+        rows.append(
+            f"<tr><td>Levels of Care</td>"
+            f"<td>{_e(', '.join(str(l) for l in loc))}</td></tr>"
+        )
+
+    # Units visited
+    units = summary.get("units_visited")
+    if isinstance(units, list) and units:
+        rows.append(
+            f"<tr><td>Units Visited</td>"
+            f"<td>{_e(', '.join(str(u) for u in units))}</td></tr>"
+        )
+
+    # Transfer count
+    transfers = summary.get("transfer_count")
+    if isinstance(transfers, int) and transfers > 0:
+        rows.append(
+            f"<tr><td>Transfers</td>"
+            f"<td>{transfers}</td></tr>"
+        )
+
+    if not rows:
+        return ""
+
+    table = (
+        '<table class="clinical-tbl">'
+        "<thead><tr><th>Item</th><th>Detail</th></tr></thead>"
+        f'<tbody>{"".join(rows)}</tbody></table>'
+    )
+    return (
+        '<div class="card">'
+        '<div class="card-title">Disposition Planning</div>'
+        f'<div class="card-body">{table}</div>'
+        "</div>"
+    )
+
+
 def _render_pmh(bundle: Dict[str, Any]) -> str:
     pmh = bundle.get("summary", {}).get("pmh")
     anticoag = bundle.get("summary", {}).get("anticoagulants")
@@ -1929,6 +2026,84 @@ def _render_consultant_plans(cp: Any) -> str:
     return ""
 
 
+def _render_non_trauma_team_plans(ntp: Any) -> str:
+    """Render non-trauma team plans (PT, OT, case management, SLP, etc.) for a single day.
+
+    Real bundle shape (from non_trauma_team_day_plans_v1.days[date]):
+      {services: {service_name: {notes: [{dt, source_id, author, service,
+       note_header, brief_lines: [str], brief_line_count, raw_line_id}],
+       note_count}}, service_count, note_count}
+    Fail-closed: returns "" if ntp is absent or empty.
+    """
+    if not ntp or not isinstance(ntp, dict):
+        return ""
+
+    services = ntp.get("services")
+    if not isinstance(services, dict) or not services:
+        return ""
+
+    parts = ""
+    for svc_name in sorted(services.keys()):
+        svc_data = services[svc_name]
+        if not isinstance(svc_data, dict):
+            continue
+        notes_list = svc_data.get("notes", [])
+        if not isinstance(notes_list, list) or not notes_list:
+            continue
+
+        note_html = ""
+        for note in notes_list:
+            if not isinstance(note, dict):
+                continue
+            brief_lines = note.get("brief_lines", [])
+            if not isinstance(brief_lines, list) or not brief_lines:
+                continue
+
+            # Metadata line: timestamp + author
+            dt_str = note.get("dt", "")
+            author_str = note.get("author", "")
+            meta_parts = []
+            if dt_str and isinstance(dt_str, str):
+                meta_parts.append(_e(dt_str))
+            if author_str and isinstance(author_str, str) and author_str != "DATA NOT AVAILABLE":
+                meta_parts.append(_e(author_str))
+            meta_line = (
+                f'<div class="consult-item-meta">{" &mdash; ".join(meta_parts)}</div>'
+                if meta_parts else ""
+            )
+
+            # Brief lines (compact: join with "; " for readability)
+            lines_text = "; ".join(
+                _e(str(line).strip())
+                for line in brief_lines
+                if isinstance(line, str) and line.strip()
+            )
+            if lines_text:
+                note_html += (
+                    f'<div class="consult-item">'
+                    f'{meta_line}'
+                    f'<div>{lines_text}</div>'
+                    '</div>'
+                )
+
+        if note_html:
+            parts += (
+                f'<div class="consult-service">'
+                f'<div class="consult-service-name">{_e(svc_name)}</div>'
+                f'{note_html}'
+                '</div>'
+            )
+
+    if not parts:
+        return ""
+
+    return (
+        '<div class="day-section">'
+        '<div class="day-section-title">Non-Trauma Team Plans</div>'
+        f'{parts}</div>'
+    )
+
+
 def _render_daily(bundle: Dict[str, Any]) -> str:
     daily = bundle.get("daily", {})
     if not daily:
@@ -1954,6 +2129,7 @@ def _render_daily(bundle: Dict[str, Any]) -> str:
         body_parts.append(_render_ventilator(day_data.get("ventilator")))
         body_parts.append(_render_plans(day_data.get("plans")))
         body_parts.append(_render_consultant_plans(day_data.get("consultant_plans")))
+        body_parts.append(_render_non_trauma_team_plans(day_data.get("non_trauma_team_plans")))
 
         body_html = "".join(p for p in body_parts if p)
         if not body_html:
@@ -2022,6 +2198,7 @@ def render_casefile(bundle: Dict[str, Any]) -> str:
         _render_devices(bundle),
         _render_prophylaxis(bundle),
         _render_resuscitation(bundle),
+        _render_disposition_planning(bundle),
         _render_pmh(bundle),
         _render_consultants(bundle),
         _render_ntds_summary(bundle),

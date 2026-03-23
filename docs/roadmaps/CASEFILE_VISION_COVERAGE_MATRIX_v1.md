@@ -64,7 +64,7 @@ in the above-the-fold clinical snapshot (PR #290) and patient card.
 | 19 | Admission labs | **Implemented** | — | `structured_labs_v1` (CBC, BMP, coag, ABG, cardiac, sepsis panels) → bundle daily → day-card lab renderer (PR #292). Renders flagged values with H/L highlighting. | — |
 | 20 | Daily narrative / notes | **Partial** | Upstream feature gap | Feature module exists (`trauma_daily_plan_by_day_v1`). Bundle wiring and renderer exist (PR #291 + #292). However, the feature module returns null/empty for most gate patients — this is an **upstream extraction gap**, not a bundle or renderer bug. | Investigate why `trauma_daily_plan_by_day_v1` produces empty results for gate patients. Fix extraction or document limitation. |
 | 21 | Respiratory support / ventilator | **Partial** | Renderer (deferred) | Extraction complete (`ventilator_settings_v1` — mode, FiO2, PEEP, Vt, RR, NIV). Bundle wiring exists. Renderer stub exists (`_render_ventilator`). Rendering intentionally deferred — ventilator display not yet enabled in casefile output. | Enable ventilator rendering when product decision is made. |
-| 22 | PT / OT / disposition | **Partial** | Bundle + renderer | Extraction complete (`non_trauma_team_day_plans_v1` — PT, OT, speech therapy, case management, social work). Discharge disposition in `patient_movement_v1`. Neither wired into bundle daily nor rendered in casefile. | Wire `non_trauma_team_day_plans_v1` → bundle; add casefile rendering. |
+| 22 | PT / OT / disposition | **Implemented** | Bundle + renderer | `non_trauma_team_day_plans_v1` wired to bundle daily as `non_trauma_team_plans`. `patient_movement_v1` wired to bundle summary as `patient_movement`. Disposition Planning card + per-day Non-Trauma Team Plans section rendered in casefile (PR #297). | — |
 
 **Summary: 6/11 Implemented, 5/11 Partial (extraction exists but rendering gap).**
 
@@ -136,7 +136,7 @@ Based on current coverage gaps, ranked by PI RN workflow value:
 | 1 | **Injury inventory + imaging results** | #12, #17 | Closes biggest content gap. PI RN's first question is "what was injured?" Data exists in `radiology_findings_v1` + `mechanism_region_v1`. |
 | 2 | **Procedure/operative timeline** | #13, #30 | Unblocks return-to-OR, delay-to-definitive-care metrics. `procedure_operatives_v1` extraction is high-confidence. Time-to-OR is ~5-line derivation. |
 | 3 | **Resuscitation / hemodynamic summary** | (new section) | **Wired in PR #296** — `base_deficit_monitoring_v1` + `transfusion_blood_products_v1` + `hemodynamic_instability_pattern_v1` bundled and rendered. BMAT composite scoring remains deferred. |
-| 4 | **Device duration + prophylaxis grid** | #14, #22 | **Partially addressed** — PR #295 wired `lda_events_v1` device summary + `dvt_prophylaxis_v1` + `gi_prophylaxis_v1` + `seizure_prophylaxis_v1` into casefile. Per-day device grid and PT/OT (#22) remain. |
+| 4 | **Device duration + prophylaxis grid** | #14, #22 | **Partially addressed** — PR #295 wired `lda_events_v1` device summary + `dvt_prophylaxis_v1` + `gi_prophylaxis_v1` + `seizure_prophylaxis_v1` into casefile. PR #297 wired PT/OT + disposition (#22). Per-day device grid remains. |
 | 5 | **Daily narrative investigation** | #20 | Investigate `trauma_daily_plan_by_day_v1` upstream extraction gap for gate patients. |
 
 See [STATUS_DASHBOARD_v1.md](../STATUS_DASHBOARD_v1.md) for the current

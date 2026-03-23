@@ -36,6 +36,7 @@ See: [PI_RN_CASEFILE_V1.md](roadmaps/PI_RN_CASEFILE_V1.md)
 | Clinical content expansion v1 (injuries/imaging/procedures bundle+render) | #294 | Merged |
 | Device + prophylaxis visibility (LDA, DVT, GI, seizure) | #295 | In review |
 | Resuscitation / hemodynamic summary (BD, transfusions, instability) | #296 | In review |
+| PT/OT + Disposition Visibility (non-trauma team plans, patient movement) | #297 | In review |
 
 ### What the Casefile Currently Renders
 
@@ -53,7 +54,11 @@ base deficit monitoring with compliance status).
 
 **Per hospital day (day cards):** Vitals snapshot, GCS (arrival/best/worst
 with severity), structured labs (flagged H/L values), consultant plans
-(per-service), trauma team plans (when data available).
+(per-service), non-trauma team plans (PT, OT, case management, SLP
+per-service with brief lines), trauma team plans (when data available).
+
+**Disposition:** Disposition Planning card (final disposition, discharge
+timestamp, ICU LOS, levels of care, units visited, transfer count).
 
 **Compliance:** NTDS event outcome badges (21 events), protocol compliance
 summary with non-compliance highlighting.
@@ -87,7 +92,7 @@ casefile, not building new extraction logic.
 | # | Theme | Vision Items | Key Modules |
 |---|-------|-------------|-------------|
 | 1 | **Resuscitation / hemodynamic summary** | (new section) | `base_deficit_monitoring_v1`, `transfusion_blood_products_v1`, `hemodynamic_instability_pattern_v1` — wired in PR #296 |
-| 2 | **Device duration + prophylaxis grid** | LDAs (#14), PT/OT/disposition (#22) | Device summary + prophylaxis (DVT/GI/seizure) wired in PR #295. Per-day device grid and PT/OT (#22) remain. |
+| 2 | **Device duration + prophylaxis grid** | LDAs (#14), PT/OT/disposition (#22) | Device summary + prophylaxis (DVT/GI/seizure) wired in PR #295. PT/OT + disposition wired in PR #297. Per-day device grid remains. |
 | 3 | **Daily narrative investigation** | Daily notes (#20) | `trauma_daily_plan_by_day_v1` — upstream extraction gap |
 
 ---
