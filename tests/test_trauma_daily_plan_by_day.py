@@ -7,6 +7,7 @@ import unittest
 from cerebralos.features.trauma_daily_plan_by_day_v1 import (
     extract_trauma_daily_plan_by_day,
     _detect_note_type,
+    _classify_general_note_type,
     _extract_author,
     _extract_impression,
     _extract_plan,
@@ -662,14 +663,16 @@ class TestIntegrationExpandedHeaders(unittest.TestCase):
         # Assessment: should be captured as impression_lines
         self.assertGreater(len(note["impression_lines"]), 0)
 
-    def test_non_esa_daily_skipped(self):
-        """Daily Progress Note from non-ESA service should be skipped."""
+    def test_non_esa_daily_captured_as_hospitalist(self):
+        """Daily Progress Note from non-ESA Deaconess Care Group is captured."""
         items = [_make_physician_note_item(SAMPLE_ESA_DAILY_PROGRESS_NOTE_NON_ESA)]
         days_data = _make_days_data({"2025-12-25": items})
         result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
 
-        self.assertEqual(result["total_notes"], 0)
-        self.assertEqual(result["source_rule_id"], "no_qualifying_notes")
+        self.assertEqual(result["total_notes"], 1)
+        note = result["days"]["2025-12-25"]["notes"][0]
+        self.assertEqual(note["note_type"], "Hospital Progress Note")
+        self.assertGreater(len(note["plan_lines"]), 0)
 
     def test_esa_brief_emits_warning(self):
         """ESA Brief notes qualify but have no Plan → warning emitted, note skipped."""
@@ -778,13 +781,18 @@ class TestExtractTraumaDailyPlanByDay(unittest.TestCase):
         self.assertEqual(result["total_notes"], 1)
         self.assertEqual(result["days"]["2026-01-03"]["notes"][0]["note_type"], "Trauma Progress Note")
 
-    def test_hospitalist_skipped(self):
+    def test_hospitalist_captured(self):
+        """Hospitalist note with Assessment and Plan captured."""
         items = [_make_physician_note_item(SAMPLE_HOSPITALIST_NOTE)]
         days_data = _make_days_data({"2026-01-03": items})
         result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
 
-        self.assertEqual(result["total_notes"], 0)
-        self.assertEqual(result["source_rule_id"], "no_qualifying_notes")
+        self.assertEqual(result["total_notes"], 1)
+        note = result["days"]["2026-01-03"]["notes"][0]
+        self.assertEqual(note["note_type"], "Hospital Progress Note")
+        self.assertGreater(len(note["plan_lines"]), 0)
+        combined = " ".join(note["plan_lines"])
+        self.assertIn("rib fracture", combined.lower())
 
     def test_no_qualifying_notes(self):
         items = [{"type": "LAB", "dt": "2026-01-03T06:00:00", "payload": {"text": "WBC 12.6"}}]
@@ -998,6 +1006,141 @@ class TestV5TraumaDailyPlanRendering(unittest.TestCase):
         device_pos = result.index("Device Day Counts:")
         plan_pos = result.index("Trauma Daily Plan:")
         self.assertLess(device_pos, plan_pos)
+
+
+# ── Tests for general note classification ──────────────────────────
+
+
+class TestClassifyGeneralNoteType(unittest.TestCase):
+    def test_hospitalist_hospital_progress_note(self):
+        text = "Signed\n\nDeaconess Care Group\nHospital Progress Note\n"
+        self.assertEqual(_classify_general_note_type(text), "Hospital Progress Note")
+
+    def test_hospitalist_deaconess_care_group_only(self):
+        text = "Signed\n\nDeaconess Care Group\nPatient Name: Test\n"
+        self.assertEqual(_classify_general_note_type(text), "Hospital Progress Note")
+
+    def test_critical_care(self):
+        text = "Signed\n\nDeaconess Pulmonary / Critical Care Group\nSummary\n"
+        self.assertEqual(_classify_general_note_type(text), "Critical Care Progress Note")
+
+    def test_critical_care_ampersand(self):
+        text = "Signed\n\nDeaconess Pulmonary & Critical Care Group\n"
+        self.assertEqual(_classify_general_note_type(text), "Critical Care Progress Note")
+
+    def test_neurology(self):
+        text = "Signed\n\nNEUROLOGY INPATIENT CONSULT PROGRESS NOTE\n"
+        self.assertEqual(_classify_general_note_type(text), "Neurology Progress Note")
+
+    def test_cardiology_heart_group(self):
+        text = "Signed\n\nHeart Group Daily Progress Note\n"
+        self.assertEqual(_classify_general_note_type(text), "Cardiology Progress Note")
+
+    def test_electrophysiology(self):
+        text = "Signed\n\nElectrophysiology Daily Progress Note\n"
+        self.assertEqual(_classify_general_note_type(text), "Electrophysiology Progress Note")
+
+    def test_palliative_care(self):
+        text = "Signed\n\nPalliative Care Nurse Practitioner Progress Note\n"
+        self.assertEqual(_classify_general_note_type(text), "Palliative Care Progress Note")
+
+    def test_speech_language_pathology(self):
+        text = "Signed\n\nSpeech Language Pathology:\nClinical Swallow\n"
+        self.assertEqual(_classify_general_note_type(text), "Speech Language Pathology")
+
+    def test_unclassifiable_returns_none(self):
+        text = "Signed\n\nPHYSICAL THERAPY\nPatient: Test\n"
+        self.assertIsNone(_classify_general_note_type(text))
+
+    def test_medication_order_returns_none(self):
+        text = "[PHYSICIAN_NOTE] 2025-12-17\nDEA #: FV5998919\n"
+        self.assertIsNone(_classify_general_note_type(text))
+
+    def test_trauma_header_not_classified_by_general(self):
+        """Trauma headers should be handled by _detect_note_type, not general."""
+        text = "Signed\n\nTrauma Progress Note\nTest Provider, NP\n"
+        self.assertIsNone(_classify_general_note_type(text))
+
+
+# ── Tests for Assessment/Plan: extraction ──────────────────────────
+
+SAMPLE_HOSPITALIST_AP_SLASH = """Signed
+
+Deaconess Care Group
+Hospital Progress Note
+Patient Name:  Test Patient
+
+Assessment/Plan:
+
+Unstable T8 fracture as well as right 5th-7th rib fractures
+Management per Trauma.  Pain control per Trauma.
+
+Diabetes mellitus type 2
+Continue sliding scale insulin.
+
+DVT Prophylaxis:  SCDs
+
+This has been electronically signed.
+"""
+
+
+class TestAssessmentPlanExtraction(unittest.TestCase):
+    def test_ap_slash_plan_extracted(self):
+        """Assessment/Plan: with slash — plan content extracted."""
+        lines = _extract_plan(SAMPLE_HOSPITALIST_AP_SLASH)
+        self.assertGreater(len(lines), 0)
+        combined = " ".join(lines)
+        self.assertIn("T8 fracture", combined)
+        self.assertIn("insulin", combined)
+
+    def test_ap_slash_terminates_at_attestation(self):
+        """Plan extraction stops at 'This has been electronically'."""
+        lines = _extract_plan(SAMPLE_HOSPITALIST_AP_SLASH)
+        combined = " ".join(lines)
+        self.assertNotIn("electronically", combined)
+
+    def test_ap_slash_no_impression(self):
+        """Assessment/Plan: combined format has no separate impression."""
+        lines = _extract_impression(SAMPLE_HOSPITALIST_AP_SLASH)
+        self.assertEqual(len(lines), 0)
+
+    def test_ap_and_plan_extracted(self):
+        """Assessment and Plan: with 'and' — plan content extracted."""
+        lines = _extract_plan(SAMPLE_HOSPITALIST_NOTE)
+        self.assertGreater(len(lines), 0)
+        combined = " ".join(lines)
+        self.assertIn("rib fracture", combined.lower())
+
+    def test_ap_integration_full(self):
+        """Full integration: hospitalist A/P note captured end-to-end."""
+        items = [_make_physician_note_item(SAMPLE_HOSPITALIST_AP_SLASH)]
+        days_data = _make_days_data({"2026-01-05": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 1)
+        note = result["days"]["2026-01-05"]["notes"][0]
+        self.assertEqual(note["note_type"], "Hospital Progress Note")
+        self.assertGreater(len(note["plan_lines"]), 0)
+        self.assertEqual(len(note["impression_lines"]), 0)
+
+    def test_trauma_still_preferred(self):
+        """Trauma header matched by _detect_note_type, not general classifier."""
+        items = [_make_physician_note_item(SAMPLE_TRAUMA_PROGRESS_NOTE)]
+        days_data = _make_days_data({"2026-01-03": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        note = result["days"]["2026-01-03"]["notes"][0]
+        self.assertEqual(note["note_type"], "Trauma Progress Note")
+
+    def test_no_plan_general_note_silently_skipped(self):
+        """General note without plan markers is silently skipped (no warning)."""
+        text = "Signed\\n\\nDeaconess Care Group\\nHospital Progress Note\\n\\nSubjective: No complaints\\n"
+        items = [_make_physician_note_item(text)]
+        days_data = _make_days_data({"2026-01-05": items})
+        result = extract_trauma_daily_plan_by_day({"days": {}}, days_data)
+
+        self.assertEqual(result["total_notes"], 0)
+        self.assertEqual(len(result["warnings"]), 0)
 
 
 if __name__ == "__main__":

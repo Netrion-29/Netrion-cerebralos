@@ -2,37 +2,35 @@
 """
 CerebralOS — Trauma Daily Plan By Day v1
 
-Extracts per-day plan text from trauma-team progress notes and organises
-it by calendar day.
+Extracts per-day plan text from physician progress notes and organises
+it by calendar day, covering all medical teams.
 
 Strategy:
   1. Iterate timeline items chronologically across all days.
-  2. Select items of type PHYSICIAN_NOTE whose text matches the
-     qualifying note-type header allowlist.
-  3. Within each qualifying note, locate the "Impression:" (or
-     "Assessment:") and "Plan:" sections using deterministic regex
-     anchors.
-  4. Extract the Impression/Assessment + Plan text as structured data.
-  5. Organise results by day, with per-note entries preserving the
+  2. Select items of type PHYSICIAN_NOTE.
+  3. Classify notes: trauma-team headers first (exact header match),
+     then general physician notes (service classification).
+  4. Within each qualifying note, locate the "Impression:" / "Plan:"
+     or combined "Assessment/Plan:" section using deterministic regex.
+  5. Extract the section text as structured data.
+  6. Organise results by day, with per-note entries preserving the
      author, timestamp, and raw plan lines.
 
-Qualifying note types (allowlist):
-  - "Trauma Progress Note"
-  - "Trauma Tertiary Survey Note"
-  - "Trauma Tertiary Note"
-  - "Trauma Tertiary Progress Note"
-  - "Trauma Overnight Progress Note"
-  - "Daily Progress Note" (only when from Evansville Surgical Associates)
-  - "ESA Brief Progress Note" (brief — may lack Impression/Plan)
-  - "ESA Brief Update" (brief — may lack Impression/Plan)
-  - "ESA Quick Update Note" (brief — may lack Impression/Plan)
-  - "ESA TRAUMA BRIEF NOTE" (brief — may lack Impression/Plan)
+Note selection:
+  A. Trauma team notes (header-matched):
+     "Trauma Progress Note", "Trauma Tertiary Survey Note",
+     "Trauma Tertiary Note", "Trauma Tertiary Progress Note",
+     "Trauma Overnight Progress Note",
+     "Daily Progress Note" (ESA-gated), ESA brief variants.
+  B. General physician notes: any PHYSICIAN_NOTE with an extractable
+     "Plan:" or "Assessment/Plan:" section from a classifiable service
+     (hospitalist, critical care, neurology, cardiology, palliative
+     care, electrophysiology, speech language pathology).
 
-Excluded (not in scope):
-  - Consultant notes (separate feature: consultant_plan_items_v1)
-  - Hospitalist progress notes (different plan format, not trauma-team)
-  - Radiology reads (PHYSICIAN_NOTE but not trauma progress notes)
-  - ED notes, nursing notes, discharge summaries
+Excluded:
+  - Radiology reads ("Narrative & Impression" pattern)
+  - Notes without Plan: or Assessment/Plan: section
+  - Unclassifiable PHYSICIAN_NOTEs (medication orders, etc.)
 
 Output schema:
   {
@@ -64,7 +62,8 @@ Output schema:
 Fail-closed:
   - If no qualifying notes found → source_rule_id = "no_qualifying_notes",
     days = {}, total_notes = 0
-  - If a qualifying note has no Plan: section → warning emitted, note skipped
+  - If a trauma note has no Plan: section → warning emitted, note skipped
+  - Non-trauma notes without Plan:/Assessment/Plan: → silently skipped
   - Deterministic: same input → same output, always
 """
 
@@ -138,10 +137,18 @@ _RE_PLAN_START = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 
+# Combined Assessment/Plan section (hospitalist, cardiology, neurology, etc.)
+# Matches both "Assessment/Plan:" and "Assessment and Plan:" formats
+_RE_ASSESSMENT_PLAN_START = re.compile(
+    r"^\s*Assessment\s*(?:/|and)\s*Plan\s*:",
+    re.IGNORECASE | re.MULTILINE,
+)
+
 # Plan section terminators (attestation, footer, author signature, MyChart)
 _PLAN_TERMINATORS = re.compile(
     r"(?:"
     r"I have seen and examined patient"
+    r"|This has been electronically"
     r"|MyChart now allows"
     r"|Revision History"
     r"|Medically\s+stable\s+for\s+discharge"
@@ -228,6 +235,36 @@ def _detect_note_type(text: str) -> Optional[str]:
     return "Trauma Progress Note"
 
 
+# ── General (non-trauma) note classification ──────────────────────
+_GENERAL_NOTE_PATTERNS: List[Tuple[re.Pattern, str]] = [
+    (re.compile(r"Hospital\s+Progress\s+Note", re.I), "Hospital Progress Note"),
+    (re.compile(r"Deaconess\s+Care\s+Group", re.I), "Hospital Progress Note"),
+    (re.compile(r"Pulmonary\s*[/&]\s*Critical\s+Care", re.I), "Critical Care Progress Note"),
+    (re.compile(r"\bPCCM\b", re.I), "Critical Care Progress Note"),
+    (re.compile(r"Neurology\s+(?:Inpatient\s+)?(?:Consult|Progress)", re.I), "Neurology Progress Note"),
+    (re.compile(r"Heart\s+Group\s+Daily\s+Progress", re.I), "Cardiology Progress Note"),
+    (re.compile(r"Electrophysiology\s+(?:Daily\s+)?Progress", re.I), "Electrophysiology Progress Note"),
+    (re.compile(r"Brief\s+EP\s+Progress\s+Note", re.I), "Electrophysiology Progress Note"),
+    (re.compile(r"\bCardiology\b", re.I), "Cardiology Progress Note"),
+    (re.compile(r"Palliative\s+Care", re.I), "Palliative Care Progress Note"),
+    (re.compile(r"Speech\s+Language\s+Pathology", re.I), "Speech Language Pathology"),
+    (re.compile(r"Infectious\s+Disease", re.I), "Infectious Disease Progress Note"),
+]
+
+
+def _classify_general_note_type(text: str) -> Optional[str]:
+    """Classify a non-trauma physician note by header text.
+
+    Returns a descriptive note-type label, or None if the note cannot
+    be classified (in which case it should be skipped).
+    """
+    header_area = text[:500]
+    for pattern, label in _GENERAL_NOTE_PATTERNS:
+        if pattern.search(header_area):
+            return label
+    return None
+
+
 def _extract_author(text: str) -> str:
     """Extract the author name from the note header area."""
     # Search only the first 300 chars (header area)
@@ -289,7 +326,34 @@ def _find_clinical_impression_and_plan(text: str) -> Tuple[int, int, int]:
         plan_match = m  # Take the last Plan: match
 
     if not plan_match:
-        return -1, -1, -1
+        # Try combined Assessment/Plan: format (hospitalist, cardiology, etc.)
+        ap_match = None
+        for m in _RE_ASSESSMENT_PLAN_START.finditer(text):
+            ap_match = m  # Take the last Assessment/Plan: match
+
+        if not ap_match:
+            return -1, -1, -1
+
+        ap_start = ap_match.start()
+        ap_header_end = ap_match.end()
+
+        # Find end of Assessment/Plan: section
+        ap_end = len(text)
+        for line_start_idx in range(ap_header_end, len(text)):
+            if text[line_start_idx] == '\n' or line_start_idx == ap_header_end:
+                line_end_idx = text.find('\n', line_start_idx + 1)
+                if line_end_idx == -1:
+                    line_end_idx = len(text)
+                line = text[line_start_idx:line_end_idx]
+                if _PLAN_TERMINATORS.search(line):
+                    ap_end = line_start_idx
+                    break
+                if _RE_SIGNATURE_LINE.match(line.strip()):
+                    ap_end = line_start_idx
+                    break
+
+        # No separate impression for Assessment/Plan: format
+        return ap_start, ap_start, ap_end
 
     plan_header_end = plan_match.end()
     plan_start = plan_match.start()
@@ -331,7 +395,7 @@ def _find_clinical_impression_and_plan(text: str) -> Tuple[int, int, int]:
 
 
 def _extract_impression(text: str) -> List[str]:
-    """Extract impression section lines from a trauma note."""
+    """Extract impression section lines from a physician note."""
     imp_start, plan_start, _ = _find_clinical_impression_and_plan(text)
     if imp_start < 0 or imp_start == plan_start:
         return []
@@ -377,14 +441,16 @@ def _extract_impression(text: str) -> List[str]:
 
 
 def _extract_plan(text: str) -> List[str]:
-    """Extract plan section lines from a trauma note."""
+    """Extract plan section lines from a physician note."""
     _, plan_start, plan_end = _find_clinical_impression_and_plan(text)
     if plan_start < 0:
         return []
 
-    # Skip past the "Plan:" header line
+    # Skip past the plan header (Plan: or Assessment/Plan:)
     plan_text = text[plan_start:plan_end]
     m = _RE_PLAN_START.search(plan_text)
+    if not m:
+        m = _RE_ASSESSMENT_PLAN_START.search(plan_text)
     if not m:
         return []
 
@@ -419,7 +485,7 @@ def extract_trauma_daily_plan_by_day(
     days_data: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
-    Extract per-day trauma plan from qualifying trauma team progress notes.
+    Extract per-day plan from physician progress notes (all teams).
 
     Parameters
     ----------
@@ -448,7 +514,7 @@ def extract_trauma_daily_plan_by_day(
         for item in day_data.get("items") or []:
             item_type = item.get("type", "")
 
-            # Only PHYSICIAN_NOTE items can be trauma progress notes
+            # Only PHYSICIAN_NOTE items
             if item_type != "PHYSICIAN_NOTE":
                 continue
 
@@ -460,10 +526,13 @@ def extract_trauma_daily_plan_by_day(
             if _is_radiology_read(text):
                 continue
 
-            # Check for qualifying note header
+            # Classify: trauma headers first, then general
             note_type = _detect_note_type(text)
+            is_trauma_note = note_type is not None
             if not note_type:
-                continue
+                note_type = _classify_general_note_type(text)
+                if not note_type:
+                    continue
 
             # Extract author
             author = _extract_author(text)
@@ -473,10 +542,11 @@ def extract_trauma_daily_plan_by_day(
             plan_lines = _extract_plan(text)
 
             if not plan_lines:
-                warnings.append(
-                    f"Qualifying {note_type} on {day_iso} by {author} "
-                    f"has no extractable Plan section"
-                )
+                if is_trauma_note:
+                    warnings.append(
+                        f"Qualifying {note_type} on {day_iso} by {author} "
+                        f"has no extractable Plan section"
+                    )
                 continue
 
             # Build evidence hash
@@ -512,8 +582,8 @@ def extract_trauma_daily_plan_by_day(
     else:
         source_rule_id = "no_qualifying_notes"
         notes_meta.append(
-            "No qualifying trauma progress notes found in timeline. "
-            "This patient may not have trauma-team daily progress notes."
+            "No qualifying physician progress notes with Plan or "
+            "Assessment/Plan sections found in timeline."
         )
 
     return {
