@@ -35,6 +35,7 @@ See: [PI_RN_CASEFILE_V1.md](roadmaps/PI_RN_CASEFILE_V1.md)
 | Clinical content expansion (injuries, imaging, procedures) | #293 | Merged |
 | Clinical content expansion v1 (injuries/imaging/procedures bundle+render) | #294 | Merged |
 | Device + prophylaxis visibility (LDA, DVT, GI, seizure) | #295 | In review |
+| Resuscitation / hemodynamic summary (BD, transfusions, instability) | #296 | In review |
 
 ### What the Casefile Currently Renders
 
@@ -46,7 +47,9 @@ consultants, admission/discharge dates.
 radiology), imaging studies (evidence trail), procedures (chronological
 event timeline with category badges), lines/drains/airways (device inventory
 with placement/removal/duration/status), prophylaxis summary (DVT, GI,
-seizure status with delay flags and exclusion reasons).
+seizure status with delay flags and exclusion reasons), resuscitation /
+hemodynamic summary (hemodynamic instability patterns, blood products,
+base deficit monitoring with compliance status).
 
 **Per hospital day (day cards):** Vitals snapshot, GCS (arrival/best/worst
 with severity), structured labs (flagged H/L values), consultant plans
@@ -83,7 +86,7 @@ casefile, not building new extraction logic.
 
 | # | Theme | Vision Items | Key Modules |
 |---|-------|-------------|-------------|
-| 1 | **Resuscitation / hemodynamic summary** | (new section) | `base_deficit_monitoring_v1`, `transfusion_blood_products_v1` |
+| 1 | **Resuscitation / hemodynamic summary** | (new section) | `base_deficit_monitoring_v1`, `transfusion_blood_products_v1`, `hemodynamic_instability_pattern_v1` — wired in PR #296 |
 | 2 | **Device duration + prophylaxis grid** | LDAs (#14), PT/OT/disposition (#22) | Device summary + prophylaxis (DVT/GI/seizure) wired in PR #295. Per-day device grid and PT/OT (#22) remain. |
 | 3 | **Daily narrative investigation** | Daily notes (#20) | `trauma_daily_plan_by_day_v1` — upstream extraction gap |
 

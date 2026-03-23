@@ -105,7 +105,9 @@ def validate_contract(data: Any) -> List[str]:
         # Validate required summary sub-keys exist (value may be dict or null)
         for skey in ("injuries", "imaging", "procedures",
                      "devices", "dvt_prophylaxis", "gi_prophylaxis",
-                     "seizure_prophylaxis"):
+                     "seizure_prophylaxis",
+                     "base_deficit", "transfusions",
+                     "hemodynamic_instability"):
             if skey not in summary_val:
                 errors.append(
                     f"SUMMARY_MISSING_KEY: summary.{skey} is missing"

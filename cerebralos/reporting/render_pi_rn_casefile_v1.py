@@ -391,6 +391,15 @@ details.day-card[open] > summary.day-summary::before { transform: rotate(90deg);
 .proph-none { background: var(--red-50); color: var(--red-600); }
 .proph-detected { background: var(--blue-100); color: var(--blue-700); }
 .proph-not-detected { background: var(--slate-100); color: var(--slate-500); }
+
+/* Resuscitation / hemodynamic summary */
+.resus-indicator { font-size: 0.75em; font-weight: 700; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 3px; display: inline-block; letter-spacing: 0.03em; }
+.resus-positive { background: var(--red-50); color: var(--red-600); }
+.resus-negative { background: var(--green-100); color: var(--green-700); }
+.resus-neutral { background: var(--slate-100); color: var(--slate-500); }
+.resus-warn { background: var(--amber-100); color: var(--amber-600); }
+.resus-sub { font-size: 0.82em; color: var(--slate-500); margin-top: 2px; }
 """
 
 # ── JS ─────────────────────────────────────────────────────────────
@@ -1217,6 +1226,176 @@ def _render_prophylaxis(bundle: Dict[str, Any]) -> str:
     )
 
 
+def _render_resuscitation(bundle: Dict[str, Any]) -> str:
+    """Render Resuscitation / Hemodynamic Summary card.
+
+    Covers hemodynamic instability patterns, blood product administration,
+    and base deficit monitoring. Fail-closed: returns empty string when
+    all three upstream modules are absent/null.
+    """
+    summary = bundle.get("summary", {})
+    hemo = summary.get("hemodynamic_instability")
+    tx = summary.get("transfusions")
+    bd = summary.get("base_deficit")
+
+    # Fail-closed: skip entire section when no data
+    if not any(isinstance(x, dict) for x in (hemo, tx, bd)):
+        return ""
+
+    sections: List[str] = []
+
+    # ── Hemodynamic instability ──────────────────────────────
+    if isinstance(hemo, dict):
+        present = hemo.get("pattern_present", "no")
+        patterns = hemo.get("patterns_detected", [])
+        abnormal = hemo.get("total_abnormal_readings", 0)
+        total_vit = hemo.get("total_vitals_readings", 0)
+
+        if present == "yes" and patterns:
+            badge_cls = "resus-positive"
+            badge_text = "Instability detected"
+        else:
+            badge_cls = "resus-negative"
+            badge_text = "No instability detected"
+
+        detail_parts: List[str] = []
+        for pname in ("hypotension_pattern", "map_low_pattern",
+                      "tachycardia_pattern"):
+            pdata = hemo.get(pname)
+            if isinstance(pdata, dict) and pdata.get("detected"):
+                threshold = pdata.get("threshold", "")
+                rc = pdata.get("reading_count", 0)
+                da = pdata.get("days_affected", 0)
+                label = pname.replace("_pattern", "").replace("_", " ").title()
+                detail_parts.append(
+                    f"{_e(label)}: {rc} reading{'s' if rc != 1 else ''}"
+                    f" over {da} day{'s' if da != 1 else ''}"
+                    f" ({_e(threshold)})"
+                )
+
+        if total_vit:
+            detail_parts.append(
+                f"Abnormal: {abnormal}/{total_vit} vitals readings"
+            )
+
+        detail = ""
+        if detail_parts:
+            detail = '<div class="resus-sub">' + "<br>".join(detail_parts) + "</div>"
+
+        sections.append(
+            "<tr>"
+            '<td class="finding-label">Hemodynamic Instability</td>'
+            f'<td><span class="resus-indicator {badge_cls}">{_e(badge_text)}</span>'
+            f"{detail}</td></tr>"
+        )
+
+    # ── Blood products / transfusion ─────────────────────────
+    if isinstance(tx, dict):
+        status = tx.get("status", "DATA NOT AVAILABLE")
+        total_ev = tx.get("total_events", 0)
+        products = tx.get("products_detected", [])
+        mtp = tx.get("mtp_activated", False)
+        txa = tx.get("txa_administered", False)
+
+        if status == "DATA NOT AVAILABLE" and total_ev == 0 and not mtp and not txa:
+            badge_cls = "resus-neutral"
+            badge_text = "No blood products documented"
+        elif total_ev > 0 or products:
+            badge_cls = "resus-positive"
+            badge_text = f"{total_ev} transfusion event{'s' if total_ev != 1 else ''}"
+        else:
+            badge_cls = "resus-neutral"
+            badge_text = "No transfusion events"
+
+        detail_parts_tx: List[str] = []
+        for prod_key, label in [
+            ("prbc_events", "pRBC"), ("ffp_events", "FFP"),
+            ("platelet_events", "Platelets"), ("cryo_events", "Cryo"),
+        ]:
+            count = tx.get(prod_key, 0)
+            if count:
+                detail_parts_tx.append(f"{label}: {count}")
+        if mtp:
+            detail_parts_tx.append("MTP activated")
+        if txa:
+            detail_parts_tx.append("TXA administered")
+        if products and not detail_parts_tx:
+            detail_parts_tx.append("Products: " + ", ".join(str(p) for p in products))
+
+        detail_tx = ""
+        if detail_parts_tx:
+            detail_tx = '<div class="resus-sub">' + "; ".join(detail_parts_tx) + "</div>"
+
+        sections.append(
+            "<tr>"
+            '<td class="finding-label">Blood Products</td>'
+            f'<td><span class="resus-indicator {badge_cls}">{_e(badge_text)}</span>'
+            f"{detail_tx}</td></tr>"
+        )
+
+    # ── Base deficit monitoring ───────────────────────────────
+    if isinstance(bd, dict):
+        initial_val = bd.get("initial_bd_value")
+        trigger = bd.get("trigger_bd_gt4")
+        series = bd.get("bd_series", [])
+        compliant = bd.get("overall_compliant")
+        nc_reasons = bd.get("noncompliance_reasons", [])
+        notes = bd.get("notes", [])
+        initial_ts = bd.get("initial_bd_ts")
+
+        has_data = initial_val is not None or (isinstance(series, list) and len(series) > 0)
+
+        if not has_data:
+            badge_cls = "resus-neutral"
+            badge_text = "No base deficit data"
+        elif trigger:
+            if compliant is False:
+                badge_cls = "resus-warn"
+                badge_text = "BD trigger — non-compliant monitoring"
+            else:
+                badge_cls = "resus-positive"
+                badge_text = "BD trigger present"
+        else:
+            badge_cls = "resus-negative"
+            badge_text = "BD within range"
+
+        detail_parts_bd: List[str] = []
+        if initial_val is not None:
+            ts_str = f" at {_e(str(initial_ts))}" if initial_ts else ""
+            detail_parts_bd.append(f"Initial BD: {initial_val}{ts_str}")
+        if isinstance(series, list) and len(series) > 1:
+            detail_parts_bd.append(f"{len(series)} BD measurements")
+        if compliant is False and nc_reasons:
+            for r in nc_reasons[:3]:
+                detail_parts_bd.append(f"Non-compliant: {_e(str(r))}")
+
+        detail_bd = ""
+        if detail_parts_bd:
+            detail_bd = '<div class="resus-sub">' + "<br>".join(detail_parts_bd) + "</div>"
+
+        sections.append(
+            "<tr>"
+            '<td class="finding-label">Base Deficit</td>'
+            f'<td><span class="resus-indicator {badge_cls}">{_e(badge_text)}</span>'
+            f"{detail_bd}</td></tr>"
+        )
+
+    if not sections:
+        return ""
+
+    table = (
+        '<table class="clinical-tbl">'
+        "<thead><tr><th>Indicator</th><th>Status</th></tr></thead>"
+        f'<tbody>{"".join(sections)}</tbody></table>'
+    )
+    return (
+        '<div class="card">'
+        '<div class="card-title">Resuscitation / Hemodynamic Summary</div>'
+        f'<div class="card-body">{table}</div>'
+        "</div>"
+    )
+
+
 def _render_pmh(bundle: Dict[str, Any]) -> str:
     pmh = bundle.get("summary", {}).get("pmh")
     anticoag = bundle.get("summary", {}).get("anticoagulants")
@@ -1842,6 +2021,7 @@ def render_casefile(bundle: Dict[str, Any]) -> str:
         _render_procedures(bundle),
         _render_devices(bundle),
         _render_prophylaxis(bundle),
+        _render_resuscitation(bundle),
         _render_pmh(bundle),
         _render_consultants(bundle),
         _render_ntds_summary(bundle),

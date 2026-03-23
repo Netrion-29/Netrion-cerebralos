@@ -89,7 +89,7 @@ in the above-the-fold clinical snapshot (PR #290) and patient card.
 | 26 | Clipboard capture helper | **Deferred** | UX / frontend | No feature module, no design. Requires UI/UX work outside core pipeline. | Design phase when casefile content is complete. |
 | 27 | LLM copilot packet ideas | **Deferred** | Blocked by constraints | Codebase constraint: "No LLM, no ML, no clinical inference." Deterministic-only architecture prevents LLM integration in feature layer. | Future product evolution; not compatible with current architecture. |
 | 28 | Visual / emotional design | **Partial** | CSS refinement | Foundation in place: CSS design tokens, color palette, cards, badges, typography in casefile renderer. Professional HTML output. "Emotional design" concept not yet formally specified. | Polish pass after content completeness. |
-| 29 | BMAT (blood management) | **Partial** | Extraction gap | Transfusion data extracted (`transfusion_blood_products_v1` — pRBC, FFP, platelets, TXA, MTP). Referenced in protocol rules. Explicit BMAT scoring feature stub does not exist. | Define BMAT scoring criteria; build on existing transfusion extraction. |
+| 29 | BMAT (blood management) | **Partial** | Extraction gap | Transfusion data extracted (`transfusion_blood_products_v1` — pRBC, FFP, platelets, TXA, MTP). Referenced in protocol rules. Transfusion summary now rendered in casefile (PR #296). Explicit BMAT scoring feature stub does not exist. | Define BMAT scoring criteria; build on existing transfusion extraction. |
 | 30 | Time to OR | **Missing** | Derivation gap | Data exists (procedures via `procedure_operatives_v1`, admission time via evidence). No computed time-delta feature module yet. ~5-line derivation once procedures are bundled. | Implement after procedure timeline is wired (depends on #13 above). |
 | 31 | SBIRT surfacing | **Partial** | Renderer | Extraction complete (`sbirt_screening_v1` — AUDIT-C, DAST-10, CAGE scores + question-level responses). Contract doc exists. Not yet rendered in casefile but fully extracted and available. | Wire into casefile when rendering scope expands. |
 
@@ -135,7 +135,7 @@ Based on current coverage gaps, ranked by PI RN workflow value:
 |----------|-------|-----------------|-----------|
 | 1 | **Injury inventory + imaging results** | #12, #17 | Closes biggest content gap. PI RN's first question is "what was injured?" Data exists in `radiology_findings_v1` + `mechanism_region_v1`. |
 | 2 | **Procedure/operative timeline** | #13, #30 | Unblocks return-to-OR, delay-to-definitive-care metrics. `procedure_operatives_v1` extraction is high-confidence. Time-to-OR is ~5-line derivation. |
-| 3 | **Resuscitation / hemodynamic summary** | (new section) | Category I metric. Wire `base_deficit_monitoring_v1` + `transfusion_blood_products_v1` + `hemodynamic_instability_pattern_v1`. |
+| 3 | **Resuscitation / hemodynamic summary** | (new section) | **Wired in PR #296** — `base_deficit_monitoring_v1` + `transfusion_blood_products_v1` + `hemodynamic_instability_pattern_v1` bundled and rendered. BMAT composite scoring remains deferred. |
 | 4 | **Device duration + prophylaxis grid** | #14, #22 | **Partially addressed** — PR #295 wired `lda_events_v1` device summary + `dvt_prophylaxis_v1` + `gi_prophylaxis_v1` + `seizure_prophylaxis_v1` into casefile. Per-day device grid and PT/OT (#22) remain. |
 | 5 | **Daily narrative investigation** | #20 | Investigate `trauma_daily_plan_by_day_v1` upstream extraction gap for gate patients. |
 

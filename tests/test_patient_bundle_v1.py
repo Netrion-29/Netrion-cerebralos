@@ -175,6 +175,67 @@ _MINIMAL_FEATURES = {
             "mention_evidence_count": 0,
             "evidence": {"admin": [], "mention": [], "discontinued": []},
         },
+        "base_deficit_monitoring_v1": {
+            "initial_bd_ts": "2025-01-01T08:30:00",
+            "initial_bd_value": 4.3,
+            "initial_bd_source": "unknown",
+            "initial_bd_raw_line_id": "bd001",
+            "category1_bd_validated": False,
+            "validation_failure_reason": "specimen source not confirmed arterial",
+            "trigger_bd_gt4": True,
+            "first_trigger_ts": "2025-01-01T08:30:00",
+            "bd_series": [
+                {"ts": "2025-01-01T08:30:00", "value": 4.3, "specimen": "unknown", "raw_line_id": "bd001", "snippet": "BD 4.3"},
+                {"ts": "2025-01-01T14:00:00", "value": 2.1, "specimen": "unknown", "raw_line_id": "bd002", "snippet": "BD 2.1"},
+            ],
+            "monitoring_windows": [],
+            "overall_compliant": False,
+            "noncompliance_reasons": ["q2h_until_improving: gap 5.5h"],
+            "notes": [],
+        },
+        "transfusion_blood_products_v1": {
+            "status": "DATA NOT AVAILABLE",
+            "products_detected": [],
+            "mtp_activated": False,
+            "txa_administered": False,
+            "prbc_events": 0,
+            "ffp_events": 0,
+            "platelet_events": 0,
+            "cryo_events": 0,
+            "total_events": 0,
+            "evidence": [],
+        },
+        "hemodynamic_instability_pattern_v1": {
+            "pattern_present": "yes",
+            "hypotension_pattern": {
+                "detected": True,
+                "reading_count": 2,
+                "days_affected": 1,
+                "threshold": "SBP < 90",
+                "source_rule_id": "hemo_sbp_lt90",
+            },
+            "map_low_pattern": {
+                "detected": False,
+                "reading_count": 0,
+                "days_affected": 0,
+                "threshold": "MAP < 65",
+                "source_rule_id": "hemo_map_lt65",
+            },
+            "tachycardia_pattern": {
+                "detected": False,
+                "reading_count": 0,
+                "days_affected": 0,
+                "threshold": "HR > 120",
+                "source_rule_id": "hemo_hr_gt120",
+            },
+            "patterns_detected": ["hypotension"],
+            "total_abnormal_readings": 2,
+            "total_vitals_readings": 50,
+            "source_rule_id": "hemodynamic_instability_pattern_canonical_vitals",
+            "evidence": [],
+            "notes": [],
+            "warnings": [],
+        },
     },
     "warnings": ["test warning"],
     "warnings_summary": {},
@@ -337,6 +398,32 @@ class TestAssembleBundle:
         assert szr is not None
         assert szr["detected"] is False
 
+    def test_summary_base_deficit_populated(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        bd = bundle["summary"]["base_deficit"]
+        assert bd is not None
+        assert bd["initial_bd_value"] == 4.3
+        assert bd["trigger_bd_gt4"] is True
+        assert len(bd["bd_series"]) == 2
+
+    def test_summary_transfusions_populated(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        tx = bundle["summary"]["transfusions"]
+        assert tx is not None
+        assert tx["status"] == "DATA NOT AVAILABLE"
+        assert tx["total_events"] == 0
+
+    def test_summary_hemodynamic_instability_populated(self, full_outputs):
+        root, slug = full_outputs
+        bundle = assemble_bundle(slug, outputs_root=root)
+        hemo = bundle["summary"]["hemodynamic_instability"]
+        assert hemo is not None
+        assert hemo["pattern_present"] == "yes"
+        assert "hypotension" in hemo["patterns_detected"]
+        assert hemo["total_abnormal_readings"] == 2
+
     def test_summary_injuries_null_when_absent(self, tmp_path):
         slug = "Bare_Test"
         _write_artifact(tmp_path, f"evidence/{slug}/patient_evidence_v1.json", _MINIMAL_EVIDENCE)
@@ -359,6 +446,9 @@ class TestAssembleBundle:
         assert bundle["summary"]["dvt_prophylaxis"] is None
         assert bundle["summary"]["gi_prophylaxis"] is None
         assert bundle["summary"]["seizure_prophylaxis"] is None
+        assert bundle["summary"]["base_deficit"] is None
+        assert bundle["summary"]["transfusions"] is None
+        assert bundle["summary"]["hemodynamic_instability"] is None
 
     def test_consultants_section(self, full_outputs):
         root, slug = full_outputs
@@ -458,6 +548,9 @@ class TestValidateContract:
         assert any("SUMMARY_MISSING_KEY" in e and "dvt_prophylaxis" in e for e in errors)
         assert any("SUMMARY_MISSING_KEY" in e and "gi_prophylaxis" in e for e in errors)
         assert any("SUMMARY_MISSING_KEY" in e and "seizure_prophylaxis" in e for e in errors)
+        assert any("SUMMARY_MISSING_KEY" in e and "base_deficit" in e for e in errors)
+        assert any("SUMMARY_MISSING_KEY" in e and "transfusions" in e for e in errors)
+        assert any("SUMMARY_MISSING_KEY" in e and "hemodynamic_instability" in e for e in errors)
 
     def test_summary_with_clinical_keys_null_passes(self):
         data = {k: {} for k in ALLOWED_TOP_LEVEL_KEYS}
@@ -468,6 +561,8 @@ class TestValidateContract:
             "injuries": None, "imaging": None, "procedures": None,
             "devices": None, "dvt_prophylaxis": None,
             "gi_prophylaxis": None, "seizure_prophylaxis": None,
+            "base_deficit": None, "transfusions": None,
+            "hemodynamic_instability": None,
         }
         errors = validate_contract(data)
         assert not any("SUMMARY_MISSING_KEY" in e for e in errors)

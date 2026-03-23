@@ -93,6 +93,9 @@ Each key is copied from `patient_features_v1.json → features.*`.
 | `dvt_prophylaxis` | `features.dvt_prophylaxis_v1` | `null` if absent |
 | `gi_prophylaxis` | `features.gi_prophylaxis_v1` | `null` if absent |
 | `seizure_prophylaxis` | `features.seizure_prophylaxis_v1` | `null` if absent |
+| `base_deficit` | `features.base_deficit_monitoring_v1` | `null` if absent |
+| `transfusions` | `features.transfusion_blood_products_v1` | `null` if absent |
+| `hemodynamic_instability` | `features.hemodynamic_instability_pattern_v1` | `null` if absent |
 
 ### `compliance` (required, dict)
 
@@ -160,6 +163,9 @@ Bundle-level warnings. Includes:
 | `summary.dvt_prophylaxis` | `patient_features_v1.json → features.dvt_prophylaxis_v1` |
 | `summary.gi_prophylaxis` | `patient_features_v1.json → features.gi_prophylaxis_v1` |
 | `summary.seizure_prophylaxis` | `patient_features_v1.json → features.seizure_prophylaxis_v1` |
+| `summary.base_deficit` | `patient_features_v1.json → features.base_deficit_monitoring_v1` |
+| `summary.transfusions` | `patient_features_v1.json → features.transfusion_blood_products_v1` |
+| `summary.hemodynamic_instability` | `patient_features_v1.json → features.hemodynamic_instability_pattern_v1` |
 | `compliance.ntds_*` | `outputs/ntds/$SLUG/ntds_summary_2026_v1.json` + per-event files |
 | `compliance.protocol_results` | `outputs/protocols/$SLUG/protocol_results_v1.json` |
 | `daily` | `patient_features_v1.json → days.*` + `features.*` |
@@ -204,6 +210,10 @@ Bundle-level warnings. Includes:
 > `summary.dvt_prophylaxis`, `summary.gi_prophylaxis`, and
 > `summary.seizure_prophylaxis` respectively. The "Intentionally Excluded"
 > LDA note above is retained for historical context only.
+
+> **NOTE (PR #296, 2026-03-22):** Resuscitation and hemodynamic data
+> are now carried in `summary.base_deficit`, `summary.transfusions`, and
+> `summary.hemodynamic_instability` respectively.
 
 ---
 
