@@ -41,6 +41,7 @@ from cerebralos.reporting.render_pi_rn_casefile_v1 import (
     _render_disposition_planning,
     _render_non_trauma_team_plans,
     _render_sbirt_screening,
+    _render_trauma_summary,
 )
 
 
@@ -395,6 +396,41 @@ _FULL_BUNDLE = {
             "notes": [],
             "warnings": [],
         },
+        "trauma_summary": {
+            "present": True,
+            "source_note_type": "TRAUMA_HP",
+            "source_note_datetime": "2026-01-01T11:23:00",
+            "source_doc_title": "Trauma H & P",
+            "activation_category": "II",
+            "mechanism_summary": "Fall",
+            "hpi_summary": "71 yo female s/p Multiple falls",
+            "primary_survey": {
+                "airway": "patent",
+                "breathing": "even and unlabored",
+                "circulation": "HD normal",
+                "disability": "GCS 15",
+                "exposure": "no deformity",
+                "fast": "Not indicated",
+            },
+            "gcs": "15",
+            "impression_text": "71 yo female s/p Multiple falls with\n- T5, T8, T9, T12 compression fractures\n- Syncope",
+            "impression_items": [
+                "71 yo female s/p Multiple falls with",
+                "T5, T8, T9, T12 compression fractures",
+                "Syncope",
+            ],
+            "plan_text": "Neurosurgery consult\nHospitalist consult geriatric trauma protocol, syncope\nPain control",
+            "plan_items": [
+                "Neurosurgery consult",
+                "Hospitalist consult geriatric trauma protocol, syncope",
+                "Pain control",
+            ],
+            "consult_services": ["Neurosurgery", "Hospitalist"],
+            "intubated": False,
+            "admission_disposition_text": None,
+            "attending": "Huhnke, Gina, MD",
+            "app_author": "Austin Mark Buettner, PA-C",
+        },
     },
     "compliance": {
         "ntds_summary": [{"events": 21}],
@@ -576,6 +612,7 @@ _MINIMAL_BUNDLE = {
         "hemodynamic_instability": None,
         "patient_movement": None,
         "sbirt_screening": None,
+        "trauma_summary": None,
     },
     "compliance": {
         "ntds_summary": None,
@@ -2143,3 +2180,99 @@ class TestRenderSbirtScreening:
         }
         html = _render_sbirt_screening(self._bundle_with_sbirt(sbirt))
         assert "Substance Use Admission" in html
+
+
+# ── Trauma Summary renderer tests ──────────────────────────────────
+
+class TestRenderTraumaSummary:
+    """Tests for _render_trauma_summary."""
+
+    @staticmethod
+    def _bundle_with_ts(ts_data):
+        """Return a minimal bundle with the given trauma_summary."""
+        import copy
+        b = copy.deepcopy(_MINIMAL_BUNDLE)
+        b["summary"]["trauma_summary"] = ts_data
+        return b
+
+    def test_renders_when_present(self):
+        html = _render_trauma_summary(_FULL_BUNDLE)
+        assert "Trauma Summary" in html
+        assert "ts-wrap" in html
+
+    def test_empty_when_null(self):
+        html = _render_trauma_summary(_MINIMAL_BUNDLE)
+        assert html == ""
+
+    def test_shows_activation(self):
+        html = _render_trauma_summary(_FULL_BUNDLE)
+        assert "II" in html
+
+    def test_shows_gcs(self):
+        html = _render_trauma_summary(_FULL_BUNDLE)
+        assert "15" in html
+
+    def test_shows_intubated_no(self):
+        html = _render_trauma_summary(_FULL_BUNDLE)
+        assert "ts-intub-no" in html
+
+    def test_shows_intubated_yes(self):
+        ts = {
+            "present": True,
+            "source_note_type": "TRAUMA_HP",
+            "source_note_datetime": None,
+            "source_doc_title": "Trauma H & P",
+            "activation_category": None,
+            "mechanism_summary": None,
+            "hpi_summary": None,
+            "primary_survey": {"airway": None, "breathing": None,
+                               "circulation": None, "disability": None,
+                               "exposure": None, "fast": None},
+            "gcs": "3T",
+            "impression_text": None,
+            "impression_items": None,
+            "plan_text": None,
+            "plan_items": None,
+            "consult_services": None,
+            "intubated": True,
+            "admission_disposition_text": None,
+            "attending": None,
+            "app_author": None,
+        }
+        html = _render_trauma_summary(self._bundle_with_ts(ts))
+        assert "ts-intub-yes" in html
+
+    def test_shows_primary_survey(self):
+        html = _render_trauma_summary(_FULL_BUNDLE)
+        assert "Primary Survey" in html
+        assert "patent" in html
+        assert "Not indicated" in html
+
+    def test_shows_impression_items(self):
+        html = _render_trauma_summary(_FULL_BUNDLE)
+        assert "Impression" in html
+        assert "compression fractures" in html
+
+    def test_shows_plan_items(self):
+        html = _render_trauma_summary(_FULL_BUNDLE)
+        assert "Plan" in html
+        assert "Neurosurgery consult" in html
+
+    def test_shows_consult_services(self):
+        html = _render_trauma_summary(_FULL_BUNDLE)
+        assert "Consults Ordered" in html
+        assert "Neurosurgery" in html
+
+    def test_shows_author_and_attending(self):
+        html = _render_trauma_summary(_FULL_BUNDLE)
+        assert "Austin Mark Buettner" in html
+        assert "Huhnke, Gina, MD" in html
+
+    def test_in_full_casefile_output(self):
+        html = render_casefile(_FULL_BUNDLE)
+        assert "Trauma Summary" in html
+        assert "ts-wrap" in html
+
+    def test_not_in_minimal_casefile_output(self):
+        html = render_casefile(_MINIMAL_BUNDLE)
+        assert '<div class="ts-wrap">' not in html

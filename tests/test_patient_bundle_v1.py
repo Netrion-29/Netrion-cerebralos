@@ -18,6 +18,7 @@ from pathlib import Path
 
 from cerebralos.reporting.build_patient_bundle_v1 import (
     assemble_bundle,
+    build_trauma_summary,
     write_bundle,
 )
 from cerebralos.validation.validate_patient_bundle_contract_v1 import (
@@ -627,6 +628,7 @@ class TestAssembleBundle:
         assert bundle["summary"]["hemodynamic_instability"] is None
         assert bundle["summary"]["patient_movement"] is None
         assert bundle["summary"]["sbirt_screening"] is None
+        assert bundle["summary"]["trauma_summary"] is None
 
     def test_consultants_section(self, full_outputs):
         root, slug = full_outputs
@@ -731,6 +733,7 @@ class TestValidateContract:
         assert any("SUMMARY_MISSING_KEY" in e and "hemodynamic_instability" in e for e in errors)
         assert any("SUMMARY_MISSING_KEY" in e and "patient_movement" in e for e in errors)
         assert any("SUMMARY_MISSING_KEY" in e and "sbirt_screening" in e for e in errors)
+        assert any("SUMMARY_MISSING_KEY" in e and "trauma_summary" in e for e in errors)
 
     def test_summary_with_clinical_keys_null_passes(self):
         data = {k: {} for k in ALLOWED_TOP_LEVEL_KEYS}
@@ -745,6 +748,7 @@ class TestValidateContract:
             "hemodynamic_instability": None,
             "patient_movement": None,
             "sbirt_screening": None,
+            "trauma_summary": None,
         }
         errors = validate_contract(data)
         assert not any("SUMMARY_MISSING_KEY" in e for e in errors)
@@ -853,3 +857,646 @@ class TestDailyNestedDaysMapping:
         for b in (b1, b2):
             b["build"].pop("generated_at_utc", None)
         assert json.dumps(b1, sort_keys=True) == json.dumps(b2, sort_keys=True)
+
+
+# ── Trauma Summary tests ───────────────────────────────────────────
+
+class TestBuildTraumaSummary:
+    """Direct unit tests for build_trauma_summary()."""
+
+    # ── Anchor detection ────────────────────────────────────────
+
+    def test_returns_none_when_no_trauma_hp(self):
+        """No TRAUMA_HP evidence → None."""
+        feat = {"note_sections_v1": {}}
+        items = [{"kind": "NURSING_NOTE", "text": "hello"}]
+        result = build_trauma_summary(feat, items)
+        assert result is None
+
+    def test_returns_dict_when_trauma_hp_exists(self):
+        """TRAUMA_HP evidence item → always returns dict with present=True."""
+        feat = {"note_sections_v1": {}}
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nSome Author, PA-C"}]
+        result = build_trauma_summary(feat, items)
+        assert isinstance(result, dict)
+        assert result["present"] is True
+        assert result["source_note_type"] == "TRAUMA_HP"
+
+    # ── Partial emit (guardrail 1) ──────────────────────────────
+
+    def test_partial_emit_null_subfields(self):
+        """TRAUMA_HP anchor + empty note_sections → dict with null subfields."""
+        feat = {}
+        items = [{"kind": "TRAUMA_HP", "text": "", "datetime": "2025-01-01T10:00:00"}]
+        result = build_trauma_summary(feat, items)
+        assert result is not None
+        assert result["present"] is True
+        assert result["hpi_summary"] is None
+        assert result["gcs"] is None
+        assert result["impression_text"] is None
+        assert result["plan_text"] is None
+        assert result["intubated"] is None
+        assert result["consult_services"] is None
+        assert result["admission_disposition_text"] is None
+
+    # ── Source doc title (guardrail 2) ──────────────────────────
+
+    def test_source_doc_title_from_note_text(self):
+        """Prefer actual title text from note."""
+        items = [{"kind": "TRAUMA_HP", "text": "Signed\n\nExpand All Collapse All\n\nTrauma H & P\nJane Doe, PA-C\nContent here"}]
+        result = build_trauma_summary({}, items)
+        assert result["source_doc_title"] == "Trauma H & P"
+        assert result["app_author"] == "Jane Doe, PA-C"
+
+    def test_source_doc_title_fallback(self):
+        """Fallback to default when title line not found."""
+        items = [{"kind": "TRAUMA_HP", "text": "Some random content without H&P header"}]
+        result = build_trauma_summary({}, items)
+        assert result["source_doc_title"] == "Trauma H & P"
+
+    # ── GCS extraction ──────────────────────────────────────────
+
+    def test_gcs_extracted_from_disability(self):
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "primary_survey": {"present": True, "fields": {"disability": "GCS 15", "airway": "patent"}},
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        assert result["gcs"] == "15"
+
+    def test_gcs_with_intubated_t_suffix(self):
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "primary_survey": {"present": True, "fields": {"disability": "GCS 3T", "airway": "ETT"}},
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        assert result["gcs"] == "3T"
+        assert result["intubated"] is True
+
+    # ── Intubated (guardrail 5) ─────────────────────────────────
+
+    def test_intubated_true_from_ett(self):
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "primary_survey": {"present": True, "fields": {"airway": "ETT", "disability": "GCS 8"}},
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        assert result["intubated"] is True
+
+    def test_intubated_true_from_intubated_keyword(self):
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "primary_survey": {"present": True, "fields": {"disability": "intubated, GCS 7"}},
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        assert result["intubated"] is True
+
+    def test_intubated_false_when_no_markers(self):
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "primary_survey": {"present": True, "fields": {"airway": "patent", "disability": "GCS 15, alert"}},
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        assert result["intubated"] is False
+
+    def test_intubated_none_when_no_disability_no_airway(self):
+        feat = {"note_sections_v1": {"source_type": "TRAUMA_HP", "primary_survey": {"present": True, "fields": {}}}}
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        assert result["intubated"] is None
+
+    # ── FAST raw passthrough (guardrail 4) ──────────────────────
+
+    def test_fast_raw_passthrough(self):
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "primary_survey": {"present": True, "fields": {"fast": "Not indicated"}},
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        assert result["primary_survey"]["fast"] == "Not indicated"
+
+    def test_fast_positive_raw(self):
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "primary_survey": {"present": True, "fields": {"fast": "positive free fluid in Morrison's pouch"}},
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        assert result["primary_survey"]["fast"] == "positive free fluid in Morrison's pouch"
+
+    # ── Consult services (guardrail 3) ──────────────────────────
+
+    def test_consult_services_extracted(self):
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "plan": {"present": True, "text": "Neurosurgery consult\nHospitalist consult geriatric trauma protocol, syncope\nPain control\nSurgery recs followed"},
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        assert isinstance(result["consult_services"], list)
+        # Should capture service names, not prose
+        services_lower = [s.lower() for s in result["consult_services"]]
+        assert any("neurosurgery" in s for s in services_lower)
+        assert any("hospitalist" in s for s in services_lower)
+
+    def test_consult_services_empty_when_no_consults(self):
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "plan": {"present": True, "text": "Pain control\nWeight-bearing as tolerated\nDaily CBC"},
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        assert result["consult_services"] == []
+
+    # ── Admission disposition (guardrail 6) ─────────────────────
+
+    def test_admission_disposition_text(self):
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "plan": {"present": True, "text": "Admit to Trauma Surgery service\nPain control\nIVF"},
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        assert result["admission_disposition_text"] == "Admit to Trauma Surgery service"
+
+    def test_admission_disposition_null_when_missing(self):
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "plan": {"present": True, "text": "Pain control\nIVF"},
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        assert result["admission_disposition_text"] is None
+
+    # ── Impression items ────────────────────────────────────────
+
+    def test_impression_items_split(self):
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "impression": {"present": True, "text": "71 yo female s/p MVC\n- Rib fractures\n- Pneumothorax"},
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        assert result["impression_items"] is not None
+        assert len(result["impression_items"]) == 3
+
+    # ── Primary survey full ─────────────────────────────────────
+
+    def test_primary_survey_all_fields(self):
+        ps_fields = {
+            "airway": "patent",
+            "breathing": "even and unlabored",
+            "circulation": "HD normal",
+            "disability": "GCS 15",
+            "exposure": "no deformity",
+            "fast": "negative",
+        }
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "primary_survey": {"present": True, "fields": ps_fields},
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        ps = result["primary_survey"]
+        assert ps["airway"] == "patent"
+        assert ps["breathing"] == "even and unlabored"
+        assert ps["circulation"] == "HD normal"
+        assert ps["disability"] == "GCS 15"
+        assert ps["exposure"] == "no deformity"
+        assert ps["fast"] == "negative"
+
+    # ── Activation category mapped ──────────────────────────────
+
+    def test_activation_category_from_features(self):
+        feat = {
+            "category_activation_v1": {"detected": True, "category": "II"},
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        assert result["activation_category"] == "II"
+
+    # ── Mechanism summary mapped ────────────────────────────────
+
+    def test_mechanism_summary_from_features(self):
+        feat = {
+            "mechanism_region_v1": {"mechanism_primary": "Fall"},
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        assert result["mechanism_summary"] == "Fall"
+
+    # ── Validator: trauma_summary type check ────────────────────
+
+    def test_validator_accepts_trauma_summary_null(self):
+        data = {k: {} for k in ALLOWED_TOP_LEVEL_KEYS}
+        data["build"] = {"bundle_version": "1.0"}
+        data["patient"] = {"slug": "Test"}
+        data["warnings"] = []
+        data["summary"] = {
+            "injuries": None, "imaging": None, "procedures": None,
+            "devices": None, "dvt_prophylaxis": None,
+            "gi_prophylaxis": None, "seizure_prophylaxis": None,
+            "base_deficit": None, "transfusions": None,
+            "hemodynamic_instability": None,
+            "patient_movement": None,
+            "sbirt_screening": None,
+            "trauma_summary": None,
+        }
+        errors = validate_contract(data)
+        assert not any("TRAUMA_SUMMARY" in e for e in errors)
+
+    def test_validator_accepts_trauma_summary_dict(self):
+        data = {k: {} for k in ALLOWED_TOP_LEVEL_KEYS}
+        data["build"] = {"bundle_version": "1.0"}
+        data["patient"] = {"slug": "Test"}
+        data["warnings"] = []
+        data["summary"] = {
+            "injuries": None, "imaging": None, "procedures": None,
+            "devices": None, "dvt_prophylaxis": None,
+            "gi_prophylaxis": None, "seizure_prophylaxis": None,
+            "base_deficit": None, "transfusions": None,
+            "hemodynamic_instability": None,
+            "patient_movement": None,
+            "sbirt_screening": None,
+            "trauma_summary": {"present": True},
+        }
+        errors = validate_contract(data)
+        assert not any("TRAUMA_SUMMARY" in e for e in errors)
+
+    def test_validator_rejects_trauma_summary_bad_type(self):
+        data = {k: {} for k in ALLOWED_TOP_LEVEL_KEYS}
+        data["build"] = {"bundle_version": "1.0"}
+        data["patient"] = {"slug": "Test"}
+        data["warnings"] = []
+        data["summary"] = {
+            "injuries": None, "imaging": None, "procedures": None,
+            "devices": None, "dvt_prophylaxis": None,
+            "gi_prophylaxis": None, "seizure_prophylaxis": None,
+            "base_deficit": None, "transfusions": None,
+            "hemodynamic_instability": None,
+            "patient_movement": None,
+            "sbirt_screening": None,
+            "trauma_summary": "not a dict",
+        }
+        errors = validate_contract(data)
+        assert any("TRAUMA_SUMMARY_TYPE_ERROR" in e for e in errors)
+
+    # ── source_note_datetime fallback (fix) ─────────────────────
+
+    def test_datetime_fallback_when_source_ts_is_null(self):
+        """When note_sections_v1.source_ts is null, use evidence item datetime."""
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "source_ts": None,  # explicitly null
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor", "datetime": "2025-01-01T10:00:00"}]
+        result = build_trauma_summary(feat, items)
+        assert result["source_note_datetime"] == "2025-01-01T10:00:00"
+
+    def test_datetime_uses_source_ts_when_truthy(self):
+        """When note_sections_v1.source_ts is truthy, prefer it."""
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "source_ts": "2025-06-15T08:30:00",
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor", "datetime": "2025-06-15T00:00:00"}]
+        result = build_trauma_summary(feat, items)
+        assert result["source_note_datetime"] == "2025-06-15T08:30:00"
+
+    def test_datetime_falls_back_to_evidence_when_non_trauma_hp_source(self):
+        """When note_sections source is not TRAUMA_HP, use evidence datetime."""
+        feat = {
+            "note_sections_v1": {
+                "source_type": "ED_NOTE",
+                "source_ts": "2025-01-01T09:00:00",
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor", "datetime": "2025-01-01T10:00:00"}]
+        result = build_trauma_summary(feat, items)
+        assert result["source_note_datetime"] == "2025-01-01T10:00:00"
+
+    # ── doc_title regex variants (fix) ──────────────────────────
+
+    def test_title_matches_trauma_handp_no_space(self):
+        """'Trauma H&P' (no spaces) matches title regex."""
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H&P\nJane Doe, PA-C\nContent"}]
+        result = build_trauma_summary({}, items)
+        assert result["source_doc_title"] == "Trauma H&P"
+        assert result["app_author"] == "Jane Doe, PA-C"
+
+    def test_title_matches_uppercase_variant(self):
+        """'TRAUMA H & P' (uppercase) matches title regex."""
+        items = [{"kind": "TRAUMA_HP", "text": "TRAUMA H & P\nJane Doe, PA-C\nContent"}]
+        result = build_trauma_summary({}, items)
+        assert result["source_doc_title"] == "TRAUMA H & P"
+
+    def test_title_matches_slash_variant(self):
+        """'Trauma H/P' (slash) matches title regex."""
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H/P\nJane Doe, PA-C\nContent"}]
+        result = build_trauma_summary({}, items)
+        assert result["source_doc_title"] == "Trauma H/P"
+        assert result["app_author"] == "Jane Doe, PA-C"
+
+    # ── Attending found below attestation line (fix) ─────────────
+
+    def test_attending_found_below_attestation(self):
+        """MD signature below attestation line is correctly extracted."""
+        text = (
+            "Trauma H & P\n"
+            "Austin Mark Buettner, PA-C\n"
+            "HPI: Patient info here\n"
+            "\n"
+            "Plan: Pain control\n"
+            "\n"
+            "Austin Mark Buettner, PA-C\n"
+            "\n"
+            "I have seen and examined patient on the above stated date. "
+            "I have reviewed pertinent data.\n"
+            "\n"
+            "Kali Marie Kuhlenschmidt, MD\n"
+        )
+        items = [{"kind": "TRAUMA_HP", "text": text}]
+        result = build_trauma_summary({}, items)
+        assert result["attending"] == "Kali Marie Kuhlenschmidt, MD"
+
+    # ── Whitelist filtering of consult services (fix) ───────────
+
+    def test_consult_services_filters_non_whitelisted_service(self):
+        """Services not in the whitelist are silently dropped (fail-closed)."""
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "plan": {
+                    "present": True,
+                    "text": (
+                        "Neurosurgery consult\n"
+                        "UnknownService consult\n"
+                        "Hospitalist consult\n"
+                    ),
+                },
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        services_lower = [s.lower() for s in (result["consult_services"] or [])]
+        assert any("neurosurgery" in s for s in services_lower)
+        assert any("hospitalist" in s for s in services_lower)
+        assert not any("unknownservice" in s for s in services_lower)
+
+    def test_consult_services_whitelisted_abbreviations(self):
+        """Whitelist abbreviations (NSGY, ENT, GI) are accepted."""
+        feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "plan": {"present": True, "text": "NSGY consult\nENT consult\nGI consult"},
+            },
+        }
+        items = [{"kind": "TRAUMA_HP", "text": "Trauma H & P\nAuthor"}]
+        result = build_trauma_summary(feat, items)
+        services_lower = [s.lower() for s in (result["consult_services"] or [])]
+        assert any("nsgy" in s for s in services_lower)
+        assert any("ent" in s for s in services_lower)
+        assert any("gi" in s for s in services_lower)
+
+
+# ── Contamination hard tests (guardrail 7) ─────────────────────────
+
+class TestTraumaSummaryContamination:
+    """Prove that build_trauma_summary does not leak content from:
+    - Attestation boilerplate
+    - Labs
+    - Radiology narrative
+    - Addenda
+    - Copied consult material
+    """
+
+    def _build_with_note_text(self, note_text, ns_features=None):
+        """Helper: build trauma_summary from raw note text + note_sections."""
+        feat = ns_features or {}
+        items = [{"kind": "TRAUMA_HP", "text": note_text, "datetime": "2025-01-01T10:00:00"}]
+        return build_trauma_summary(feat, items)
+
+    def test_no_attestation_in_author(self):
+        """Attestation boilerplate must not leak into app_author."""
+        text = (
+            "Signed\n\nExpand All Collapse All\n\n"
+            "Trauma H & P\n"
+            "Kara Elizabeth Hall, AGACNP\n"
+            "\n"
+            "HPI: 65 yo male MVC\n"
+            "\n"
+            "I have seen and examined patient and reviewed documentation.\n"
+            "I agree with the above.\n"
+            "Huhnke, Gina, MD 01/15/2026 06:12\n"
+        )
+        result = self._build_with_note_text(text)
+        assert result["app_author"] == "Kara Elizabeth Hall, AGACNP"
+        # Attestation text must not appear in author
+        assert "I have seen" not in (result["app_author"] or "")
+        assert "agree with" not in (result["app_author"] or "")
+
+    def test_no_labs_in_impression(self):
+        """Lab values must not appear in impression fields."""
+        ns_feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "impression": {
+                    "present": True,
+                    "text": "65 yo male s/p MVC\n- Rib fractures",
+                },
+            },
+        }
+        # The raw note has labs but note_sections_v1 should have excluded them:
+        text = (
+            "Trauma H & P\nAuthor\n"
+            "Impression: 65 yo male s/p MVC\n"
+            "Labs: WBC 12.3, Hgb 8.2, Plt 145, INR 1.1\n"
+            "BMP: Na 138, K 4.2, Cr 0.9, BUN 18\n"
+        )
+        result = self._build_with_note_text(text, ns_feat)
+        # Impression should only contain what note_sections_v1 gave us
+        assert "WBC" not in (result["impression_text"] or "")
+        assert "BMP" not in (result["impression_text"] or "")
+        assert "Hgb" not in (result["impression_text"] or "")
+
+    def test_no_radiology_in_plan(self):
+        """Radiology narrative must not leak into plan fields."""
+        ns_feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "plan": {
+                    "present": True,
+                    "text": "Neurosurgery consult\nPain control",
+                },
+            },
+        }
+        text = (
+            "Trauma H & P\nAuthor\n"
+            "RADIOLOGY:\n"
+            "CT Head: No acute intracranial abnormality\n"
+            "CT C-Spine: No fracture or malalignment\n"
+            "Plan: Neurosurgery consult\n"
+        )
+        result = self._build_with_note_text(text, ns_feat)
+        assert "CT Head" not in (result["plan_text"] or "")
+        assert "intracranial" not in (result["plan_text"] or "")
+        plan_items = result["plan_items"] or []
+        for item in plan_items:
+            assert "CT Head" not in item
+            assert "C-Spine" not in item
+
+    def test_no_addenda_in_hpi(self):
+        """Addenda content must not leak into hpi_summary."""
+        ns_feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "hpi": {
+                    "present": True,
+                    "text": "65 yo male involved in MVC at highway speed",
+                },
+            },
+        }
+        text = (
+            "Trauma H & P\nAuthor\n"
+            "HPI: 65 yo male involved in MVC at highway speed\n"
+            "\n"
+            "ADDENDUM 01/02/2025:\n"
+            "Patient status updated. Repeat CT shows interval change.\n"
+            "Upgraded to ICU for monitoring.\n"
+        )
+        result = self._build_with_note_text(text, ns_feat)
+        assert "ADDENDUM" not in (result["hpi_summary"] or "")
+        assert "interval change" not in (result["hpi_summary"] or "")
+        assert "Upgraded to ICU" not in (result["hpi_summary"] or "")
+
+    def test_no_copied_consults_in_impression(self):
+        """Copied consult notes must not leak into impression."""
+        ns_feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "impression": {
+                    "present": True,
+                    "text": "Polytrauma\n- Bilateral rib fractures",
+                },
+            },
+        }
+        text = (
+            "Trauma H & P\nAuthor\n"
+            "Impression: Polytrauma\n"
+            "\n"
+            "--- CONSULT NOTE (Neurosurgery) ---\n"
+            "Neurosurgery was consulted for spinal evaluation.\n"
+            "Assessment: No surgical intervention warranted.\n"
+            "Recommend MRI of thoracolumbar spine.\n"
+        )
+        result = self._build_with_note_text(text, ns_feat)
+        assert "CONSULT NOTE" not in (result["impression_text"] or "")
+        assert "Neurosurgery was consulted" not in (result["impression_text"] or "")
+        assert "no surgical intervention" not in (result["impression_text"] or "").lower()
+
+    def test_no_attestation_in_any_clinical_field(self):
+        """Attestation boilerplate must not appear in any clinical field."""
+        ns_feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "hpi": {"present": True, "text": "Fall from standing"},
+                "primary_survey": {"present": True, "fields": {"airway": "patent", "disability": "GCS 15"}},
+                "impression": {"present": True, "text": "Hip fracture"},
+                "plan": {"present": True, "text": "Ortho consult"},
+            },
+        }
+        text = (
+            "Trauma H & P\nSmith, Jane NP\n"
+            "I have seen and examined patient and agree with\n"
+            "the above history, physical exam and medical decision making.\n"
+            "Dr. John Attending, MD\n"
+            "Electronically signed by: Attending, John L, MD 01/15/2026 06:12\n"
+        )
+        result = self._build_with_note_text(text, ns_feat)
+
+        attestation_fragments = [
+            "I have seen and examined",
+            "agree with",
+            "medical decision making",
+            "Electronically signed",
+        ]
+        clinical_fields = [
+            result["hpi_summary"],
+            result["impression_text"],
+            result["plan_text"],
+        ]
+        for fragment in attestation_fragments:
+            for field_val in clinical_fields:
+                if field_val:
+                    assert fragment not in field_val, (
+                        f"Attestation fragment {fragment!r} leaked into "
+                        f"clinical field: {field_val!r}"
+                    )
+
+    def test_no_lab_values_in_primary_survey(self):
+        """Lab values must not contaminate primary survey fields."""
+        ns_feat = {
+            "note_sections_v1": {
+                "source_type": "TRAUMA_HP",
+                "primary_survey": {
+                    "present": True,
+                    "fields": {
+                        "airway": "patent",
+                        "breathing": "even",
+                        "circulation": "HD normal",
+                        "disability": "GCS 15",
+                        "exposure": "no deformity",
+                        "fast": "negative",
+                    },
+                },
+            },
+        }
+        text = (
+            "Trauma H & P\nAuthor\n"
+            "Labs: WBC 18.2, Hgb 7.1, Lactate 4.8\n"
+            "ABG: pH 7.28, pCO2 38, pO2 92, HCO3 18\n"
+        )
+        result = self._build_with_note_text(text, ns_feat)
+        ps = result["primary_survey"]
+        for key, val in ps.items():
+            if val is not None:
+                assert "WBC" not in val
+                assert "Hgb" not in val
+                assert "Lactate" not in val
+                assert "ABG" not in val

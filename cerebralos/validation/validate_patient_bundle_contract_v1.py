@@ -109,11 +109,20 @@ def validate_contract(data: Any) -> List[str]:
                      "base_deficit", "transfusions",
                      "hemodynamic_instability",
                      "patient_movement",
-                     "sbirt_screening"):
+                     "sbirt_screening",
+                     "trauma_summary"):
             if skey not in summary_val:
                 errors.append(
                     f"SUMMARY_MISSING_KEY: summary.{skey} is missing"
                 )
+
+        # trauma_summary must be dict or null
+        ts_val = summary_val.get("trauma_summary")
+        if ts_val is not None and not isinstance(ts_val, dict):
+            errors.append(
+                f"TRAUMA_SUMMARY_TYPE_ERROR: summary.trauma_summary must be dict or null, "
+                f"got {type(ts_val).__name__}"
+            )
 
     # 6. compliance must be a dict
     compliance_val = data.get("compliance")

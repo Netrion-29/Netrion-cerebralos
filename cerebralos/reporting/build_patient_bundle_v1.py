@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -83,6 +84,385 @@ def _load_optional_json(path: Path) -> Optional[Any]:
 def _resolve_outputs_root() -> Path:
     """Return the project outputs/ directory."""
     return Path(__file__).resolve().parent.parent.parent / "outputs"
+
+
+# ── Trauma Summary assembly ────────────────────────────────────────
+
+# Regex for GCS value in disability text.  Captures the numeric score
+# and an optional trailing "T" indicating intubated patient.
+_RE_GCS = re.compile(r"GCS\s*(\d+)(T)?", re.IGNORECASE)
+
+# Regex for explicit intubation markers in note text.
+_RE_INTUBATED = re.compile(
+    r"\b(?:ETT|endotracheal\s+tube|intubated|controlled\s+with\s+ETT)\b",
+    re.IGNORECASE,
+)
+
+# Regex matching known Trauma H&P title line variants (case-insensitive).
+# Covers: "Trauma H & P", "Trauma H&P", "TRAUMA H & P", "Trauma H/P", etc.
+_RE_TRAUMA_HP_TITLE = re.compile(
+    r"^trauma\s+h\s*[&/]\s*p$",
+    re.IGNORECASE,
+)
+
+# Known consult service patterns extracted from Plan text.
+# Conservative: explicit service name after consult-related keywords.
+_RE_CONSULT_SERVICE = re.compile(
+    r"(?:^|\n)\s*[-•]?\s*"  # line start, optional bullet
+    r"(?:consult(?:ed|ation)?)\s+(?:to\s+|for\s+|with\s+)?"  # "consult to/for"
+    r"([A-Z][A-Za-z /&-]+?)(?:\s*[-:,]|\s*$)",  # capture service name
+    re.MULTILINE,
+)
+
+# Alternate pattern: "ServiceName consult" at start of plan line
+_RE_SERVICE_CONSULT = re.compile(
+    r"(?:^|\n)\s*[-•]?\s*"
+    r"([A-Z][A-Za-z /&-]+?)\s+consult(?:ed|ation)?\b",
+    re.MULTILINE,
+)
+
+# Admission disposition line in plan text
+_RE_ADMIT_DISPOSITION = re.compile(
+    r"(?:^|\n)\s*[-•]?\s*(Admit\s+to\s+[^\n]{3,80})",
+    re.IGNORECASE | re.MULTILINE,
+)
+
+# Known service name whitelist for conservative filtering.
+# Only services whose lowercase form appears here will be emitted.
+_CONSULT_SERVICE_WHITELIST = frozenset({
+    "Neurosurgery", "NSGY", "Ortho", "Orthopedics", "Hospitalist",
+    "Urology", "ENT", "Cardiology", "Pulmonology", "PCCM",
+    "Vascular", "Ophthalmology", "Plastic Surgery", "Plastics",
+    "General Surgery", "Oral Surgery", "Interventional Radiology",
+    "Physical Therapy", "Occupational Therapy", "Speech Therapy",
+    "Pain Management", "Palliative Care", "Social Work",
+    "Case Management", "Wound Care", "Infectious Disease",
+    "Nephrology", "GI", "Gastroenterology", "Hematology",
+    "Oncology", "Psychiatry", "Dermatology",
+})
+# Case-folded set for O(1) membership tests.
+_CONSULT_SERVICE_WHITELIST_FOLDED = frozenset(
+    s.lower() for s in _CONSULT_SERVICE_WHITELIST
+)
+
+
+def _extract_gcs_from_disability(disability_text: Optional[str]) -> Optional[str]:
+    """Extract GCS string from primary survey disability field.
+
+    Returns the GCS value as a string (e.g. "15", "3T").
+    Returns None if no GCS found.
+    """
+    if not disability_text:
+        return None
+    m = _RE_GCS.search(disability_text)
+    if not m:
+        return None
+    score = m.group(1)
+    suffix = m.group(2) or ""
+    return f"{score}{suffix}"
+
+
+def _extract_intubated(
+    disability_text: Optional[str],
+    airway_text: Optional[str],
+    gcs_str: Optional[str],
+) -> Optional[bool]:
+    """Determine intubated status.  Strict fail-closed.
+
+    Returns True only for:
+    - explicit "ETT", "endotracheal tube", "intubated", or
+      "controlled with ETT" in disability or airway text
+    - GCS string ending in "T"
+
+    Returns False if texts are present but no intubation marker found.
+    Returns None if all input texts are absent.
+    """
+    texts = [t for t in (disability_text, airway_text) if t]
+    has_text = bool(texts)
+
+    for text in texts:
+        if _RE_INTUBATED.search(text):
+            return True
+
+    if gcs_str and gcs_str.upper().endswith("T"):
+        return True
+
+    if has_text:
+        return False
+    return None
+
+
+def _extract_consult_services(plan_text: Optional[str]) -> Optional[List[str]]:
+    """Extract consult service names from Plan text.
+
+    Conservative: only explicit service name strings.
+    No surgeon names, no contact times, no consult prose.
+    Returns None if plan_text is absent.
+    """
+    if not plan_text:
+        return None
+
+    services: List[str] = []
+    seen: set = set()
+
+    # Pattern 1: "ServiceName consult"
+    for m in _RE_SERVICE_CONSULT.finditer(plan_text):
+        svc = m.group(1).strip().rstrip(".-")
+        if not svc or len(svc) > 60:
+            continue
+        if svc.lower() not in _CONSULT_SERVICE_WHITELIST_FOLDED:
+            continue
+        svc_key = svc.lower()
+        if svc_key not in seen:
+            seen.add(svc_key)
+            services.append(svc)
+
+    # Pattern 2: "consult to/for ServiceName"
+    for m in _RE_CONSULT_SERVICE.finditer(plan_text):
+        svc = m.group(1).strip().rstrip(".-")
+        if not svc or len(svc) > 60:
+            continue
+        if svc.lower() not in _CONSULT_SERVICE_WHITELIST_FOLDED:
+            continue
+        svc_key = svc.lower()
+        if svc_key not in seen:
+            seen.add(svc_key)
+            services.append(svc)
+
+    return services if services else []
+
+
+def _extract_admission_disposition(plan_text: Optional[str]) -> Optional[str]:
+    """Extract first admission disposition line from Plan text.
+
+    Returns the raw "Admit to ..." text.
+    Returns None if not found.
+    """
+    if not plan_text:
+        return None
+    m = _RE_ADMIT_DISPOSITION.search(plan_text)
+    if m:
+        return m.group(1).strip()
+    return None
+
+
+def _extract_doc_title_and_author(
+    evidence_items: List[Dict[str, Any]],
+) -> tuple[Optional[str], Optional[str], Optional[str]]:
+    """Extract source_doc_title and app_author from the TRAUMA_HP evidence item text.
+
+    Returns (source_doc_title, app_author, attending).
+    """
+    for item in evidence_items:
+        if item.get("kind") != "TRAUMA_HP":
+            continue
+        text = item.get("text", "")
+        lines = text.split("\n")
+
+        doc_title: Optional[str] = None
+        app_author: Optional[str] = None
+        attending: Optional[str] = None
+
+        # Find Trauma H&P title line (case-insensitive) → next non-blank = author.
+        # Covers: "Trauma H & P", "Trauma H&P", "TRAUMA H & P", "Trauma H/P", etc.
+        _SKIP_BOILERPLATE = frozenset({"Signed", "Expand All Collapse All", ""})
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if _RE_TRAUMA_HP_TITLE.match(stripped):
+                doc_title = stripped
+                # Look for author on subsequent non-blank line
+                for j in range(i + 1, min(i + 4, len(lines))):
+                    candidate = lines[j].strip()
+                    if candidate and candidate not in _SKIP_BOILERPLATE:
+                        app_author = candidate
+                        break
+                break
+
+        # Find attending: look for MD signature in a local window around
+        # the attestation phrase.  Consistently appears 1-3 lines BELOW.
+        # Also check a small window above as a fallback.
+        for i in range(len(lines) - 1, max(len(lines) - 50, -1), -1):
+            stripped = lines[i].strip()
+            if "I have seen and examined patient" in stripped:
+                # Primary: search below attestation line
+                for j in range(i + 1, min(i + 8, len(lines))):
+                    candidate = lines[j].strip()
+                    if candidate and ", MD" in candidate:
+                        attending = candidate
+                        break
+                # Fallback: search above attestation line
+                if not attending:
+                    for j in range(i - 1, max(i - 6, -1), -1):
+                        candidate = lines[j].strip()
+                        if candidate and ", MD" in candidate:
+                            attending = candidate
+                            break
+                break
+
+        if doc_title is None:
+            doc_title = "Trauma H & P"
+
+        return doc_title, app_author, attending
+
+    return None, None, None
+
+
+def _split_into_items(text: Optional[str]) -> Optional[List[str]]:
+    """Split section text into individual line items.
+
+    Splits on lines starting with -, •, or newlines with content.
+    Returns list of non-empty stripped lines.
+    Returns None if text is absent.
+    """
+    if not text:
+        return None
+    items: List[str] = []
+    for line in text.split("\n"):
+        stripped = line.strip().lstrip("-•").strip()
+        if stripped:
+            items.append(stripped)
+    return items if items else None
+
+
+def _truncate_hpi(hpi_text: Optional[str], max_lines: int = 15) -> Optional[str]:
+    """Truncate HPI to first N non-empty lines for summary display."""
+    if not hpi_text:
+        return None
+    lines = [ln for ln in hpi_text.split("\n") if ln.strip()]
+    truncated = lines[:max_lines]
+    return "\n".join(truncated) if truncated else None
+
+
+def build_trauma_summary(
+    feat: Dict[str, Any],
+    evidence_items: List[Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
+    """Build summary.trauma_summary from note_sections_v1 and evidence.
+
+    Returns a dict if a TRAUMA_HP anchor exists, with partial/null
+    subfields for any missing data.  Returns None only if no
+    TRAUMA_HP evidence item exists at all.
+    """
+    # ── Check for TRAUMA_HP anchor ──────────────────────────────
+    has_trauma_hp = any(
+        item.get("kind") == "TRAUMA_HP" for item in evidence_items
+    )
+    if not has_trauma_hp:
+        return None
+
+    # ── Source metadata from note_sections_v1 ───────────────────
+    ns = feat.get("note_sections_v1") or {}
+    source_type = ns.get("source_type")
+    source_ts = ns.get("source_ts")
+
+    # If note_sections_v1 didn't select TRAUMA_HP, we still build
+    # the summary using whatever we can extract from the evidence item.
+    # The anchor is the evidence item itself.
+
+    # Find the TRAUMA_HP evidence item for timestamp fallback
+    trauma_hp_item: Optional[Dict[str, Any]] = None
+    for item in evidence_items:
+        if item.get("kind") == "TRAUMA_HP":
+            trauma_hp_item = item
+            break
+
+    # Use note_sections_v1 source_ts when its source is TRAUMA_HP and non-null;
+    # always fall back to the evidence item datetime otherwise.
+    if source_type == "TRAUMA_HP" and source_ts:
+        source_note_datetime = source_ts
+    else:
+        source_note_datetime = (
+            trauma_hp_item.get("datetime") or trauma_hp_item.get("header_dt")
+            if trauma_hp_item else None
+        )
+
+    # ── Extract doc title and authors from raw evidence text ────
+    doc_title, app_author, attending = _extract_doc_title_and_author(
+        evidence_items
+    )
+
+    # ── Activation category from features ───────────────────────
+    activation = feat.get("category_activation_v1") or {}
+    activation_category = None
+    if isinstance(activation, dict) and activation.get("detected"):
+        raw_cat = activation.get("category")
+        if raw_cat:
+            activation_category = str(raw_cat).strip()
+
+    # ── Mechanism from features ─────────────────────────────────
+    mechanism = feat.get("mechanism_region_v1") or {}
+    mechanism_summary = None
+    if isinstance(mechanism, dict):
+        mech_primary = mechanism.get("mechanism_primary")
+        if mech_primary:
+            mechanism_summary = str(mech_primary).strip()
+
+    # ── Sections from note_sections_v1 (may be partial/absent) ──
+    hpi_section = ns.get("hpi") or {}
+    ps_section = ns.get("primary_survey") or {}
+    imp_section = ns.get("impression") or {}
+    plan_section = ns.get("plan") or {}
+
+    hpi_text = hpi_section.get("text") if hpi_section.get("present") else None
+    ps_fields = ps_section.get("fields") or {}
+    imp_text = imp_section.get("text") if imp_section.get("present") else None
+    plan_text = plan_section.get("text") if plan_section.get("present") else None
+
+    # ── Primary survey fields (raw passthrough) ─────────────────
+    primary_survey = {
+        "airway": ps_fields.get("airway"),
+        "breathing": ps_fields.get("breathing"),
+        "circulation": ps_fields.get("circulation"),
+        "disability": ps_fields.get("disability"),
+        "exposure": ps_fields.get("exposure"),
+        "fast": ps_fields.get("fast"),  # raw text only, no normalization
+    }
+
+    # ── GCS from disability text ────────────────────────────────
+    gcs = _extract_gcs_from_disability(ps_fields.get("disability"))
+
+    # ── Intubated (strict fail-closed) ──────────────────────────
+    intubated = _extract_intubated(
+        ps_fields.get("disability"),
+        ps_fields.get("airway"),
+        gcs,
+    )
+
+    # ── Impression items ────────────────────────────────────────
+    impression_items = _split_into_items(imp_text)
+
+    # ── Plan items ──────────────────────────────────────────────
+    plan_items = _split_into_items(plan_text)
+
+    # ── Consult services (conservative) ─────────────────────────
+    consult_services = _extract_consult_services(plan_text)
+
+    # ── Admission disposition text ──────────────────────────────
+    admission_disposition_text = _extract_admission_disposition(plan_text)
+
+    # ── HPI summary (truncated) ─────────────────────────────────
+    hpi_summary = _truncate_hpi(hpi_text)
+
+    return {
+        "present": True,
+        "source_note_type": "TRAUMA_HP",
+        "source_note_datetime": source_note_datetime,
+        "source_doc_title": doc_title,
+        "activation_category": activation_category,
+        "mechanism_summary": mechanism_summary,
+        "hpi_summary": hpi_summary,
+        "primary_survey": primary_survey,
+        "gcs": gcs,
+        "impression_text": imp_text,
+        "impression_items": impression_items,
+        "plan_text": plan_text,
+        "plan_items": plan_items,
+        "consult_services": consult_services,
+        "intubated": intubated,
+        "admission_disposition_text": admission_disposition_text,
+        "attending": attending,
+        "app_author": app_author,
+    }
 
 
 # ── Assembly ───────────────────────────────────────────────────────
@@ -178,6 +558,9 @@ def assemble_bundle(
     summary_section: Dict[str, Any] = {}
     for bundle_key, feat_key in _SUMMARY_FEATURE_MAP.items():
         summary_section[bundle_key] = feat.get(feat_key)
+
+    evidence_items = evidence.get("items", [])
+    summary_section["trauma_summary"] = build_trauma_summary(feat, evidence_items)
 
     # compliance
     compliance_section = {

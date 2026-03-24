@@ -400,6 +400,55 @@ details.day-card[open] > summary.day-summary::before { transform: rotate(90deg);
 .resus-neutral { background: var(--slate-100); color: var(--slate-500); }
 .resus-warn { background: var(--amber-100); color: var(--amber-600); }
 .resus-sub { font-size: 0.82em; color: var(--slate-500); margin-top: 2px; }
+
+/* Trauma Summary */
+.ts-wrap {
+    background: white; border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow); margin-bottom: 12px;
+    border: 1px solid var(--blue-200); overflow: hidden;
+}
+.ts-header {
+    background: var(--blue-50); padding: 12px 18px 8px;
+    border-bottom: 1px solid var(--blue-200);
+}
+.ts-title {
+    font-size: 0.92em; font-weight: 700; color: var(--blue-700);
+    text-transform: uppercase; letter-spacing: 0.04em;
+}
+.ts-meta { font-size: 0.78em; color: var(--slate-500); margin-top: 2px; }
+.ts-body { padding: 10px 18px 14px; }
+.ts-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px 18px;
+}
+.ts-field .tf-label {
+    font-size: 0.72em; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--slate-400); margin-bottom: 1px;
+}
+.ts-field .tf-value { font-size: 0.9em; font-weight: 500; }
+.ts-section { margin-top: 10px; }
+.ts-section-title {
+    font-size: 0.78em; font-weight: 700; color: var(--slate-500);
+    text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px;
+}
+.ts-list { list-style: none; padding: 0; margin: 0; }
+.ts-list li {
+    padding: 4px 0; font-size: 0.88em;
+    border-bottom: 1px solid var(--slate-100);
+}
+.ts-list li:last-child { border-bottom: none; }
+.ts-ps-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 4px 14px; font-size: 0.88em;
+}
+.ts-ps-item .psl { font-size: 0.72em; text-transform: uppercase; color: var(--slate-400); }
+.ts-ps-item .psv { font-weight: 500; }
+.ts-badge {
+    font-size: 0.75em; font-weight: 700; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 3px; display: inline-block; letter-spacing: 0.03em;
+}
+.ts-intub-yes { background: var(--red-50); color: var(--red-600); }
+.ts-intub-no { background: var(--green-100); color: var(--green-700); }
 """
 
 # ── JS ─────────────────────────────────────────────────────────────
@@ -2254,6 +2303,154 @@ def _render_footer(bundle: Dict[str, Any]) -> str:
     )
 
 
+# ── Trauma Summary renderer ───────────────────────────────────────
+
+def _render_trauma_summary(bundle: Dict[str, Any]) -> str:
+    """Render the Trauma Summary section from summary.trauma_summary.
+
+    Returns empty string if trauma_summary is absent/null.
+    """
+    ts = (bundle.get("summary") or {}).get("trauma_summary")
+    if not ts or not isinstance(ts, dict) or not ts.get("present"):
+        return ""
+
+    # Header metadata
+    doc_title = _na(ts.get("source_doc_title"))
+    source_dt = _na(ts.get("source_note_datetime"))
+    app_author = _na(ts.get("app_author"))
+    attending = _na(ts.get("attending"))
+
+    meta_parts = []
+    if source_dt != "\u2014":
+        meta_parts.append(source_dt)
+    if app_author != "\u2014":
+        meta_parts.append(f"APP: {app_author}")
+    if attending != "\u2014":
+        meta_parts.append(f"Attending: {attending}")
+    meta_str = " &middot; ".join(meta_parts) if meta_parts else ""
+
+    # Top grid fields
+    activation = _na(ts.get("activation_category"))
+    mechanism = _na(ts.get("mechanism_summary"))
+    gcs = _na(ts.get("gcs"))
+
+    intubated_val = ts.get("intubated")
+    if intubated_val is True:
+        intub_html = '<span class="ts-badge ts-intub-yes">Yes</span>'
+    elif intubated_val is False:
+        intub_html = '<span class="ts-badge ts-intub-no">No</span>'
+    else:
+        intub_html = "\u2014"
+
+    admission = _na(ts.get("admission_disposition_text"))
+
+    grid = (
+        '<div class="ts-grid">'
+        '<div class="ts-field"><div class="tf-label">Activation</div>'
+        f'<div class="tf-value">{activation}</div></div>'
+        '<div class="ts-field"><div class="tf-label">Mechanism</div>'
+        f'<div class="tf-value">{mechanism}</div></div>'
+        '<div class="ts-field"><div class="tf-label">GCS</div>'
+        f'<div class="tf-value">{gcs}</div></div>'
+        '<div class="ts-field"><div class="tf-label">Intubated</div>'
+        f'<div class="tf-value">{intub_html}</div></div>'
+        '<div class="ts-field"><div class="tf-label">Admission</div>'
+        f'<div class="tf-value">{admission}</div></div>'
+        "</div>"
+    )
+
+    # Primary survey
+    ps = ts.get("primary_survey") or {}
+    ps_html = ""
+    if any(ps.get(k) for k in ("airway", "breathing", "circulation",
+                                 "disability", "exposure", "fast")):
+        ps_items = ""
+        for key in ("airway", "breathing", "circulation",
+                     "disability", "exposure", "fast"):
+            val = _na(ps.get(key))
+            ps_items += (
+                f'<div class="ts-ps-item">'
+                f'<div class="psl">{_e(key.title())}</div>'
+                f'<div class="psv">{val}</div></div>'
+            )
+        ps_html = (
+            '<div class="ts-section">'
+            '<div class="ts-section-title">Primary Survey</div>'
+            f'<div class="ts-ps-grid">{ps_items}</div>'
+            "</div>"
+        )
+
+    # HPI summary
+    hpi_html = ""
+    hpi_text = ts.get("hpi_summary")
+    if hpi_text:
+        hpi_html = (
+            '<div class="ts-section">'
+            '<div class="ts-section-title">HPI Summary</div>'
+            f'<div style="font-size:0.88em;white-space:pre-wrap">{_e(hpi_text)}</div>'
+            "</div>"
+        )
+
+    # Impression items
+    imp_html = ""
+    imp_items = ts.get("impression_items")
+    if imp_items and isinstance(imp_items, list):
+        items_str = "".join(f"<li>{_e(i)}</li>" for i in imp_items)
+        imp_html = (
+            '<div class="ts-section">'
+            '<div class="ts-section-title">Impression</div>'
+            f'<ul class="ts-list">{items_str}</ul>'
+            "</div>"
+        )
+    elif ts.get("impression_text"):
+        imp_html = (
+            '<div class="ts-section">'
+            '<div class="ts-section-title">Impression</div>'
+            f'<div style="font-size:0.88em;white-space:pre-wrap">{_e(ts["impression_text"])}</div>'
+            "</div>"
+        )
+
+    # Plan items
+    plan_html = ""
+    plan_items = ts.get("plan_items")
+    if plan_items and isinstance(plan_items, list):
+        items_str = "".join(f"<li>{_e(i)}</li>" for i in plan_items)
+        plan_html = (
+            '<div class="ts-section">'
+            '<div class="ts-section-title">Plan</div>'
+            f'<ul class="ts-list">{items_str}</ul>'
+            "</div>"
+        )
+    elif ts.get("plan_text"):
+        plan_html = (
+            '<div class="ts-section">'
+            '<div class="ts-section-title">Plan</div>'
+            f'<div style="font-size:0.88em;white-space:pre-wrap">{_e(ts["plan_text"])}</div>'
+            "</div>"
+        )
+
+    # Consult services
+    consult_html = ""
+    consult_svcs = ts.get("consult_services")
+    if consult_svcs and isinstance(consult_svcs, list):
+        consult_html = (
+            '<div class="ts-section">'
+            '<div class="ts-section-title">Consults Ordered</div>'
+            f'<div style="font-size:0.88em">{_e(", ".join(consult_svcs))}</div>'
+            "</div>"
+        )
+
+    return (
+        '<div class="ts-wrap">'
+        '<div class="ts-header">'
+        f'<div class="ts-title">Trauma Summary &mdash; {doc_title}</div>'
+        f'<div class="ts-meta">{meta_str}</div>'
+        "</div>"
+        f'<div class="ts-body">{grid}{ps_html}{hpi_html}{imp_html}{plan_html}{consult_html}</div>'
+        "</div>"
+    )
+
+
 # ── Main render ────────────────────────────────────────────────────
 
 def render_casefile(bundle: Dict[str, Any]) -> str:
@@ -2265,6 +2462,7 @@ def render_casefile(bundle: Dict[str, Any]) -> str:
         _render_compliance_snapshot(bundle),
         _render_admission_snapshot(bundle),
         _render_first_day_snapshot(bundle),
+        _render_trauma_summary(bundle),
         # ── Detail sections ───────────────────────────
         _render_patient_card(bundle),
         _render_moi(bundle),
