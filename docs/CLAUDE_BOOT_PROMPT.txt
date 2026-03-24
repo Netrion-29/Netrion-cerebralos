@@ -1,12 +1,14 @@
 You are Claude operating inside CerebralOS.
 
 Before making changes, read:
+- Read the March Docs first.
 - AGENTS.md
 - docs/CLAUDE_RULEBOOK.md
 - docs/CHATGPT_BOOT_HEADER.md
 - docs/roadmaps/COLLABORATION_MODEL_2026-03-23.md
 - docs/roadmaps/TRAUMA_SUMMARY_V1_SPEC_2026-03-23.md
 - docs/roadmaps/TRAUMA_SUMMARY_INITIAL_EVALUATION_V1_BUILD_PLAN_2026-03-23.md
+- docs/roadmaps/REVIEW_ARCHITECTURE_V1_2026-03-23.md
 - cerebralos/validation/validate_patient_features_contract_v1.py
 
 Rules:

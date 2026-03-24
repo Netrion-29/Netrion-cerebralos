@@ -13,6 +13,17 @@
 5. Follow Codex's commit instructions.
 6. Commit and push.
 
+Before starting substantive work in a new chat, use this exact sentence:
+
+> Read the March Docs first.
+
+In this repo, **March Docs** means:
+
+- `docs/roadmaps/COLLABORATION_MODEL_2026-03-23.md`
+- `docs/roadmaps/TRAUMA_SUMMARY_V1_SPEC_2026-03-23.md`
+- `docs/roadmaps/TRAUMA_SUMMARY_INITIAL_EVALUATION_V1_BUILD_PLAN_2026-03-23.md`
+- `docs/roadmaps/REVIEW_ARCHITECTURE_V1_2026-03-23.md`
+
 ---
 
 ## 2) First-message templates
@@ -21,7 +32,9 @@
 
 > You are Codex operating as architect + reviewer for CerebralOS.
 >
-> Read: AGENTS.md, docs/CODEX_RULEBOOK.md, docs/roadmaps/COLLABORATION_MODEL_2026-03-23.md, docs/roadmaps/TRAUMA_SUMMARY_V1_SPEC_2026-03-23.md, docs/roadmaps/TRAUMA_SUMMARY_INITIAL_EVALUATION_V1_BUILD_PLAN_2026-03-23.md
+> Read the March Docs first.
+>
+> Then read: AGENTS.md, docs/CODEX_RULEBOOK.md
 >
 > Current branch: `tier1/<TICKET>`
 > Goal for this session: `<ONE-LINE GOAL>`
@@ -39,7 +52,9 @@
 
 > You are Claude operating as repo agent (executor) for CerebralOS.
 >
-> Read: AGENTS.md, docs/CLAUDE_RULEBOOK.md, docs/roadmaps/COLLABORATION_MODEL_2026-03-23.md, docs/roadmaps/TRAUMA_SUMMARY_V1_SPEC_2026-03-23.md, and the current build-plan doc for the workstream if one exists.
+> Read the March Docs first.
+>
+> Then read: AGENTS.md, docs/CLAUDE_RULEBOOK.md, and the current build-plan doc for the workstream if one exists.
 >
 > Current branch: `tier1/<TICKET>`
 > Goal for this session: `<ONE-LINE GOAL>`
@@ -152,6 +167,7 @@ Verify the push succeeded and note the branch name for tomorrow.
 - **[Collaboration Model 2026-03-23](roadmaps/COLLABORATION_MODEL_2026-03-23.md)** ← operating agreement: Sarah, Codex, Claude, and `Scout`
 - **[Trauma Summary v1 Spec 2026-03-23](roadmaps/TRAUMA_SUMMARY_V1_SPEC_2026-03-23.md)** ← current product direction
 - **[Trauma Summary / Initial Trauma Evaluation v1 Build Plan 2026-03-23](roadmaps/TRAUMA_SUMMARY_INITIAL_EVALUATION_V1_BUILD_PLAN_2026-03-23.md)** ← next major implementation slice
+- **[Review Architecture v1 2026-03-23](roadmaps/REVIEW_ARCHITECTURE_V1_2026-03-23.md)** ← locks the 4-layer model: Trauma Summary, Specialty Course, Protocol/Accountability, NTDS
 - **[Whole-Project State and Roadmap v1](roadmaps/CEREBRALOS_WHOLE_PROJECT_STATE_AND_ROADMAP_v1.md)** ← primary context-recovery doc
 - **[Casefile Vision Coverage Matrix v1](roadmaps/CASEFILE_VISION_COVERAGE_MATRIX_v1.md)** ← vision → implementation mapping
 - [PI RN Casefile v1 Product Direction](roadmaps/PI_RN_CASEFILE_V1.md), the product vision
