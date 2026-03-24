@@ -29,7 +29,7 @@ build direction starts drifting again.
 
 ## The Four Review Layers
 
-## Layer 1: Trauma Summary
+### Layer 1: Trauma Summary
 
 Purpose:
 
@@ -56,7 +56,7 @@ Current build status:
 
 - active implementation slice (`summary.trauma_summary`)
 
-## Layer 2: Specialty Course
+### Layer 2: Specialty Course
 
 Purpose:
 
@@ -81,7 +81,7 @@ Examples:
 - vascular decision-making when relevant
 - hospitalist geriatric screening and medication/consult changes
 
-## Layer 3: Protocol / Accountability
+### Layer 3: Protocol / Accountability
 
 Purpose:
 
@@ -106,7 +106,7 @@ Important rule:
 - this layer tracks whether the right things happened and were
   documented, not just what diagnoses existed
 
-## Layer 4: NTDS Complications
+### Layer 4: NTDS Complications
 
 Purpose:
 

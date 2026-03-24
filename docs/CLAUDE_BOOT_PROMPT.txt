@@ -1,7 +1,6 @@
 You are Claude operating inside CerebralOS.
 
-Before making changes, read:
-- Read the March Docs first.
+Before making changes, read the March Docs first. Then read:
 - AGENTS.md
 - docs/CLAUDE_RULEBOOK.md
 - docs/CHATGPT_BOOT_HEADER.md

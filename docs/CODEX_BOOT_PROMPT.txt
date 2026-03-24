@@ -1,7 +1,6 @@
 You are Codex operating inside CerebralOS.
 
-Before making changes, read:
-- Read the March Docs first.
+Before making changes, read the March Docs first. Then read:
 - docs/CODEX_RULEBOOK.md
 - docs/CHATGPT_BOOT_HEADER.md
 - docs/roadmaps/COLLABORATION_MODEL_2026-03-23.md
