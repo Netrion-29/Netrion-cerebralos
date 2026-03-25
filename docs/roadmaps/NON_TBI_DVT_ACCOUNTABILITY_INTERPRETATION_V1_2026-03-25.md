@@ -31,6 +31,14 @@ For non-TBI trauma patients, the default rule is:
 
 Mechanical prophylaxis alone does **not** satisfy this metric.
 
+For this lane, **arrival** means the shared protocol timeline anchor:
+
+- **ED arrival date/time**
+
+This stays aligned with the repo's existing protocol-data contracts and
+the DVT timing contract, which measure delay from arrival rather than
+from admission order time, consultant time, or first note time.
+
 ## Core Review Questions
 
 For non-TBI DVT accountability, the reviewer is asking:
@@ -47,7 +55,8 @@ Current accepted operational hold reasons include:
 - procedure hold
 - active bleeding
 - significant hemoglobin drop without explicit active bleeding, such as
-  approximately 3-4 gram drop in 24 hours
+  an absolute hemoglobin decrease of approximately **3-4 g/dL over
+  24 hours**
 - thrombocytopenia / platelet issue
 - consultant-directed hold
 - epidural / ESP block or similar procedure-related hold
