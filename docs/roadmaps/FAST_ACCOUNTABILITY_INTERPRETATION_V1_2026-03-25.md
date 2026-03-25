@@ -68,6 +68,11 @@ Current locked operational categories:
 - `not_indicated`
 - `unclear`
 
+Important schema boundary:
+
+- these categories are an accountability/reporting overlay
+- they do not replace the canonical `fast_exam_v1` stored fields
+
 ## What Counts as Performed
 
 FAST counts as **performed** when the Trauma H&P / Primary Survey
@@ -82,6 +87,14 @@ When FAST is performed, the product should later try to carry:
 
 - FAST performed = yes
 - documented result = positive / negative / unclear
+
+Deterministic extractor alignment:
+
+- `FAST: Yes` with no explicit positive/negative wording still counts as
+  FAST performed
+- in that case, result may remain `indeterminate` / `unclear`
+- this matches current deterministic extractor behavior in
+  `fast_exam_v1`
 
 ## What Counts as Not Performed
 
@@ -115,23 +128,30 @@ Operationally:
 - it is not treated as automatic FAST failure
 - it should be interpreted as FAST not performed because the patient was
   taken down a CT-based pathway instead
+- the exact text remains preserved in canonical stored raw FAST text
+- this may later map to a derived accountability classification
+- this does not introduce a new canonical stored schema
 
 ## What the Product Should Track
 
-The product should stay simple in this lane.
+The product should stay simple in this lane and preserve storage
+boundaries.
 
-Useful later structured fields would be:
+Canonical stored layer (existing `fast_exam_v1`):
 
-- `fast_status`
-  - performed
-  - not_performed
-  - not_indicated
-  - unclear
-- `fast_result`
-  - positive
-  - negative
-  - unclear
-  - null
+- `fast_exam_v1.fast_performed`
+- `fast_exam_v1.fast_result`
+- `fast_exam_v1.fast_raw_text`
+
+Any future `fast_status` style field is a derived
+reporting/accountability layer only.
+
+Derived accountability layer (future, non-canonical examples):
+
+- `performed`
+- `not_performed`
+- `not_indicated`
+- `unclear`
 
 ## What Stays Out of Scope
 
