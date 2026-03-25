@@ -68,13 +68,13 @@ Explicit exclusion:
 
 - isolated pubic rami fracture does **not** count
 
-## 2. Compartment syndrome pathway
+### 2. Compartment syndrome pathway
 
 The case counts when there is:
 
 - suspected extremity compartment syndrome
 
-## 3. Femoral head dislocation pathway
+### 3. Femoral head dislocation pathway
 
 The case counts when there is:
 
@@ -84,7 +84,7 @@ Operational exclusion:
 
 - once reduced, this pathway is excluded
 
-## 4. Talus / subtalar pathway
+### 4. Talus / subtalar pathway
 
 The case counts when there is:
 
@@ -102,7 +102,7 @@ Operational exclusion:
 
 - once reduced, this pathway is excluded
 
-## 5. Vascular-compromise fracture/dislocation pathway
+### 5. Vascular-compromise fracture/dislocation pathway
 
 The case counts when there is:
 
@@ -115,7 +115,7 @@ Examples of real-world evidence may include:
 - poor arterial perfusion
 - similar documented vascular-compromise findings
 
-## 6. Trauma-surgeon discretionary pathway
+### 6. Trauma-surgeon discretionary pathway
 
 A case may also count when:
 
