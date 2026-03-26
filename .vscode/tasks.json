@@ -36,7 +36,7 @@
     {
       "id": "patientName",
       "type": "promptString",
-      "description": "Patient name (e.g. Betty Roll, David_Gross)"
+      "description": "Patient name (e.g. First Last, First_Last)"
     }
   ]
 }
