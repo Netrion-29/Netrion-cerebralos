@@ -40,6 +40,16 @@ Current locked operational rule:
 This interpretation does not use imaging time, consult time, or
 admission-order time as the primary clock start.
 
+For this lane, **ED arrival time** means:
+
+- the Deaconess ED arrival timestamp tied to the encounter that leads to
+  the qualifying admission / operation
+
+Transfer note:
+
+- for transfer-in patients, this clock starts at **arrival to
+  Deaconess**, not at outside-hospital arrival time
+
 ## What Counts as the Real Timing Problem
 
 The protocol contains both:
@@ -134,6 +144,14 @@ These sources are used to establish:
 - operative timing
 - delay reason
 - whether the delay appears appropriate or inappropriate
+
+Current operative-timing anchor for this lane:
+
+- use the timestamp of the qualifying hip-fracture operation from the
+  procedure / operative documentation
+- when a specific procedure start time is explicitly documented, that is
+  the preferred operative time
+- otherwise, use the operative note timestamp as the practical fallback
 
 ## Future Product Fields
 
