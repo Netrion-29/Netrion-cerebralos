@@ -23,7 +23,7 @@ It defines how this program should later reason about:
 Current highest-value issues in this lane are:
 
 - **delay to spine surgery** when surgery is indicated
-- missing or incorrect **spine clearance order**
+- missing or incorrect **spine-clearance order**
 - missing or delayed **neurosurgery consult** when required
 
 ## Surgery Timing Rule
@@ -52,10 +52,23 @@ Current locked operational rule:
 
 This is the core order-based accountability workflow in this lane.
 
-The order is managed as separate yes/no states for:
+The order is managed as separate yes/no states for two independent
+regions:
 
-- `C-spine clear?`
-- `TLS clear?`
+- **cervical spine (`C-spine`)**
+- **thoracolumbar spine (`TLS`)**
+
+For this document, the only allowed order states per region are:
+
+- `clear` = order value `Yes`
+- `not clear` = order value `No`
+
+Operational note:
+
+- narrative phrases such as `TLS pending` do not create a third order
+  state
+- they should be interpreted as `not clear` while additional evaluation
+  is still expected
 
 If the order is missing:
 
