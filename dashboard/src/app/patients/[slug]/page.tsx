@@ -59,7 +59,7 @@ export default function PatientDetailPage({ params }: Props) {
         {patient.has_protocols && (
           <div className="lg:w-96 shrink-0">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3">
-              Deaconess Protocols
+              Protocols
             </h3>
             <ProtocolList protocols={protocols} />
           </div>

@@ -23,7 +23,7 @@
 > - The dashboard may still run locally (`npm run dev`) but is not maintained.
 > - Bug fixes, feature additions, and dependency updates are not planned.
 
-Local-first Next.js 14 dashboard for NTDS event outcomes and Deaconess protocol compliance.
+Local-first Next.js 14 dashboard for NTDS event outcomes and protocol compliance.
 
 ## Quick Start
 
