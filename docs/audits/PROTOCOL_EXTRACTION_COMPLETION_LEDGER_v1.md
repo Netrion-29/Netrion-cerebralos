@@ -4,7 +4,7 @@
 |-------------|-------|
 | Date        | 2026-03-21 |
 | Baseline    | main (post PR #278) |
-| Source       | Codebase audit + raw-file scan of 6 patients (Timothy_Nachtwey, Betty Roll, Ronald Bittner, David_Gross, Johnny Stokes, Larry_Corne) |
+| Source       | Codebase audit + raw-file scan of 6 gate patients |
 | Reference   | `docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` (230 elements, 20 categories) |
 
 > **Purpose:** Factual completion ledger for protocol data extraction.
@@ -215,8 +215,8 @@ These elements are either absent from the Epic `.txt` export, not relevant to th
 
 | Element | Category | Reason |
 |---------|----------|--------|
-| **ICP (intracranial pressure)** | Vital Signs | **No current cohort evidence.** Verified across 6 patients including Timothy_Nachtwey (large frontal ICH) and Johnny_Stokes (acute/chronic SDH). Only historical EVD references found ("history of previous... EVD and prolonged hospitalization"). No active ICP monitoring values present. Institutional policy may not export ICP flowsheet data to Epic `.txt`. **Do not prioritize.** |
-| Chest tube placement (date/time/output) | Airway | **No current cohort evidence.** Verified via cohort-wide search: zero mentions of "chest tube", "thoracostomy", or "chest drain" across all 39 patient files. LDA CHEST_TUBE type is defined in `lda_events_v1.py` infrastructure but no patients trigger it. Ronald Bittner (T8 fracture, rib fractures 5–7, 9–10) has no chest tube documented. |
+| **ICP (intracranial pressure)** | Vital Signs | **No current cohort evidence.** Verified across 6 patients including cases with large frontal ICH and acute/chronic SDH. Only historical EVD references found ("history of previous... EVD and prolonged hospitalization"). No active ICP monitoring values present. Institutional policy may not export ICP flowsheet data to Epic `.txt`. **Do not prioritize.** |
+| Chest tube placement (date/time/output) | Airway | **No current cohort evidence.** Verified via cohort-wide search: zero mentions of "chest tube", "thoracostomy", or "chest drain" across all 39 patient files. LDA CHEST_TUBE type is defined in `lda_events_v1.py` infrastructure but no patients trigger it. Even the patient with T8 + rib fractures (5–7, 9–10) has no chest tube documented. |
 | Prehospital vital signs (field vitals) | EMS | Rarely in Epic `.txt` export — prehospital vitals not integrated |
 | Prehospital interventions (IV, medications, airway) | EMS | EMS documentation sparse in Epic `.txt` — narrative format only |
 | Prehospital GCS | EMS | Not documented as structured field in current cohort |

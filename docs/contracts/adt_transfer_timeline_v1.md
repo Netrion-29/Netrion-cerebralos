@@ -36,7 +36,7 @@ MM/DD/YY HHMM	UNIT_NAME	ROOM	BED	SERVICE	EVENT_TYPE
 
 ### Headerless Variant (v2)
 
-Some raw files (e.g. Ronald Bittner) embed ADT data rows directly after
+Some raw files embed ADT data rows directly after
 demographics (name / age / DOB) with **no** "ADT Events" header and no
 column header row. The extractor detects these via a headerless fallback
 that scans for `RE_ADT_ROW` matches when the standard header-based
@@ -133,9 +133,9 @@ The `report_features_qa.py` renders:
 
 ## Gate Patients
 
-Standard gate: Betty Roll, David_Gross, Johnny Stokes, Larry_Corne, Ronald Bittner, Roscella Weatherly.
-ADT-positive validation: Michael_Dougan (header), Gary_Linder (embedded note),
-Ronald Bittner (headerless variant).
+Standard gate: 6 gate patients (see AGENTS.md).
+ADT-positive validation: one patient with header-based ADT, one with embedded-note ADT,
+one with headerless variant.
 
 ## Changelog
 
