@@ -3,8 +3,8 @@
 # PI RN Casefile v1 — One-step patient casefile workflow
 #
 # Usage:
-#   ./scripts/run_casefile_v1.sh "Betty Roll"
-#   ./scripts/run_casefile_v1.sh Betty_Roll
+#   ./scripts/run_casefile_v1.sh "Patient Name"
+#   ./scripts/run_casefile_v1.sh Patient_Name
 #   ./scripts/run_casefile_v1.sh          # (prompts interactively)
 #
 # Runs the full canonical pipeline (evidence → timeline → features →
@@ -49,11 +49,11 @@ PAT="${PAT%.txt}"
 
 RAW_FILE="data_raw/${PAT}.txt"
 if [[ ! -f "$RAW_FILE" ]]; then
-  # Try underscore variant (user may type "Betty Roll" or "Betty_Roll")
+  # Try underscore variant (user may type "First Last" or "First_Last")
   PAT_UNDER="${PAT// /_}"
   RAW_FILE="data_raw/${PAT_UNDER}.txt"
   if [[ ! -f "$RAW_FILE" ]]; then
-    # Try space variant (user may type "Betty_Roll" but file is "Betty Roll.txt")
+    # Try space variant (user may type "First_Last" but file is "First Last.txt")
     PAT_SPACE="${PAT//_/ }"
     RAW_FILE="data_raw/${PAT_SPACE}.txt"
     if [[ ! -f "$RAW_FILE" ]]; then
