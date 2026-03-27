@@ -36,7 +36,7 @@ source line in the patient record.
   PR descriptions, or issue text.
 - Local scratch files (`_tmp_*`, one-off scripts) must remain untracked.
 - Pre-commit hooks block staging of local-only PHI paths and scan staged
-  content for obvious PHI markers (MRN, SSN, phone numbers, etc.). If a
+  content for obvious PHI markers (e.g., `PATIENT_NAME`, `MRN`, `CSN`, `DOB`, `SSN`). If a
   hook fires on a false positive, review the flagged lines and use
   `git commit --no-verify` to override.
 

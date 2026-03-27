@@ -28,9 +28,7 @@ EOF
 
 # --- Scan staged files --------------------------------------------------
 blocked=0
-staged=$(git diff --cached --name-only --diff-filter=ACM)
-
-for file in $staged; do
+git diff --cached --name-only -z --diff-filter=ACMR | while IFS= read -r -d '' file; do
     # Skip missing / binary files
     [[ -f "$file" ]] || continue
     if file --brief "$file" 2>/dev/null | grep -qiE 'binary|image|pdf'; then
