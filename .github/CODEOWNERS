@@ -9,8 +9,8 @@ cerebralos/ntds_logic/engine.py @Netrion-29
 cerebralos/protocol_engine/engine.py @Netrion-29
 
 # Protected renderers (AGENTS.md §2)
-cerebralos/reporting/render_v3.py @Netrion-29
-cerebralos/reporting/render_v4.py @Netrion-29
+cerebralos/reporting/render_trauma_daily_notes_v3.py @Netrion-29
+cerebralos/reporting/render_trauma_daily_notes_v4.py @Netrion-29
 
 # Validation and contracts
 cerebralos/validation/ @Netrion-29
