@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "CerebralOS"
+type: software
+authors:
+  - family-names: "Singer"
+    given-names: "Sarah A."
+    affiliation: "Netrion Systems"
+abstract: >-
+  Deterministic evidence extraction and case-review generation for
+  trauma performance improvement (PI) workflows. CerebralOS processes
+  raw patient chart exports into structured, review-ready casefiles
+  through a multi-stage pipeline that produces durable intermediate
+  artifacts — enabling long-running clinical review workflows to resume
+  across sessions without loss of context.
+repository-code: "https://github.com/Netrion-29/Netrion-cerebralos"
+license: MIT
+keywords:
+  - trauma
+  - performance-improvement
+  - evidence-extraction
+  - chart-review
+  - casefile-generation
+  - clinical-workflows
