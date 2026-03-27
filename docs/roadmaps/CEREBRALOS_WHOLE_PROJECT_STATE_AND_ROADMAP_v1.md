@@ -208,7 +208,7 @@ When counting output directories in `outputs/ntds/`:
    event prefix (e.g. `08_dvt_no`, `14_pe_yes`). Currently 4 such dirs.
 2. **Exclude stale space-variant duplicates** — directories with spaces in
    the name that duplicate an underscore-normalized sibling (e.g.
-   `Charlotte Howlett` when `Charlotte_Howlett` also exists). Currently 0
+   `PT_05` when `PT_05` also exists). Currently 0
    (prior duplicates archived to `_stale_space_dups_20260304_172106`).
 3. **Exclude admin directories** whose names start with `_` (archives,
    stale backups). Currently 1 (`_stale_space_dups_20260304_172106`).
@@ -299,7 +299,7 @@ in the event rule, and added a dedicated precision test suite.
 | Item | Events | Reason deferred |
 |------|--------|------------------|
 | 5 AKI patients remain UNABLE_TO_DETERMINE | E01 | Genuine AKI evidence but no explicit onset-after-arrival language; resolving requires broadened `aki_onset` patterns (FP risk) or lab-trend inference (engine change) |
-| Gary_Linder AKI lab hits not filterable | E01 | LAB/DISCHARGE "AKI (acute kidney injury)" entries lack PMH context in the same line; noise pattern can't distinguish from active diagnosis |
+| PT_11 AKI lab hits not filterable | E01 | LAB/DISCHARGE "AKI (acute kidney injury)" entries lack PMH context in the same line; noise pattern can't distinguish from active diagnosis |
 | Remaining precision noise in other 15 events | E02–E09, E11–E14, E17, E20–E21 | Not audited in N3; lower cohort impact; queue for future N4 pass |
 
 #### N4 — Parser & Recall Improvement (IN PROGRESS)
@@ -319,10 +319,10 @@ set for trailing-word rejection.
 
 | Change | Count | Patients | Classification |
 |--------|-------|----------|----------------|
-| YES→NO (FP eliminated) | 3 | E16 Larry_Corne, E16 Mary_King, E21 Ronald_Marshall | TP — validated, mapper hardened |
-| NO→YES (TP gained) | 3 | E09 Dallas_Clark, E13 Ronald_Marshall, E21 Ronald_Bittner | TP — validated |
-| UTD→NO (E01) | 1 | Margaret_Rudd | Correct — false LAB from prose "laboratory" eliminated |
-| NO→UTD (E01) | 1 | William_Simmons | Correct — false MAR from "PRIMARY" eliminated |
+| YES→NO (FP eliminated) | 3 | E16 PT_13, E16 PT_18, E21 PT_22 | TP — validated, mapper hardened |
+| NO→YES (TP gained) | 3 | E09 PT_08, E13 PT_22, E21 PT_21 | TP — validated |
+| UTD→NO (E01) | 1 | PT_16 | Correct — false LAB from prose "laboratory" eliminated |
+| NO→UTD (E01) | 1 | PT_26 | Correct — false MAR from "PRIMARY" eliminated |
 
 ##### N5 — DISCHARGE Source-Detection Hardening ✅ COMPLETE (PR #145)
 
@@ -335,11 +335,11 @@ Goals", "Barriers to Discharge", "EYES: No complaints of discharge", etc.).
 
 | Patient | Event | Old | New | Classification |
 |---------|-------|-----|-----|----------------|
-| Margaret_Rudd | E01 AKI | UTD | NO | Correction — false DISCHARGE evidence eliminated |
-| William_Simmons | E01 AKI | NO | UTD | Correction — section cascade restored correct attribution |
-| Larry_Corne | E16 Stroke | YES | NO | Correction — stroke_dx gate lost false DISCHARGE evidence |
-| Mary_King | E16 Stroke | YES | NO | Correction — stroke_dx gate lost false DISCHARGE evidence |
-| Ronald_Marshall | E21 VAP | YES | NO | Correction — vap_evidence gate lost false DISCHARGE evidence |
+| PT_16 | E01 AKI | UTD | NO | Correction — false DISCHARGE evidence eliminated |
+| PT_26 | E01 AKI | NO | UTD | Correction — section cascade restored correct attribution |
+| PT_13 | E16 Stroke | YES | NO | Correction — stroke_dx gate lost false DISCHARGE evidence |
+| PT_18 | E16 Stroke | YES | NO | Correction — stroke_dx gate lost false DISCHARGE evidence |
+| PT_22 | E21 VAP | YES | NO | Correction — vap_evidence gate lost false DISCHARGE evidence |
 
 YES count: 17 → 14 (−3). All 5 deltas are corrections — outcomes were based on
 evidence falsely attributed to DISCHARGE sections via substring matching.
@@ -380,11 +380,11 @@ Executed on main after PR #150.
 | Patients refreshed | 33/33 |
 | Pre/post all-21 distribution diff | **Empty — zero NTDS outcome deltas** |
 | Cohort invariant | PASS (33 canonical, 33 adjusted, 0 extra, 0 missing) |
-| Predicted flips (Gary_Linder E01, Ronald_Marshall E13) | Did NOT materialize |
+| Predicted flips (PT_11 E01, PT_22 E13) | Did NOT materialize |
 | Tracked working tree | Clean |
 
-The D1 scoping predicted 2 possible outcome flips (Gary_Linder E01 UTD→NO,
-Ronald_Marshall E13 YES→NO) based on stale evidence analysis. Neither flip
+The D1 scoping predicted 2 possible outcome flips (PT_11 E01 UTD→NO,
+PT_22 E13 YES→NO) based on stale evidence analysis. Neither flip
 occurred because the current parser + engine combination preserved gate
 outcomes despite evidence source-type reclassification.
 
@@ -422,7 +422,7 @@ Anchored two section-detection patterns to line start (`^\[?\s*`) in
 D5 scoping found 3,017 mid-line LAB false matches across all 33 patients
 and 144 mid-line MAR false matches across 12 patients. Top false triggers:
 "Recent Labs" (1,397×), "Print Lab Result Report" (251×), physician name
-"Kumar, Anup, MD" matching MAR\b (36×).
+"[physician name]" matching MAR\b (36×).
 
 2 focused tests added (`test_recent_labs_reviewed_rejected_when_not_header`,
 `test_kumar_name_not_treated_as_mar_header`).
@@ -465,7 +465,7 @@ in `build_patientfacts_from_txt.py`, matching the D2/D5/D6-P1 anchor approach:
 
 D6-P2 scoping found 1,148 total hits: 1,145 line-start bracket headers
 (`[PHYSICIAN_NOTE]`) and 3 mid-line noise hits across 3 patients. All 3
-noise lines are "DEACONESS HEALTH SYSTEM EMERGENCY [DEPARTMENT] PHYSICIAN
+noise lines are "[INSTITUTION] EMERGENCY [DEPARTMENT] PHYSICIAN
 NOTE" headers that correctly reclassify from PHYSICIAN_NOTE → ED_NOTE
 (via EMERGENCY fallback). 645 content lines across 3 patients change section
 assignment.
@@ -488,7 +488,7 @@ all affected evidence is near-miss on NO-outcome events only.
 Anchored the NURSING_NOTE section-detection pattern to line start (`^\[?\s*`)
 in `build_patientfacts_from_txt.py`, matching the D2/D5/D6-P1/D6-P2 anchor
 approach. Also widened E09 Delirium `allowed_sources` to include CONSULT_NOTE
-to preserve clinically correct Barbara_Burgdorf E09 detection after section
+to preserve clinically correct PT_03 E09 detection after section
 reclassification.
 
 | Pattern | Before | After |
@@ -502,7 +502,7 @@ note reviewed.", etc.) that falsely re-entered NURSING_NOTE from other
 sections. 15 patients, 2,034 content lines reclassified to correct parent
 sections (PHYSICIAN_NOTE, CONSULT_NOTE, PROCEDURE, IMAGING, ED_NOTE, etc.).
 
-Barbara_Burgdorf E09 Delirium had 3 passing NURSING_NOTE evidence lines in a
+PT_03 E09 Delirium had 3 passing NURSING_NOTE evidence lines in a
 diff zone that reclassified NURSING_NOTE → CONSULT_NOTE (the content is
 genuinely a hospitalist consult note). Adding CONSULT_NOTE to E09
 `allowed_sources` preserves the clinically correct YES outcome.
@@ -601,15 +601,15 @@ and added two block filters:
 
 | # | Item | Scope | Priority | Effort | Notes |
 |---|------|-------|----------|--------|-------|
-| ~~1~~ | ~~**FLAG 002 — E21 VAP vent gate**~~ | ~~`rules/ntds/logic/2026/21_vap.json`~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** — required vent_evidence gate (7 vent_dx patterns, history_noise exclusion), 1 fixture added, Cheryl_Burton YES→NO, Ronald_Bittner stays YES, 39-patient cohort verified |
+| ~~1~~ | ~~**FLAG 002 — E21 VAP vent gate**~~ | ~~`rules/ntds/logic/2026/21_vap.json`~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** — required vent_evidence gate (7 vent_dx patterns, history_noise exclusion), 1 fixture added, PT_06 YES→NO, PT_21 stays YES, 39-patient cohort verified |
 | ~~2~~ | ~~**FLAG 001 — Spinal protocol 36 h timing**~~ | ~~`rules/deaconess/protocols_deaconess_structured_v1.json`~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** — REQ_REQUIRED_DATA_ELEMENTS + REQ_TIMING_CRITICAL (`temporal:within:36:hours`) added, 12 `protocol_spinal_stabilization_surgery` patterns in shared_action_buckets, 1 fixture added (spinal_timing_noncompliant → NON_COMPLIANT), 1 fixture updated (spinal_compliant + surgery within 36h), 0 NTDS outcome deltas |
 | ~~3~~ | ~~**Baseline hash coverage for NTDS outputs**~~ | ~~`scripts/baselines/`, `scripts/gate_pr.sh`~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** — 39-patient composite hash baseline (`ntds_hashes_v1.json`), standalone checker (`scripts/check_ntds_hashes.py`), wired into `gate_pr.sh` NTDS drift check section, 0 NTDS outcome deltas |
-| ~~4~~ | ~~**D4 — DISCHARGE precision audit (14 events, 17 gates)**~~ | ~~Per-event evidence review; `rules/ntds/logic/2026/`~~ | ~~Medium~~ | ~~Medium~~ | **✅ COMPLETE** — 14 events audited across 39 patients, 0 false positives, 1 TP (Ronald_Bittner E13 Pressure Ulcer), no rule changes needed, baseline realigned (Anna_Dennis hash), audit doc in `docs/audits/D4_DISCHARGE_PRECISION_AUDIT.md` |
-| ~~5~~ | ~~**Remaining 15-event precision pass**~~ | ~~Per-event mapper/rule/tests~~ | ~~Medium~~ | ~~Medium–Large~~ | **✅ COMPLETE (phase 1)** — E09 Delirium: `delirium_negation_noise` (10 patterns) added, 2 FP corrections (Barbara_Burgdorf YES→NO, Christine_Adelitzo YES→NO); E08 DVT: `dvt_dx_noise_prophylaxis` wired to `dvt_dx` gate (defensive, 0 outcome changes); fixture `09_delirium_consult_yes.txt` updated; 2 NTDS outcome deltas |
+| ~~4~~ | ~~**D4 — DISCHARGE precision audit (14 events, 17 gates)**~~ | ~~Per-event evidence review; `rules/ntds/logic/2026/`~~ | ~~Medium~~ | ~~Medium~~ | **✅ COMPLETE** — 14 events audited across 39 patients, 0 false positives, 1 TP (PT_21 E13 Pressure Ulcer), no rule changes needed, baseline realigned (PT_01 hash), audit doc in `docs/audits/D4_DISCHARGE_PRECISION_AUDIT.md` |
+| ~~5~~ | ~~**Remaining 15-event precision pass**~~ | ~~Per-event mapper/rule/tests~~ | ~~Medium~~ | ~~Medium–Large~~ | **✅ COMPLETE (phase 1)** — E09 Delirium: `delirium_negation_noise` (10 patterns) added, 2 FP corrections (PT_03 YES→NO, PT_07 YES→NO); E08 DVT: `dvt_dx_noise_prophylaxis` wired to `dvt_dx` gate (defensive, 0 outcome changes); fixture `09_delirium_consult_yes.txt` updated; 2 NTDS outcome deltas |
 | ~~6~~ | ~~Source alignment (PROGRESS_NOTE + NURSING_NOTE)~~ | ~~Docs/design: per-event allowed_sources vs raw DATA SOURCE hierarchy~~ | ~~High~~ | ~~Medium~~ | **✅ COMPLETE (design doc + Tier 1 impl)** — Design: `docs/audits/SOURCE_ALIGNMENT_AND_GERI_DELIRIUM_v1.md` §1. Implementation: CONSULT_NOTE added to 4 gates (aki_dx, mi_dx, sepsis_dx, stroke_dx), NURSING_NOTE added to 3 gates (cauti_dx, clabsi_dx, sepsis_dx), 3 fixtures added, 0 NTDS outcome deltas |
 | ~~7~~ | ~~Geriatric delirium nursing shift assessments~~ | ~~E09: shift-based nursing delirium assessments~~ | ~~High~~ | ~~Medium~~ | **✅ COMPLETE (design doc + CAM/bCAM impl)** — Design: `docs/audits/SOURCE_ALIGNMENT_AND_GERI_DELIRIUM_v1.md` §2. Implementation: 4 CAM-ICU/bCAM positive patterns added to `delirium_dx`, 4 negative patterns added to `delirium_negation_noise`, 1 CAM-ICU fixture added, 0 NTDS outcome deltas |
-| ~~8~~ | ~~Ronald_Bittner targeted audit follow-up~~ | ~~Patient-level trace check~~ | ~~Low~~ | ~~Small~~ | **✅ COMPLETE (design doc)** — `docs/audits/SOURCE_ALIGNMENT_AND_GERI_DELIRIUM_v1.md` §3: E01 UTD root cause ("Held" SourceType not recognised), E13 TP confirmed (D4 audit), E21 VAP TP confirmed, 4 actionable items listed |
-| ~~9~~ | ~~**5 AKI UTD residuals**~~ | ~~`rules/ntds/logic/2026/01_aki.json`, evidence tuning~~ | ~~Medium~~ | ~~Hard~~ | **✅ COMPLETE (v2)** — 3 `aki_negation_noise` patterns (PMH date format, chemo history, parenthetical format), 1 `aki_onset` pattern (clinical trajectory), arrival-time extraction added to runner; E01 UTD 7→3; 4 outcome deltas: Barbara_Burgdorf UTD→NO, Gary_Linder UTD→NO, William_Simmons UTD→NO, Floy_Geary UTD→YES; 3 residual UTDs (Carlton_Van_Ness, David_Gross, Ronald_Bittner) — genuine clinical ambiguity or source-detection limitation |
+| ~~8~~ | ~~PT_21 targeted audit follow-up~~ | ~~Patient-level trace check~~ | ~~Low~~ | ~~Small~~ | **✅ COMPLETE (design doc)** — `docs/audits/SOURCE_ALIGNMENT_AND_GERI_DELIRIUM_v1.md` §3: E01 UTD root cause ("Held" SourceType not recognised), E13 TP confirmed (D4 audit), E21 VAP TP confirmed, 4 actionable items listed |
+| ~~9~~ | ~~**5 AKI UTD residuals**~~ | ~~`rules/ntds/logic/2026/01_aki.json`, evidence tuning~~ | ~~Medium~~ | ~~Hard~~ | **✅ COMPLETE (v2)** — 3 `aki_negation_noise` patterns (PMH date format, chemo history, parenthetical format), 1 `aki_onset` pattern (clinical trajectory), arrival-time extraction added to runner; E01 UTD 7→3; 4 outcome deltas: PT_03 UTD→NO, PT_11 UTD→NO, PT_26 UTD→NO, PT_10 UTD→YES; 3 residual UTDs (PT_04, PT_09, PT_21) — genuine clinical ambiguity or source-detection limitation |
 | ~~10~~ | ~~**Automate per-event NTDS outcome distribution in gate/CI**~~ | ~~CI/gate script~~ | ~~Low~~ | ~~Small~~ | **✅ COMPLETE** — `scripts/check_ntds_distribution.py` + baseline `scripts/baselines/ntds_distribution_v1.json` (21 events × 39 patients); per-event YES/NO/UTD/EXCLUDED counts computed from `outputs/ntds/`, compared against stored baseline; wired into `gate_pr.sh` between NTDS hash check and pytest; `--update` and `--summary` modes; 0 NTDS outcome deltas |
 | ~~11~~ | ~~**E05 CAUTI Tier-1 spec fidelity (CDC SUTI 1a)**~~ | ~~`rules/ntds/logic/2026/05_cauti.json`, `rules/mappers/epic_deaconess_mapper_v1.json`, tests~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** — 5 required gates (cauti_dx, cauti_catheter_gt2d, cauti_symptoms, cauti_culture, cauti_after_arrival) + 2 exclusions (POA, chronic catheter); 6 new mapper keys (cauti_negation_noise, cauti_catheter_in_place, cauti_symptoms, cauti_culture_positive, cauti_onset, cauti_chronic_catheter) with 52 patterns total; cauti_dx expanded (UTI standalone + noise filter); 52 precision tests + 3 fixtures (YES, nursing-YES, no-catheter-NO); baseline refreshed post-rerun: E05 NO=39→NO=35 EXCLUDED=4 (4 patients excluded by catheter/chronic gates) |
 | ~~11b~~ | ~~**Baseline refresh post-CAUTI v2**~~ | ~~`scripts/baselines/ntds_hashes_v1.json`, `scripts/baselines/ntds_distribution_v1.json`~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** — 39-patient cohort rerun, hash + distribution baselines updated; E05 distribution delta: NO=39→NO=35 EXCLUDED=4; all other events unchanged; 2313 tests passed, cohort invariant PASS, 0 drift |
@@ -625,14 +625,14 @@ and added two block filters:
 | # | Item | Scope | Priority | Effort | Notes |
 |---|------|-------|----------|--------|-------|
 | ~~SI~~ | ~~**Shock Index computation (SI = HR/SBP)**~~ | ~~`cerebralos/features/shock_trigger_v1.py`, tests~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** (PR #254) — deterministic SI = HR / SBP added to `shock_trigger_v1`; classification: normal (< 0.7), elevated (0.7–0.99), critical (≥ 1.0); fail-closed null when HR or SBP missing; supplementary-only (does NOT alter `shock_triggered` outcome); `hr`, `shock_index`, `shock_index_classification` added to `trigger_vitals` output; evidence snippet includes SI; contract doc `docs/contracts/shock_trigger_v1.md` added; 18 new tests (40 total); 0 NTDS outcome deltas; 0 v4 drift; protected engines not modified. |
-| ~~17~~ | ~~**Arrival vitals hardening (Primary Survey priority + ED fallback)**~~ | ~~`cerebralos/features/vitals_daily.py`, tests, contract doc~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** (PRs #241, #242, #257) — deterministic arrival-vitals selector (TRAUMA_HP priority, ED fallback, DNA), runtime wiring at `features.vitals_canonical_v1.arrival_vitals_hardened`, and Epic Visit Vitals `(!)` prefix hardening for Pulse/Resp/SpO2; Anna_Dennis HR corrected (null → 112.0). |
+| ~~17~~ | ~~**Arrival vitals hardening (Primary Survey priority + ED fallback)**~~ | ~~`cerebralos/features/vitals_daily.py`, tests, contract doc~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** (PRs #241, #242, #257) — deterministic arrival-vitals selector (TRAUMA_HP priority, ED fallback, DNA), runtime wiring at `features.vitals_canonical_v1.arrival_vitals_hardened`, and Epic Visit Vitals `(!)` prefix hardening for Pulse/Resp/SpO2; PT_01 HR corrected (null → 112.0). |
 | ~~18~~ | ~~**Tabular GCS flowsheet parsing follow-up**~~ | ~~`cerebralos/features/gcs_daily.py`, tests~~ | ~~Medium~~ | ~~Small~~ | **✅ COMPLETE** (PR #243) — deterministic tabular GCS flowsheet extraction (dynamic column detection, validation guards, integration path through ingestion/runtime). |
 | ~~19~~ | ~~**LDA gate enablement decision track**~~ | ~~`rules/ntds/logic/2026/`, config~~ | ~~Medium~~ | ~~Small~~ | **✅ COMPLETE** (PRs #244, #245, #246) — LDA gates enabled per-event for E05 CAUTI (PR #244), E06 CLABSI (PR #245), E21 VAP (PR #246). Each event rule updated `required: false` → `required: true`; per-event LDA set in `run_all_events.py` expanded to {5, 6, 21}; test fixtures + precision tests updated. Protected `engine.py` not modified — toggle handled in runner + rule JSON only. |
 | ~~20~~ | ~~**Vent start/stop recall for E21 VAP**~~ | ~~`cerebralos/ntds_logic/build_patientfacts_from_txt.py`, tests~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** (PR #248) — Citation-backed ventilator start/stop extraction patterns added: intubation/extubation, placed-on/removed-from ventilator, negated-phrase guards; NIV/BiPAP/CPAP excluded; 37 new LDA tests (positive+negative+negation); 0 NTDS outcome deltas; protected `engine.py` not modified. |
 | ~~21~~ | ~~**Multi-episode vent start/stop (E21 recall hardening)**~~ | ~~`cerebralos/ntds_logic/build_patientfacts_from_txt.py`, tests~~ | ~~**High**~~ | ~~Small~~ | **✅ COMPLETE** (PR #250) — Sequential insert→remove pairing for MECHANICAL_VENTILATOR and ENDOTRACHEAL_TUBE; produces multiple non-overlapping episodes per device; orphan removes emit stop-only episode; orphan inserts emit open episode; merge logic updated to list-per-device with tier-based replacement and episode_days backfill; 10 new regression tests; 0 NTDS outcome deltas; protected `engine.py` not modified. |
 | ~~22~~ | ~~**Coverage mapping refresh v2 (counts + row-level statuses)**~~ | ~~`docs/audits/PROTOCOL_DATA_COVERAGE_MAPPING_v1.md`~~ | ~~**High**~~ | ~~Medium~~ | **✅ COMPLETE** (PR #262) — Recomputed EXTRACTED/PARTIAL/MISSING counts (79/48/87) and updated row statuses, category matrix, heat map, slice sections, and top-10 gaps to reflect all merged protocol work through PR #260. Canonical audit-intake log added to roadmap. |
-| 23 | **E09 Delirium confirmed-miss hardening** | `rules/mappers/epic_deaconess_mapper_v1.json`, `rules/ntds/logic/2026/09_delirium.json`, precision tests | **High** | Medium | Investigate and fix confirmed false negatives from raw-file review (reported misses include Johnny_Stokes, Linda_Hufford, Ronald_Bittner) with citation-backed, fail-closed mapper/rule updates. |
-| ~~24~~ | ~~**Cross-event precision hardening (E15 + E21)**~~ | ~~`rules/mappers/epic_deaconess_mapper_v1.json`, precision tests~~ | ~~Medium~~ | ~~Small~~ | **✅ COMPLETE** (PR #266) — Added 2 `sepsis_negation_noise` patterns for BPA template definition-header text (`SEVERE SEPSIS:` / `SEPTIC SHOCK:` with colon separator) blocking Wilma_Yates screening template FP-risk lines; added 3 `vap_negation_noise` patterns for non-pneumonia CXR attributions (pulmonary edema, fluid/volume overload). Zero outcome drift: E15 YES=2 NO=37, E21 NO=39 unchanged. 46 E15 + 34 E21 precision tests passing. No rule JSON changes needed — mapper-only. |
+| 23 | **E09 Delirium confirmed-miss hardening** | `rules/mappers/epic_deaconess_mapper_v1.json`, `rules/ntds/logic/2026/09_delirium.json`, precision tests | **High** | Medium | Investigate and fix confirmed false negatives from raw-file review (reported misses include PT_12, PT_14, PT_21) with citation-backed, fail-closed mapper/rule updates. |
+| ~~24~~ | ~~**Cross-event precision hardening (E15 + E21)**~~ | ~~`rules/mappers/epic_deaconess_mapper_v1.json`, precision tests~~ | ~~Medium~~ | ~~Small~~ | **✅ COMPLETE** (PR #266) — Added 2 `sepsis_negation_noise` patterns for BPA template definition-header text (`SEVERE SEPSIS:` / `SEPTIC SHOCK:` with colon separator) blocking PT_27 screening template FP-risk lines; added 3 `vap_negation_noise` patterns for non-pneumonia CXR attributions (pulmonary edema, fluid/volume overload). Zero outcome drift: E15 YES=2 NO=37, E21 NO=39 unchanged. 46 E15 + 34 E21 precision tests passing. No rule JSON changes needed — mapper-only. |
 | 25 | **NTDS adversarial fixture standard** | `tests/fixtures/patients/`, precision suites | Medium | Small | Add conflicting-evidence fixtures (same-note positive + noise, source-type mismatches, surrogate-only negatives) as a required pattern for each NTDS hardening PR. |
 | 26 | **Validator hardening (contract leak guard + provenance parity)** | `cerebralos/validation/validate_patient_features_contract_v1.py`, tests | Medium | Small | **Step 1 of 3.** Add 3 missing keys to `KNOWN_FEATURE_KEYS` (AUD-013) + align empty-`raw_line_id` rejection with evidence validator (AUD-014). Single PR — both touch the same validator file. Include negative tests for both fixes. |
 | 27 | **v3 output baseline** | `scripts/gate_pr.sh`, `scripts/baselines/` | Medium | Small | **Step 2 of 3.** Add `v3_hashes_v1.json` baseline + v3 hash check in `gate_pr.sh` (mirrors v4/v5 pattern). See AUD-015. |
@@ -657,7 +657,7 @@ finding undergoes classification before implementation work begins.
 | Intake ID | Source | Finding Summary | Classification | Evidence | Owning PR(s) | Status | Validation Artifact | Last Updated |
 |-----------|--------|----------------|---------------|----------|-----------|--------|---------------------|-------------|
 | AUD-001 | Coverage mapping v1 (PR #220) | Protocol coverage matrix stale — counts stuck at 60E/57P/97M; does not reflect Slices A/B/C, vent, GCS, SI work | KEEP NOW | `PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` dated 2026-03-12; 19 elements upgraded in codebase but not reflected in doc | PR #262 (this PR) | ✅ Complete | Counts verified: 79E/48P/87M/16NA; 6/10 top gaps closed | 2026-03-16 |
-| AUD-002 | E09 raw-scan review | Delirium confirmed false negatives — Johnny_Stokes, Linda_Hufford, Ronald_Bittner show delirium evidence in raw text not captured by current mapper/rule | KEEP NOW | Raw file line citations in Terminal-Claude analysis report | Item #23 (post-#258 queue) | Not started | Pending precision test + mapper hardening PR | 2026-03-16 |
+| AUD-002 | E09 raw-scan review | Delirium confirmed false negatives — PT_12, PT_14, PT_21 show delirium evidence in raw text not captured by current mapper/rule | KEEP NOW | Raw file line citations in Terminal-Claude analysis report | Item #23 (post-#258 queue) | Not started | Pending precision test + mapper hardening PR | 2026-03-16 |
 | AUD-003 | CAUTI engine review (E05) | CAUTI multi-gate engine implementation with per-event LDA enablement | KEEP NOW | E05 rule `required: true`; LDA gate enabled in runner | PRs #244 (completed) | ✅ Complete | `test_e05_cauti_precision.py` passing | 2026-03-16 |
 | AUD-004 | Coverage mapping top-10 gaps | Chest tube placement — LDA CHEST_TUBE type defined but text extraction not wired | TIGHTEN NEXT | Gap table rank #5; LDA type exists in `lda_events_v1.py` | — | Not started | — | 2026-03-16 |
 | AUD-005 | Coverage mapping top-10 gaps | ICP monitoring — TBI protocol requires ICP data; flowsheet rows likely present | TIGHTEN NEXT | Gap table rank #7; no extraction logic exists | — | Not started | — | 2026-03-16 |
@@ -671,7 +671,7 @@ finding undergoes classification before implementation work begins.
 | AUD-013 | Repo-hardening review | Feature-contract leak guard is stale: `build_patient_features_v1.py` emits `trauma_daily_plan_by_day_v1`, `consultant_day_plans_by_day_v1`, `non_trauma_team_day_plans_by_day_v1` but `validate_patient_features_contract_v1.py` `KNOWN_FEATURE_KEYS` is missing those keys — a future top-level leak would not be caught | TIGHTEN NEXT | `cerebralos/features/build_patient_features_v1.py` L539–L622 (emits 3 keys); `cerebralos/validation/validate_patient_features_contract_v1.py` L36–L59 (`KNOWN_FEATURE_KEYS` set) | — | Not started | Smallest fix: add 3 keys to `KNOWN_FEATURE_KEYS` set + add test asserting emitted keys ⊆ known keys | 2026-03-18 |
 | AUD-014 | Repo-hardening review | Provenance validation strictness mismatch: `validate_evidence_raw_line_id.py` rejects empty `raw_line_id` (`if not rid:`); `validate_patient_features_contract_v1.py` only checks key presence (`"raw_line_id" not in entry`), so `raw_line_id: ""` passes contract validation | TIGHTEN NEXT | `cerebralos/validation/validate_evidence_raw_line_id.py` L45 (falsy check); `cerebralos/validation/validate_patient_features_contract_v1.py` L161 (presence-only check) | — | Not started | Smallest fix: change contract validator to `if not entry.get("raw_line_id"):` for parity with evidence validator | 2026-03-18 |
 | AUD-015 | Repo-hardening review | v3 output drift blind spot: `gate_pr.sh` baselines v4 and v5 rendered outputs (L15–L16), not v3; `_regression_phase1_v2.py` protects v3 renderer file hash, not rendered v3 output; upstream changes could alter v3 output without a rendered-output baseline failure | TIGHTEN NEXT | `scripts/gate_pr.sh` L15–L16 (v4+v5 only); `_regression_phase1_v2.py` L32 (PATIENTS); v3 files exist in `outputs/reporting/` but no hash baseline | — | Not started | Smallest fix: add `v3_hashes_v1.json` baseline + v3 hash check in `gate_pr.sh` (mirrors v4/v5 pattern) | 2026-03-18 |
-| AUD-016 | Repo-hardening review | Determinism check is too narrow: `_regression_phase1_v2.py` reruns only `PATIENTS[0]` (Anna_Dennis) for determinism verification (L492); patient-specific nondeterminism in the other 3 gate patients would be missed | TIGHTEN NEXT | `_regression_phase1_v2.py` L32 (PATIENTS list), L492 (`det_pat = PATIENTS[0]`), L493–L512 (single-patient determinism loop) | This PR | ✅ Complete | Determinism rerun loops all 4 gate patients; per-patient PASS/FAIL output; gate verified | 2026-03-18 |
+| AUD-016 | Repo-hardening review | Determinism check is too narrow: `_regression_phase1_v2.py` reruns only `PATIENTS[0]` (PT_01) for determinism verification (L492); patient-specific nondeterminism in the other 3 gate patients would be missed | TIGHTEN NEXT | `_regression_phase1_v2.py` L32 (PATIENTS list), L492 (`det_pat = PATIENTS[0]`), L493–L512 (single-patient determinism loop) | This PR | ✅ Complete | Determinism rerun loops all 4 gate patients; per-patient PASS/FAIL output; gate verified | 2026-03-18 |
 | AUD-017 | Audit ledger consolidation | Protocol + NTDS extraction audit findings consolidated into durable repo docs — protocol completion ledger (186 elements across 6 status tiers) and NTDS support ledger (E01–E21 with tier classification and LDA detail) | KEEP NOW | Codebase audit + raw-file scan of 6 patients; cross-referenced against `PROTOCOL_DATA_COVERAGE_MAPPING_v1.md` | Docs-only consolidation PR | ✅ Complete | `docs/audits/PROTOCOL_EXTRACTION_COMPLETION_LEDGER_v1.md`, `docs/audits/NTDS_EXTRACTION_SUPPORT_LEDGER_v1.md` | 2026-03-21 |
 
 > **Classification key:** `KEEP NOW` = implement in next PR cycle; `TIGHTEN NEXT` = approved but queued after current priorities; `DEFER` = recognized but not scheduled (low certainty, low impact, or blocked).
@@ -773,7 +773,7 @@ Accepted into merged PR #214:
 
 ##### Item 16B — Post-PR #214 Raw-Scan Intake (2026-03-12) ✅ COMPLETE (PR #216)
 
-Source: Terminal-Claude analysis report over newer patient set (11 found, 2 missing: `Mark_King`, `Andrew_Paez`).
+Source: Terminal-Claude analysis report over newer patient set (11 found, 2 missing: `PT_17`, `PT_02`).
 
 `KEEP NOW` — **all implemented in PR #216** (merged):
 - ~~Add bracketed remove pattern for urinary catheter:~~
@@ -807,18 +807,18 @@ These patients are selected for diversity of clinical content, edge
 cases, and coverage of the 3 mapped NTDS events (DVT, PE, OR Return):
 
 ```
-Anna_Dennis
-Carlton_Van_Ness
-Charlotte_Howlett
-David_Gross
-Mary_King
-Michael_Dougan
-Robert_Sauer
-Ronald_Bittner
-Timothy_Cowan
-Timothy_Nachtwey
-Valerie_Parker
-Lolita_Calcia
+PT_01
+PT_04
+PT_05
+PT_09
+PT_18
+PT_19
+PT_20
+PT_21
+PT_23
+PT_24
+PT_25
+PT_15
 ```
 
 ### Execution Rules
@@ -830,9 +830,9 @@ Lolita_Calcia
 
 **Dev-loop sentinel run:**
 ```bash
-for PAT in Anna_Dennis Carlton_Van_Ness Charlotte_Howlett David_Gross \
-  Mary_King Michael_Dougan Robert_Sauer Ronald_Bittner \
-  Timothy_Cowan Timothy_Nachtwey Valerie_Parker Lolita_Calcia; do
+for PAT in PT_01 PT_04 PT_05 PT_09 \
+  PT_18 PT_19 PT_20 PT_21 \
+  PT_23 PT_24 PT_25 PT_15; do
   ./run_patient.sh "$PAT"
 done
 ```
@@ -942,8 +942,8 @@ Codex/Claude may not declare "done" until:
 ./scripts/gate_pr.sh
 ```
 
-passes with exit 0. Default gate patients: Anna_Dennis, William_Simmons,
-Timothy_Cowan, Timothy_Nachtwey.
+passes with exit 0. Default gate patients: PT_01, PT_26,
+PT_23, PT_24.
 
 ---
 
