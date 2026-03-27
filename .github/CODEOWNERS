@@ -1,17 +1,27 @@
 # CODEOWNERS — CerebralOS
 # https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Only high-consequence paths are listed here. Changes to unlisted
+# paths do not require CODEOWNERS review.
 
-# Default: all changes require review by the repo owner.
-* @Netrion-29
-
-# Protected engines (AGENTS.md §3) — explicit ownership for visibility.
+# Protected engines (AGENTS.md §3)
 cerebralos/ntds_logic/engine.py @Netrion-29
 cerebralos/protocol_engine/engine.py @Netrion-29
 
-# Baseline hashes — changes here mean pipeline output changed.
+# Protected renderers (AGENTS.md §2)
+cerebralos/reporting/render_v3.py @Netrion-29
+cerebralos/reporting/render_v4.py @Netrion-29
+
+# Validation and contracts
+cerebralos/validation/ @Netrion-29
+docs/contracts/ @Netrion-29
+
+# Completion gate and baseline hashes
+scripts/gate_pr.sh @Netrion-29
 scripts/baselines/ @Netrion-29
 
-# Security and trust surfaces
+# Security, governance, and CI
 SECURITY.md @Netrion-29
+CONTRIBUTING.md @Netrion-29
 AGENTS.md @Netrion-29
-.github/CODEOWNERS @Netrion-29
+.github/ @Netrion-29
