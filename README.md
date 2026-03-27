@@ -3,6 +3,24 @@
 Deterministic evidence extraction and case-review generation for trauma
 performance improvement (PI) workflows.
 
+> **Disclaimer:** CerebralOS is not a medical device and is not intended
+> for independent clinical decision-making.
+
+## Who This Is For
+
+- **Trauma PI reviewers** who manually reconstruct patient timelines
+  from exported chart text and need structured, deterministic output.
+- **Clinical quality teams** building long-running review workflows
+  where session continuity matters.
+- **Developers** exploring deterministic evidence extraction from
+  unstructured clinical text.
+
+## Who This Is Not For
+
+- Clinicians looking for diagnostic or treatment recommendations.
+- Anyone expecting a plug-and-play SaaS product — CerebralOS runs
+  locally against your own data.
+
 ## The Problem
 
 Trauma PI review starts with messy, exported chart records — thousands
@@ -49,6 +67,10 @@ When a session ends, nothing is lost. The next session picks up from
 the artifacts — not from memory, not from re-prompting, and not from
 re-running prior work.
 
+CerebralOS preserves durable intermediate artifacts so long-running
+workflows can resume across sessions without relying on fragile model
+memory alone.
+
 This approach received recognition for solving a real problem: making AI
 tooling reliable for structured clinical workflows where context
 continuity matters more than single-query intelligence.
@@ -81,14 +103,21 @@ continuity matters more than single-query intelligence.
 - Python 3.9+
 - `pip install openpyxl` (for Excel dashboard export)
 
-### Run one patient
+### 1. Add input data
+
+Place a plain-text patient export (`.txt`) into the `data_raw/`
+directory at the repo root. The filename becomes the patient
+identifier (e.g. `data_raw/Patient_Name.txt`).
+
+> **No local PHI?** The repo does not ship sample patient data.
+> To exercise the pipeline you need your own `.txt` exports from
+> your EHR. Without an input file the pipeline has nothing to process.
+
+### 2. Run the pipeline
 
 ```bash
 ./scripts/run_casefile_v1.sh "Patient Name"
 ```
-
-This runs the full pipeline and opens the HTML casefile in your browser.
-Set `CEREBRAL_NO_OPEN=1` to suppress auto-open.
 
 Or run interactively (prompts for patient name):
 
@@ -96,17 +125,28 @@ Or run interactively (prompts for patient name):
 ./scripts/run_casefile_v1.sh
 ```
 
+### 3. Review output
+
+The pipeline writes structured artifacts under `outputs/` and opens
+a rendered HTML casefile in your default browser:
+
+```text
+outputs/
+  evidence/Patient_Name/patient_evidence_v1.json
+  timeline/Patient_Name/patient_days_v1.json
+  features/Patient_Name/patient_features_v1.json
+  casefile/Patient_Name/casefile_v1.html          <-- open this
+```
+
+Set `CEREBRAL_NO_OPEN=1` to suppress auto-open.
+
 ### Patient hub
 
-Generate a local index linking all processed casefiles:
+After processing one or more patients, generate a local index:
 
 ```bash
 ./scripts/run_casefile_hub_v1.sh
 ```
-
-> **Note:** CerebralOS processes real patient data locally. The repo
-> does not include sample PHI. To try the pipeline, you need your own
-> `.txt` exports placed in `data_raw/`.
 
 ## Use Cases
 
