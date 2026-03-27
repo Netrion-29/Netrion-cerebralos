@@ -112,17 +112,17 @@ When a new `.txt` file is added to `data_raw/`:
 
 | Patient | Raw file name | Format family | Row status | Ingest OK? | ADT | Notes-rich | SBIRT | Proc/Anesth | Neuro/TBI | Rib/Resp | Med/Allergy/Social | Labs/MAR | NTDS potential | Best next use | Notes / quirks |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Michael Dougan | `Michael_Dougan.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | strong | possible | possible | strong | strong | strong | ADT timeline validation (header); anticoag context (Eliquis+aspirin); long LOS (10d) | New-format with ADT in header; 527KB, 19.6K lines; Parkinson's + afib on anticoag |
-| Charlotte Howlett | `Charlotte Howlett.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | strong | possible | none | strong | strong | possible | Elderly fall cohort (92yo); procedure-rich validation; PMH/social extraction | Space in filename; short stay; 266KB |
-| Christine Adelitzo | `Christine Adelitzo.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | strong | strong | possible | strong | strong | strong | Neuro/TBI + procedure-rich long-stay validation; ADT timeline canary | Space in filename; large file (~34K lines). Ingested 2026-03-02: arrival=2025-12-24T22:32, discharge=2026-01-13T13:14, 21 days, 35 features. |
-| Ronald Bittner | `Ronald Bittner.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | strong | possible | strong | strong | strong | strong | Respiratory/rib extractor (639 hits); long ICU stay (27d); DVT prophylaxis depth | Space in filename; 2.1MB, 74K lines — largest file; ADT rows inline (no "ADT Events" header); ICU course |
-| Roscella Weatherly | `Roscella Weatherly.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | possible | possible | none | strong | strong | strong | ETOH/UDS validation; NTDS category validation; FAST exam | Space in filename; ADT in header; Cat 1 + Cat 2 refs; 263KB. Ingested 2026-03-01: arrival=2026-01-01T02:01, discharge=2026-01-02T18:03, 3 days, 35 features. |
-| Mary King | `Mary King.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | possible | possible | strong | possible | strong | possible | Respiratory/rib extraction (41 hits); MAR-rich (366 hits); anticoag context | Space in filename; ADT in header; blank line 1; nickname "Lou"; 320KB. Ingested 2026-03-01: arrival=2026-01-01T17:41, discharge=2026-01-07T14:13, 7 days, 35 features. |
-| Robert Altmeyer | `Robert Altmeyer.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | possible | possible | none | strong | possible | possible | FAST exam validation (9 hits); ADT with non-Trauma service (General Medical) | Space in filename; ADT in header; unique service = "General Medical"; 206KB. Ingested 2026-03-01: arrival=2026-01-01T17:50, discharge=2026-01-03T10:18, 3 days, 35 features. |
-| Margaret Rudd | `Margaret Rudd.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | possible | possible | none | strong | strong | possible | Elderly fall cohort (88yo); labs-rich; neuro/GCS; DVT prophylaxis | Space in filename; ADT in header; nickname "Pat"; 283KB. Ingested 2026-03-01: arrival=2026-01-01T15:19, discharge=2026-01-04T16:42, 4 days, 35 features. |
-| Betty Roll | `Betty Roll.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | strong | possible | strong | none | strong | strong | possible | SBIRT validation canary (4 hits + ETOH 20 hits); neuro/GCS depth; anticoag | Space in filename; ADT in header; 289KB. Ingested 2026-03-01: arrival=2026-01-01T10:05, discharge=2026-01-02T17:41, 2 days, 35 features. |
-| Lee Woodard | `Lee Woodard.txt` | name-age-dob (verified) | partially_verified | yes | possible | strong | possible | possible | strong | possible | strong | none | strong | Neuro/TBI canary (28 hits); NTDS category depth (6 refs); SBIRT possible | Space in filename; ADT in header; shorter ADT (5 rows); 221KB; no MAR data. Ingested 2026-03-01: arrival=2026-01-01T00:08, discharge=2026-01-05T18:14, 6 days, 35 features. |
-| Ronald Marshall | `Ronald_Marshall.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | strong | strong | strong | strong | strong | strong | Long-stay ICU validation (14d); neuro/TBI depth; respiratory/rib; procedure-rich | Underscore in filename; 48K lines; large file. Ingested 2026-03-01: arrival=2025-12-25T14:14, discharge=2026-01-07T16:55, 14 days, 35 features. |
+| Patient_01 | `Patient_01.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | strong | possible | possible | strong | strong | strong | ADT timeline validation (header); anticoag context; long LOS (10d) | New-format with ADT in header; 527KB, 19.6K lines; complex PMH on anticoag |
+| Patient_02 | `Patient_02.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | strong | possible | none | strong | strong | possible | Elderly fall cohort (92yo); procedure-rich validation; PMH/social extraction | Space in filename; short stay; 266KB |
+| Patient_03 | `Patient_03.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | strong | strong | possible | strong | strong | strong | Neuro/TBI + procedure-rich long-stay validation; ADT timeline canary | Space in filename; large file (~34K lines); 21 days, 35 features. |
+| Patient_04 | `Patient_04.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | strong | possible | strong | strong | strong | strong | Respiratory/rib extractor (639 hits); long ICU stay (27d); DVT prophylaxis depth | Space in filename; 2.1MB, 74K lines — largest file; ADT rows inline (no "ADT Events" header); ICU course |
+| Patient_05 | `Patient_05.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | possible | possible | none | strong | strong | strong | ETOH/UDS validation; NTDS category validation; FAST exam | Space in filename; ADT in header; Cat 1 + Cat 2 refs; 263KB; 3 days, 35 features. |
+| Patient_06 | `Patient_06.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | possible | possible | strong | possible | strong | possible | Respiratory/rib extraction (41 hits); MAR-rich (366 hits); anticoag context | Space in filename; ADT in header; blank line 1; nickname in header; 320KB; 7 days, 35 features. |
+| Patient_07 | `Patient_07.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | possible | possible | none | strong | possible | possible | FAST exam validation (9 hits); ADT with non-Trauma service (General Medical) | Space in filename; ADT in header; unique service = "General Medical"; 206KB; 3 days, 35 features. |
+| Patient_08 | `Patient_08.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | possible | possible | none | strong | strong | possible | Elderly fall cohort (88yo); labs-rich; neuro/GCS; DVT prophylaxis | Space in filename; ADT in header; nickname in header; 283KB; 4 days, 35 features. |
+| Patient_09 | `Patient_09.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | strong | possible | strong | none | strong | strong | possible | SBIRT validation canary (4 hits + ETOH 20 hits); neuro/GCS depth; anticoag | Space in filename; ADT in header; 289KB; 2 days, 35 features. |
+| Patient_10 | `Patient_10.txt` | name-age-dob (verified) | partially_verified | yes | possible | strong | possible | possible | strong | possible | strong | none | strong | Neuro/TBI canary (28 hits); NTDS category depth (6 refs); SBIRT possible | Space in filename; ADT in header; shorter ADT (5 rows); 221KB; no MAR data; 6 days, 35 features. |
+| Patient_11 | `Patient_11.txt` | name-age-dob (verified) | partially_verified | yes | strong | strong | none | strong | strong | strong | strong | strong | strong | Long-stay ICU validation (14d); neuro/TBI depth; respiratory/rib; procedure-rich | Underscore in filename; 48K lines; large file; 14 days, 35 features. |
 
 ---
 
@@ -130,19 +130,19 @@ When a new `.txt` file is added to `data_raw/`:
 
 | Extractor / Validation Goal | Top candidates |
 |------------------------------|----------------|
-| ADT transfer timeline depth | Michael_Dougan (header, 15 events), Ronald Bittner (inline, 9 events, 27d ICU) |
-| SBIRT screening coverage | Betty Roll (strong), Lee Woodard (possible) |
-| ETOH / UDS panel | Roscella Weatherly, Betty Roll |
-| Respiratory / rib / IS | Ronald Bittner (strong, 639 hits), Mary King (strong, 41 hits) |
-| Neuro / TBI / GCS depth | Lee Woodard, Betty Roll, Ronald Bittner |
-| Procedure / anesthesia | Michael_Dougan, Charlotte Howlett, Ronald Bittner |
-| Anticoag context | Michael_Dougan (Eliquis+aspirin), Mary King, Betty Roll |
-| PMH / social / allergies | Roscella Weatherly, Margaret Rudd, Betty Roll, Lee Woodard |
-| Elderly fall cohort (age >80) | Charlotte Howlett (92), Margaret Rudd (88), Lee Woodard (84) |
-| Long-stay / ICU validation | Ronald Bittner (27d ICU), Michael_Dougan (10d) |
-| FAST exam | Robert Altmeyer (9), Betty Roll (9), Mary King (7) |
-| NTDS event fidelity | Roscella Weatherly, Lee Woodard, Ronald Bittner |
-| Non-Trauma service (General Medical) | Robert Altmeyer |
+| ADT transfer timeline depth | Patient_01 (header, 15 events), Patient_04 (inline, 9 events, 27d ICU) |
+| SBIRT screening coverage | Patient_09 (strong), Patient_10 (possible) |
+| ETOH / UDS panel | Patient_05, Patient_09 |
+| Respiratory / rib / IS | Patient_04 (strong, 639 hits), Patient_06 (strong, 41 hits) |
+| Neuro / TBI / GCS depth | Patient_10, Patient_09, Patient_04 |
+| Procedure / anesthesia | Patient_01, Patient_02, Patient_04 |
+| Anticoag context | Patient_01, Patient_06, Patient_09 |
+| PMH / social / allergies | Patient_05, Patient_08, Patient_09, Patient_10 |
+| Elderly fall cohort (age >80) | Patient_02 (92), Patient_08 (88), Patient_10 (84) |
+| Long-stay / ICU validation | Patient_04 (27d ICU), Patient_01 (10d) |
+| FAST exam | Patient_07 (9), Patient_09 (9), Patient_06 (7) |
+| NTDS event fidelity | Patient_05, Patient_10, Patient_04 |
+| Non-Trauma service (General Medical) | Patient_07 |
 
 ---
 
@@ -150,9 +150,9 @@ When a new `.txt` file is added to `data_raw/`:
 
 ### Filename spaces
 
-All new-format patients except `Michael_Dougan` use spaces in their
-filenames (e.g. `Charlotte Howlett.txt`). The pipeline slug function
-converts spaces to underscores (`Charlotte_Howlett`), and
+All new-format patients except `Patient_01` use spaces in their
+filenames (e.g. `Patient 02.txt`). The pipeline slug function
+converts spaces to underscores (`Patient_02`), and
 `./run_patient.sh` accepts either form. Feature output directories
 use the underscore slug.
 
@@ -160,9 +160,9 @@ use the underscore slug.
 
 | Variant | Patients | Description |
 |---------|----------|-------------|
-| **Header with "ADT Events" label** | Michael_Dougan, Roscella Weatherly, Mary King, Robert Altmeyer, Margaret Rudd, Betty Roll, Lee Woodard | Standard: `ADT Events` header line → column header → tab-delimited rows. Parsed by `adt_transfer_timeline_v1`. |
-| **Header with inline ADT rows (no label)** | Ronald Bittner | ADT data rows appear directly after DOB line with no "ADT Events" section header. Current `adt_transfer_timeline_v1` may not detect these — requires manual verification. |
-| **ADT inside note body** | Charlotte Howlett | ADT table embedded deep in a physician note payload, not in file header. Detected via timeline-item fallback in `adt_transfer_timeline_v1`. |
+| **Header with "ADT Events" label** | Patient_01, Patient_05, Patient_06, Patient_07, Patient_08, Patient_09, Patient_10 | Standard: `ADT Events` header line → column header → tab-delimited rows. Parsed by `adt_transfer_timeline_v1`. |
+| **Header with inline ADT rows (no label)** | Patient_04 | ADT data rows appear directly after DOB line with no "ADT Events" section header. Current `adt_transfer_timeline_v1` may not detect these — requires manual verification. |
+| **ADT inside note body** | Patient_02 | ADT table embedded deep in a physician note payload, not in file header. Detected via timeline-item fallback in `adt_transfer_timeline_v1`. |
 
 ### Format family: `name-age-dob`
 
@@ -173,25 +173,25 @@ NN year old male/female
 M/D/YYYY
 ```
 This is distinct from the older `legacy-keyed` format used by some
-`data_raw/` files (e.g. `Gary_Linder.txt`):
+`data_raw/` files (e.g. `Patient_Legacy.txt`):
 ```
-PATIENT_ID: 136258
-ARRIVAL_TIME: 2025-12-24 00:00:00
-PATIENT_NAME: Gary L Linder
+PATIENT_ID: XXXXXX
+ARRIVAL_TIME: YYYY-MM-DD HH:MM:SS
+PATIENT_NAME: <redacted>
 ```
 
-### Mary King leading blank line
+### Patient_06 leading blank line
 
-`Mary King.txt` has a blank line 1 before the patient name on line 2.
+`Patient_06.txt` has a blank line 1 before the patient name on line 2.
 The parser should handle this but verify after first ingest.
 
 ### Nicknames in header
 
-Charlotte Howlett (`"Marlene"`), Mary King (`"Lou"`), Margaret Rudd
-(`"Pat"`) include nicknames in quotes on the name line. Verify that
+Patient_02, Patient_06, and Patient_08
+include nicknames in quotes on the name line. Verify that
 patient name extraction handles or ignores the nickname gracefully.
 
-### Ronald Bittner — extreme file size
+### Patient_04 — extreme file size
 
 At 2.1 MB / 74K lines, this is the largest `data_raw/` file by far.
 Represents a 27-day ICU course. Pipeline performance and timeout

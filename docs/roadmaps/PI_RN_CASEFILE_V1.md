@@ -21,7 +21,7 @@ This is the primary product surface for CerebralOS going forward.
 
 ## 2. Primary User
 
-One PI RN responsible for trauma quality improvement at Deaconess. She
+One PI RN responsible for trauma quality improvement. She
 reviews ~40 patients per quarter for NTDS compliance, protocol adherence,
 and documentation completeness. Her current workflow is manual and
 fragmented across multiple artifacts.
@@ -31,21 +31,21 @@ fragmented across multiple artifacts.
 ## 3. Primary Workflow
 
 ```text
-Operator runs:  ./run_patient.sh "Betty Roll" --ntds --protocols
+Operator runs:  ./run_patient.sh "Patient Name" --ntds --protocols
                 (or one-click launcher — Phase 5)
 
 Pipeline produces:
-  outputs/evidence/Betty_Roll/patient_evidence_v1.json
-  outputs/timeline/Betty_Roll/patient_days_v1.json
-  outputs/features/Betty_Roll/patient_features_v1.json
-  outputs/ntds/Betty_Roll/ntds_summary_2026_v1.json
-  outputs/protocols/Betty_Roll/protocol_results_v1.json
+  outputs/evidence/Patient_Name/patient_evidence_v1.json
+  outputs/timeline/Patient_Name/patient_days_v1.json
+  outputs/features/Patient_Name/patient_features_v1.json
+  outputs/ntds/Patient_Name/ntds_summary_2026_v1.json
+  outputs/protocols/Patient_Name/protocol_results_v1.json
 
 [FUTURE] Bundle assembler produces:
-  outputs/bundles/Betty_Roll/patient_bundle_v1.json
+  outputs/bundles/Patient_Name/patient_bundle_v1.json
 
 [FUTURE] Casefile renderer produces:
-  outputs/casefiles/Betty_Roll/casefile_v1.html  (or .pdf)
+  outputs/casefiles/Patient_Name/casefile_v1.html  (or .pdf)
 
 Operator opens casefile in browser and reviews the patient.
 ```
@@ -144,7 +144,7 @@ Proposed top-level shape (to be formalized in a future contract PR):
 ```json
 {
   "bundle_version": "1.0",
-  "patient_id": "Betty_Roll",
+  "patient_id": "Patient_Name",
   "generated_at": "2026-03-22T12:00:00Z",
   "demographics": { },
   "admission": { },
@@ -264,7 +264,7 @@ This shape is **not locked** until the contract PR is merged.
 | Cross-patient dashboard / hub | Phase 6 — PI RN reviews one patient at a time |
 | PDF export | Phase 4+ refinement — HTML first |
 | Real-time / live mode | Not needed for retrospective PI review |
-| Multi-hospital support | Single Deaconess site |
+| Multi-hospital support | Single site |
 | Authentication / user management | Single operator, local machine |
 | Cloud deployment | Local-first; Vercel path documented but not prioritized |
 | LLM / ML inference | Violates deterministic constraint |
