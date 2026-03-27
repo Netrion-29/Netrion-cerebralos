@@ -19,10 +19,10 @@ is_allowlisted() {
 }
 
 # --- PHI patterns (grep -E) --------------------------------------------
-# Label + trailing digit = likely real patient data, not code references.
-# Structural value patterns (SSN, phone) are always checked.
+# Line-anchored label + non-whitespace value = likely real patient data.
+# This is a guardrail, not a complete PHI solution.
 PHI_REGEX=$(cat <<'EOF'
-MRN[[:space:]]*:[[:space:]]*[0-9]|CSN[[:space:]]*:[[:space:]]*[0-9]|DOB[[:space:]]*:[[:space:]]*[0-9]|SSN[[:space:]]*:[[:space:]]*[0-9]|Date of Birth[[:space:]]*:[[:space:]]*[0-9]|Medical Record Number[[:space:]]*:[[:space:]]*[0-9]|Social Security[[:space:]]*:[[:space:]]*[0-9]|Patient Name[[:space:]]*:[[:space:]]*[A-Z]|[0-9]{3}-[0-9]{2}-[0-9]{4}|\([0-9]{3}\)[[:space:]]*[0-9]{3}-[0-9]{4}
+^PATIENT_NAME:[[:space:]]*[^[:space:]]|^MRN:[[:space:]]*[^[:space:]]|^MRN #:[[:space:]]*[^[:space:]]|^CSN:[[:space:]]*[^[:space:]]|^DOB:[[:space:]]*[^[:space:]]|^Date of Birth:[[:space:]]*[^[:space:]]|^SSN:[[:space:]]*[^[:space:]]|^Social Security:[[:space:]]*[^[:space:]]|^Medical Record Number:[[:space:]]*[^[:space:]]
 EOF
 )
 
