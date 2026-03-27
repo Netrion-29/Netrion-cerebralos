@@ -66,7 +66,7 @@ summary with non-compliance highlighting.
 ### Extraction & Governance Foundation
 
 - **NTDS:** 21/21 events mapped, 47 fixtures, precision suites for 10 events
-- **Protocols:** ~40 Deaconess protocols, 230 data elements tracked
+- **Protocols:** ~40 protocols, 230 data elements tracked
   (79 extracted, 48 partial, 87 missing)
 - **Feature modules:** 25+ extraction modules with contracts
 - **Tests:** 3700+ passing

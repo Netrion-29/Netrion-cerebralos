@@ -36,14 +36,14 @@
 | ED_NOTE allowed_sources gap | ✅ COMPLETE — ED_NOTE added to 12 NTDS events (17 gates), 0 NTDS outcome deltas across 39 patients |
 | Anesthesia SourceType | ✅ COMPLETE — ANESTHESIA_NOTE enum + parser pattern + wired E19/E20 rules, 12 tests added, 0 NTDS outcome deltas across 39 patients |
 | Protocol coverage audit | ✅ COMPLETE (PR #175) — stale ROLE_OF_TRAUMA_SERVICES removed from index/validator/fixtures, 43 protocols synced, 0 NTDS outcome deltas |
-| FLAG 002 E21 VAP vent gate | ✅ COMPLETE — required mechanical-ventilation gate added to E21 VAP, 7 vent_dx mapper patterns, history_noise exclusion, 1 fixture added, Cheryl_Burton YES→NO, 39-patient cohort verified |
+| FLAG 002 E21 VAP vent gate | ✅ COMPLETE — required mechanical-ventilation gate added to E21 VAP, 7 vent_dx mapper patterns, history_noise exclusion, 1 fixture added, 1 patient YES→NO, 39-patient cohort verified |
 | FLAG 001 Spinal 36 h timing | ✅ COMPLETE — REQ_REQUIRED_DATA_ELEMENTS + REQ_TIMING_CRITICAL (temporal:within:36:hours) added to spinal protocol, 12 surgery patterns, 1 fixture added, 1 fixture updated, 0 NTDS outcome deltas |
 | Baseline hash coverage | ✅ COMPLETE — 39-patient NTDS event hash baseline in `scripts/baselines/ntds_hashes_v1.json`, standalone checker `scripts/check_ntds_hashes.py`, wired into `gate_pr.sh`, 0 NTDS outcome deltas |
-| D4 DISCHARGE precision audit | ✅ COMPLETE — 14 events audited, 39 patients, 0 false positives, 1 TP (Ronald_Bittner E13 Pressure Ulcer), no rule changes needed, baseline realigned (Anna_Dennis hash), 0 NTDS outcome deltas |
-| N3 residual precision pass (E08 DVT + E09 Delirium) | ✅ COMPLETE — E09 `delirium_negation_noise` (10 patterns) added, 2 FP corrections (Barbara_Burgdorf YES→NO, Christine_Adelitzo YES→NO); E08 `dvt_dx_noise_prophylaxis` wired (defensive, 0 outcome changes); fixture updated; 2 NTDS outcome deltas |
-| AKI UTD reduction v2 | ✅ COMPLETE — 3 `aki_negation_noise` patterns (PMH date, chemo history, parenthetical format) + 1 `aki_onset` pattern (clinical trajectory) + arrival-time extraction in runner; 4 outcome deltas: Barbara_Burgdorf UTD→NO, Gary_Linder UTD→NO, William_Simmons UTD→NO, Floy_Geary UTD→YES; E01 UTD 7→3 |
+| D4 DISCHARGE precision audit | ✅ COMPLETE — 14 events audited, 39 patients, 0 false positives, 1 TP (E13 Pressure Ulcer), no rule changes needed, baseline realigned (1 hash), 0 NTDS outcome deltas |
+| N3 residual precision pass (E08 DVT + E09 Delirium) | ✅ COMPLETE — E09 `delirium_negation_noise` (10 patterns) added, 2 FP corrections (YES→NO ×2); E08 `dvt_dx_noise_prophylaxis` wired (defensive, 0 outcome changes); fixture updated; 2 NTDS outcome deltas |
+| AKI UTD reduction v2 | ✅ COMPLETE — 3 `aki_negation_noise` patterns (PMH date, chemo history, parenthetical format) + 1 `aki_onset` pattern (clinical trajectory) + arrival-time extraction in runner; 4 outcome deltas (3× UTD→NO, 1× UTD→YES); E01 UTD 7→3 |
 | Per-event distribution CI | ✅ COMPLETE — `scripts/check_ntds_distribution.py` + baseline `scripts/baselines/ntds_distribution_v1.json` (21 events × 39 patients), wired into `gate_pr.sh`, 0 NTDS outcome deltas |
-| Source alignment + geri delirium design | ✅ COMPLETE (design doc) — `docs/audits/SOURCE_ALIGNMENT_AND_GERI_DELIRIUM_v1.md`: 3-tier source recommendations (CONSULT_NOTE/NURSING_NOTE/PROGRESS_NOTE), CAM-ICU/bCAM mapper gap analysis, shift compliance design, Ronald_Bittner follow-up; 0 NTDS outcome deltas |
+| Source alignment + geri delirium design | ✅ COMPLETE (design doc) — `docs/audits/SOURCE_ALIGNMENT_AND_GERI_DELIRIUM_v1.md`: 3-tier source recommendations (CONSULT_NOTE/NURSING_NOTE/PROGRESS_NOTE), CAM-ICU/bCAM mapper gap analysis, shift compliance design, follow-up patient review; 0 NTDS outcome deltas |
 | Tier 1 source alignment + CAM/bCAM patterns | ✅ COMPLETE — CONSULT_NOTE added to 4 gates (aki_dx, mi_dx, sepsis_dx, stroke_dx), NURSING_NOTE added to 3 gates (cauti_dx, clabsi_dx, sepsis_dx), 4 CAM-ICU/bCAM positive patterns added to delirium_dx, 4 negative patterns added to delirium_negation_noise, 3 fixtures added, 0 NTDS outcome deltas |
 | E05 CAUTI Tier-1 spec fidelity | ✅ COMPLETE — CDC SUTI 1a: 5 required gates (dx, catheter >2d, symptoms, culture ≥10^5, timing) + 2 exclusions (POA, chronic catheter); 6 new mapper keys (52 patterns); cauti_dx expanded with negation noise filter; 52 precision tests + 3 fixtures; baseline refreshed: E05 NO=39→NO=35 EXCLUDED=4 |
 | Baseline refresh post-CAUTI v2 | ✅ COMPLETE — 39-patient cohort rerun, hash + distribution baselines updated; E05 delta: NO=39→NO=35 EXCLUDED=4; all other 20 events unchanged; 2313 tests passed, cohort invariant PASS, 0 drift |
@@ -68,7 +68,7 @@
 | Shock Index computation (SI = HR/SBP) | ✅ COMPLETE (PR #254) — deterministic SI = HR / SBP in `shock_trigger_v1`; classification: normal (< 0.7), elevated (0.7–0.99), critical (≥ 1.0); fail-closed null when HR or SBP missing; supplementary-only (does NOT alter `shock_triggered` outcome); `hr`, `shock_index`, `shock_index_classification` added to `trigger_vitals`; contract doc `docs/contracts/shock_trigger_v1.md` added; 18 new tests (40 total); 0 NTDS outcome deltas; 0 v4 drift |
 | Docs sync (post-#254) | ✅ COMPLETE (PR #255) — roadmap, startup, and boot header updated for post-PR #254 state |
 | Docs startup fix | ✅ COMPLETE (PR #256) — broken blockquote list newlines fixed |
-| Visit Vitals bang-prefix parser fix | ✅ COMPLETE (PR #257) — Epic `(!)` abnormal-annotation prefix handled in Pulse/Resp/SpO2 Visit Vitals regexes; Anna_Dennis HR corrected (null → 112.0); no schema change; intentional v4/v5 baseline update for Anna_Dennis; 6 new tests; 3628 total passed |
+| Visit Vitals bang-prefix parser fix | ✅ COMPLETE (PR #257) — Epic `(!)` abnormal-annotation prefix handled in Pulse/Resp/SpO2 Visit Vitals regexes; 1 patient HR corrected (null → 112.0); no schema change; intentional v4/v5 baseline update; 6 new tests; 3628 total passed |
 | Docs sync (post-#257) | ✅ COMPLETE (PR #258) — roadmap/startup/boot + boot prompt templates synced for post-PR #257 state |
 | Pupil reactivity extraction | 🟡 OPEN (PR #259) — deterministic bilateral pupil size/reactivity extraction from nursing flowsheets + prose patterns; runtime per-day wiring |
 | Open PRs | #259 |
@@ -252,10 +252,10 @@ Codex must explain the triage decision and preserve useful findings in-repo so t
 
 | Patient | Notes |
 | --- | --- |
-| Anna_Dennis | Baseline regression patient (determinism anchor) |
-| William_Simmons | Abnormal vitals alignment patient |
-| Timothy_Cowan | BD monitoring, device carry-forward |
-| Timothy_Nachtwey | Multi-day, GI/DVT prophylaxis evidence |
+| Patient_A | Baseline regression patient (determinism anchor) |
+| Patient_B | Abnormal vitals alignment patient |
+| Patient_C | BD monitoring, device carry-forward |
+| Patient_D | Multi-day, GI/DVT prophylaxis evidence |
 
 ## Rules / Config Files
 
