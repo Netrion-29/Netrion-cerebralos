@@ -208,7 +208,7 @@ When counting output directories in `outputs/ntds/`:
    event prefix (e.g. `08_dvt_no`, `14_pe_yes`). Currently 4 such dirs.
 2. **Exclude stale space-variant duplicates** — directories with spaces in
    the name that duplicate an underscore-normalized sibling (e.g.
-   `PT_05` when `PT_05` also exists). Currently 0
+   `PT 05` when `PT_05` also exists). Currently 0
    (prior duplicates archived to `_stale_space_dups_20260304_172106`).
 3. **Exclude admin directories** whose names start with `_` (archives,
    stale backups). Currently 1 (`_stale_space_dups_20260304_172106`).
@@ -837,6 +837,10 @@ for PAT in PT_01 PT_04 PT_05 PT_09 \
 done
 ```
 
+> **Note:** The `PT_XX` identifiers above are sanitized examples and are
+> not runnable as-is. Derive the real sentinel cohort from your local
+> `data_raw/` directory.
+
 **Pre-merge full run:**
 ```bash
 ./scripts/gate_pr.sh
@@ -942,8 +946,9 @@ Codex/Claude may not declare "done" until:
 ./scripts/gate_pr.sh
 ```
 
-passes with exit 0. Default gate patients: PT_01, PT_26,
-PT_23, PT_24.
+passes with exit 0. Default gate patients are defined in
+`scripts/gate_pr.sh`; the IDs shown elsewhere in this document
+are sanitized examples.
 
 ---
 
