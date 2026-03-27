@@ -1,0 +1,17 @@
+# CODEOWNERS — CerebralOS
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default: all changes require review by the repo owner.
+* @Netrion-29
+
+# Protected engines (AGENTS.md §3) — explicit ownership for visibility.
+cerebralos/ntds_logic/engine.py @Netrion-29
+cerebralos/protocol_engine/engine.py @Netrion-29
+
+# Baseline hashes — changes here mean pipeline output changed.
+scripts/baselines/ @Netrion-29
+
+# Security and trust surfaces
+SECURITY.md @Netrion-29
+AGENTS.md @Netrion-29
+.github/CODEOWNERS @Netrion-29
