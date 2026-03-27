@@ -1,8 +1,8 @@
 # Collaboration Model
 
-**Status:** Authoritative working agreement
-**Decision Date:** March 23, 2026
-**Applies To:** Sarah, Codex, Claude, and the Copilot sidecar chat
+- **Status:** Authoritative working agreement
+- **Decision Date:** March 23, 2026
+- **Applies To:** Sarah, Codex, Claude, and the Copilot sidecar chat
 
 ## Purpose
 
@@ -16,10 +16,10 @@ does not drift back into:
 
 ## Core Principle
 
-Sarah provides workflow truth.
-Codex directs architecture and sequence.
-Claude implements against current dated specs/build plans.
-The Copilot sidecar chat provides bounded audits and cross-checks.
+- Sarah provides workflow truth.
+- Codex directs architecture and sequence.
+- Claude implements against current dated specs/build plans.
+- The Copilot sidecar chat provides bounded audits and cross-checks.
 
 ## Named Panels / Roles
 

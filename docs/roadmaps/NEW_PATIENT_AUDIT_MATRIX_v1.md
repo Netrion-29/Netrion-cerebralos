@@ -148,13 +148,13 @@ When a new `.txt` file is added to `data_raw/`:
 
 ## 7. Known Format Quirks / Ingest Notes
 
-### Filename spaces
+### Filename conventions
 
-All new-format patients except `Patient_01` use spaces in their
-filenames (e.g. `Patient 02.txt`). The pipeline slug function
-converts spaces to underscores (`Patient_02`), and
-`./run_patient.sh` accepts either form. Feature output directories
-use the underscore slug.
+Canonical raw filenames use underscores (e.g. `Patient_02.txt`).
+Space-form filenames (e.g. `Patient 02.txt`) may appear in
+historical or external drops. The pipeline slug function normalizes
+spaces to underscores, and `./run_patient.sh` accepts either form.
+Feature output directories always use the underscore slug.
 
 ### ADT table placement
 
@@ -177,7 +177,7 @@ This is distinct from the older `legacy-keyed` format used by some
 ```
 PATIENT_ID: XXXXXX
 ARRIVAL_TIME: YYYY-MM-DD HH:MM:SS
-PATIENT_NAME: <redacted>
+PATIENT_NAME: REDACTED
 ```
 
 ### Patient_06 leading blank line
