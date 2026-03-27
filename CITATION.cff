@@ -12,7 +12,7 @@ abstract: >-
   raw patient chart exports into structured, review-ready casefiles
   through a multi-stage pipeline that produces durable intermediate
   artifacts — enabling long-running clinical review workflows to resume
-  across sessions without loss of context.
+  across sessions without rebuilding prior context from scratch.
 repository-code: "https://github.com/Netrion-29/Netrion-cerebralos"
 license: MIT
 keywords:
