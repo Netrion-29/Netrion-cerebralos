@@ -180,6 +180,19 @@ if [[ "${CEREBRAL_GREEN:-0}" == "1" ]]; then
   python3 cerebralos/validation/report_green_card_qa.py --pat "$SLUG" || true
 fi
 
+# Calendar Daily Notes v1 (opt-in via CEREBRAL_CALENDAR=1)
+# Comprehensive per-day admission review with full physician notes and no
+# narrative caps.  Designed for long-stay patient review.
+if [[ "${CEREBRAL_CALENDAR:-0}" == "1" ]]; then
+  echo ""
+  echo "---- calendar daily notes v1 ----"
+  mkdir -p "outputs/reporting/$SLUG"
+  python3 cerebralos/reporting/render_calendar_daily_notes_v1.py \
+    --days "outputs/timeline/$SLUG/patient_days_v1.json" \
+    --features "outputs/features/$SLUG/patient_features_v1.json" \
+    --out "outputs/reporting/$SLUG/CALENDAR_DAILY_NOTES_v1.txt" || true
+fi
+
 # Trauma Excellence Dashboard (opt-in via CEREBRAL_DASHBOARD=1)
 if [[ "${CEREBRAL_DASHBOARD:-0}" == "1" ]]; then
   echo ""
